@@ -28,5 +28,12 @@ yarn-error.log*
 *.njsproj
 *.sln
 
+cors
+database*
+firebase*
+firestore*
+storage*
+*.log
+
 # secret
 config.json

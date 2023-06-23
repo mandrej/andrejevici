@@ -1,10 +1,18 @@
 import { initializeApp } from "firebase/app";
-import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import CONFIG from "../../config.json";
 
 const firebaseApp = initializeApp(CONFIG.firebase);
+const auth = getAuth(firebaseApp);
 const storage = getStorage(firebaseApp);
 const db = getFirestore(firebaseApp);
 
-export { firebaseApp, storage, db };
+if (location.hostname === "localhost") {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  connectStorageEmulator(storage, "127.0.0.1", 9199);
+}
+
+export { firebaseApp, auth, db, storage };
