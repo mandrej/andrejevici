@@ -1,6 +1,13 @@
 <template>
   <q-page class="flex flex-center column">
-    <div class="row">Upload</div>
+    <!-- <input
+        id="files"
+        type="file"
+        multiple
+        name="photos"
+        @change="filesChange"
+        accept="image/jpeg"
+        /> -->
     <q-linear-progress
       v-for="(progress, index) in progressInfos"
       :key="index"
@@ -10,17 +17,21 @@
       :style="{ width: 100 / progressInfos.length + '%' }"
       stripe
     />
-    <div>
-      <input
-        id="files"
-        type="file"
-        multiple
+    <q-form @submit="onSubmit" class="q-gutter-md">
+      <q-file
         name="photos"
-        @change="filesChange"
-        accept="image/jpeg"
+        v-model="files"
+        filled
+        use-chips
+        multiple
+        :accept="CONFIG.fileType"
+        :max-file-size="CONFIG.fileSize"
+        :max-files="CONFIG.fileMax"
+        label="Select images to upload"
+        @rejected="onRejected"
       />
-    </div>
-    <!-- <q-btn type="button" :click="upload">Upload</q-btn> -->
+      <q-btn label="Submit" type="submit" color="primary" />
+    </q-form>
   </q-page>
 </template>
 
@@ -28,68 +39,69 @@
 import { ref, computed, reactive } from "vue";
 import { useCrudStore } from "../stores/crud";
 import { storage } from "../boot/fire";
-import { ref as storageRef, uploadBytes } from "firebase/storage";
+import {
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 import { CONFIG } from "../helpers";
 
 const crudStore = useCrudStore();
-const uploaded = computed(() => crudStore.uploaded);
-let files = reactive([]);
+// const uploaded = computed(() => crudStore.uploaded);
+const files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
 
-const filesChange = (evt) => {
-  /**
-   * 0: File
-      name: "DSC_8082-22-03-14-819.jpg"
-      size: 1858651
-      type: "image/jpeg"
-   */
-  let fileList = evt.target.files;
-  // let fieldName = evt.target.name; // photos
-  if (!fileList.length) return;
+const onSubmit = (evt) => {
+  const data = [];
+  const formData = new FormData(evt.target);
 
-  Array.from(fileList).map((file) => {
-    if (file.type !== CONFIG.fileType) {
-      console.log(`${file.name} is of unsupported file type`);
-      // notify({
-      //   type: "warning",
-      //   message: `${file.name} is of unsupported file type`,
-      // });
-    } else if (file.size > CONFIG.fileSize) {
-      console.log(`${file.name} is too big`);
-      // notify({ type: "warning", message: `${file.name} is too big` });
-    } else {
-      files.push(file);
+  for (const [name, value] of formData.entries()) {
+    if (value.name.length > 0) {
+      data.push({
+        name,
+        file: value,
+      });
     }
-  });
-
-  if (files.length > CONFIG.fileMax) {
-    console.log(`Max ${CONFIG.fileMax} files allowed at the time`);
-    // notify({
-    //   type: "warning",
-    //   message: `Max ${CONFIG.fileMax} files allowed at the time`,
-    // });
-    files.splice(CONFIG.fileMax);
   }
-  upload();
-};
-
-const upload = async () => {
-  console.log(files);
-  if (files.length === 0) {
+  if (data.length === 0) {
     console.log("nothing to upload");
   }
-  // const promises = [];
-  // inProgress.value = true;
-  for (let i = 0; i < files.length; i++) {
-    // console.log(files[i]);
-    // progressInfos[i] = 0;
-    const _ref = storageRef(storage, files[i].name);
+  inProgress.value = true;
+  for (const [i, item] of data.entries()) {
+    // console.log(item.file);
+    progressInfos[i] = 0;
+    const _ref = storageRef(storage, item.file.name);
     // console.log(_ref);
-    const task = await uploadBytes(_ref, files[i], {
-      contentType: files[i].type,
+    const task = uploadBytesResumable(_ref, item.file, {
+      contentType: item.file.type,
     });
-    console.log(task);
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        progressInfos[i] =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      },
+      (error) => {
+        console.log(error);
+      },
+      () => {
+        getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+          console.log("URL ", downloadURL);
+          progressInfos[i] = 0;
+        });
+      }
+    );
   }
+};
+
+const onRejected = (rejectedEntries) => {
+  // Notify plugin needs to be installed
+  // https://quasar.dev/quasar-plugins/notify#Installation
+  console.log(rejectedEntries);
+  // $q.notify({
+  //   type: "negative",
+  //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  // });
 };
 </script>
