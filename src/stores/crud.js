@@ -10,6 +10,7 @@ export const useCrudStore = defineStore("crud", {
   }),
   actions: {
     async fetch() {
+      this.objects = [];
       const refs = await listAll(ref(storage, ""));
       for (let r of refs.items) {
         const meta = await getMetadata(r);
@@ -20,5 +21,15 @@ export const useCrudStore = defineStore("crud", {
         }
       }
     },
+  },
+  persist: {
+    key: "a",
+    paths: ["uploaded", "objects"],
+    // beforeRestore: (context) => {
+    //   console.log("Before hydration...", context);
+    // },
+    // afterRestore: (context) => {
+    //   console.log("After hydration...", context);
+    // },
   },
 });

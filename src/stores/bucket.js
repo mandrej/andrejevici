@@ -37,4 +37,8 @@ export const useBucketStore = defineStore("bucket", {
       setDoc(docRef, res, { merge: true });
     },
   },
+  persist: {
+    key: "a",
+    paths: ["bucket"],
+  },
 });
