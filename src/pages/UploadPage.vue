@@ -87,7 +87,8 @@ const onSubmit = (evt) => {
       },
       () => {
         getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-          console.log("URL ", downloadURL);
+          // console.log("URL ", downloadURL);
+          crudStore.populate(item.file.name, downloadURL);
           progressInfos[i] = 0;
         });
       }
