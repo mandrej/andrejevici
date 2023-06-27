@@ -1,13 +1,16 @@
 <template>
+  <Edit v-if="popupStore.showEdit" :rec="crudStore.current" />
+
   <q-page class="flex flex-center column">
-    <!-- <input
-        id="files"
-        type="file"
-        multiple
-        name="photos"
-        @change="filesChange"
-        accept="image/jpeg"
-        /> -->
+    <div class="row">
+      <div v-for="(obj, i) in uploaded" :key="i">
+        <q-img
+          :src="obj.url"
+          style="display: block; height: 150px; width: 150px"
+        />
+        <q-btn @click="edit(obj)">Edit</q-btn>
+      </div>
+    </div>
     <q-linear-progress
       v-for="(progress, index) in progressInfos"
       :key="index"
@@ -38,16 +41,21 @@
 <script setup>
 import { ref, computed, reactive } from "vue";
 import { useCrudStore } from "../stores/crud";
+import { usePopupStore } from "../stores/popup";
 import { storage } from "../boot/fire";
 import {
   ref as storageRef,
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import Edit from "../pages/EditPage.vue";
 import { CONFIG } from "../helpers";
 
 const crudStore = useCrudStore();
-// const uploaded = computed(() => crudStore.uploaded);
+const popupStore = usePopupStore();
+const uploaded = computed(() => crudStore.uploaded);
+const current = computed(() => crudStore.current);
+
 const files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
@@ -69,10 +77,8 @@ const onSubmit = (evt) => {
   }
   inProgress.value = true;
   for (const [i, item] of data.entries()) {
-    // console.log(item.file);
     progressInfos[i] = 0;
     const _ref = storageRef(storage, item.file.name);
-    // console.log(_ref);
     const task = uploadBytesResumable(_ref, item.file, {
       contentType: item.file.type,
     });
@@ -87,8 +93,14 @@ const onSubmit = (evt) => {
       },
       () => {
         getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+          crudStore.uploaded.push({ url: downloadURL, name: item.file.name });
           // console.log("URL ", downloadURL);
-          crudStore.populate(item.file.name, downloadURL);
+          // crudStore.populate(item.file.name, downloadURL);
+          files.value.splice(
+            files.value.findIndex((it) => it.name === item.file.name),
+            1
+          );
+          // files.value.splice(i, 1);
           progressInfos[i] = 0;
         });
       }
@@ -104,5 +116,10 @@ const onRejected = (rejectedEntries) => {
   //   type: "negative",
   //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
   // });
+};
+
+const edit = (obj) => {
+  crudStore.current = obj;
+  popupStore.showEdit = true;
 };
 </script>

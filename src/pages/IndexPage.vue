@@ -24,7 +24,7 @@
 import { onMounted, computed } from "vue";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
-import { date } from "quasar";
+// import { date } from "quasar";
 
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
