@@ -12,7 +12,7 @@
       </div>
       <q-card-section>
         <q-input v-model="tmp.title" label="Title"></q-input>
-        <pre>{{ tmp }}</pre>
+        <!-- <pre>{{ tmp }}</pre> -->
         <q-btn @click="publish(tmp)">Publish</q-btn>
       </q-card-section>
     </q-card>
@@ -39,21 +39,22 @@ const tmp = reactive({ ...props.rec });
 
 const publish = async (tmp) => {
   const exif = await readExif(tmp.url);
-  await setDoc(doc(db, "Photo", tmp.name), {
+  const data = {
     title: "notatle",
     ...tmp,
     ...exif,
-  });
-  if (exif.model && exif.date) {
-    const id = "Photo||model||" + exif.model;
+  };
+  await setDoc(doc(db, "Photo", tmp.name), data);
+  if (data.model && data.date) {
+    const id = "Photo||model||" + data.model;
     const docRef = doc(db, "Counter", id);
     const oldDoc = await getDoc(docRef);
     if (oldDoc.exists()) {
       const old = oldDoc.data();
-      updateDoc(docRef, {
+      await updateDoc(docRef, {
         count: old.count + 1,
-        url: exif.date > old.date ? tmp.url : old.url,
-        date: exif.date > old.date ? exif.date : old.date,
+        url: data.date > old.date ? tmp.url : old.url,
+        date: data.date > old.date ? data.date : old.date,
       });
     } else {
       await setDoc(
@@ -61,10 +62,10 @@ const publish = async (tmp) => {
         {
           count: 1,
           field: "model",
-          value: exif.model,
+          value: data.model,
           kind: "Photo",
           url: tmp.url,
-          date: exif.date,
+          date: data.date,
         },
         { merge: true }
       );

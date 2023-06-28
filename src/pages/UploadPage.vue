@@ -8,7 +8,7 @@
           :src="obj.url"
           style="display: block; height: 150px; width: 150px"
         />
-        <q-btn @click="edit(obj)">Edit</q-btn>
+        <q-btn @click="edit(obj)">Publish</q-btn>
       </div>
     </div>
     <q-linear-progress
@@ -54,11 +54,28 @@ import { CONFIG } from "../helpers";
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
 const uploaded = computed(() => crudStore.uploaded);
-const current = computed(() => crudStore.current);
 
 const files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
+
+// const fileExists = (_ref) => {
+//   getDownloadURL(_ref)
+//     .then((url) => {
+//       return Promise.resolve(true);
+//     })
+//     .catch((error) => {
+//       if (error.code === "storage/object-not-found") {
+//         return Promise.resolve(false);
+//       } else {
+//         return Promise.reject(error);
+//       }
+//     });
+// };
+const removeByName = (arr, name) => {
+  const idx = arr.findIndex((it) => it.name === name);
+  if (idx !== -1) arr.splice(idx, 1);
+};
 
 const onSubmit = (evt) => {
   const data = [];
@@ -93,14 +110,15 @@ const onSubmit = (evt) => {
       },
       () => {
         getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-          crudStore.uploaded.push({ url: downloadURL, name: item.file.name });
+          crudStore.uploaded.push({
+            url: downloadURL,
+            name: item.file.name,
+            size: item.file.size,
+            email: "milan.andrejevic@gmail.com", // auth user
+          });
           // console.log("URL ", downloadURL);
           // crudStore.populate(item.file.name, downloadURL);
-          files.value.splice(
-            files.value.findIndex((it) => it.name === item.file.name),
-            1
-          );
-          // files.value.splice(i, 1);
+          removeByName(files.value, item.file.name);
           progressInfos[i] = 0;
         });
       }

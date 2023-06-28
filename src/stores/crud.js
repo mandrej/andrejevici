@@ -2,10 +2,6 @@ import { defineStore } from "pinia";
 import { db } from "../boot/fire";
 import {
   collection,
-  doc,
-  setDoc,
-  updateDoc,
-  getDoc,
   query,
   where,
   getDocs,
@@ -27,9 +23,7 @@ export const useCrudStore = defineStore("crud", {
       const q = query(photosRef, orderBy("date", "desc"), limit(10));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
-        // getDownloadURL;
         // doc.data() is never undefined for query doc snapshots
-        // console.log(doc.id, " => ", doc.data());
         this.objects.push(doc.data());
       });
     },
