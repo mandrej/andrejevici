@@ -39,6 +39,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { ref as storageRef, deleteObject } from "firebase/storage";
+import { removeByProperty } from "../helpers";
 // import { date } from "quasar";
 
 const bucketStore = useBucketStore();
@@ -47,11 +48,6 @@ const bucketState = computed(() => bucketStore.bucket);
 const objects = computed(() => crudStore.objects);
 
 const photosRef = collection(db, "Photo");
-
-const removeByName = (arr, name) => {
-  const idx = arr.findIndex((it) => it.name === name);
-  if (idx !== -1) arr.splice(idx, 1);
-};
 
 onMounted(() => {
   crudStore.fetch();
@@ -66,7 +62,7 @@ const remove = async (obj) => {
   await deleteDoc(docRef);
   await deleteObject(stoRef);
 
-  removeByName(objects.value, obj.name);
+  removeByProperty(objects.value, "name", obj.name);
   bucketStore.diff(-data.size);
   bucketStore.read();
 

@@ -27,6 +27,7 @@ import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import readExif from "../helpers/exif";
 import { usePopupStore } from "../stores/popup";
 import { useCrudStore } from "../stores/crud";
+import { removeByProperty } from "../helpers";
 
 const props = defineProps({
   rec: Object,
@@ -70,10 +71,7 @@ const publish = async (tmp) => {
         { merge: true }
       );
     }
-    crudStore.uploaded.splice(
-      crudStore.uploaded.findIndex((it) => it.name === tmp.name),
-      1
-    );
+    removeByProperty(crudStore.uploaded, "name", tmp.name);
     popupStore.showEdit = false;
   }
 };

@@ -44,6 +44,10 @@ const version = computed(() => {
   const ver = process.env.ANDS_VERSION.match(/.{1,4}/g).join(".");
   return "© 2007 - " + ver;
 });
+const removeByProperty = (arr, propery, value) => {
+  const idx = arr.findIndex((it) => it[propery] === value);
+  if (idx !== -1) arr.splice(idx, 1);
+};
 
 export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
@@ -59,4 +63,5 @@ export {
   fakeHistory,
   removeHash,
   version,
+  removeByProperty,
 };

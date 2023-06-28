@@ -49,7 +49,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import Edit from "../pages/EditPage.vue";
-import { CONFIG } from "../helpers";
+import { CONFIG, removeByProperty } from "../helpers";
 
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
@@ -72,10 +72,6 @@ const inProgress = ref(false);
 //       }
 //     });
 // };
-const removeByName = (arr, name) => {
-  const idx = arr.findIndex((it) => it.name === name);
-  if (idx !== -1) arr.splice(idx, 1);
-};
 
 const onSubmit = (evt) => {
   const data = [];
@@ -118,7 +114,7 @@ const onSubmit = (evt) => {
           });
           // console.log("URL ", downloadURL);
           // crudStore.populate(item.file.name, downloadURL);
-          removeByName(files.value, item.file.name);
+          removeByProperty(files.value, "name", item.file.name);
           progressInfos[i] = 0;
         });
       }
