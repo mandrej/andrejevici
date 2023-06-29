@@ -49,6 +49,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import Edit from "../pages/EditPage.vue";
+import uuid4 from "uuid4";
 import { CONFIG, removeByProperty } from "../helpers";
 
 const crudStore = useCrudStore();
@@ -58,20 +59,14 @@ const uploaded = computed(() => crudStore.uploaded);
 const files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
+const re = new RegExp(/([^.]+)/gm);
 
-// const fileExists = (_ref) => {
-//   getDownloadURL(_ref)
-//     .then((url) => {
-//       return Promise.resolve(true);
-//     })
-//     .catch((error) => {
-//       if (error.code === "storage/object-not-found") {
-//         return Promise.resolve(false);
-//       } else {
-//         return Promise.reject(error);
-//       }
-//     });
-// };
+const rename = (filename) => {
+  const id = uuid4();
+  const [name, ext] = filename.match(re);
+  if (!ext) ext = "jpg";
+  return name + "_" + id.substring(id.length - 12) + "." + ext;
+};
 
 const onSubmit = (evt) => {
   const data = [];
@@ -92,34 +87,50 @@ const onSubmit = (evt) => {
   for (const [i, item] of data.entries()) {
     progressInfos[i] = 0;
     const _ref = storageRef(storage, item.file.name);
-    const task = uploadBytesResumable(_ref, item.file, {
-      contentType: item.file.type,
-    });
-    task.on(
-      "state_changed",
-      (snapshot) => {
-        progressInfos[i] =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      },
-      (error) => {
-        console.log(error);
-      },
-      () => {
-        getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-          crudStore.uploaded.push({
-            url: downloadURL,
-            name: item.file.name,
-            size: item.file.size,
-            email: "milan.andrejevic@gmail.com", // auth user
-          });
-          // console.log("URL ", downloadURL);
-          // crudStore.populate(item.file.name, downloadURL);
+    getDownloadURL(_ref)
+      .then((url) => {
+        const filename = rename(item.file.name);
+        console.log(`${item.file.name} already exist, renamed to\n${filename}`);
+        removeByProperty(files.value, "name", item.file.name);
+        upload(i, filename, item.file);
+      })
+      .catch((error) => {
+        if (error.code === "storage/object-not-found") {
           removeByProperty(files.value, "name", item.file.name);
-          progressInfos[i] = 0;
-        });
-      }
-    );
+          upload(i, item.file.name, item.file);
+        } else {
+          console.log(error);
+        }
+      });
   }
+};
+
+const upload = (i, filename, file) => {
+  const _ref = storageRef(storage, filename);
+  const task = uploadBytesResumable(_ref, file, {
+    contentType: file.type,
+  });
+  task.on(
+    "state_changed",
+    (snapshot) => {
+      progressInfos[i] =
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    },
+    (error) => {
+      console.log(error);
+    },
+    () => {
+      getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+        crudStore.uploaded.push({
+          url: downloadURL,
+          name: filename,
+          size: file.size,
+          email: "milan.andrejevic@gmail.com", // auth user
+        });
+        progressInfos[i] = 0;
+      });
+    }
+  );
 };
 
 const onRejected = (rejectedEntries) => {

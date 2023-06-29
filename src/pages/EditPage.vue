@@ -35,7 +35,7 @@ const props = defineProps({
 
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
-// const uploaded = computed(() => crudStore.uploaded);
+const uploaded = computed(() => crudStore.uploaded);
 const tmp = reactive({ ...props.rec });
 
 const publish = async (tmp) => {
