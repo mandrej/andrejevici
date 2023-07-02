@@ -52,7 +52,13 @@ const readExif = async (url) => {
     exif.lens = data.LensModel.replace("/", "");
     if (has(LENSES, exif.lens)) exif.lens = LENSES[exif.lens]; // TODO check
   }
-  if (has(data, "DateTimeOriginal")) exif.date = data.DateTimeOriginal;
+  if (has(data, "DateTimeOriginal")) {
+    const date = new Date(Date.parse(data.DateTimeOriginal));
+    exif.date = date;
+    exif.year = date.getFullYear();
+    exif.month = date.getMonth() + 1;
+    exif.day = date.getDate();
+  }
   if (has(data, "FNumber")) exif.aperture = data.FNumber;
   if (has(data, "ExposureTime")) {
     if (data.ExposureTime <= 0.1) {

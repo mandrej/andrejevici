@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="row">
-      <pre>{{ bucketState }}</pre>
+      <pre>{{ bucket }}</pre>
     </div>
   </q-page>
 </template>
@@ -26,69 +26,32 @@ import { onMounted, computed } from "vue";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
 import { db, storage } from "../boot/fire";
-import {
-  doc,
-  collection,
-  query,
-  where,
-  limit,
-  orderBy,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { ref as storageRef, deleteObject } from "firebase/storage";
 import { removeByProperty } from "../helpers";
 // import { date } from "quasar";
 
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
-const bucketState = computed(() => bucketStore.bucket);
+const bucket = computed(() => bucketStore.bucket);
 const objects = computed(() => crudStore.objects);
-
-const photosRef = collection(db, "Photo");
 
 onMounted(() => {
   crudStore.fetch();
-  bucketStore.scretch();
+  crudStore.scretchCounters();
 });
 
 const remove = async (obj) => {
-  const docRef = doc(db, "Photo", obj.name);
+  const docRef = doc(db, "Photo", obj.filename);
   const docSnap = await getDoc(docRef);
   const data = docSnap.data();
-  const stoRef = storageRef(storage, obj.name);
+  const stoRef = storageRef(storage, obj.filename);
   await deleteDoc(docRef);
   await deleteObject(stoRef);
 
-  removeByProperty(objects.value, "name", obj.name);
+  removeByProperty(objects.value, "filename", obj.filename);
   bucketStore.diff(-data.size);
   bucketStore.read();
-
-  const counterRef = doc(db, "Counter", "Photo||model||" + data.model);
-  const counterSnap = await getDoc(counterRef);
-  const counter = counterSnap.data();
-
-  const q = query(
-    photosRef,
-    where("model", "==", data.model),
-    orderBy("date", "desc"),
-    limit(1)
-  );
-  const res = [];
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    res.push(doc.data());
-  });
-  if (res.length === 1) {
-    await updateDoc(counterRef, {
-      count: counter.count - 1,
-      date: res[0].date,
-      url: res[0].url,
-    });
-  } else {
-    await deleteDoc(counterRef);
-  }
+  await crudStore.decreaseCounters(data);
 };
 </script>

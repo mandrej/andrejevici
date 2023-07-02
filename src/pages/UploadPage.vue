@@ -50,7 +50,7 @@ import {
 } from "firebase/storage";
 import Edit from "../pages/EditPage.vue";
 import uuid4 from "uuid4";
-import { CONFIG, removeByProperty } from "../helpers";
+import { CONFIG, removeByProperty, emailNick } from "../helpers";
 
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
@@ -85,12 +85,10 @@ const onSubmit = (evt) => {
   }
   inProgress.value = true;
   for (const [i, item] of data.entries()) {
-    progressInfos[i] = 0;
     const _ref = storageRef(storage, item.file.name);
     getDownloadURL(_ref)
       .then((url) => {
         const filename = rename(item.file.name);
-        console.log(`${item.file.name} already exist, renamed to\n${filename}`);
         removeByProperty(files.value, "name", item.file.name);
         upload(i, filename, item.file);
       })
@@ -106,6 +104,7 @@ const onSubmit = (evt) => {
 };
 
 const upload = (i, filename, file) => {
+  progressInfos[i] = 0;
   const _ref = storageRef(storage, filename);
   const task = uploadBytesResumable(_ref, file, {
     contentType: file.type,
@@ -123,9 +122,10 @@ const upload = (i, filename, file) => {
       getDownloadURL(task.snapshot.ref).then((downloadURL) => {
         crudStore.uploaded.push({
           url: downloadURL,
-          name: filename,
+          filename: filename,
           size: file.size,
-          email: "milan.andrejevic@gmail.com", // auth user
+          email: "milan.andrejevic@gmail.com", // FIXME auth user
+          nick: emailNick("milan.andrejevic@gmail.com"),
         });
         progressInfos[i] = 0;
       });

@@ -11,7 +11,13 @@
         />
       </div>
       <q-card-section>
-        <q-input v-model="tmp.title" label="Title"></q-input>
+        <q-input v-model="tmp.title" label="Title" autofocus></q-input>
+        <q-select
+          v-model="tmp.tags"
+          :options="tags"
+          label="Tags"
+          multiple
+        ></q-select>
         <!-- <pre>{{ tmp }}</pre> -->
         <q-btn @click="publish(tmp)">Publish</q-btn>
       </q-card-section>
@@ -21,12 +27,13 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from "vue";
+import { ref, reactive } from "vue";
 import { db } from "../boot/fire";
-import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import readExif from "../helpers/exif";
 import { usePopupStore } from "../stores/popup";
 import { useCrudStore } from "../stores/crud";
+import { useBucketStore } from "../stores/bucket";
 import { removeByProperty } from "../helpers";
 
 const props = defineProps({
@@ -35,44 +42,23 @@ const props = defineProps({
 
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
-const uploaded = computed(() => crudStore.uploaded);
+const bucketStore = useBucketStore();
 const tmp = reactive({ ...props.rec });
+const tags = ref(["still life", "b&w", "street", "portrait"]);
 
 const publish = async (tmp) => {
   const exif = await readExif(tmp.url);
   const data = {
     title: "notatle",
+    tags: [],
     ...tmp,
     ...exif,
   };
-  await setDoc(doc(db, "Photo", tmp.name), data);
-  if (data.model && data.date) {
-    const id = "Photo||model||" + data.model;
-    const docRef = doc(db, "Counter", id);
-    const oldDoc = await getDoc(docRef);
-    if (oldDoc.exists()) {
-      const old = oldDoc.data();
-      await updateDoc(docRef, {
-        count: old.count + 1,
-        url: data.date > old.date ? tmp.url : old.url,
-        date: data.date > old.date ? data.date : old.date,
-      });
-    } else {
-      await setDoc(
-        docRef,
-        {
-          count: 1,
-          field: "model",
-          value: data.model,
-          kind: "Photo",
-          url: tmp.url,
-          date: data.date,
-        },
-        { merge: true }
-      );
-    }
-    removeByProperty(crudStore.uploaded, "name", tmp.name);
-    popupStore.showEdit = false;
-  }
+  await setDoc(doc(db, "Photo", data.filename), data);
+  await crudStore.increaseCounters(data);
+  bucketStore.diff(data.size);
+
+  removeByProperty(crudStore.uploaded, "filename", data.filename);
+  popupStore.showEdit = false;
 };
 </script>

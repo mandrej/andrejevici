@@ -15,26 +15,24 @@ export const useBucketStore = defineStore("bucket", {
   actions: {
     async read() {
       // if (this.bucket.count === 0) {
-      //   this.bucketInfoNew();
+      //   this.scretch();
       // }
       const docSnap = await getDoc(docRef);
       this.bucket = { ...docSnap.data() };
     },
     async diff(num) {
-      const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
       if (num > 0) {
-        this.bucket = {
-          size: data.size + num,
-          count: data.count + 1,
-        };
+        this.bucket.size += num;
+        this.bucket.count++;
       } else {
-        this.bucket = {
-          size: data.size - num,
-          count: data.count - 1,
-        };
+        this.bucket.size -= num;
+        this.bucket.count--;
       }
-      await updateDoc(docRef, this.bucket);
+      if (this.bucket.count <= 0) {
+        this.bucket.size = 0;
+        this.bucket.count = 0;
+      }
+      await setDoc(docRef, this.bucket, { merge: true });
     },
     async scretch() {
       const res = {
@@ -45,12 +43,12 @@ export const useBucketStore = defineStore("bucket", {
       for (let r of refs.items) {
         const meta = await getMetadata(r);
         if (meta.contentType === "image/jpeg") {
-          res.count++;
           res.size += meta.size;
+          res.count++;
         }
       }
       this.bucket = { ...res };
-      setDoc(docRef, res, { merge: true });
+      await setDoc(docRef, res, { merge: true });
     },
   },
   persist: {
