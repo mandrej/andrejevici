@@ -18,7 +18,7 @@
           label="Tags"
           multiple
         ></q-select>
-        <!-- <pre>{{ tmp }}</pre> -->
+        <pre>{{ tmp }}</pre>
         <q-btn @click="publish(tmp)">Publish</q-btn>
       </q-card-section>
     </q-card>
@@ -49,13 +49,13 @@ const tags = ref(["still life", "b&w", "street", "portrait"]);
 const publish = async (tmp) => {
   const exif = await readExif(tmp.url);
   const data = {
-    title: "notatle",
+    title: "notitle",
     tags: [],
     ...tmp,
     ...exif,
   };
   await setDoc(doc(db, "Photo", data.filename), data);
-  await crudStore.increaseCounters(data);
+  crudStore.increaseCounters(data);
   bucketStore.diff(data.size);
 
   removeByProperty(crudStore.uploaded, "filename", data.filename);

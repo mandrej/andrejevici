@@ -33,7 +33,7 @@
         label="Select images to upload"
         @rejected="onRejected"
       />
-      <q-btn label="Submit" type="submit" color="primary" />
+      <q-btn label="Upload" type="submit" color="primary" />
     </q-form>
   </q-page>
 </template>

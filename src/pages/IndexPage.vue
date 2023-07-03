@@ -8,15 +8,11 @@
           style="display: block; height: 150px; width: 150px"
         />
         <q-btn @click="remove(obj)">Remove {{ obj.title }}</q-btn>
-        <!-- <p>
-          {{
-            date.formatDate(obj.date.seconds * 1000, "YYYY-MM-DDTHH:mm:ss.SSSZ")
-          }}
-        </p> -->
       </div>
     </div>
     <div class="row">
       <pre>{{ bucket }}</pre>
+      <pre>{{ values.tags }}</pre>
     </div>
   </q-page>
 </template>
@@ -27,14 +23,18 @@ import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
 import { db, storage } from "../boot/fire";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import { ref as storageRef, deleteObject } from "firebase/storage";
+import {
+  ref as storageRef,
+  deleteObject,
+  getDownloadURL,
+} from "firebase/storage";
 import { removeByProperty } from "../helpers";
-// import { date } from "quasar";
 
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
 const bucket = computed(() => bucketStore.bucket);
 const objects = computed(() => crudStore.objects);
+const values = computed(() => crudStore.values);
 
 onMounted(() => {
   crudStore.fetch();
@@ -52,6 +52,6 @@ const remove = async (obj) => {
   removeByProperty(objects.value, "filename", obj.filename);
   bucketStore.diff(-data.size);
   bucketStore.read();
-  await crudStore.decreaseCounters(data);
+  crudStore.decreaseCounters(data);
 };
 </script>

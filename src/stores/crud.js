@@ -16,7 +16,7 @@ import {
 import { CONFIG } from "../helpers";
 
 const photosRef = collection(db, "Photo");
-const counersRef = collection(db, "Counter");
+const countersRef = collection(db, "Counter");
 
 export const useCrudStore = defineStore("crud", {
   state: () => ({
@@ -39,7 +39,7 @@ export const useCrudStore = defineStore("crud", {
       const result = {};
       for (const field of CONFIG.photo_filter) {
         const q = query(
-          counersRef,
+          countersRef,
           where("kind", "==", "Photo"),
           where("field", "==", field),
           orderBy("count", "desc")
@@ -49,7 +49,7 @@ export const useCrudStore = defineStore("crud", {
         querySnapshot.forEach((doc) => {
           const d = doc.data();
           res.push({
-            value: field === "tags" ? d.value[0] : d.value,
+            value: d.value,
             count: d.count,
             date: d.date,
             url: d.url, // was filename
@@ -59,7 +59,47 @@ export const useCrudStore = defineStore("crud", {
           result[field] = res;
         }
       }
+      console.log(result);
       this.values = result;
+    },
+    async increase(counterRef, newData, field, val) {
+      const oldDoc = await getDoc(counterRef);
+      if (oldDoc.exists()) {
+        const old = oldDoc.data();
+        await updateDoc(counterRef, {
+          count: old.count + 1,
+          url: newData.date > old.date ? newData.url : old.url,
+          date: newData.date > old.date ? newData.date : old.date,
+        });
+        // const find =
+        //   this.values[field] &&
+        //   this.values[field].filter((it) => it.value === val);
+        // if (find) {
+        //   find.count = find.count + 1;
+        //   find.date = newData.date > find.date ? newData.date : find.date;
+        //   find.url = newData.date > find.date ? newData.url : find.url;
+        // }
+        // console.log(this.values);
+      } else {
+        await setDoc(
+          counterRef,
+          {
+            count: 1,
+            field: field,
+            value: val,
+            kind: "Photo",
+            url: newData.url,
+            date: newData.date,
+          },
+          { merge: true }
+        );
+        // this.values[field].push({
+        //   count: 1,
+        //   date: newData.date,
+        //   url: newData.url,
+        //   value: val,
+        // });
+      }
     },
     async increaseCounters(newData) {
       for (const field of CONFIG.photo_filter) {
@@ -67,123 +107,62 @@ export const useCrudStore = defineStore("crud", {
           if (field === "tags") {
             for (const tag of newData[field]) {
               const id = ["Photo", field, tag].join("||");
-              const docRef = doc(db, "Counter", id);
-              const oldDoc = await getDoc(docRef);
-              if (oldDoc.exists()) {
-                const old = oldDoc.data();
-                await updateDoc(docRef, {
-                  count: old.count + 1,
-                  url: newData.date > old.date ? newData.url : old.url,
-                  date: newData.date > old.date ? newData.date : old.date,
-                });
-              } else {
-                await setDoc(
-                  docRef,
-                  {
-                    count: 1,
-                    field: field,
-                    value: newData[field],
-                    kind: "Photo",
-                    url: newData.url,
-                    date: newData.date,
-                  },
-                  { merge: true }
-                );
-              }
+              const counterRef = doc(db, "Counter", id);
+              this.increase(counterRef, newData, field, tag);
             }
           } else {
             const id = ["Photo", field, newData[field]].join("||");
-            const docRef = doc(db, "Counter", id);
-            const oldDoc = await getDoc(docRef);
-            if (oldDoc.exists()) {
-              const old = oldDoc.data();
-              await updateDoc(docRef, {
-                count: old.count + 1,
-                url: newData.date > old.date ? newData.url : old.url,
-                date: newData.date > old.date ? newData.date : old.date,
-              });
-            } else {
-              await setDoc(
-                docRef,
-                {
-                  count: 1,
-                  field: field,
-                  value: newData[field],
-                  kind: "Photo",
-                  url: newData.url,
-                  date: newData.date,
-                },
-                { merge: true }
-              );
-            }
+            const counterRef = doc(db, "Counter", id);
+            this.increase(counterRef, newData, field, newData[field]);
           }
         }
+      }
+    },
+    async decrease(counterRef, operator, field, val) {
+      const counterSnap = await getDoc(counterRef);
+      const counter = counterSnap.data();
+
+      const res = [];
+      const q = query(
+        photosRef,
+        where(field, operator, val),
+        orderBy("date", "asc"),
+        limit(1)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        res.push(doc.data());
+      });
+      if (res.length === 1) {
+        await updateDoc(counterRef, {
+          count: counter.count - 1,
+          url: res[0].url,
+          date: res[0].date,
+        });
+      } else {
+        await deleteDoc(counterRef);
       }
     },
     async decreaseCounters(oldData) {
       for (const field of CONFIG.photo_filter) {
         if (oldData[field]) {
           if (field === "tags") {
-            for (const tag of newData[field]) {
+            for (const tag of oldData[field]) {
               const id = ["Photo", field, tag].join("||");
               const counterRef = doc(db, "Counter", id);
-              const counterSnap = await getDoc(counterRef);
-              const counter = counterSnap.data();
-
-              const q = query(
-                photosRef,
-                where(field, "==", tag),
-                orderBy("date", "desc"),
-                limit(1)
-              );
-              const res = [];
-              const querySnapshot = await getDocs(q);
-              querySnapshot.forEach((doc) => {
-                res.push(doc.data());
-              });
-              if (res.length === 1) {
-                await updateDoc(counterRef, {
-                  count: counter.count - 1,
-                  date: res[0].date,
-                  url: res[0].url,
-                });
-              } else {
-                await deleteDoc(counterRef);
-              }
+              this.decrease(counterRef, "array-contains", field, tag);
             }
           } else {
             const id = ["Photo", field, oldData[field]].join("||");
             const counterRef = doc(db, "Counter", id);
-            const counterSnap = await getDoc(counterRef);
-            const counter = counterSnap.data();
-
-            const q = query(
-              photosRef,
-              where(field, "==", oldData[field]),
-              orderBy("date", "desc"),
-              limit(1)
-            );
-            const res = [];
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-              res.push(doc.data());
-            });
-            if (res.length === 1) {
-              await updateDoc(counterRef, {
-                count: counter.count - 1,
-                date: res[0].date,
-                url: res[0].url,
-              });
-            } else {
-              await deleteDoc(counterRef);
-            }
+            this.decrease(counterRef, "==", field, oldData[field]);
           }
         }
       }
     },
   },
   persist: {
-    key: "c",
+    key: "a",
     paths: ["values", "uploaded", "objects"],
     // beforeRestore: (context) => {
     //   console.log("Before hydration...", context);

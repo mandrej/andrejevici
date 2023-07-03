@@ -54,7 +54,7 @@ const readExif = async (url) => {
   }
   if (has(data, "DateTimeOriginal")) {
     const date = new Date(Date.parse(data.DateTimeOriginal));
-    exif.date = date;
+    exif.date = date.toISOString();
     exif.year = date.getFullYear();
     exif.month = date.getMonth() + 1;
     exif.day = date.getDate();
