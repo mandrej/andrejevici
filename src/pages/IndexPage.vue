@@ -11,8 +11,8 @@
       </div>
     </div>
     <div class="row">
-      <pre>{{ last }}</pre>
-      <!-- <pre>{{ values }}</pre> -->
+      <!-- <pre>{{ last }}</pre> -->
+      <pre>{{ values }}</pre>
     </div>
   </q-page>
 </template>
@@ -42,8 +42,8 @@ const { values } = storeToRefs(crudStore);
 
 onMounted(() => {
   crudStore.fetch();
-  crudStore.photoCounters();
-  crudStore.getLast();
+  // crudStore.getLast();
+  // crudStore.photoCounters();
 });
 
 watch(

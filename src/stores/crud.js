@@ -17,17 +17,17 @@ import { CONFIG } from "../helpers";
 
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
-// const values = {};
-// for (const field of CONFIG.photo_filter) {
-//   values[field] = [];
-// }
+const values = {};
+for (const field of CONFIG.photo_filter) {
+  values[field] = [];
+}
 
 export const useCrudStore = defineStore("crud", {
   state: () => ({
     uploaded: [],
     objects: [],
     current: {},
-    values: { year: [], tags: [], model: [], lens: [], email: [] },
+    values: values, //{ year: [], tags: [], model: [], lens: [], email: [] },
     last: {},
   }),
   actions: {
@@ -43,7 +43,6 @@ export const useCrudStore = defineStore("crud", {
     async getLast() {
       const q = query(photosRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
-      console.log(querySnapshot);
       querySnapshot.forEach((doc) => {
         this.last = doc.data();
       });
