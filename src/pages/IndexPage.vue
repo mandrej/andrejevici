@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex flex-center column">
-    <router-link to="/add">Upload</router-link>
+    <q-btn to="/add" color="primary">Upload</q-btn>
     <div class="row">
       <div v-for="(obj, i) in objects" :key="i">
         <q-img
@@ -11,14 +11,15 @@
       </div>
     </div>
     <div class="row">
-      <pre>{{ bucket }}</pre>
-      <pre>{{ values.tags }}</pre>
+      <pre>{{ last }}</pre>
+      <!-- <pre>{{ values }}</pre> -->
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
+import { onMounted, computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
 import { db, storage } from "../boot/fire";
@@ -34,12 +35,24 @@ const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
 const bucket = computed(() => bucketStore.bucket);
 const objects = computed(() => crudStore.objects);
-const values = computed(() => crudStore.values);
+// const values = computed(() => crudStore.values);
+const last = computed(() => crudStore.last);
+const { values } = storeToRefs(crudStore);
+// const { last } = storeToRefs(crudStore);
 
 onMounted(() => {
   crudStore.fetch();
-  crudStore.scretchCounters();
+  crudStore.photoCounters();
+  crudStore.getLast();
 });
+
+watch(
+  values,
+  (newVal) => {
+    console.log(newVal);
+  },
+  { deep: true }
+);
 
 const remove = async (obj) => {
   const docRef = doc(db, "Photo", obj.filename);
