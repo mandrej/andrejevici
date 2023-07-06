@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { db } from "../boot/fire";
+import { db, storage } from "../boot/fire";
 import {
   doc,
   collection,
@@ -13,21 +13,26 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { CONFIG } from "../helpers";
+import {
+  ref as storageRef,
+  deleteObject,
+  getDownloadURL,
+} from "firebase/storage";
+import { CONFIG, thumbName } from "../helpers";
 
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
-const values = {};
-for (const field of CONFIG.photo_filter) {
-  values[field] = [];
-}
+// const values = {};
+// for (const field of CONFIG.photo_filter) {
+//   values[field] = [];
+// }
 
 export const useCrudStore = defineStore("crud", {
   state: () => ({
     uploaded: [],
     objects: [],
     current: {},
-    values: values, //{ year: [], tags: [], model: [], lens: [], email: [] },
+    values: { year: [], tags: [], model: [], lens: [], email: [] },
     last: {},
   }),
   actions: {
@@ -35,9 +40,26 @@ export const useCrudStore = defineStore("crud", {
       this.objects = [];
       const q = query(photosRef, orderBy("date", "desc"), limit(10));
       const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        this.objects.push(doc.data());
+      querySnapshot.forEach(async (it) => {
+        // it.data() is never undefined for query doc snapshots
+        let _ref,
+          _err = 0;
+        const record = it.data();
+        if (!record.url) {
+          _ref = storageRef(storage, record.filename);
+          record.url = await getDownloadURL(_ref);
+          _err++;
+        }
+        if (!record.thumb) {
+          _ref = storageRef(storage, thumbName(record.filename));
+          record.thumb = await getDownloadURL(_ref);
+          _err++;
+        }
+        this.objects.push(record);
+        if (_err > 0) {
+          const photoRef = doc(db, "Photo", record.filename);
+          await updateDoc(photoRef, record);
+        }
       });
     },
     async getLast() {
@@ -78,7 +100,7 @@ export const useCrudStore = defineStore("crud", {
       }
     },
     async increase(id, field, val) {
-      const [find] = this.values[field].filter((it) => it.value === "" + val);
+      const [find] = this.values[field].filter((it) => it.value === val);
       if (find) {
         find.count++;
       } else {
@@ -117,14 +139,14 @@ export const useCrudStore = defineStore("crud", {
             }
           } else {
             const id = ["Photo", field, newData[field]].join("||");
-            this.increase(id, field, newData[field]);
+            this.increase(id, field, "" + newData[field]);
           }
         }
       }
     },
     async decrease(id, field, val) {
       let find, count;
-      const idx = this.values[field].findIndex((it) => it.value === "" + val);
+      const idx = this.values[field].findIndex((it) => it.value === val);
       if (idx >= 0) {
         find = this.values[field][idx];
         count = find.count - 1;
@@ -159,7 +181,7 @@ export const useCrudStore = defineStore("crud", {
             }
           } else {
             const id = ["Photo", field, oldData[field]].join("||");
-            this.decrease(id, field, oldData[field]);
+            this.decrease(id, field, "" + oldData[field]);
           }
         }
       }

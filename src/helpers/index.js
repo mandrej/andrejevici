@@ -51,9 +51,13 @@ const removeByProperty = (arr, propery, value) => {
 
 export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
-export const fullsized =
-  CONFIG.public_url + CONFIG.firebase.storageBucket + "/";
-export const smallsized = CONFIG.public_url + "thumbnails400/";
+export const reFilename = new RegExp(/([^.]+)/gm);
+// export const fullsized =
+//   CONFIG.public_url + CONFIG.firebase.storageBucket + "/";
+export const thumbName = (filename) => {
+  const [name, ext] = filename.match(reFilename);
+  return name + "_400x400.jpeg";
+};
 export {
   CONFIG,
   months,

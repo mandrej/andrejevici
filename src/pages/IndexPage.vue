@@ -4,8 +4,8 @@
     <div class="row">
       <div v-for="(obj, i) in objects" :key="i">
         <q-img
-          :src="obj.url"
-          style="display: block; height: 150px; width: 150px"
+          :src="obj.thumb"
+          style="display: block; height: 200px; width: 200px"
         />
         <q-btn @click="remove(obj)">Remove {{ obj.title }}</q-btn>
       </div>
@@ -29,7 +29,7 @@ import {
   deleteObject,
   getDownloadURL,
 } from "firebase/storage";
-import { removeByProperty } from "../helpers";
+import { removeByProperty, thumbName } from "../helpers";
 
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
@@ -59,8 +59,10 @@ const remove = async (obj) => {
   const docSnap = await getDoc(docRef);
   const data = docSnap.data();
   const stoRef = storageRef(storage, obj.filename);
+  const thumbRef = storageRef(storage, thumbName(obj.filename));
   await deleteDoc(docRef);
   await deleteObject(stoRef);
+  await deleteObject(thumbRef);
 
   removeByProperty(objects.value, "filename", obj.filename);
   bucketStore.diff(-data.size);

@@ -50,7 +50,7 @@ import {
 } from "firebase/storage";
 import Edit from "../pages/EditPage.vue";
 import uuid4 from "uuid4";
-import { CONFIG, removeByProperty, emailNick } from "../helpers";
+import { CONFIG, removeByProperty, emailNick, reFilename } from "../helpers";
 
 const crudStore = useCrudStore();
 const popupStore = usePopupStore();
@@ -59,11 +59,10 @@ const uploaded = computed(() => crudStore.uploaded);
 const files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
-const re = new RegExp(/([^.]+)/gm);
 
 const rename = (filename) => {
   const id = uuid4();
-  const [name, ext] = filename.match(re);
+  const [name, ext] = filename.match(reFilename);
   if (!ext) ext = "jpg";
   return name + "_" + id.substring(id.length - 12) + "." + ext;
 };
