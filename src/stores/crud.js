@@ -80,8 +80,8 @@ export const useCrudStore = defineStore("crud", {
             for (const tag of d[field]) {
               val[field].push(tag);
             }
-          } else {
-            val[field].push(d[field]);
+          } else if (d[field]) {
+            val[field].push("" + d[field]);
           }
         }
       });
@@ -97,6 +97,21 @@ export const useCrudStore = defineStore("crud", {
           dict[field].push({ value: `${key}`, count: count });
         }
         this.values[field] = dict[field];
+        // write down
+        let id, counterRef;
+        for (const obj of dict[field]) {
+          id = ["Photo", field, obj.value].join("||");
+          counterRef = doc(db, "Counter", id);
+          await setDoc(
+            counterRef,
+            {
+              count: obj.count,
+              field: field,
+              value: obj.value,
+            },
+            { merge: true }
+          );
+        }
       }
     },
     async increase(id, field, val) {
