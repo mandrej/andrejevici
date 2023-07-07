@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "andrejevici"
+  },
+  "targets": {},
+  "etags": {
+    "andrejevici": {
+      "extensionInstances": {
+        "storage-resize-images": "32a7a045481bd994e3994e4fa4de91814dd73416d8f5de4cdc680005bc474eb9"
+      }
+    }
   }
 }
