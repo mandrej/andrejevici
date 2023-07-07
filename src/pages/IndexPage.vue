@@ -43,7 +43,7 @@ const { values } = storeToRefs(crudStore);
 onMounted(() => {
   crudStore.fetch();
   // crudStore.getLast();
-  // crudStore.photoCounters();
+  crudStore.counters2store();
 });
 
 watch(

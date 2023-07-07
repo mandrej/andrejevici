@@ -22,10 +22,6 @@ import { CONFIG, thumbName } from "../helpers";
 
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
-// const values = {};
-// for (const field of CONFIG.photo_filter) {
-//   values[field] = [];
-// }
 
 export const useCrudStore = defineStore("crud", {
   state: () => ({
@@ -63,13 +59,26 @@ export const useCrudStore = defineStore("crud", {
       });
     },
     async getLast() {
-      const q = query(photosRef, orderBy("date", "desc"), limit(1));
+      const q = query(countersRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         this.last = doc.data();
       });
     },
-    async photoCounters() {
+    async counters2store() {
+      this.values = { year: [], tags: [], model: [], lens: [], email: [] };
+      const q = query(countersRef);
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        for (const field of CONFIG.photo_filter) {
+          if (d.field === field) {
+            this.values[field].push({ value: d.value, count: d.count });
+          }
+        }
+      });
+    },
+    async photos2counters2store() {
       const q = query(photosRef, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       const val = { year: [], tags: [], model: [], lens: [], email: [] };

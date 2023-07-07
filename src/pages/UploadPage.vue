@@ -73,33 +73,30 @@ const onSubmit = (evt) => {
 
   for (const [name, value] of formData.entries()) {
     if (value.name.length > 0) {
-      data.push({
-        name,
-        file: value,
-      });
+      data.push(value);
     }
   }
   if (data.length === 0) {
     console.log("nothing to upload");
   }
   inProgress.value = true;
-  for (const [i, item] of data.entries()) {
-    const _ref = storageRef(storage, item.file.name);
+  data.map((file, i) => {
+    const _ref = storageRef(storage, file.name);
     getDownloadURL(_ref)
       .then((url) => {
-        const filename = rename(item.file.name);
-        removeByProperty(files.value, "name", item.file.name);
-        upload(i, filename, item.file);
+        const filename = rename(file.name);
+        removeByProperty(files.value, "name", file.name);
+        upload(i, filename, file);
       })
       .catch((error) => {
         if (error.code === "storage/object-not-found") {
-          removeByProperty(files.value, "name", item.file.name);
-          upload(i, item.file.name, item.file);
+          removeByProperty(files.value, "name", file.name);
+          upload(i, file.name, file);
         } else {
           console.log(error);
         }
       });
-  }
+  });
 };
 
 const upload = (i, filename, file) => {
