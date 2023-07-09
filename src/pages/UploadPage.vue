@@ -69,6 +69,7 @@ const rename = (filename) => {
 
 const onSubmit = (evt) => {
   const data = [];
+  const promises = [];
   const formData = new FormData(evt.target);
 
   for (const [name, value] of formData.entries()) {
@@ -79,21 +80,42 @@ const onSubmit = (evt) => {
   if (data.length === 0) {
     console.log("nothing to upload");
   }
+  for (const [i, file] of data.entries()) {
+    promises.push(uploadImageAsPromise(i, file));
+  }
   inProgress.value = true;
-  data.map((file, i) => {
+  Promise.all(promises).then((resolved, rejected) => {
+    console.log("resolved:", resolved, "rejected:", rejected);
+    if (resolved) {
+      for (const name of resolved) {
+        removeByProperty(files.value, "name", name);
+      }
+    }
+    if (rejected) {
+      for (const name of rejected) {
+        removeByProperty(files.value, "name", name);
+      }
+    }
+  });
+};
+
+const uploadImageAsPromise = (i, file) => {
+  return new Promise((resolve, reject) => {
     const _ref = storageRef(storage, file.name);
     getDownloadURL(_ref)
       .then((url) => {
         const filename = rename(file.name);
-        removeByProperty(files.value, "name", file.name);
         upload(i, filename, file);
+        resolve(file.name);
       })
       .catch((error) => {
         if (error.code === "storage/object-not-found") {
-          removeByProperty(files.value, "name", file.name);
-          upload(i, file.name, file);
+          const filename = file.name;
+          upload(i, filename, file);
+          resolve(file.name);
         } else {
-          console.log(error);
+          reject(file.name);
+          // console.log(error);
         }
       });
   });
@@ -116,13 +138,14 @@ const upload = (i, filename, file) => {
     },
     () => {
       getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-        crudStore.uploaded.push({
+        const data = {
           url: downloadURL,
           filename: filename,
           size: file.size,
           email: "milan.andrejevic@gmail.com", // FIXME auth user
           nick: emailNick("milan.andrejevic@gmail.com"),
-        });
+        };
+        crudStore.uploaded.push(data);
         progressInfos[i] = 0;
       });
     }
