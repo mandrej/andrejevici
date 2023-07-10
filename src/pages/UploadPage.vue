@@ -81,11 +81,10 @@ const onSubmit = (evt) => {
     console.log("nothing to upload");
   }
   for (const [i, file] of data.entries()) {
-    promises.push(uploadImageAsPromise(i, file));
+    promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
   Promise.all(promises).then((resolved, rejected) => {
-    console.log("resolved:", resolved, "rejected:", rejected);
     if (resolved) {
       for (const name of resolved) {
         removeByProperty(files.value, "name", name);
@@ -99,29 +98,26 @@ const onSubmit = (evt) => {
   });
 };
 
-const uploadImageAsPromise = (i, file) => {
+const uploadPromise = (i, file) => {
   return new Promise((resolve, reject) => {
     const _ref = storageRef(storage, file.name);
     getDownloadURL(_ref)
       .then((url) => {
         const filename = rename(file.name);
-        upload(i, filename, file);
-        resolve(file.name);
+        uploadTask(i, filename, file, resolve, reject);
       })
       .catch((error) => {
         if (error.code === "storage/object-not-found") {
           const filename = file.name;
-          upload(i, filename, file);
-          resolve(file.name);
+          uploadTask(i, filename, file, resolve, reject);
         } else {
           reject(file.name);
-          // console.log(error);
         }
       });
   });
 };
 
-const upload = (i, filename, file) => {
+const uploadTask = (i, filename, file, resolve, reject) => {
   progressInfos[i] = 0;
   const _ref = storageRef(storage, filename);
   const task = uploadBytesResumable(_ref, file, {
@@ -134,7 +130,7 @@ const upload = (i, filename, file) => {
         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
     },
     (error) => {
-      console.log(error);
+      reject(error);
     },
     () => {
       getDownloadURL(task.snapshot.ref).then((downloadURL) => {
@@ -145,6 +141,7 @@ const upload = (i, filename, file) => {
           email: "milan.andrejevic@gmail.com", // FIXME auth user
           nick: emailNick("milan.andrejevic@gmail.com"),
         };
+        resolve(file.name);
         crudStore.uploaded.push(data);
         progressInfos[i] = 0;
       });

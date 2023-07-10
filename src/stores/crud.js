@@ -34,7 +34,7 @@ export const useCrudStore = defineStore("crud", {
   actions: {
     async fetch() {
       this.objects = [];
-      const q = query(photosRef, orderBy("date", "desc"), limit(10));
+      const q = query(photosRef, orderBy("date", "desc"), limit(100));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(async (it) => {
         // it.data() is never undefined for query doc snapshots
