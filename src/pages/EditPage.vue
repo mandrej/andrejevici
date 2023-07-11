@@ -34,7 +34,7 @@ import readExif from "../helpers/exif";
 import { usePopupStore } from "../stores/popup";
 import { useCrudStore } from "../stores/crud";
 import { useBucketStore } from "../stores/bucket";
-import { removeByProperty } from "../helpers";
+import { CONFIG, removeByProperty } from "../helpers";
 
 const props = defineProps({
   rec: Object,
@@ -49,16 +49,16 @@ const tags = ref(["still life", "b&w", "street", "portrait"]);
 const publish = async (tmp) => {
   const exif = await readExif(tmp.url);
   const data = {
-    title: "notitle",
+    title: CONFIG.noTitle,
     tags: [],
     ...tmp,
     ...exif,
   };
-  await setDoc(doc(db, "Photo", data.filename), data);
-  crudStore.increaseCounters(data);
-  bucketStore.diff(data.size);
-
-  removeByProperty(crudStore.uploaded, "filename", data.filename);
-  popupStore.showEdit = false;
+  setDoc(doc(db, "Photo", data.filename), data).then((obj) => {
+    crudStore.increaseCounters(data);
+    bucketStore.diff(data.size);
+    removeByProperty(crudStore.uploaded, "filename", data.filename);
+    popupStore.showEdit = false;
+  });
 };
 </script>

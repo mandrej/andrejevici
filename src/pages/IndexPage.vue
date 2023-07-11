@@ -1,6 +1,5 @@
 <template>
   <q-page class="flex flex-center column">
-    <q-btn to="/add" color="primary">Upload</q-btn>
     <div class="row">
       <div v-for="(obj, i) in objects" :key="i">
         <q-img
@@ -10,6 +9,7 @@
         <q-btn @click="remove(obj)">Remove {{ obj.title }}</q-btn>
       </div>
     </div>
+    <q-btn to="/add" color="primary">Upload</q-btn>
     <div class="row">
       <!-- <pre>{{ last }}</pre> -->
       <pre>{{ values }}</pre>

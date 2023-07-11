@@ -84,17 +84,26 @@ const onSubmit = (evt) => {
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
-  Promise.all(promises).then((resolved, rejected) => {
-    if (resolved) {
-      for (const name of resolved) {
-        removeByProperty(files.value, "name", name);
-      }
-    }
-    if (rejected) {
-      for (const name of rejected) {
-        removeByProperty(files.value, "name", name);
-      }
-    }
+  Promise.allSettled(promises).then((results) => {
+    console.log(results);
+    // console.log(failed);
+    // results.forEach((it) => {
+    // console.log(it); // status [rejected, fulfilled], value, reason
+    // if (it.status === "fulfilled") {
+    //   removeByProperty(files.value, "name", it.value);
+    // }
+    // });
+    // files.value = [];
+    // if (resolved) {
+    //   for (const name of resolved) {
+    //     removeByProperty(files.value, "name", name);
+    //   }
+    // }
+    // if (rejected) {
+    //   for (const name of rejected) {
+    //     removeByProperty(files.value, "name", name);
+    //   }
+    // }
   });
 };
 
@@ -103,6 +112,7 @@ const uploadPromise = (i, file) => {
     const _ref = storageRef(storage, file.name);
     getDownloadURL(_ref)
       .then((url) => {
+        // reject(file.name);
         const filename = rename(file.name);
         uploadTask(i, filename, file, resolve, reject);
       })
@@ -152,7 +162,9 @@ const uploadTask = (i, filename, file, resolve, reject) => {
 const onRejected = (rejectedEntries) => {
   // Notify plugin needs to be installed
   // https://quasar.dev/quasar-plugins/notify#Installation
-  console.log(rejectedEntries);
+  rejectedEntries.forEach((it) => {
+    console.log(it.failedPropValidation, it.file.name);
+  });
   // $q.notify({
   //   type: "negative",
   //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,

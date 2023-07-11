@@ -12,6 +12,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  startAfter,
 } from "firebase/firestore";
 import {
   ref as storageRef,
@@ -34,8 +35,17 @@ export const useCrudStore = defineStore("crud", {
   actions: {
     async fetch() {
       this.objects = [];
-      const q = query(photosRef, orderBy("date", "desc"), limit(100));
+      const q = query(photosRef, orderBy("date", "desc"), limit(CONFIG.limit));
       const querySnapshot = await getDocs(q);
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+      console.log("last", lastVisible);
+      // const next = query(
+      //   photosRef,
+      //   orderBy("date", "desc"),
+      //   startAfter(lastVisible),
+      //   limit(CONFIG.limit)
+      // );
+
       querySnapshot.forEach(async (it) => {
         // it.data() is never undefined for query doc snapshots
         let _ref,
