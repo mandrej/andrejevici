@@ -19,7 +19,7 @@ import {
   deleteObject,
   getDownloadURL,
 } from "firebase/storage";
-import { CONFIG, thumbName } from "../helpers";
+import { CONFIG, thumbName, thumbUrl } from "../helpers";
 
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
@@ -31,6 +31,7 @@ export const useCrudStore = defineStore("crud", {
     current: {},
     values: { year: [], tags: [], model: [], lens: [], email: [] },
     last: {},
+    showEdit: false,
   }),
   actions: {
     async fetch() {
@@ -57,9 +58,13 @@ export const useCrudStore = defineStore("crud", {
           _err++;
         }
         if (!record.thumb) {
-          _ref = storageRef(storage, thumbName(record.filename));
-          record.thumb = await getDownloadURL(_ref);
-          _err++;
+          if (process.env.DEV) {
+            _ref = storageRef(storage, thumbName(record.filename));
+            record.thumb = await getDownloadURL(_ref);
+          } else {
+            record.thumb = thumbUrl(record.filename);
+          }
+          // _err++;
         }
         this.objects.push(record);
         if (_err > 0) {

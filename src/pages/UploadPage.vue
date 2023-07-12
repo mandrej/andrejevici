@@ -1,5 +1,5 @@
 <template>
-  <Edit v-if="popupStore.showEdit" :rec="crudStore.current" />
+  <Edit v-if="crudStore.showEdit" :rec="crudStore.current" />
 
   <q-page class="flex flex-center column">
     <div class="row">
@@ -41,7 +41,6 @@
 <script setup>
 import { ref, computed, reactive } from "vue";
 import { useCrudStore } from "../stores/crud";
-import { usePopupStore } from "../stores/popup";
 import { storage } from "../boot/fire";
 import {
   ref as storageRef,
@@ -53,7 +52,6 @@ import uuid4 from "uuid4";
 import { CONFIG, removeByProperty, emailNick, reFilename } from "../helpers";
 
 const crudStore = useCrudStore();
-const popupStore = usePopupStore();
 const uploaded = computed(() => crudStore.uploaded);
 
 const files = ref([]);
@@ -84,26 +82,11 @@ const onSubmit = (evt) => {
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
-  Promise.allSettled(promises).then((results) => {
-    console.log(results);
-    // console.log(failed);
-    // results.forEach((it) => {
-    // console.log(it); // status [rejected, fulfilled], value, reason
-    // if (it.status === "fulfilled") {
-    //   removeByProperty(files.value, "name", it.value);
-    // }
-    // });
-    // files.value = [];
-    // if (resolved) {
-    //   for (const name of resolved) {
-    //     removeByProperty(files.value, "name", name);
-    //   }
-    // }
-    // if (rejected) {
-    //   for (const name of rejected) {
-    //     removeByProperty(files.value, "name", name);
-    //   }
-    // }
+  Promise.all(promises).then((results) => {
+    console.log("waiting over");
+    results.forEach((name) => {
+      removeByProperty(files.value, "name", name);
+    });
   });
 };
 
@@ -112,7 +95,6 @@ const uploadPromise = (i, file) => {
     const _ref = storageRef(storage, file.name);
     getDownloadURL(_ref)
       .then((url) => {
-        // reject(file.name);
         const filename = rename(file.name);
         uploadTask(i, filename, file, resolve, reject);
       })
@@ -173,6 +155,6 @@ const onRejected = (rejectedEntries) => {
 
 const edit = (obj) => {
   crudStore.current = obj;
-  popupStore.showEdit = true;
+  crudStore.showEdit = true;
 };
 </script>

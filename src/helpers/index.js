@@ -58,7 +58,13 @@ export const thumbName = (filename) => {
   const [name, ext] = filename.match(reFilename);
   return name + "_400x400.jpeg";
 };
-// https://storage.googleapis.com/andrejevici.appspot.com/2M9A6898-2_400x400.jpeg
+export const thumbUrl = (filename) => {
+  return [
+    "https://storage.googleapis.com",
+    CONFIG.firebase.storageBucket,
+    thumbName(filename),
+  ].join("/");
+};
 export {
   CONFIG,
   months,

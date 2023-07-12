@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="popupStore.showEdit">
+  <q-dialog v-model="crudStore.showEdit">
     <q-card>
       <div>
         <q-btn
@@ -7,7 +7,7 @@
           round
           dense
           icon="close"
-          @click="popupStore.showEdit = false"
+          @click="crudStore.showEdit = false"
         />
       </div>
       <q-card-section>
@@ -31,7 +31,6 @@ import { ref, reactive } from "vue";
 import { db } from "../boot/fire";
 import { doc, setDoc } from "firebase/firestore";
 import readExif from "../helpers/exif";
-import { usePopupStore } from "../stores/popup";
 import { useCrudStore } from "../stores/crud";
 import { useBucketStore } from "../stores/bucket";
 import { CONFIG, removeByProperty } from "../helpers";
@@ -41,7 +40,6 @@ const props = defineProps({
 });
 
 const crudStore = useCrudStore();
-const popupStore = usePopupStore();
 const bucketStore = useBucketStore();
 const tmp = reactive({ ...props.rec });
 const tags = ref(["still life", "b&w", "street", "portrait"]);
@@ -58,7 +56,7 @@ const publish = async (tmp) => {
     crudStore.increaseCounters(data);
     bucketStore.diff(data.size);
     removeByProperty(crudStore.uploaded, "filename", data.filename);
-    popupStore.showEdit = false;
+    crudStore.showEdit = false;
   });
 };
 </script>
