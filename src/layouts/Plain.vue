@@ -16,16 +16,16 @@
           class="col-xs-12 col-sm-6 last"
           :style="styling"
         >
-          <router-link
+          <!-- <router-link
             v-if="app.last.href"
             :to="app.last.href"
             style="display: block"
             v-ripple.early="{ color: 'purple' }"
-          >
-            <div class="absolute-bottom-right text-white q-pa-sm">
-              {{ version }}
-            </div>
-          </router-link>
+          > -->
+          <div class="absolute-bottom-right text-white q-pa-sm">
+            {{ version }}
+          </div>
+          <!-- </router-link> -->
         </q-responsive>
 
         <div class="col-xs-12 col-sm-6">
@@ -34,17 +34,18 @@
               {{ $route.meta.title }}
               <br />
               <span class="text-body1"
-                >{{ app.bucket.count }} photos since 2007 and counting</span
+                >{{ bucketStore.bucket.count }} photos since 2007 and
+                counting</span
               >
             </q-toolbar-title>
-            <q-btn
+            <!-- <q-btn
               v-if="app.find && Object.keys(app.find).length"
               size="2em"
               flat
               round
               icon="history"
               :to="{ name: 'list', query: app.find }"
-            />
+            /> -->
           </q-toolbar>
 
           <router-view />
@@ -56,17 +57,19 @@
 
 <script setup>
 import { computed } from "vue";
-import { useAppStore } from "../stores/app";
+import { useBucketStore } from "../stores/bucket";
+import { useCrudStore } from "../stores/crud";
 import { useAuthStore } from "../stores/auth";
-import { fullsized, smallsized, fileBroken, version } from "../helpers";
+import { fileBroken, version } from "../helpers";
 
-const app = useAppStore();
+const crudStore = useCrudStore();
+const bucketStore = useBucketStore();
 const auth = useAuthStore();
 
 const styling = computed(() => {
-  if (app.last.filename) {
-    const low = smallsized + app.last.filename;
-    const high = fullsized + app.last.filename;
+  if (crudStore.last) {
+    const low = crudStore.last.thumb;
+    const high = crudStore.last.url;
     return "background-image: url(" + high + "), url(" + low + ")";
   }
   return "background-image: url(" + fileBroken + ")";

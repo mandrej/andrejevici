@@ -64,7 +64,7 @@ export const useCrudStore = defineStore("crud", {
           } else {
             record.thumb = thumbUrl(record.filename);
           }
-          // _err++;
+          _err++;
         }
         this.objects.push(record);
         if (_err > 0) {
@@ -76,8 +76,23 @@ export const useCrudStore = defineStore("crud", {
     async getLast() {
       const q = query(countersRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        this.last = doc.data();
+      querySnapshot.forEach(async (it) => {
+        console.log(it);
+        const record = it.data();
+        if (!record.thumb) {
+          if (process.env.DEV) {
+            _ref = storageRef(storage, thumbName(record.filename));
+            record.thumb = await getDownloadURL(_ref);
+          } else {
+            record.thumb = thumbUrl(record.filename);
+          }
+          _err++;
+        }
+        if (_err > 0) {
+          // const photoRef = doc(db, "Photo", record.filename);
+          await updateDoc(it, record);
+        }
+        this.last = record;
       });
     },
     async counters2store() {

@@ -3,15 +3,19 @@
 </template>
 <script setup>
 import { onMounted } from "vue";
-import { useAppStore } from "./stores/app";
+import { useBucketStore } from "./stores/bucket";
+import { useCrudStore } from "./stores/crud";
 import { getMessaging, onMessage } from "firebase/messaging";
 import notify from "./helpers/notify";
 
 const messaging = getMessaging();
-const app = useAppStore();
+const bucketStore = useBucketStore();
+const crudStore = useCrudStore();
 
 onMounted(() => {
-  app.fetchStat();
+  bucketStore.read();
+  crudStore.getLast();
+  crudStore.counters2store();
   onMessage(messaging, (payload) => {
     const params = {
       type: "ongoing",

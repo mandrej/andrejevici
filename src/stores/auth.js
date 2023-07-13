@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
-import api from "../helpers/api";
+// import api from "../helpers/api";
 import pushMessage from "../helpers/push";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
@@ -51,7 +51,7 @@ export const useAuthStore = defineStore("auth", {
               lastLogin: Date.now(), // millis
             };
             this.user = { ...payload };
-            this.updateUser(this.user);
+            // this.updateUser(this.user);
             this.getPermission();
           })
           .catch((err) => {
@@ -59,12 +59,12 @@ export const useAuthStore = defineStore("auth", {
           });
       }
     },
-    async updateUser(user) {
-      const response = await api.post("user", { user: user });
-      if (!response.data.success) {
-        console.error("Cannot save user");
-      }
-    },
+    // async updateUser(user) {
+    //   const response = await api.post("user", { user: user });
+    //   if (!response.data.success) {
+    //     console.error("Cannot save user");
+    //   }
+    // },
     getPermission() {
       try {
         Notification.requestPermission().then((permission) =>
@@ -84,9 +84,9 @@ export const useAuthStore = defineStore("auth", {
             if (token) {
               if (this.fcm_token === null || token !== this.fcm_token) {
                 this.fcm_token = token;
-                if (this.user && this.user.uid) {
-                  this.addRegistration();
-                }
+                // if (this.user && this.user.uid) {
+                //   this.addRegistration();
+                // }
               }
             }
           })
@@ -95,18 +95,18 @@ export const useAuthStore = defineStore("auth", {
           });
       }
     },
-    addRegistration() {
-      api
-        .put("user/register", { uid: this.user.uid, token: this.fcm_token })
-        .then()
-        .catch((err) => console.error(err));
-    },
+    // addRegistration() {
+    //   api
+    //     .put("user/register", { uid: this.user.uid, token: this.fcm_token })
+    //     .then()
+    //     .catch((err) => console.error(err));
+    // },
     // eslint-disable-next-line no-unused-vars
-    sendNotifications(msg) {
-      api.get("registrations").then((response) => {
-        pushMessage(response.data, msg);
-      });
-    },
+    // sendNotifications(msg) {
+    //   api.get("registrations").then((response) => {
+    //     pushMessage(response.data, msg);
+    //   });
+    // },
   },
   persist: {
     key: "b",

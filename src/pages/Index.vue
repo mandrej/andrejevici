@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-sm text-h4">
     <router-link
-      v-for="obj in app.nickCountValues"
+      v-for="obj in crudStore.nickCountValues"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { nick: obj.value } }"
@@ -10,7 +10,7 @@
     >
   </div>
   <div class="q-pa-sm text-h5">
-    <span v-for="(obj, index) in app.values.year" :key="index">
+    <span v-for="(obj, index) in crudStore.values.year" :key="index">
       <template v-if="index <= $q.screen.xs ? 9 : 99">
         <router-link
           :key="obj.value"
@@ -24,7 +24,7 @@
   </div>
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
-      v-for="obj in app.values.tags"
+      v-for="obj in crudStore.values.tags"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { tags: obj.value } }"
@@ -36,10 +36,10 @@
 
 <script setup>
 import { onMounted } from "vue";
-import { useAppStore } from "../stores/app";
+import { useCrudStore } from "../stores/crud";
 import { useAuthStore } from "../stores/auth";
 
-const app = useAppStore();
+const crudStore = useCrudStore();
 const auth = useAuthStore();
 
 onMounted(() => {

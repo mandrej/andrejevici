@@ -1,12 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
+// import { initializeApp } from "firebase/app";
+// import { getMessaging } from "firebase/messaging/sw";
+// import CONFIG from "../config.json";
 
-importScripts(
-  "https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"
-);
-importScripts(
-  "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"
-);
-
-firebase.initializeApp({});
-const messaging = firebase.messaging();
+// const firebaseApp = initializeApp(CONFIG.firebase);
+// const messaging = getMessaging(firebaseApp);

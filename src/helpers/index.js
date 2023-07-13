@@ -41,7 +41,7 @@ const removeHash = () => {
   );
 };
 const version = computed(() => {
-  const ver = process.env.ANDS_VERSION.match(/.{1,4}/g).join(".");
+  const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join(".");
   return "© 2007 - " + ver;
 });
 const removeByProperty = (arr, propery, value) => {

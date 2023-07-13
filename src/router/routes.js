@@ -17,45 +17,45 @@ const routes = [
       },
     ],
   },
-  {
-    path: "/list",
-    component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Find },
-    children: [
-      {
-        path: "",
-        component: () => import("../pages/List.vue"),
-        name: "list",
-        meta: { title: CONFIG.title },
-      },
-    ],
-  },
-  {
-    path: "/add",
-    component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Stat },
-    children: [
-      {
-        path: "",
-        component: () => import("../pages/Add.vue"),
-        name: "add",
-        meta: { title: "Add", requiresAuth: true },
-      },
-    ],
-  },
-  {
-    path: "/admin",
-    component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Stat },
-    children: [
-      {
-        path: "",
-        component: () => import("../pages/Admin.vue"),
-        name: "admin",
-        meta: { title: "Administration", requiresAdmin: true },
-      },
-    ],
-  },
+  // {
+  //   path: "/list",
+  //   component: () => import("../layouts/Default.vue"),
+  //   meta: { sidebar: Find },
+  //   children: [
+  //     {
+  //       path: "",
+  //       component: () => import("../pages/List.vue"),
+  //       name: "list",
+  //       meta: { title: CONFIG.title },
+  //     },
+  //   ],
+  // },
+  // {
+  //   path: "/add",
+  //   component: () => import("../layouts/Default.vue"),
+  //   meta: { sidebar: Stat },
+  //   children: [
+  //     {
+  //       path: "",
+  //       component: () => import("../pages/Add.vue"),
+  //       name: "add",
+  //       meta: { title: "Add", requiresAuth: true },
+  //     },
+  //   ],
+  // },
+  // {
+  //   path: "/admin",
+  //   component: () => import("../layouts/Default.vue"),
+  //   meta: { sidebar: Stat },
+  //   children: [
+  //     {
+  //       path: "",
+  //       component: () => import("../pages/Admin.vue"),
+  //       name: "admin",
+  //       meta: { title: "Administration", requiresAdmin: true },
+  //     },
+  //   ],
+  // },
   {
     path: "/401",
     component: () => import("../layouts/Plain.vue"),
