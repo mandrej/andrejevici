@@ -70,9 +70,13 @@ const bucket = computed(() => bucketStore.bucket);
 
 const styling = computed(() => {
   if (last.value) {
-    const low = last.value.thumb;
-    const high = last.value.url;
-    return "background-image: url(" + high + "), url(" + low + ")";
+    return (
+      "background-image: url(" +
+      last.value.url +
+      "), url(" +
+      last.value.thumb +
+      ")"
+    );
   }
   return "background-image: url(" + fileBroken + ")";
 });

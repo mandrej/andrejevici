@@ -126,8 +126,8 @@ export const useCrudStore = defineStore("crud", {
       const q = query(photosRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(async (it) => {
-        console.log(it);
-        let _err = 0;
+        let _err = 0,
+          _ref;
         const record = it.data();
         if (!record.thumb) {
           if (process.env.DEV) {

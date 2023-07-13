@@ -9,7 +9,7 @@
         <q-btn @click="remove(obj)">Remove {{ obj.title }}</q-btn>
       </div>
     </div>
-    <q-btn to="/add" color="primary">Upload</q-btn>
+    <q-btn to="/x/add" color="primary">Upload</q-btn>
     <div class="row">
       <pre>{{ last }}</pre>
       <!-- <pre>{{ values }}</pre> -->
