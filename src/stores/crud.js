@@ -19,7 +19,7 @@ import {
   deleteObject,
   getDownloadURL,
 } from "firebase/storage";
-import { CONFIG, thumbName, thumbUrl } from "../helpers";
+import { CONFIG, thumbName, thumbUrl, emailNick } from "../helpers";
 
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
@@ -33,13 +33,62 @@ export const useCrudStore = defineStore("crud", {
     last: {},
     showEdit: false,
   }),
+  getters: {
+    // values getters
+    tagValues: (state) => {
+      if (state.values && state.values.tags) {
+        return state.values.tags.map((obj) => obj.value);
+      }
+      return [];
+    },
+    modelValues: (state) => {
+      if (state.values && state.values.model) {
+        return state.values.model.map((obj) => obj.value);
+      }
+      return [];
+    },
+    lensValues: (state) => {
+      if (state.values && state.values.lens) {
+        return state.values.lens.map((obj) => obj.value);
+      }
+      return [];
+    },
+    nickValues: (state) => {
+      if (state.values && state.values.email) {
+        return state.values.email.map((obj) => emailNick(obj.value));
+      }
+      return [];
+    },
+    emailValues: (state) => {
+      if (state.values && state.values.email) {
+        return state.values.email.map((obj) => obj.value);
+      }
+      return [];
+    },
+    nickCountValues: (state) => {
+      if (state.values && state.values.email) {
+        return state.values.email.map((obj) => {
+          return { value: emailNick(obj.value), count: obj.count };
+        });
+      }
+      return [];
+    },
+    yearValues: (state) => {
+      if (state.values && state.values.year) {
+        return state.values.year.map((obj) => {
+          return { label: "" + obj.value, value: obj.value };
+        });
+      }
+      return [];
+    },
+  },
   actions: {
     async fetch() {
       this.objects = [];
       const q = query(photosRef, orderBy("date", "desc"), limit(CONFIG.limit));
       const querySnapshot = await getDocs(q);
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-      console.log("last", lastVisible);
+      // console.log("last", lastVisible);
       // const next = query(
       //   photosRef,
       //   orderBy("date", "desc"),
@@ -74,10 +123,11 @@ export const useCrudStore = defineStore("crud", {
       });
     },
     async getLast() {
-      const q = query(countersRef, orderBy("date", "desc"), limit(1));
+      const q = query(photosRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(async (it) => {
         console.log(it);
+        let _err = 0;
         const record = it.data();
         if (!record.thumb) {
           if (process.env.DEV) {
@@ -92,6 +142,7 @@ export const useCrudStore = defineStore("crud", {
           // const photoRef = doc(db, "Photo", record.filename);
           await updateDoc(it, record);
         }
+        console.log(record);
         this.last = record;
       });
     },

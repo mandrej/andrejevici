@@ -43,6 +43,7 @@ const crudStore = useCrudStore();
 const auth = useAuthStore();
 
 onMounted(() => {
+  crudStore.getLast();
   auth.getPermission();
 });
 </script>

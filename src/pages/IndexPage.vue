@@ -11,8 +11,8 @@
     </div>
     <q-btn to="/add" color="primary">Upload</q-btn>
     <div class="row">
-      <!-- <pre>{{ last }}</pre> -->
-      <pre>{{ values }}</pre>
+      <pre>{{ last }}</pre>
+      <!-- <pre>{{ values }}</pre> -->
     </div>
   </q-page>
 </template>

@@ -34,8 +34,7 @@
               {{ $route.meta.title }}
               <br />
               <span class="text-body1"
-                >{{ bucketStore.bucket.count }} photos since 2007 and
-                counting</span
+                >{{ bucket.count }} photos since 2007 and counting</span
               >
             </q-toolbar-title>
             <!-- <q-btn
@@ -66,10 +65,13 @@ const crudStore = useCrudStore();
 const bucketStore = useBucketStore();
 const auth = useAuthStore();
 
+const last = computed(() => crudStore.last);
+const bucket = computed(() => bucketStore.bucket);
+
 const styling = computed(() => {
-  if (crudStore.last) {
-    const low = crudStore.last.thumb;
-    const high = crudStore.last.url;
+  if (last.value) {
+    const low = last.value.thumb;
+    const high = last.value.url;
     return "background-image: url(" + high + "), url(" + low + ")";
   }
   return "background-image: url(" + fileBroken + ")";
