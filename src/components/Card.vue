@@ -3,7 +3,7 @@
     <q-img
       class="cursor-pointer"
       :ratio="5 / 4"
-      :src="rec.id ? smallsized + rec.filename : fullsized + rec.filename"
+      :src="rec.thumb ? rec.thumb : rec.url"
       v-ripple.early="{ color: 'purple' }"
       no-spinner
       @click="
@@ -94,14 +94,7 @@
 
 <script setup>
 import { copyToClipboard } from "quasar";
-import {
-  smallsized,
-  fullsized,
-  fileBroken,
-  formatDatum,
-  formatBytes,
-  U,
-} from "../helpers";
+import { fileBroken, formatDatum, formatBytes, U } from "../helpers";
 import notify from "../helpers/notify";
 
 const emit = defineEmits([

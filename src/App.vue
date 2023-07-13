@@ -13,7 +13,7 @@ const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
 
 onMounted(() => {
-  bucketStore.scretch();
+  bucketStore.read();
   crudStore.getLast();
   crudStore.counters2store();
   onMessage(messaging, (payload) => {

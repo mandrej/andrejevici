@@ -114,6 +114,7 @@ const uploadTask = (i, filename, file, resolve, reject) => {
   const _ref = storageRef(storage, filename);
   const task = uploadBytesResumable(_ref, file, {
     contentType: file.type,
+    cacheControl: "max-age=604800",
   });
   task.on(
     "state_changed",

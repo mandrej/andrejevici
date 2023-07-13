@@ -14,9 +14,9 @@ export const useBucketStore = defineStore("bucket", {
   }),
   actions: {
     async read() {
-      // if (this.bucket.count === 0) {
-      //   this.scretch();
-      // }
+      if (this.bucket.count === 0) {
+        this.scretch();
+      }
       const docSnap = await getDoc(docRef);
       this.bucket = { ...docSnap.data() };
     },

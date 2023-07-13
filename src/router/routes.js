@@ -30,19 +30,19 @@ const routes = [
     // },
     children: [{ path: "", component: () => import("pages/UploadPage.vue") }],
   },
-  // {
-  //   path: "/list",
-  //   component: () => import("../layouts/Default.vue"),
-  //   meta: { sidebar: Find },
-  //   children: [
-  //     {
-  //       path: "",
-  //       component: () => import("../pages/List.vue"),
-  //       name: "list",
-  //       meta: { title: CONFIG.title },
-  //     },
-  //   ],
-  // },
+  {
+    path: "/list",
+    component: () => import("../layouts/Default.vue"),
+    // meta: { sidebar: Find },
+    children: [
+      {
+        path: "",
+        component: () => import("../pages/List.vue"),
+        name: "list",
+        meta: { title: CONFIG.title },
+      },
+    ],
+  },
   // {
   //   path: "/add",
   //   component: () => import("../layouts/Default.vue"),

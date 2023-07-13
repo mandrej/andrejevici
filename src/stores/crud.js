@@ -142,7 +142,6 @@ export const useCrudStore = defineStore("crud", {
           // const photoRef = doc(db, "Photo", record.filename);
           await updateDoc(it, record);
         }
-        console.log(record);
         this.last = record;
       });
     },

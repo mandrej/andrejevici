@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" />
 
-        <router-link to="/" style="color: inherit; text-decoration: none">
+        <router-link to="/x" style="color: inherit; text-decoration: none">
           <q-toolbar-title>{{ CONFIG.title }}</q-toolbar-title>
         </router-link>
         <q-space />

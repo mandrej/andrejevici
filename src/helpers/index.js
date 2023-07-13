@@ -52,16 +52,16 @@ const removeByProperty = (arr, propery, value) => {
 export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
 export const reFilename = new RegExp(/([^.]+)/gm);
-// export const fullsized =
-//   CONFIG.public_url + CONFIG.firebase.storageBucket + "/";
+export const fullsized = "";
 export const thumbName = (filename) => {
   const [name, ext] = filename.match(reFilename);
-  return name + "_400x400.jpeg";
+  return [CONFIG.thumbnails, name + "_400x400.jpeg"].join("/");
 };
 export const thumbUrl = (filename) => {
   return [
     "https://storage.googleapis.com",
     CONFIG.firebase.storageBucket,
+    CONFIG.thumbnails,
     thumbName(filename),
   ].join("/");
 };
