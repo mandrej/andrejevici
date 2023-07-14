@@ -103,40 +103,34 @@ export const useCrudStore = defineStore("crud", {
         return;
       }
       const params = Object.assign({}, this.find);
-      // const filters = [];
-      // for (const [field, val] of Object.entries(params)) {
-      //   filters.push(where(field, "==", "" + val));
-      // }
       const filters = Object.entries(params).map(([key, value]) =>
         where(key, "==", value)
       );
-      console.log(filters);
 
-      // if (this.next && !reset) params._page = this.next;
-      // this.error = null;
-      // this.busy = true;
-      // console.log(params);
-
-      this.objects = [];
-      const q = query(
-        photosRef,
-        ...filters,
-        orderBy("date", "desc"),
-        limit(CONFIG.limit)
-      );
-      console.log(q);
+      let q;
+      if (this.next) {
+        q = query(
+          photosRef,
+          ...filters,
+          orderBy("date", "desc"),
+          startAfter(this.next),
+          limit(CONFIG.limit)
+        );
+      } else {
+        q = query(
+          photosRef,
+          ...filters,
+          orderBy("date", "desc"),
+          limit(CONFIG.limit)
+        );
+      }
+      this.error = null;
+      this.busy = true;
       const querySnapshot = await getDocs(q);
       this.next = querySnapshot.docs[querySnapshot.docs.length - 1];
-      // console.log("last", lastVisible);
-      // const next = query(
-      //   photosRef,
-      //   orderBy("date", "desc"),
-      //   startAfter(lastVisible),
-      //   limit(CONFIG.limit)
-      // );
+      if (reset) this.resetObjects(); // late reset
 
       querySnapshot.forEach(async (it) => {
-        // it.data() is never undefined for query doc snapshots
         let _ref,
           _err = 0;
         const record = it.data();
@@ -154,13 +148,29 @@ export const useCrudStore = defineStore("crud", {
           }
           _err++;
         }
+
         this.objects.push(record);
         if (_err > 0) {
           const photoRef = doc(db, "Photo", record.filename);
           await updateDoc(photoRef, record);
         }
       });
+      // this.updateObjects(response.data);
+      this.busy = false;
+      if (process.env.DEV)
+        console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
     },
+    resetObjects() {
+      this.objects.length = 0;
+      this.pages.length = 0;
+      this.next = null;
+    },
+    // updateObjects(data) {
+    //   if (this.pages[0] === "FP" && data._page === "FP") return;
+    //   this.objects = [...this.objects, ...data.objects];
+    //   this.pages = [...this.pages, data._page];
+    //   this.next = data._next;
+    // },
     async getLast() {
       const q = query(photosRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
@@ -181,6 +191,7 @@ export const useCrudStore = defineStore("crud", {
           // const photoRef = doc(db, "Photo", record.filename);
           await updateDoc(it, record);
         }
+        record.href = "/list&year=" + record.year;
         this.last = record;
       });
     },

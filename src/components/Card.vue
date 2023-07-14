@@ -14,14 +14,14 @@
       <template #error>
         <img :src="fileBroken" />
       </template>
-      <div v-if="rec.id" class="absolute-bottom text-subtitle2">
+      <div v-if="rec.thumb" class="absolute-bottom text-subtitle2">
         {{ rec.headline }}
       </div>
       <q-badge v-else floating class="text-black" color="warning">
         {{ formatBytes(rec.size) }}
       </q-badge>
     </q-img>
-    <q-card-section v-if="rec.id" class="row justify-between q-py-none">
+    <q-card-section v-if="rec.thumb" class="row justify-between q-py-none">
       <div style="line-height: 42px">
         {{ rec.nick }},
         <router-link
