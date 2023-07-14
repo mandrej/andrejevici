@@ -2,7 +2,7 @@
   <div class="q-pa-md q-gutter-md">
     <q-input
       v-model="tmp.text"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       label="by text"
       clearable
       @blur="submit"
@@ -11,10 +11,10 @@
     />
     <Complete
       v-model="tmp.tags"
-      :options="app.tagValues"
+      :options="crudStore.tagValues"
       multiple
       label="by tags"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -28,10 +28,10 @@
     <Complete
       v-model="tmp.year"
       class="col"
-      :options="app.yearValues"
+      :options="crudStore.yearValues"
       autocomplete="label"
       label="by year"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -49,7 +49,7 @@
         :options="optionsMonth"
         autocomplete="label"
         label="by month"
-        :disable="app.busy"
+        :disable="crudStore.busy"
         behavior="menu"
         :dense="$q.screen.xs"
         dark
@@ -67,7 +67,7 @@
         :options="optionsDay"
         autocomplete="label"
         label="by day"
-        :disable="app.busy"
+        :disable="crudStore.busy"
         behavior="menu"
         :dense="$q.screen.xs"
         dark
@@ -81,9 +81,9 @@
     </div>
     <Complete
       v-model="tmp.model"
-      :options="app.modelValues"
+      :options="crudStore.modelValues"
       label="by model"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -96,9 +96,9 @@
     />
     <Complete
       v-model="tmp.lens"
-      :options="app.lensValues"
+      :options="crudStore.lensValues"
       label="by lens"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -111,9 +111,9 @@
     />
     <Complete
       v-model="tmp.nick"
-      :options="app.nickValues"
+      :options="crudStore.nickValues"
       label="by author"
-      :disable="app.busy"
+      :disable="crudStore.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -130,15 +130,15 @@
 <script setup>
 import { onMounted, computed, watch, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useAppStore } from "../stores/app";
+import { useCrudStore } from "../stores/crud";
 import Complete from "./Complete.vue";
 import { months } from "../helpers";
 // import { isEqual } from "lodash/lang";
 
-const app = useAppStore();
+const crudStore = useCrudStore();
 const route = useRoute();
 const router = useRouter();
-const tmp = ref({ ...app.find });
+const tmp = ref({ ...crudStore.find });
 
 const queryDispatch = (query, invoked = "") => {
   tmp.value = { ...query };
@@ -161,7 +161,7 @@ const queryDispatch = (query, invoked = "") => {
       }
     }
   });
-  // const oldQuery = JSON.parse(JSON.stringify(app.find));
+  // const oldQuery = JSON.parse(JSON.stringify(crudStore.find));
   // const newQuery = JSON.parse(JSON.stringify(tmp.value));
   // if (isEqual(oldQuery, newQuery)) {
   //   if (process.env.DEV)
@@ -169,9 +169,9 @@ const queryDispatch = (query, invoked = "") => {
   //   return;
   // }
   // store query
-  app.find = tmp.value;
+  crudStore.find = tmp.value;
   // fetch new query
-  app.fetchRecords(true, invoked); // new filter with reset
+  crudStore.fetchRecords(true, invoked); // new filter with reset
   // this dispatch route change
   if (Object.keys(tmp.value).length) {
     if (route.hash) {

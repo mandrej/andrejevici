@@ -33,7 +33,7 @@ const routes = [
   {
     path: "/list",
     component: () => import("../layouts/Default.vue"),
-    // meta: { sidebar: Find },
+    meta: { sidebar: Find },
     children: [
       {
         path: "",

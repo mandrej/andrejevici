@@ -26,12 +26,19 @@ const countersRef = collection(db, "Counter");
 
 export const useCrudStore = defineStore("crud", {
   state: () => ({
+    find: {},
     uploaded: [],
     objects: [],
+    pages: [],
+    next: null,
     current: {},
     values: { year: [], tags: [], model: [], lens: [], email: [] },
     last: {},
+
+    busy: false,
     showEdit: false,
+    showConfirm: false,
+    showCarousel: false,
   }),
   getters: {
     // values getters
@@ -81,13 +88,45 @@ export const useCrudStore = defineStore("crud", {
       }
       return [];
     },
+    groupObjects: (state) => {
+      const groups = [];
+      for (let i = 0; i < state.objects.length; i += CONFIG.group) {
+        groups.push(state.objects.slice(i, i + CONFIG.group));
+      }
+      return groups;
+    },
   },
   actions: {
-    async fetch() {
+    async fetchRecords(reset = false, invoked = "") {
+      if (this.busy) {
+        if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
+        return;
+      }
+      const params = Object.assign({}, this.find);
+      // const filters = [];
+      // for (const [field, val] of Object.entries(params)) {
+      //   filters.push(where(field, "==", "" + val));
+      // }
+      const filters = Object.entries(params).map(([key, value]) =>
+        where(key, "==", value)
+      );
+      console.log(filters);
+
+      // if (this.next && !reset) params._page = this.next;
+      // this.error = null;
+      // this.busy = true;
+      // console.log(params);
+
       this.objects = [];
-      const q = query(photosRef, orderBy("date", "desc"), limit(CONFIG.limit));
+      const q = query(
+        photosRef,
+        ...filters,
+        orderBy("date", "desc"),
+        limit(CONFIG.limit)
+      );
+      console.log(q);
       const querySnapshot = await getDocs(q);
-      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+      this.next = querySnapshot.docs[querySnapshot.docs.length - 1];
       // console.log("last", lastVisible);
       // const next = query(
       //   photosRef,
