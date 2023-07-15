@@ -22,6 +22,7 @@ import { onMounted, computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
+import { useValuesStore } from "./stores/values";
 import { db, storage } from "../boot/fire";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import {
@@ -33,6 +34,7 @@ import { removeByProperty, thumbName } from "../helpers";
 
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
+const valuesStore = useValuesStore();
 const bucket = computed(() => bucketStore.bucket);
 const objects = computed(() => crudStore.objects);
 // const values = computed(() => crudStore.values);
@@ -43,7 +45,7 @@ const { values } = storeToRefs(crudStore);
 onMounted(() => {
   crudStore.fetch();
   // crudStore.getLast();
-  crudStore.counters2store();
+  valuesStore.counters2store();
 });
 
 watch(

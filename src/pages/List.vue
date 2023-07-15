@@ -49,7 +49,7 @@
         <transition-group tag="div" class="row q-col-gutter-md" name="fade">
           <div
             v-for="item in list"
-            :key="item.id"
+            :key="item.filename"
             class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
           >
             <Card

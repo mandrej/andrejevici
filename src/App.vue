@@ -5,17 +5,19 @@
 import { onMounted } from "vue";
 import { useBucketStore } from "./stores/bucket";
 import { useCrudStore } from "./stores/crud";
+import { useValuesStore } from "./stores/values";
 import { getMessaging, onMessage } from "firebase/messaging";
 import notify from "./helpers/notify";
 
 const messaging = getMessaging();
 const bucketStore = useBucketStore();
 const crudStore = useCrudStore();
+const valuesStore = useValuesStore();
 
 onMounted(() => {
   bucketStore.read();
   crudStore.getLast();
-  crudStore.counters2store();
+  valuesStore.counters2store();
   onMessage(messaging, (payload) => {
     const params = {
       type: "ongoing",

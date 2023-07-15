@@ -54,24 +54,26 @@
     <q-card-actions
       v-if="canManage"
       class="justify-between"
-      :class="{ 'q-pt-none': Boolean(rec.id) }"
+      :class="{ 'q-pt-none': Boolean(rec.thumb) }"
     >
       <q-btn
         flat
         round
         color="grey"
         icon="delete"
-        @click="rec.id ? emit('confirmDelete', rec) : emit('deleteRecord', rec)"
+        @click="
+          rec.thumb ? emit('confirmDelete', rec) : emit('deleteRecord', rec)
+        "
       />
       <q-btn
         flat
         round
         color="grey"
-        :icon="rec.id ? 'edit' : 'publish'"
+        :icon="rec.thumb ? 'edit' : 'publish'"
         @click="emit('editRecord', rec)"
       />
       <q-btn
-        v-if="rec.id"
+        v-if="rec.thumb"
         flat
         round
         color="grey"
@@ -79,12 +81,12 @@
         @click="onShare"
       />
       <q-btn
-        v-if="rec.id"
+        v-if="rec.thumb"
         flat
         round
         color="grey"
         icon="download"
-        :href="`/api/download/${props.rec.filename}`"
+        :href="`${props.rec.url}`"
         :download="rec.filename"
         @click="emit('googleAnalytics', 'download-picture', rec)"
       />

@@ -11,7 +11,7 @@
     />
     <Complete
       v-model="tmp.tags"
-      :options="crudStore.tagValues"
+      :options="valuesStore.tagValues"
       multiple
       label="by tags"
       :disable="crudStore.busy"
@@ -28,7 +28,7 @@
     <Complete
       v-model="tmp.year"
       class="col"
-      :options="crudStore.yearValues"
+      :options="valuesStore.yearValues"
       autocomplete="label"
       label="by year"
       :disable="crudStore.busy"
@@ -81,7 +81,7 @@
     </div>
     <Complete
       v-model="tmp.model"
-      :options="crudStore.modelValues"
+      :options="valuesStore.modelValues"
       label="by model"
       :disable="crudStore.busy"
       behavior="menu"
@@ -96,7 +96,7 @@
     />
     <Complete
       v-model="tmp.lens"
-      :options="crudStore.lensValues"
+      :options="valuesStore.lensValues"
       label="by lens"
       :disable="crudStore.busy"
       behavior="menu"
@@ -111,7 +111,7 @@
     />
     <Complete
       v-model="tmp.nick"
-      :options="crudStore.nickValues"
+      :options="valuesStore.nickValues"
       label="by author"
       :disable="crudStore.busy"
       behavior="menu"
@@ -131,11 +131,12 @@
 import { onMounted, computed, watch, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCrudStore } from "../stores/crud";
+import { useValuesStore } from "../stores/values";
 import Complete from "./Complete.vue";
 import { months } from "../helpers";
-// import { isEqual } from "lodash/lang";
 
 const crudStore = useCrudStore();
+const valuesStore = useValuesStore();
 const route = useRoute();
 const router = useRouter();
 const tmp = ref({ ...crudStore.find });
@@ -161,13 +162,6 @@ const queryDispatch = (query, invoked = "") => {
       }
     }
   });
-  // const oldQuery = JSON.parse(JSON.stringify(crudStore.find));
-  // const newQuery = JSON.parse(JSON.stringify(tmp.value));
-  // if (isEqual(oldQuery, newQuery)) {
-  //   if (process.env.DEV)
-  //     console.log("SKIPPED", invoked, JSON.stringify(oldQuery));
-  //   return;
-  // }
   // store query
   crudStore.find = tmp.value;
   // fetch new query
