@@ -23,38 +23,40 @@
 
 <script setup>
 import { computed } from "vue";
-import { useAppStore } from "../stores/app";
+import { useBucketStore } from "../stores/bucket";
+import { useValuesStore } from "../stores/values";
 import { formatBytes } from "../helpers";
 
-const app = useAppStore();
+const bucketStore = useBucketStore();
+const valuesStore = useValuesStore();
 const list = computed(() => [
   {
     text: "storage",
-    value: formatBytes(app.bucket.size),
+    value: formatBytes(bucketStore.bucket.size),
   },
   {
     text: "photographs",
-    value: app.bucket.count,
+    value: bucketStore.bucket.count,
   },
   {
     text: "years",
-    value: app.values.year.length,
+    value: valuesStore.values.year.length,
   },
   {
     text: "tags",
-    value: app.values.tags.length,
+    value: valuesStore.values.tags.length,
   },
   {
     text: "cameras",
-    value: app.values.model.length,
+    value: valuesStore.values.model.length,
   },
   {
     text: "lenses",
-    value: app.values.lens.length,
+    value: valuesStore.values.lens.length,
   },
   {
     text: "authors",
-    value: app.values.email.length,
+    value: valuesStore.values.email.length,
   },
 ]);
 </script>

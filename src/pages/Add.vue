@@ -1,11 +1,11 @@
 <template>
-  <Edit v-if="app.showEdit" :rec="current" />
+  <Edit v-if="crudStore.showEdit" :rec="current" />
   <Carousel
-    v-if="app.showCarousel"
+    v-if="crudStore.showCarousel"
     :filename="currentFileName"
     :list="uploaded"
     @carousel-cancel="carouselCancel"
-    @delete-record="app.deleteRecord"
+    @delete-record="crudStore.deleteRecord"
   />
 
   <q-page class="q-pa-md">
@@ -43,7 +43,7 @@
 
     <Complete
       v-model="tagsToApply"
-      :options="app.tagValues"
+      :options="valuesStore.tagValues"
       canadd
       multiple
       label="Tags to apply for next publish"
@@ -63,7 +63,7 @@
             :rec="rec"
             :canManage="true"
             @carousel-show="carouselShow"
-            @delete-record="app.deleteRecord"
+            @delete-record="crudStore.deleteRecord"
             @edit-record="editRecord"
           />
         </div>
@@ -75,7 +75,8 @@
 <script setup>
 import { scroll } from "quasar";
 import { defineAsyncComponent, computed, reactive, ref } from "vue";
-import { useAppStore } from "../stores/app";
+import { useCrudStore } from "../stores/crud";
+import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import { CONFIG, fakeHistory } from "../helpers";
 import api from "../helpers/api";
@@ -89,15 +90,16 @@ const Edit = defineAsyncComponent(() => import("../components/Edit.vue"));
 
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
-const app = useAppStore();
+const crudStore = useCrudStore();
+const valuesStore = useValuesStore();
 const auth = useAuthStore();
 
 const tagsToApply = computed({
   get() {
-    return app.tagsToApply;
+    return valuesStore.tagsToApply;
   },
   set(newValue) {
-    app.tagsToApply = newValue;
+    valuesStore.tagsToApply = newValue;
   },
 });
 
@@ -105,8 +107,8 @@ let files = reactive([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
 
-const uploaded = computed(() => app.uploaded);
-const current = computed(() => app.current);
+const uploaded = computed(() => crudStore.uploaded);
+const current = computed(() => crudStore.current);
 const currentFileName = ref(null);
 
 const filesChange = (evt) => {
@@ -167,7 +169,7 @@ const upload = async (name, batch) => {
   const results = await Promise.all(promises);
   results.map((result, i) => {
     if (result && result.status === 200) {
-      app.uploaded.push(result.data);
+      crudStore.uploaded.push(result.data);
     }
     progressInfos[i] = 0;
   });
@@ -180,7 +182,7 @@ const upload = async (name, batch) => {
 const addNewTag = (inputValue) => {
   // new value
   tagsToApply.value.push(inputValue);
-  app.values.tags.push({
+  valuesStore.values.tags.push({
     count: 1,
     value: inputValue,
   });
@@ -203,18 +205,18 @@ const editRecord = async (rec) => {
   rec.tags = tags;
   rec.email = auth.user.email;
 
-  app.current = rec;
+  crudStore.current = rec;
   fakeHistory();
-  app.showEdit = true;
+  crudStore.showEdit = true;
 };
 
 const carouselShow = (filename) => {
   currentFileName.value = filename;
   fakeHistory();
-  app.showCarousel = true;
+  crudStore.showCarousel = true;
 };
 const carouselCancel = (hash) => {
-  app.showCarousel = false;
+  crudStore.showCarousel = false;
   const el = document.querySelector("#" + hash);
   if (!el) return;
   const target = getScrollTarget(el);

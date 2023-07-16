@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="app.showCarousel" :maximized="true" persistent>
+  <q-dialog v-model="crudStore.showCarousel" :maximized="true" persistent>
     <swiper
       :keyboard="true"
       :grab-cursor="true"
@@ -17,7 +17,7 @@
       <swiper-slide
         v-for="obj in list"
         :key="obj.filename"
-        :data-hash="U + obj.filename"
+        :data-hash="obj.filename"
       >
         <div
           class="absolute-top row no-wrap justify-between"
@@ -30,7 +30,7 @@
             class="text-white q-pa-md"
             icon="delete"
             @click="
-              obj.id ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
+              obj.thumb ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
             "
           />
           <div
@@ -47,7 +47,7 @@
           />
         </div>
         <div class="swiper-zoom-container" :data-swiper-zoom="zoomRatio(obj)">
-          <img class="swiper-lazy" :data-src="fullsized + obj.filename" />
+          <img class="swiper-lazy" :data-src="obj.url" />
           <div class="swiper-lazy-preloader" />
         </div>
         <q-btn
@@ -65,10 +65,10 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { ref } from "vue";
-import { useAppStore } from "../stores/app";
+import { useCrudStore } from "../stores/crud";
 import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
-import { fullsized, formatBytes, removeHash, CONFIG, U } from "../helpers";
+import { formatBytes, removeHash, CONFIG, U } from "../helpers";
 import notify from "../helpers/notify";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Lazy, Zoom, Keyboard } from "swiper";
@@ -84,7 +84,7 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
-const app = useAppStore();
+const crudStore = useCrudStore();
 const auth = useAuthStore();
 const route = useRoute();
 const hash = ref(null);
@@ -150,12 +150,12 @@ const caption = (rec) => {
 
 window.onpopstate = function () {
   emit("carouselCancel", hash.value);
-  app.showCarousel = false;
+  crudStore.showCarousel = false;
 };
 const onCancel = () => {
   removeHash();
   emit("carouselCancel", hash.value);
-  app.showCarousel = false;
+  crudStore.showCarousel = false;
 };
 </script>
 

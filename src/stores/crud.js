@@ -7,8 +7,6 @@ import {
   where,
   limit,
   orderBy,
-  getDoc,
-  setDoc,
   getDocs,
   updateDoc,
   deleteDoc,
@@ -34,6 +32,9 @@ export const useCrudStore = defineStore("crud", {
     showCarousel: false,
   }),
   getters: {
+    counter: (state) => {
+      return { count: state.objects.length, more: state.next };
+    },
     groupObjects: (state) => {
       const groups = [];
       for (let i = 0; i < state.objects.length; i += CONFIG.group) {

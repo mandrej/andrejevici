@@ -96,7 +96,13 @@
 
 <script setup>
 import { copyToClipboard } from "quasar";
-import { fileBroken, formatDatum, formatBytes, U } from "../helpers";
+import {
+  fileBroken,
+  formatDatum,
+  formatBytes,
+  U,
+  reFilename,
+} from "../helpers";
 import notify from "../helpers/notify";
 
 const emit = defineEmits([
@@ -112,7 +118,7 @@ const props = defineProps({
 });
 
 const cardAttributes = (filename) => {
-  const [name, ext] = filename.split(".");
+  const [name, ext] = filename.match(reFilename);
   return {
     id: U + name,
     class: ext + " bg-grey-2",

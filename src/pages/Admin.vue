@@ -78,19 +78,21 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { useAppStore } from "../stores/app";
+import { useValuesStore } from "../stores/values";
+import { useBucketStore } from "../stores/bucket";
 import { useAuthStore } from "../stores/auth";
 import api from "../helpers/api";
 import { formatDatum } from "../helpers";
 
-const app = useAppStore();
+const valuesStore = useValuesStore();
+const bucketStore = useBucketStore();
 const auth = useAuthStore();
 const message = ref("NEW IMAGES");
 
 const callApi = (url) => {
   api.post(url, { token: auth.fcm_token }, { timeout: 0 }).then((x) => x.data);
 };
-const values = computed(() => app.values);
+const values = computed(() => valuesStore.values);
 const rebuild = (name) => {
   callApi("rebuild/" + name);
 };
@@ -101,7 +103,7 @@ const fix = () => {
   callApi("fix");
 };
 const bucket = () => {
-  app.bucketInfo({ verb: "set" });
+  bucketStore.bucketInfo({ verb: "set" });
 };
 const send = () => {
   auth.sendNotifications(message.value);

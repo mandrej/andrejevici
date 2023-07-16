@@ -18,6 +18,7 @@ const countersRef = collection(db, "Counter");
 
 export const useValuesStore = defineStore("values", {
   state: () => ({
+    tagsToApply: [],
     values: { year: [], tags: [], model: [], lens: [], email: [] },
   }),
   getters: {

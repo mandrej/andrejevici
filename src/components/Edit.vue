@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="app.showEdit"
+    v-model="crudStore.showEdit"
     :maximized="$q.screen.lt.md"
     transition-show="slide-up"
     transition-hide="slide-down"
@@ -39,12 +39,7 @@
         >
           <div class="row q-col-gutter-md">
             <div class="col-xs-12 col-sm-4 gt-xs">
-              <q-img
-                :ratio="1"
-                :src="
-                  tmp.id ? smallsized + tmp.filename : fullsized + tmp.filename
-                "
-              >
+              <q-img :ratio="1" :src="tmp.thumb ? tmp.thumb : tmp.url">
                 <template #error>
                   <img :src="fileBroken" />
                 </template>
@@ -78,7 +73,7 @@
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Complete
                 v-model="tmp.email"
-                :options="app.emailValues"
+                :options="crudStore.emailValues"
                 canadd
                 label="Author"
                 hint="Existing member can add freind's photo and email"
@@ -140,7 +135,7 @@
             <div class="col-12">
               <Complete
                 v-model="tmp.tags"
-                :options="app.tagValues"
+                :options="valuesStore.tagValues"
                 canadd
                 multiple
                 label="Tags"
@@ -151,7 +146,7 @@
             <div class="col-xs-12 col-sm-6">
               <Complete
                 v-model="tmp.model"
-                :options="app.modelValues"
+                :options="valuesStore.modelValues"
                 canadd
                 label="Camera Model"
                 @update:model-value="(newValue) => (tmp.model = newValue)"
@@ -161,7 +156,7 @@
             <div class="col-xs-12 col-sm-6">
               <Complete
                 v-model="tmp.lens"
-                :options="app.lensValues"
+                :options="valuesStore.lensValues"
                 canadd
                 label="Camera Lens"
                 @update:model-value="(newValue) => (tmp.lens = newValue)"
@@ -210,16 +205,10 @@
 
 <script setup>
 import { reactive } from "vue";
-import {
-  CONFIG,
-  fullsized,
-  smallsized,
-  fileBroken,
-  formatBytes,
-  U,
-} from "../helpers";
+import { CONFIG, fileBroken, formatBytes, U } from "../helpers";
 import readExif from "../helpers/exif";
-import { useAppStore } from "../stores/app";
+import { useCrudStore } from "../stores/crud";
+import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import Complete from "./Complete.vue";
 
@@ -228,7 +217,8 @@ const props = defineProps({
   rec: Object,
 });
 
-const app = useAppStore();
+const crudStore = useCrudStore();
+const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const tmp = reactive({ ...props.rec });
 
@@ -258,43 +248,43 @@ const isValidEmail = (val) => {
 // new values
 const addNewEmail = (inputValue) => {
   tmp.email = inputValue;
-  app.values.email.push({
+  valuesStore.values.email.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewTag = (inputValue) => {
   tmp.tags.push(inputValue);
-  app.values.tags.push({
+  valuesStore.values.tags.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewModel = (inputValue) => {
   tmp.model = inputValue;
-  app.values.model.push({
+  valuesStore.values.model.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewLens = (inputValue) => {
   tmp.lens = inputValue;
-  app.values.lens.push({
+  valuesStore.values.lens.push({
     count: 1,
     value: inputValue,
   });
 };
 
 window.onpopstate = function () {
-  app.showEdit = false;
+  crudStore.showEdit = false;
 };
 const onCancel = () => {
-  app.showEdit = false;
+  crudStore.showEdit = false;
 };
 const onSubmit = () => {
   tmp.tags = tmp.tags ? tmp.tags : [];
-  app.saveRecord(tmp);
+  crudStore.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
-  app.showEdit = false;
+  crudStore.showEdit = false;
 };
 </script>

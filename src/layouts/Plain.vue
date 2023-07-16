@@ -38,12 +38,12 @@
               >
             </q-toolbar-title>
             <!-- <q-btn
-              v-if="app.find && Object.keys(app.find).length"
+              v-if="crudStore.find && Object.keys(crudStore.find).length"
               size="2em"
               flat
               round
               icon="history"
-              :to="{ name: 'list', query: app.find }"
+              :to="{ name: 'list', query: crudStore.find }"
             /> -->
           </q-toolbar>
 
