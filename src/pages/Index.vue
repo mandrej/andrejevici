@@ -36,16 +36,16 @@
 
 <script setup>
 import { onMounted } from "vue";
-import { useCrudStore } from "../stores/crud";
+// import { useCrudStore } from "../stores/crud";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 
-const crudStore = useCrudStore();
+// const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 
 onMounted(() => {
-  crudStore.getLast();
+  // crudStore.getLast();
   auth.getPermission();
 });
 </script>

@@ -94,9 +94,8 @@ export const useCrudStore = defineStore("crud", {
 
         this.objects.push(record);
         if (_err > 0) {
+          await updateDoc(doc(db, "Photo", it.id), record);
           console.log("updateDoc");
-          // const photoRef = doc(db, "Photo", record.filename);
-          await updateDoc(it, record);
         }
       });
       this.error = this.objects.length === 0 ? 0 : null;
@@ -116,6 +115,7 @@ export const useCrudStore = defineStore("crud", {
     async getLast() {
       const q = query(photosRef, orderBy("date", "desc"), limit(1));
       const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return null;
       querySnapshot.forEach(async (it) => {
         let _err = 0,
           _ref;
@@ -130,9 +130,8 @@ export const useCrudStore = defineStore("crud", {
           _err++;
         }
         if (_err > 0) {
-          // const photoRef = doc(db, "Photo", record.filename);
+          await updateDoc(doc(db, "Photo", it.id), record);
           console.log("updateDoc");
-          await updateDoc(it, record);
         }
         record.href = "/list&year=" + record.year;
         this.last = record;

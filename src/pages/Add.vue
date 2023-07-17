@@ -9,26 +9,15 @@
   />
 
   <q-page class="q-pa-md">
-    <div
-      class="rounded-borders relative-position bg-grey-2 column justify-center items-center"
-      style="height: 150px"
-    >
-      <div v-if="progressInfos.length > 0">
+    <div class="relative-position column" style="height: 10px">
+      <!-- <div v-if="progressInfos.length > 0">
         Upload in progress. Plase wait ...
       </div>
       <div v-else class="text-body1 text-center" style="width: 70%">
         Drag your images here to upload, or click to browse. Then publish image
         on site. Accepts only jpg (jpeg) files less then 4 Mb in size.
-      </div>
-      <input
-        id="files"
-        type="file"
-        multiple
-        name="photos"
-        @change="filesChange"
-        :disabled="inProgress"
-      />
-      <div class="row absolute-bottom">
+      </div> -->
+      <div class="row absolute-top">
         <q-linear-progress
           v-for="(progress, index) in progressInfos"
           :key="index"
@@ -40,6 +29,27 @@
         />
       </div>
     </div>
+
+    <q-form @submit="onSubmit" class="q-gutter-md">
+      <q-file
+        name="photos"
+        v-model="files"
+        multiple
+        :accept="CONFIG.fileType"
+        :max-file-size="CONFIG.fileSize"
+        :max-files="CONFIG.fileMax"
+        label="Select images to upload"
+        @rejected="onRejected"
+      />
+      <div class="column">
+        <q-btn
+          label="Upload"
+          type="submit"
+          color="primary"
+          class="col self-end"
+        />
+      </div>
+    </q-form>
 
     <Complete
       v-model="tagsToApply"
@@ -74,12 +84,24 @@
 
 <script setup>
 import { scroll } from "quasar";
+import uuid4 from "uuid4";
 import { defineAsyncComponent, computed, reactive, ref } from "vue";
+import { storage } from "../boot/fire";
+import {
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 import { useCrudStore } from "../stores/crud";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
-import { CONFIG, fakeHistory } from "../helpers";
-import api from "../helpers/api";
+import {
+  CONFIG,
+  fakeHistory,
+  removeByProperty,
+  emailNick,
+  reFilename,
+} from "../helpers";
 import notify from "../helpers/notify";
 import readExif from "../helpers/exif";
 import Card from "../components/Card.vue";
@@ -94,6 +116,13 @@ const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 
+const uploaded = computed(() => crudStore.uploaded);
+const current = computed(() => crudStore.current);
+
+let files = ref([]);
+let progressInfos = reactive([]);
+const inProgress = ref(false);
+
 const tagsToApply = computed({
   get() {
     return valuesStore.tagsToApply;
@@ -103,80 +132,105 @@ const tagsToApply = computed({
   },
 });
 
-let files = reactive([]);
-let progressInfos = reactive([]);
-const inProgress = ref(false);
-
-const uploaded = computed(() => crudStore.uploaded);
-const current = computed(() => crudStore.current);
 const currentFileName = ref(null);
 
-const filesChange = (evt) => {
-  /**
-   * 0: File
-      name: "DSC_8082-22-03-14-819.jpg"
-      size: 1858651
-      type: "image/jpeg"
-   */
-  let fileList = evt.target.files;
-  let fieldName = evt.target.name; // photos
-  if (!fileList.length) return;
+const onSubmit = (evt) => {
+  const data = [];
+  const promises = [];
+  const formData = new FormData(evt.target);
+  console.log(formData);
 
-  Array.from(fileList).map((file) => {
-    if (file.type !== CONFIG.fileType) {
-      notify({
-        type: "warning",
-        message: `${file.name} is of unsupported file type`,
-      });
-    } else if (file.size > CONFIG.fileSize) {
-      notify({ type: "warning", message: `${file.name} is too big` });
-    } else {
-      files.push(file);
+  for (const [name, value] of formData.entries()) {
+    if (value.name.length > 0) {
+      data.push(value);
     }
-  });
-
-  if (files.length > CONFIG.fileMax) {
-    notify({
-      type: "warning",
-      message: `Max ${CONFIG.fileMax} files allowed at the time`,
-    });
-    files.splice(CONFIG.fileMax);
   }
-  upload(fieldName, files);
+  if (data.length === 0) {
+    console.log("nothing to upload");
+  }
+  for (const [i, file] of data.entries()) {
+    promises.push(uploadPromise(i, file));
+  }
+  inProgress.value = true;
+  Promise.all(promises).then((results) => {
+    console.log("waiting over");
+    results.forEach((name) => {
+      removeByProperty(files.value, "name", name);
+    });
+  });
 };
 
-const upload = async (name, batch) => {
-  const promises = [];
-  inProgress.value = true;
-
-  for (let i = 0; i < batch.length; i++) {
-    let formData = new FormData();
-    formData.append(name, batch[i]);
-    progressInfos[i] = 0;
-    const result = api
-      .post("add", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (evt) => {
-          progressInfos[i] = evt.loaded / evt.total;
-        },
+const uploadPromise = (i, file) => {
+  return new Promise((resolve, reject) => {
+    const _ref = storageRef(storage, file.name);
+    getDownloadURL(_ref)
+      .then((url) => {
+        const filename = rename(file.name);
+        uploadTask(i, filename, file, resolve, reject);
       })
-      .catch((err) => {
-        notify({ type: "negative", message: err.message });
+      .catch((error) => {
+        if (error.code === "storage/object-not-found") {
+          const filename = file.name;
+          uploadTask(i, filename, file, resolve, reject);
+        } else {
+          reject(file.name);
+        }
       });
-    promises.push(result);
-  }
-
-  const results = await Promise.all(promises);
-  results.map((result, i) => {
-    if (result && result.status === 200) {
-      crudStore.uploaded.push(result.data);
-    }
-    progressInfos[i] = 0;
   });
+};
 
-  files.length = 0;
-  progressInfos.length = 0;
-  inProgress.value = false;
+const uploadTask = (i, filename, file, resolve, reject) => {
+  progressInfos[i] = 0;
+  const _ref = storageRef(storage, filename);
+  const task = uploadBytesResumable(_ref, file, {
+    contentType: file.type,
+    cacheControl: "max-age=604800",
+  });
+  task.on(
+    "state_changed",
+    (snapshot) => {
+      progressInfos[i] =
+        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    },
+    (error) => {
+      reject(error);
+    },
+    () => {
+      getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+        // const urlParams = new URLSearchParams(downloadURL);
+        // console.log(urlParams.get("token"));
+        const data = {
+          url: downloadURL,
+          filename: filename,
+          size: file.size,
+          email: "milan.andrejevic@gmail.com", // FIXME auth user
+          nick: emailNick("milan.andrejevic@gmail.com"),
+        };
+        resolve(file.name);
+        crudStore.uploaded.push(data);
+        progressInfos[i] = 0;
+      });
+    }
+  );
+};
+
+const onRejected = (rejectedEntries) => {
+  // Notify plugin needs to be installed
+  // https://quasar.dev/quasar-plugins/notify#Installation
+  rejectedEntries.forEach((it) => {
+    console.log(it.failedPropValidation, it.file.name);
+  });
+  // $q.notify({
+  //   type: "negative",
+  //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  // });
+};
+
+const rename = (filename) => {
+  const id = uuid4();
+  const [name, ext] = filename.match(reFilename);
+  if (!ext) ext = "jpg";
+  return name + "_" + id.substring(id.length - 12) + "." + ext;
 };
 
 const addNewTag = (inputValue) => {
@@ -188,25 +242,27 @@ const addNewTag = (inputValue) => {
   });
 };
 const editRecord = async (rec) => {
-  /**
-   * PUBLISH RECORD
-   * Add user email and tags: [] to new rec; read exif
-   * See Edit getExif
-   */
-  const exif = await readExif(rec.filename);
-  const tags = [...(tagsToApply.value || "")];
-  Object.keys(exif).forEach((k) => {
-    rec[k] = exif[k];
-  });
-  // add flash tag if exif flash true
-  if (rec.flash && tags.indexOf("flash") === -1) {
-    tags.push("flash");
-  }
-  rec.tags = tags;
-  rec.email = auth.user.email;
+  // /**
+  //  * PUBLISH RECORD
+  //  * Add user email and tags: [] to new rec; read exif
+  //  * See Edit getExif
+  //  */
+  // const exif = await readExif(rec.filename);
+  // const tags = [...(tagsToApply.value || "")];
+  // Object.keys(exif).forEach((k) => {
+  //   rec[k] = exif[k];
+  // });
+  // // add flash tag if exif flash true
+  // if (rec.flash && tags.indexOf("flash") === -1) {
+  //   tags.push("flash");
+  // }
+  // rec.tags = tags;
+  // rec.email = auth.user.email;
 
-  crudStore.current = rec;
-  fakeHistory();
+  // crudStore.current = rec;
+  // fakeHistory();
+  // crudStore.showEdit = true;
+  crudStore.current = obj;
   crudStore.showEdit = true;
 };
 
@@ -225,7 +281,7 @@ const carouselCancel = (hash) => {
 </script>
 
 <style scoped>
-input#files {
+/* input#files {
   opacity: 0;
   width: 100%;
   height: inherit;
@@ -235,5 +291,5 @@ input#files {
 .disabled,
 [disabled] {
   opacity: 0 !important;
-}
+} */
 </style>

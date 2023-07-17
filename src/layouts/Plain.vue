@@ -37,14 +37,14 @@
                 >{{ bucket.count }} photos since 2007 and counting</span
               >
             </q-toolbar-title>
-            <!-- <q-btn
+            <q-btn
               v-if="crudStore.find && Object.keys(crudStore.find).length"
               size="2em"
               flat
               round
               icon="history"
               :to="{ name: 'list', query: crudStore.find }"
-            /> -->
+            />
           </q-toolbar>
 
           <router-view />
@@ -56,6 +56,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { isEmpty } from "lodash";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
 import { useAuthStore } from "../stores/auth";
@@ -69,16 +70,16 @@ const last = computed(() => crudStore.last);
 const bucket = computed(() => bucketStore.bucket);
 
 const styling = computed(() => {
-  if (last.value) {
-    return (
-      "background-image: url(" +
-      last.value.url +
-      "), url(" +
-      last.value.thumb +
-      ")"
-    );
+  if (isEmpty(last.value)) {
+    return "background-image: url(" + fileBroken + ")";
   }
-  return "background-image: url(" + fileBroken + ")";
+  return (
+    "background-image: url(" +
+    last.value.url +
+    "), url(" +
+    last.value.thumb +
+    ")"
+  );
 });
 </script>
 

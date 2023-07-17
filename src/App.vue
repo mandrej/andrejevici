@@ -15,6 +15,7 @@ const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 
 onMounted(() => {
+  console.log("APP");
   bucketStore.read();
   crudStore.getLast();
   valuesStore.counters2store();

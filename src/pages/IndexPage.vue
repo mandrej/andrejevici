@@ -22,14 +22,10 @@ import { onMounted, computed, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useBucketStore } from "../stores/bucket";
 import { useCrudStore } from "../stores/crud";
-import { useValuesStore } from "./stores/values";
+import { useValuesStore } from "../stores/values";
 import { db, storage } from "../boot/fire";
 import { doc, getDoc, deleteDoc } from "firebase/firestore";
-import {
-  ref as storageRef,
-  deleteObject,
-  getDownloadURL,
-} from "firebase/storage";
+import { ref as storageRef, deleteObject } from "firebase/storage";
 import { removeByProperty, thumbName } from "../helpers";
 
 const bucketStore = useBucketStore();

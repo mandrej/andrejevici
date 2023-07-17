@@ -43,32 +43,32 @@ const routes = [
       },
     ],
   },
-  // {
-  //   path: "/add",
-  //   component: () => import("../layouts/Default.vue"),
-  //   meta: { sidebar: Stat },
-  //   children: [
-  //     {
-  //       path: "",
-  //       component: () => import("../pages/Add.vue"),
-  //       name: "add",
-  //       meta: { title: "Add", requiresAuth: true },
-  //     },
-  //   ],
-  // },
-  // {
-  //   path: "/admin",
-  //   component: () => import("../layouts/Default.vue"),
-  //   meta: { sidebar: Stat },
-  //   children: [
-  //     {
-  //       path: "",
-  //       component: () => import("../pages/Admin.vue"),
-  //       name: "admin",
-  //       meta: { title: "Administration", requiresAdmin: true },
-  //     },
-  //   ],
-  // },
+  {
+    path: "/add",
+    component: () => import("../layouts/Default.vue"),
+    meta: { sidebar: Stat },
+    children: [
+      {
+        path: "",
+        component: () => import("../pages/Add.vue"),
+        name: "add",
+        meta: { title: "Add", requiresAuth: true },
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    component: () => import("../layouts/Default.vue"),
+    meta: { sidebar: Stat },
+    children: [
+      {
+        path: "",
+        component: () => import("../pages/Admin.vue"),
+        name: "admin",
+        meta: { title: "Administration", requiresAdmin: true },
+      },
+    ],
+  },
   {
     path: "/401",
     component: () => import("../layouts/Plain.vue"),

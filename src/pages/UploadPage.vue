@@ -127,8 +127,8 @@ const uploadTask = (i, filename, file, resolve, reject) => {
     },
     () => {
       getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-        const urlParams = new URLSearchParams(downloadURL);
-        console.log(urlParams.get("token"));
+        // const urlParams = new URLSearchParams(downloadURL);
+        // console.log(urlParams.get("token"));
         const data = {
           url: downloadURL,
           filename: filename,

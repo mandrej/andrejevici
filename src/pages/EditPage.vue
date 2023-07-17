@@ -33,7 +33,7 @@ import { doc, setDoc } from "firebase/firestore";
 import readExif from "../helpers/exif";
 import { useCrudStore } from "../stores/crud";
 import { useBucketStore } from "../stores/bucket";
-import { useValuesStore } from "./stores/values";
+import { useValuesStore } from "../stores/values";
 import { CONFIG, removeByProperty } from "../helpers";
 
 const props = defineProps({
@@ -44,7 +44,7 @@ const crudStore = useCrudStore();
 const bucketStore = useBucketStore();
 const valuesStore = useValuesStore();
 const tmp = reactive({ ...props.rec });
-const tags = ref(["still life", "b&w", "street", "portrait"]);
+const tags = ref(["still life", "b&w", "street", "portrait", "sky"]);
 
 const publish = async (tmp) => {
   const exif = await readExif(tmp.url);
