@@ -12,8 +12,16 @@ import {
   deleteDoc,
   startAfter,
 } from "firebase/firestore";
-import { ref as storageRef, getDownloadURL } from "firebase/storage";
-import { CONFIG, thumbName, thumbUrl } from "../helpers";
+import {
+  ref as storageRef,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { CONFIG, thumbName, thumbUrl, removeByProperty } from "../helpers";
+import notify from "../helpers/notify";
+import pushMessage from "../helpers/push";
+import { useValuesStore } from "./values";
+import { useBucketStore } from "./bucket";
 
 const photosRef = collection(db, "Photo");
 
@@ -103,6 +111,56 @@ export const useCrudStore = defineStore("crud", {
       this.busy = false;
       if (process.env.DEV)
         console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
+    },
+    async deleteRecord(obj) {
+      notify({
+        group: `${obj.filename}`,
+        message: `About to delete`,
+      });
+      if (obj.thumb) {
+        const docRef = doc(db, "Photo", obj.filename);
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+        const stoRef = storageRef(storage, obj.filename);
+        const thumbRef = storageRef(storage, thumbName(obj.filename));
+        await deleteDoc(docRef);
+        await deleteObject(stoRef);
+        await deleteObject(thumbRef);
+
+        removeByProperty(this.objects, "filename", obj.filename);
+        const valuesStore = useValuesStore();
+        const bucketStore = useBucketStore();
+
+        bucketStore.diff(-data.size);
+        valuesStore.decreaseCounters(data);
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        });
+        //   .catch((err) => {
+        //     notify({
+        //       group: `${obj.filename}`,
+        //       type: "negative",
+        //       message: "Failed to delete.",
+        //     });
+      } else {
+        const stoRef = storageRef(storage, obj.filename);
+        const thumbRef = storageRef(storage, thumbName(obj.filename));
+        await deleteObject(stoRef);
+        await deleteObject(thumbRef);
+
+        removeByProperty(this.uploaded, "filename", obj.filename);
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        });
+        //   .catch((err) => {
+        //     notify({
+        //       group: `${obj.filename}`,
+        //       type: "negative",
+        //       message: "Failed to delete.",
+        //     });
+      }
     },
     resetObjects() {
       this.objects.length = 0;
