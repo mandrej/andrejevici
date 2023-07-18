@@ -1,9 +1,37 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-page-container>
-      <q-page class="row">
+      <q-page v-if="!auth.user.isAuthorized && bucketStore.bucket.count === 0">
+        <q-toolbar class="bg-grey-8 text-white q-pa-md">
+          <q-toolbar-title class="text-h4" style="line-height: 100%">
+            {{ $route.meta.title }}
+          </q-toolbar-title>
+          <q-btn
+            v-if="crudStore.find && Object.keys(crudStore.find).length"
+            size="2em"
+            flat
+            round
+            icon="history"
+            :to="{ name: 'list', query: crudStore.find }"
+          />
+        </q-toolbar>
+
+        <div class="absolute-center text-center">
+          <q-btn @click="auth.signIn" class="bg-warning" padding="lg">
+            <div class="row items-center no-wrap">
+              <q-icon left name="person" />
+              <div class="text-center">
+                Press to Sign-in with your Google<br />
+                account to add some photos
+              </div>
+            </div>
+          </q-btn>
+        </div>
+      </q-page>
+
+      <q-page v-else class="row">
         <q-page-sticky
-          v-show="auth.user.isAuthorized"
+          v-if="auth.user.isAuthorized"
           position="top-left"
           :offset="[16, 16]"
           style="z-index: 1000"

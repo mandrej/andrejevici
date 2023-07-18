@@ -35,7 +35,7 @@ const props = defineProps({
   rec: Object,
 });
 
-const crudStore = useAppStore();
+const crudStore = useCrudStore();
 
 window.onpopstate = function () {
   crudStore.showConfirm = false;
