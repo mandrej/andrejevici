@@ -247,22 +247,22 @@ const editRecord = async (rec) => {
   //  * Add user email and tags: [] to new rec; read exif
   //  * See Edit getExif
   //  */
-  // const exif = await readExif(rec.filename);
-  // const tags = [...(tagsToApply.value || "")];
-  // Object.keys(exif).forEach((k) => {
-  //   rec[k] = exif[k];
-  // });
+  const exif = await readExif(rec.url);
+  const tags = [...(tagsToApply.value || "")];
+  Object.keys(exif).forEach((k) => {
+    rec[k] = exif[k];
+  });
   // // add flash tag if exif flash true
-  // if (rec.flash && tags.indexOf("flash") === -1) {
-  //   tags.push("flash");
-  // }
-  // rec.tags = tags;
-  // rec.email = auth.user.email;
+  if (rec.flash && tags.indexOf("flash") === -1) {
+    tags.push("flash");
+  }
+  rec.tags = tags;
+  rec.email = auth.user.email;
 
   // crudStore.current = rec;
-  // fakeHistory();
-  // crudStore.showEdit = true;
-  crudStore.current = obj;
+  fakeHistory();
+  crudStore.showEdit = true;
+  crudStore.current = rec;
   crudStore.showEdit = true;
 };
 

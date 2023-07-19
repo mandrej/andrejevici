@@ -73,7 +73,7 @@
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Complete
                 v-model="tmp.email"
-                :options="crudStore.emailValues"
+                :options="valuesStore.emailValues"
                 canadd
                 label="Author"
                 hint="Existing member can add freind's photo and email"
@@ -92,7 +92,7 @@
                       transition-show="scale"
                       transition-hide="scale"
                     >
-                      <q-date v-model="tmp.date" mask="YYYY-MM-DD HH:mm">
+                      <q-date v-model="tmp.date" :mask="mask">
                         <div class="row items-center justify-end">
                           <q-btn
                             v-close-popup
@@ -112,11 +112,7 @@
                       transition-show="scale"
                       transition-hide="scale"
                     >
-                      <q-time
-                        v-model="tmp.date"
-                        mask="YYYY-MM-DD HH:mm"
-                        format24h
-                      >
+                      <q-time v-model="tmp.date" :mask="mask" format24h>
                         <div class="row items-center justify-end">
                           <q-btn
                             v-close-popup
@@ -221,6 +217,9 @@ const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const tmp = reactive({ ...props.rec });
+
+const mask = "YYYY-MM-DDTHH:mm:ss.SSSZ";
+tmp.date = "2023-07-08T19:20:28.000Z";
 
 const getExif = async () => {
   /**

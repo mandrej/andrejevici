@@ -1,19 +1,15 @@
 import { defineStore } from "pinia";
-import { db, storage } from "../boot/fire";
+import { isEmpty } from "lodash";
+import { db } from "../boot/fire";
 import {
   doc,
   collection,
   query,
-  where,
-  limit,
   orderBy,
   getDoc,
+  setDoc,
   getDocs,
-  updateDoc,
-  deleteDoc,
-  startAfter,
 } from "firebase/firestore";
-import { ref as storageRef, listAll, getMetadata } from "firebase/storage";
 
 const docRef = doc(db, "Bucket", "total");
 const photosRef = collection(db, "Photo");
@@ -27,11 +23,12 @@ export const useBucketStore = defineStore("bucket", {
   }),
   actions: {
     async read() {
-      if (this.bucket.count === 0) {
+      if (isEmpty(this.bucket) || this.bucket.count === 0) {
         this.scretch();
+      } else {
+        const docSnap = await getDoc(docRef);
+        this.bucket = { ...docSnap.data() };
       }
-      const docSnap = await getDoc(docRef);
-      this.bucket = { ...docSnap.data() };
     },
     async diff(num) {
       if (num > 0) {
@@ -54,12 +51,12 @@ export const useBucketStore = defineStore("bucket", {
       };
       const q = query(photosRef, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) return res;
-      querySnapshot.forEach(async (it) => {
-        res.count++;
-        res.size += it.data().size;
-      });
-      console.log(res);
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (it) => {
+          res.count++;
+          res.size += it.data().size;
+        });
+      }
       // const refs = await listAll(storageRef(storage, ""));
       // for (let r of refs.items) {
       //   const meta = await getMetadata(r);

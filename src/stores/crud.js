@@ -8,6 +8,7 @@ import {
   limit,
   orderBy,
   getDoc,
+  setDoc,
   getDocs,
   updateDoc,
   deleteDoc,
@@ -112,6 +113,47 @@ export const useCrudStore = defineStore("crud", {
       this.busy = false;
       if (process.env.DEV)
         console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
+    },
+    async saveRecord(obj) {
+      const docRef = doc(db, "Photo", obj.filename);
+      if (obj.thumb) {
+        await setDoc(docRef, obj, { merge: true });
+        if (this.objects && this.objects.length) {
+          const idx = this.objects.findIndex(
+            (item) => item.filename === obj.filename
+          );
+          this.objects.splice(idx, 1, obj);
+          notify({ message: `${obj.filename} updated` });
+        }
+      } else {
+        // publish
+        await setDoc(docRef, obj, { merge: true });
+        if (this.objects && this.objects.length) {
+          const idx = this.objects.findIndex(
+            (item) => item.filename === obj.filename
+          );
+          this.objects.splice(idx, 0, obj);
+        }
+        const bucketStore = useBucketStore();
+        // this.deleteUploaded(obj);
+        const idx = this.uploaded.findIndex(
+          (item) => item.filename === obj.filename
+        );
+        this.uploaded.splice(idx, 1);
+        bucketStore.diff(obj.size);
+
+        // api.put("edit", obj).then((response) => {
+        //   const obj = response.data.rec;
+        //   const diff = { verb: "add", size: obj.size };
+        //   // addRecord
+        //   const dates = this.objects.map((item) => item.date);
+        //   const idx = dates.findIndex((date) => date < obj.date);
+        //   this.objects.splice(idx, 0, obj);
+
+        //   this.deleteUploaded(obj);
+        //   this.bucketInfo(diff);
+        // });
+      }
     },
     async deleteRecord(obj) {
       notify({

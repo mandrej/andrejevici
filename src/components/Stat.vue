@@ -1,5 +1,5 @@
 <template>
-  <q-list class="q-py-md">
+  <q-list class="q-py-md" v-if="bucketStore.bucket.count > 0">
     <q-item>
       <q-item-section>
         <q-item-label class="text-white" overline>SITE STATISTICS</q-item-label>
