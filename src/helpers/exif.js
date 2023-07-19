@@ -1,5 +1,7 @@
 import exifr from "exifr";
 import { has } from "lodash";
+import { date } from "quasar";
+import { formatDatum } from "./index";
 
 const values = [
   "Make",
@@ -50,15 +52,14 @@ const readExif = async (url) => {
   }
   if (has(data, "LensModel")) {
     exif.lens = data.LensModel.replace("/", "");
-    if (has(LENSES, exif.lens)) exif.lens = LENSES[exif.lens]; // TODO check
   }
   if (has(data, "DateTimeOriginal")) {
-    const date = new Date(Date.parse(data.DateTimeOriginal));
-    exif.date = date.toISOString();
-    // exif.date = date.getTime() / 1000;
-    exif.year = date.getFullYear();
-    exif.month = date.getMonth() + 1;
-    exif.day = date.getDate();
+    const datum = new Date(Date.parse(data.DateTimeOriginal));
+    console.log(typeof datum);
+    exif.date = formatDatum(data.DateTimeOriginal);
+    exif.year = datum.getFullYear();
+    exif.month = datum.getMonth() + 1;
+    exif.day = datum.getDate();
   }
   if (has(data, "FNumber")) exif.aperture = data.FNumber;
   if (has(data, "ExposureTime")) {

@@ -81,7 +81,7 @@ import { computed, ref } from "vue";
 import { useValuesStore } from "../stores/values";
 import { useBucketStore } from "../stores/bucket";
 import { useAuthStore } from "../stores/auth";
-import api from "../helpers/api";
+// import api from "../helpers/api";
 import { formatDatum } from "../helpers";
 
 const valuesStore = useValuesStore();
@@ -90,7 +90,8 @@ const auth = useAuthStore();
 const message = ref("NEW IMAGES");
 
 const callApi = (url) => {
-  api.post(url, { token: auth.fcm_token }, { timeout: 0 }).then((x) => x.data);
+  console.log(url, auth.fcm_token);
+  // api.post(url, { token: auth.fcm_token }, { timeout: 0 }).then((x) => x.data);
 };
 const values = computed(() => valuesStore.values);
 const rebuild = (name) => {

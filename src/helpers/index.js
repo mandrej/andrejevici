@@ -23,7 +23,7 @@ const months = [
 const formatBytes = (bytes, decimals = 2) => {
   return humanStorageSize(bytes);
 };
-const formatDatum = (str, format) => {
+const formatDatum = (str, format = CONFIG.dateFormat) => {
   const date = new Date(str);
   return formatDate(date, format);
 };

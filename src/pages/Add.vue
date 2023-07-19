@@ -138,7 +138,6 @@ const onSubmit = (evt) => {
   const data = [];
   const promises = [];
   const formData = new FormData(evt.target);
-  console.log(formData);
 
   for (const [name, value] of formData.entries()) {
     if (value.name.length > 0) {

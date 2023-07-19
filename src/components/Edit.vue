@@ -92,7 +92,7 @@
                       transition-show="scale"
                       transition-hide="scale"
                     >
-                      <q-date v-model="tmp.date" :mask="mask">
+                      <q-date v-model="tmp.date" :mask="CONFIG.dateFormat">
                         <div class="row items-center justify-end">
                           <q-btn
                             v-close-popup
@@ -112,7 +112,11 @@
                       transition-show="scale"
                       transition-hide="scale"
                     >
-                      <q-time v-model="tmp.date" :mask="mask" format24h>
+                      <q-time
+                        v-model="tmp.date"
+                        :mask="CONFIG.dateFormat"
+                        format24h
+                      >
                         <div class="row items-center justify-end">
                           <q-btn
                             v-close-popup
@@ -218,15 +222,12 @@ const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const tmp = reactive({ ...props.rec });
 
-const mask = "YYYY-MM-DDTHH:mm:ss.SSSZ";
-tmp.date = "2023-07-08T19:20:28.000Z";
-
 const getExif = async () => {
   /**
    * Reread exif
    * See Add edit
    */
-  const exif = await readExif(tmp.filename);
+  const exif = await readExif(tmp.url);
   const tags = tmp.tags || [];
   Object.keys(exif).forEach((k) => {
     tmp[k] = exif[k];

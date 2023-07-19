@@ -116,15 +116,20 @@ export const useCrudStore = defineStore("crud", {
     },
     async saveRecord(obj) {
       const docRef = doc(db, "Photo", obj.filename);
+      const valuesStore = useValuesStore();
+      const bucketStore = useBucketStore();
       if (obj.thumb) {
+        const oldDoc = await getDoc(docRef);
+        valuesStore.decreaseCounters(oldDoc.data());
         await setDoc(docRef, obj, { merge: true });
         if (this.objects && this.objects.length) {
           const idx = this.objects.findIndex(
             (item) => item.filename === obj.filename
           );
-          this.objects.splice(idx, 1, obj);
+          if (idx > -1) this.objects.splice(idx, 1, obj);
           notify({ message: `${obj.filename} updated` });
         }
+        valuesStore.increaseCounters(obj);
       } else {
         // publish
         await setDoc(docRef, obj, { merge: true });
@@ -132,15 +137,16 @@ export const useCrudStore = defineStore("crud", {
           const idx = this.objects.findIndex(
             (item) => item.filename === obj.filename
           );
-          this.objects.splice(idx, 0, obj);
+          if (idx > -1) this.objects.splice(idx, 0, obj);
         }
-        const bucketStore = useBucketStore();
-        // this.deleteUploaded(obj);
+        // delete uploaded
         const idx = this.uploaded.findIndex(
           (item) => item.filename === obj.filename
         );
-        this.uploaded.splice(idx, 1);
+        if (idx > -1) this.uploaded.splice(idx, 1);
+
         bucketStore.diff(obj.size);
+        valuesStore.increaseCounters(obj);
 
         // api.put("edit", obj).then((response) => {
         //   const obj = response.data.rec;

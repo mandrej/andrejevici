@@ -32,6 +32,10 @@
       >{{ obj.value }}</router-link
     >
   </div>
+  <div class="q-px-md text-subtitle1 gt-xs">
+    This site is made for my personal photographic needs. I couldn't find better
+    nor cheeper solutions to store my photos
+  </div>
 </template>
 
 <script setup>
