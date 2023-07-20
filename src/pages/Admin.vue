@@ -17,18 +17,34 @@
         </q-item-section>
       </q-item>
     </q-list>
-    <q-item-label header>Recount existing field values</q-item-label>
+    <q-item-label header>Various helper counters</q-item-label>
     <q-list separator>
-      <q-item v-for="field in Object.keys(values)" :key="field">
+      <q-item>
         <q-item-section>
-          <q-item-label>for {{ field }}</q-item-label>
+          <q-item-label
+            >Recreate existing field values for
+            {{ Object.keys(values).join(" ") }}</q-item-label
+          >
         </q-item-section>
         <q-item-section side>
           <q-btn
             :disabled="!auth.fcm_token"
             color="primary"
-            label="Rebuild"
-            @click="rebuild(field)"
+            label="rebuild"
+            @click="rebuild"
+          />
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section>
+          <q-item-label>Bucket count and size</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn
+            :disabled="!auth.fcm_token"
+            color="primary"
+            label="Recalc"
+            @click="bucket"
           />
         </q-item-section>
       </q-item>
@@ -44,19 +60,6 @@
         </q-item-section>
       </q-item>
       <q-item-label header>Cloud storage related</q-item-label>
-      <q-item>
-        <q-item-section>
-          <q-item-label>Bucket count and size</q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            :disabled="!auth.fcm_token"
-            color="warning"
-            label="Recalc"
-            @click="bucket"
-          />
-        </q-item-section>
-      </q-item>
       <q-item>
         <q-item-section>
           <q-item-label
@@ -81,7 +84,6 @@ import { computed, ref } from "vue";
 import { useValuesStore } from "../stores/values";
 import { useBucketStore } from "../stores/bucket";
 import { useAuthStore } from "../stores/auth";
-// import api from "../helpers/api";
 import { formatDatum } from "../helpers";
 
 const valuesStore = useValuesStore();
@@ -89,23 +91,20 @@ const bucketStore = useBucketStore();
 const auth = useAuthStore();
 const message = ref("NEW IMAGES");
 
-const callApi = (url) => {
-  console.log(url, auth.fcm_token);
-  // api.post(url, { token: auth.fcm_token }, { timeout: 0 }).then((x) => x.data);
-};
 const values = computed(() => valuesStore.values);
-const rebuild = (name) => {
-  callApi("rebuild/" + name);
-};
-const repair = () => {
-  callApi("repair");
-};
-const fix = () => {
-  callApi("fix");
+
+const rebuild = () => {
+  valuesStore.photos2counters2store();
 };
 const bucket = () => {
-  bucketStore.bucketInfo({ verb: "set" });
+  bucketStore.scretch();
 };
+// const repair = () => {
+//   callApi("repair");
+// };
+// const fix = () => {
+//   callApi("fix");
+// };
 const send = () => {
   auth.sendNotifications(message.value);
 };

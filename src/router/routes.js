@@ -18,19 +18,6 @@ const routes = [
     ],
   },
   {
-    path: "/x",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/IndexPage.vue") }],
-  },
-  {
-    path: "/x/add",
-    component: () => import("layouts/MainLayout.vue"),
-    // meta: {
-    //   requiresAuth: true,
-    // },
-    children: [{ path: "", component: () => import("pages/UploadPage.vue") }],
-  },
-  {
     path: "/list",
     component: () => import("../layouts/Default.vue"),
     meta: { sidebar: Find },

@@ -10,7 +10,6 @@ import {
   getDoc,
   setDoc,
   getDocs,
-  updateDoc,
   deleteDoc,
   startAfter,
 } from "firebase/firestore";
@@ -19,11 +18,18 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { CONFIG, thumbName, thumbUrl, removeByProperty } from "../helpers";
+import {
+  CONFIG,
+  thumbName,
+  thumbUrl,
+  emailNick,
+  removeByProperty,
+} from "../helpers";
 import notify from "../helpers/notify";
 import pushMessage from "../helpers/push";
 import { useValuesStore } from "./values";
 import { useBucketStore } from "./bucket";
+import { useAuthStore } from "./auth";
 
 const photosRef = collection(db, "Photo");
 
@@ -35,6 +41,7 @@ export const useCrudStore = defineStore("crud", {
     next: null,
     current: {},
     last: {},
+    since: "",
 
     busy: false,
     showEdit: false,
@@ -84,29 +91,7 @@ export const useCrudStore = defineStore("crud", {
       if (reset) this.resetObjects(); // late reset
 
       querySnapshot.forEach(async (it) => {
-        let _ref,
-          _err = 0;
-        const record = it.data();
-        if (!record.url) {
-          _ref = storageRef(storage, record.filename);
-          record.url = await getDownloadURL(_ref);
-          _err++;
-        }
-        if (!record.thumb) {
-          if (process.env.DEV) {
-            _ref = storageRef(storage, thumbName(record.filename));
-            record.thumb = await getDownloadURL(_ref);
-          } else {
-            record.thumb = thumbUrl(record.filename);
-          }
-          _err++;
-        }
-
-        this.objects.push(record);
-        if (_err > 0) {
-          await updateDoc(doc(db, "Photo", it.id), record);
-          console.log("updateDoc");
-        }
+        this.objects.push(it.data());
       });
       this.error = this.objects.length === 0 ? 0 : null;
       // this.updateObjects(response.data);
@@ -120,7 +105,7 @@ export const useCrudStore = defineStore("crud", {
       const bucketStore = useBucketStore();
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef);
-        valuesStore.decreaseCounters(oldDoc.data());
+        valuesStore.decreaseValues(oldDoc.data());
         await setDoc(docRef, obj, { merge: true });
         if (this.objects && this.objects.length) {
           const idx = this.objects.findIndex(
@@ -129,9 +114,16 @@ export const useCrudStore = defineStore("crud", {
           if (idx > -1) this.objects.splice(idx, 1, obj);
           notify({ message: `${obj.filename} updated` });
         }
-        valuesStore.increaseCounters(obj);
+        valuesStore.increaseValues(obj);
       } else {
-        // publish
+        // set thumbnail url = publish
+        if (process.env.DEV) {
+          const thumbRef = storageRef(storage, thumbName(obj.filename));
+          obj.thumb = await getDownloadURL(thumbRef);
+        } else {
+          obj.thumb = thumbUrl(obj.filename);
+        }
+        // save everything
         await setDoc(docRef, obj, { merge: true });
         if (this.objects && this.objects.length) {
           const idx = this.objects.findIndex(
@@ -146,7 +138,7 @@ export const useCrudStore = defineStore("crud", {
         if (idx > -1) this.uploaded.splice(idx, 1);
 
         bucketStore.diff(obj.size);
-        valuesStore.increaseCounters(obj);
+        valuesStore.increaseValues(obj);
 
         // api.put("edit", obj).then((response) => {
         //   const obj = response.data.rec;
@@ -181,7 +173,7 @@ export const useCrudStore = defineStore("crud", {
         const bucketStore = useBucketStore();
 
         bucketStore.diff(-data.size);
-        valuesStore.decreaseCounters(data);
+        valuesStore.decreaseValues(data);
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
@@ -220,34 +212,44 @@ export const useCrudStore = defineStore("crud", {
     //   this.next = data._next;
     // },
     async getLast() {
-      const q = query(photosRef, orderBy("date", "desc"), limit(1));
+      let q, querySnapshot;
+      const auth = useAuthStore();
+      const constraints = [orderBy("date", "desc"), limit(1)];
+      if (auth.user && auth.user.isAuthorized) {
+        q = query(
+          photosRef,
+          where("email", "==", auth.user.email),
+          ...constraints
+        );
+      } else {
+        q = query(photosRef, ...constraints);
+      }
+      querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return null;
+
+      querySnapshot.forEach(async (it) => {
+        const rec = it.data();
+        if (auth.user && auth.user.isAuthorized) {
+          rec.href = "/list?nick=" + emailNick(rec.email);
+        } else {
+          rec.href = "/list?year=" + rec.year;
+        }
+        this.last = rec;
+      });
+    },
+    async getSince() {
+      const q = query(photosRef, orderBy("date", "asc"), limit(1));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
       querySnapshot.forEach(async (it) => {
-        let _err = 0,
-          _ref;
-        const record = it.data();
-        if (!record.thumb) {
-          if (process.env.DEV) {
-            _ref = storageRef(storage, thumbName(record.filename));
-            record.thumb = await getDownloadURL(_ref);
-          } else {
-            record.thumb = thumbUrl(record.filename);
-          }
-          _err++;
-        }
-        if (_err > 0) {
-          await updateDoc(doc(db, "Photo", it.id), record);
-          console.log("updateDoc");
-        }
-        record.href = "/list&year=" + record.year;
-        this.last = record;
+        const rec = it.data();
+        this.since = rec.year;
       });
     },
   },
   persist: {
     key: "a",
-    paths: ["uploaded", "objects", "last", "next", "current"],
+    paths: ["uploaded", "objects", "last", "since", "next", "current"],
     // beforeRestore: (context) => {
     //   console.log("Before hydration...", context);
     // },

@@ -10,6 +10,7 @@ import {
   setDoc,
   getDocs,
 } from "firebase/firestore";
+import notify from "../helpers/notify";
 
 const docRef = doc(db, "Bucket", "total");
 const photosRef = collection(db, "Photo");
@@ -67,6 +68,7 @@ export const useBucketStore = defineStore("bucket", {
       // }
       this.bucket = { ...res };
       await setDoc(docRef, res, { merge: true });
+      notify({ message: `Bucket size and count recalculated` });
     },
   },
   persist: {

@@ -11,6 +11,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
+import notify from "../helpers/notify";
 import { CONFIG, emailNick } from "../helpers";
 
 const photosRef = collection(db, "Photo");
@@ -25,37 +26,55 @@ export const useValuesStore = defineStore("values", {
     // values getters
     tagValues: (state) => {
       if (state.values && state.values.tags) {
-        return state.values.tags.map((obj) => obj.value);
+        const res = state.values.tags.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => obj.value);
       }
       return [];
     },
     modelValues: (state) => {
       if (state.values && state.values.model) {
-        return state.values.model.map((obj) => obj.value);
+        const res = state.values.model.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => obj.value);
       }
       return [];
     },
     lensValues: (state) => {
       if (state.values && state.values.lens) {
-        return state.values.lens.map((obj) => obj.value);
+        const res = state.values.lens.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => obj.value);
       }
       return [];
     },
     nickValues: (state) => {
       if (state.values && state.values.email) {
-        return state.values.email.map((obj) => emailNick(obj.value));
+        const res = state.values.email.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => emailNick(obj.value));
       }
       return [];
     },
     emailValues: (state) => {
       if (state.values && state.values.email) {
-        return state.values.email.map((obj) => obj.value);
+        const res = state.values.email.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => obj.value);
       }
       return [];
     },
     nickCountValues: (state) => {
       if (state.values && state.values.email) {
-        return state.values.email.map((obj) => {
+        const res = state.values.email.sort((a, b) => {
+          return b.count - a.count;
+        });
+        return res.map((obj) => {
           return { value: emailNick(obj.value), count: obj.count };
         });
       }
@@ -63,8 +82,11 @@ export const useValuesStore = defineStore("values", {
     },
     yearValues: (state) => {
       if (state.values && state.values.year) {
-        return state.values.year.map((obj) => {
-          return { label: "" + obj.value, value: obj.value };
+        const res = state.values.year.sort((a, b) => {
+          return b.value - a.value;
+        });
+        return res.map((obj) => {
+          return { label: obj.value, value: obj.value };
         });
       }
       return [];
@@ -126,6 +148,7 @@ export const useValuesStore = defineStore("values", {
             },
             { merge: true }
           );
+          notify({ message: `Values for ${field} ${obj.value} updated` });
         }
       }
     },
@@ -159,7 +182,7 @@ export const useValuesStore = defineStore("values", {
         );
       }
     },
-    async increaseCounters(newData) {
+    async increaseValues(newData) {
       for (const field of CONFIG.photo_filter) {
         if (newData[field] && newData.date) {
           if (field === "tags") {
@@ -201,7 +224,7 @@ export const useValuesStore = defineStore("values", {
         }
       }
     },
-    async decreaseCounters(oldData) {
+    async decreaseValues(oldData) {
       for (const field of CONFIG.photo_filter) {
         if (oldData[field]) {
           if (field === "tags") {

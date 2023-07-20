@@ -52,7 +52,8 @@
               {{ $route.meta.title }}
               <br />
               <span v-if="bucket.count > 0" class="text-body1"
-                >{{ bucket.count }} photos since 2007 and counting</span
+                >{{ bucket.count }} photos since {{ crudStore.since }} and
+                counting</span
               >
             </q-toolbar-title>
             <q-btn

@@ -15,9 +15,9 @@ const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 
 onMounted(() => {
-  console.log("APP");
   bucketStore.read();
   crudStore.getLast();
+  crudStore.getSince();
   valuesStore.counters2store();
   onMessage(messaging, (payload) => {
     const params = {
