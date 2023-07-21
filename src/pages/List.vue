@@ -1,31 +1,27 @@
 <template>
-  <Edit v-if="crudStore.showEdit" :rec="crudStore.current" @edit-ok="editOk" />
-  <Confirm
-    v-if="crudStore.showConfirm"
-    :rec="crudStore.current"
-    @confirm-ok="confirmOk"
-  />
+  <Edit v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
+  <Confirm v-if="app.showConfirm" :rec="app.current" @confirm-ok="confirmOk" />
   <Carousel
-    v-if="crudStore.showCarousel"
+    v-if="app.showCarousel"
     :filename="currentFileName"
-    :list="crudStore.objects"
+    :list="app.objects"
     @carousel-cancel="carouselCancel"
     @confirm-delete="confirmShow"
-    @delete-record="crudStore.deleteRecord"
+    @delete-record="app.deleteRecord"
   />
 
   <q-page>
     <q-banner
-      v-if="crudStore.error"
+      v-if="app.error"
       class="absolute-center text-center bg-warning q-pa-md"
       rounded
     >
       <q-icon name="error_outline" size="4em" />
       <div class="text-h6">Something went wrong ...</div>
-      <div>{{ crudStore.error }}</div>
+      <div>{{ app.error }}</div>
     </q-banner>
     <q-banner
-      v-else-if="crudStore.error === 0"
+      v-else-if="app.error === 0"
       class="absolute-center text-center bg-warning q-pa-md"
       rounded
     >
@@ -42,7 +38,7 @@
 
     <div class="q-pa-md">
       <div
-        v-for="(list, index) in crudStore.groupObjects"
+        v-for="(list, index) in app.groupObjects"
         :key="index"
         class="q-mb-md"
       >
@@ -58,7 +54,7 @@
               @carousel-show="carouselShow"
               @edit-record="editRecord"
               @confirm-delete="confirmShow"
-              @delete-record="crudStore.deleteRecord"
+              @delete-record="app.deleteRecord"
               @google-analytics="ga"
             />
           </div>
@@ -79,7 +75,7 @@
 <script setup>
 import { scroll, throttle } from "quasar";
 import { defineAsyncComponent, onMounted, ref } from "vue";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
 import { fakeHistory } from "../helpers";
@@ -92,7 +88,7 @@ const Confirm = defineAsyncComponent(() => import("../components/Confirm.vue"));
 
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 const auth = useAuthStore();
 const route = useRoute();
 const currentFileName = ref(null);
@@ -113,9 +109,9 @@ const scrollHandler = throttle((obj) => {
   if (
     scrollHeight - obj.position.top < 3000 &&
     obj.direction === "down" &&
-    crudStore.next
+    app.next
   ) {
-    crudStore.fetchRecords(false, "scroll");
+    app.fetchRecords(false, "scroll");
   }
 }, 500);
 
@@ -124,9 +120,9 @@ const isAuthorOrAdmin = (rec) => {
 };
 
 const editRecord = (rec) => {
-  crudStore.current = rec;
+  app.current = rec;
   fakeHistory();
-  crudStore.showEdit = true;
+  app.showEdit = true;
 };
 const editOk = (hash) => {
   const el = document.querySelector("#" + hash);
@@ -137,18 +133,18 @@ const editOk = (hash) => {
   }, 2000);
 };
 const confirmShow = (rec) => {
-  crudStore.current = rec;
+  app.current = rec;
   fakeHistory();
-  crudStore.showConfirm = true;
+  app.showConfirm = true;
 };
 const confirmOk = (rec) => {
-  crudStore.showConfirm = false;
-  crudStore.deleteRecord(rec);
+  app.showConfirm = false;
+  app.deleteRecord(rec);
 };
 const carouselShow = (filename) => {
   currentFileName.value = filename;
   fakeHistory();
-  crudStore.showCarousel = true;
+  app.showCarousel = true;
 };
 const carouselCancel = (hash) => {
   const el = document.querySelector("#" + hash);

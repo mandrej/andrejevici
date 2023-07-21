@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="crudStore.showConfirm"
+    v-model="app.showConfirm"
     transition-show="slide-down"
     transition-hide="slide-up"
     persistent
@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { formatBytes } from "../helpers";
 
 const emit = defineEmits(["confirmOk"]);
@@ -35,12 +35,12 @@ const props = defineProps({
   rec: Object,
 });
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 
 window.onpopstate = function () {
-  crudStore.showConfirm = false;
+  app.showConfirm = false;
 };
 const onCancel = () => {
-  crudStore.showConfirm = false;
+  app.showConfirm = false;
 };
 </script>

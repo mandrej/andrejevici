@@ -1,106 +1,61 @@
-/* eslint-disable no-unused-vars */
 import { defineStore } from "pinia";
-import { CONFIG, emailNick, removeHash } from "../helpers";
-// import api from "../helpers/api";
+import { db, storage } from "../boot/fire";
+import {
+  doc,
+  collection,
+  query,
+  where,
+  limit,
+  orderBy,
+  getDoc,
+  setDoc,
+  getDocs,
+  deleteDoc,
+  startAfter,
+} from "firebase/firestore";
+import {
+  ref as storageRef,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import {
+  CONFIG,
+  thumbName,
+  thumbUrl,
+  emailNick,
+  removeByProperty,
+} from "../helpers";
 import notify from "../helpers/notify";
-import pushMessage from "../helpers/push";
+// import pushMessage from "../helpers/push";
+import { useValuesStore } from "./values";
 import { useAuthStore } from "./auth";
-// import querystring from "querystring-es3";
+
+const bucketRef = doc(db, "Bucket", "total");
+const photosRef = collection(db, "Photo");
 
 export const useAppStore = defineStore("app", {
   state: () => ({
-    find: {},
-
-    uploaded: [],
-
     bucket: {
       size: 0,
       count: 0,
     },
-    values: {},
 
+    find: {},
+    uploaded: [],
     objects: [],
-    pages: [],
     next: null,
-    error: null,
-    current: null,
+    current: {},
+    last: {},
+    since: "",
 
     busy: false,
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
-    tagsToApply: [],
   }),
   getters: {
-    last: (state) => {
-      if (state.values && state.values.year && state.values.email) {
-        let last = state.values.year[0];
-        last.href = "/list?year=" + last.value;
-        const auth = useAuthStore();
-        if (auth.user.email) {
-          const find = state.values.email.find(
-            (el) => el.value === auth.user.email
-          );
-          if (find) {
-            last = find;
-            last.href = "/list?nick=" + emailNick(last.value);
-          }
-        }
-        return last;
-      }
-      return {
-        href: "/",
-      };
-    },
-    counter: (state) => {
+    hasmore: (state) => {
       return { count: state.objects.length, more: state.next };
-    },
-    // values getters
-    tagValues: (state) => {
-      if (state.values && state.values.tags) {
-        return state.values.tags.map((obj) => obj.value);
-      }
-      return [];
-    },
-    modelValues: (state) => {
-      if (state.values && state.values.model) {
-        return state.values.model.map((obj) => obj.value);
-      }
-      return [];
-    },
-    lensValues: (state) => {
-      if (state.values && state.values.lens) {
-        return state.values.lens.map((obj) => obj.value);
-      }
-      return [];
-    },
-    nickValues: (state) => {
-      if (state.values && state.values.email) {
-        return state.values.email.map((obj) => emailNick(obj.value));
-      }
-      return [];
-    },
-    emailValues: (state) => {
-      if (state.values && state.values.email) {
-        return state.values.email.map((obj) => obj.value);
-      }
-      return [];
-    },
-    nickCountValues: (state) => {
-      if (state.values && state.values.email) {
-        return state.values.email.map((obj) => {
-          return { value: emailNick(obj.value), count: obj.count };
-        });
-      }
-      return [];
-    },
-    yearValues: (state) => {
-      if (state.values && state.values.year) {
-        return state.values.year.map((obj) => {
-          return { label: "" + obj.value, value: obj.value };
-        });
-      }
-      return [];
     },
     groupObjects: (state) => {
       const groups = [];
@@ -111,177 +66,243 @@ export const useAppStore = defineStore("app", {
     },
   },
   actions: {
-    deleteUploaded(obj) {
-      const idx = this.uploaded.findIndex(
-        (item) => item.filename === obj.filename
-      );
-      if (idx > -1) this.uploaded.splice(idx, 1);
-      if (this.uploaded.length === 0 && this.showCarousel) {
-        this.showCarousel = false;
-        removeHash();
+    // bucket
+    async read() {
+      const docSnap = await getDoc(bucketRef);
+      this.bucket = { ...docSnap.data() };
+    },
+    async diff(num) {
+      if (num > 0) {
+        this.bucket.size += num;
+        this.bucket.count++;
+      } else {
+        this.bucket.size -= num;
+        this.bucket.count--;
+      }
+      if (this.bucket.count <= 0) {
+        this.bucket.size = 0;
+        this.bucket.count = 0;
+      }
+      await setDoc(bucketRef, this.bucket, { merge: true });
+    },
+    async scretch() {
+      const res = {
+        count: 0,
+        size: 0,
+      };
+      const q = query(photosRef, orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (it) => {
+          res.count++;
+          res.size += it.data().size;
+        });
+      }
+      // const refs = await listAll(storageRef(storage, ""));
+      // for (let r of refs.items) {
+      //   const meta = await getMetadata(r);
+      //   if (meta.contentType === "image/jpeg") {
+      //     res.size += meta.size;
+      //     res.count++;
+      //   }
+      // }
+      this.bucket = { ...res };
+      await setDoc(bucketRef, res, { merge: true });
+      // notify({ message: `Bucket size and count recalculated` });
+    },
+    // bucket
+    async fetchRecords(reset = false, invoked = "") {
+      if (this.busy) {
+        if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
+        return;
+      }
+      const filters = Object.entries(this.find).map(([key, val]) => {
+        if (key === "tags") {
+          return where("tags", "array-contains-any", val);
+        } else {
+          return where(key, "==", val);
+        }
+      });
+      const constraints = [
+        ...filters,
+        orderBy("date", "desc"),
+        limit(CONFIG.limit),
+      ];
+      if (this.next) {
+        constraints.push(startAfter(doc(db, "Photo", this.next)));
+      }
+      const q = query(photosRef, ...constraints);
+      this.error = null;
+      this.busy = true;
+      const querySnapshot = await getDocs(q);
+      this.next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      if (reset) this.resetObjects(); // late reset
+
+      querySnapshot.forEach(async (it) => {
+        this.objects.push(it.data());
+      });
+      this.error = this.objects.length === 0 ? 0 : null;
+      // this.updateObjects(response.data);
+      this.busy = false;
+      if (process.env.DEV)
+        console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
+    },
+    async saveRecord(obj) {
+      const docRef = doc(db, "Photo", obj.filename);
+      const valuesStore = useValuesStore();
+      if (obj.thumb) {
+        const oldDoc = await getDoc(docRef);
+        valuesStore.decreaseValues(oldDoc.data());
+        await setDoc(docRef, obj, { merge: true });
+        if (this.objects && this.objects.length) {
+          const idx = this.objects.findIndex(
+            (item) => item.filename === obj.filename
+          );
+          if (idx > -1) this.objects.splice(idx, 1, obj);
+          notify({ message: `${obj.filename} updated` });
+        }
+        valuesStore.increaseValues(obj);
+      } else {
+        // set thumbnail url = publish
+        if (process.env.DEV) {
+          const thumbRef = storageRef(storage, thumbName(obj.filename));
+          obj.thumb = await getDownloadURL(thumbRef);
+        } else {
+          obj.thumb = thumbUrl(obj.filename);
+        }
+        // save everything
+        await setDoc(docRef, obj, { merge: true });
+        if (this.objects && this.objects.length) {
+          const idx = this.objects.findIndex(
+            (item) => item.filename === obj.filename
+          );
+          if (idx > -1) this.objects.splice(idx, 0, obj);
+        }
+        // delete uploaded
+        const idx = this.uploaded.findIndex(
+          (item) => item.filename === obj.filename
+        );
+        if (idx > -1) this.uploaded.splice(idx, 1);
+
+        this.diff(obj.size);
+        valuesStore.increaseValues(obj);
+
+        // api.put("edit", obj).then((response) => {
+        //   const obj = response.data.rec;
+        //   const diff = { verb: "add", size: obj.size };
+        //   // addRecord
+        //   const dates = this.objects.map((item) => item.date);
+        //   const idx = dates.findIndex((date) => date < obj.date);
+        //   this.objects.splice(idx, 0, obj);
+
+        //   this.deleteUploaded(obj);
+        //   this.bucketInfo(diff);
+        // });
       }
     },
-    // async bucketInfo(param) {
-    //   /**
-    //    * param: { verb: 'add|del|get', [size: int] }
-    //    */
-    //   let response;
-    //   if (param.verb === "get") {
-    //     response = await api.get(param.verb + "/bucket_info");
-    //     this.bucket = { ...this.bucket, ...response.data };
-    //   } else {
-    //     response = await api.put(param.verb + "/bucket_info", param);
-    //     if (param.verb === "set") {
-    //       const auth = useAuthStore();
-    //       pushMessage(auth.fcm_token, "Cloud Bucket Info done");
-    //     }
-    //     this.bucket = { ...this.bucket, ...response.data };
-    //   }
-    // },
-    // saveRecord(obj) {
-    //   if (obj.id) {
-    //     api.put("edit/" + obj.id, obj).then((response) => {
-    //       const obj = response.data.rec;
-    //       if (this.objects && this.objects.length) {
-    //         const idx = this.objects.findIndex((item) => item.id === obj.id);
-    //         this.objects.splice(idx, 1, obj);
-    //         notify({ message: `${obj.filename} updated` });
-    //       }
-    //     });
-    //   } else {
-    //     // publish
-    //     api.put("edit", obj).then((response) => {
-    //       const obj = response.data.rec;
-    //       const diff = { verb: "add", size: obj.size };
-    //       // addRecord
-    //       const dates = this.objects.map((item) => item.date);
-    //       const idx = dates.findIndex((date) => date < obj.date);
-    //       this.objects.splice(idx, 0, obj);
+    async deleteRecord(obj) {
+      notify({
+        group: `${obj.filename}`,
+        message: `About to delete`,
+      });
+      if (obj.thumb) {
+        const docRef = doc(db, "Photo", obj.filename);
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+        const stoRef = storageRef(storage, obj.filename);
+        const thumbRef = storageRef(storage, thumbName(obj.filename));
+        await deleteDoc(docRef);
+        await deleteObject(stoRef);
+        await deleteObject(thumbRef);
 
-    //       this.deleteUploaded(obj);
-    //       this.bucketInfo(diff);
-    //     });
-    //   }
-    // },
-    // deleteRecord(obj) {
-    //   notify({
-    //     group: `${obj.filename}`,
-    //     message: `About to delete`,
-    //   });
-    //   if (obj.id) {
-    //     api
-    //       .delete("delete/" + obj.id, { data: { foo: "bar" } })
-    //       .then((response) => {
-    //         if (response.data) {
-    //           const diff = { verb: "del", size: obj.size };
-    //           notify({
-    //             group: `${obj.filename}`,
-    //             message: `${obj.filename} deleted`,
-    //           });
-    //           const idx = this.objects.findIndex((item) => item.id === obj.id);
-    //           if (idx > -1) this.objects.splice(idx, 1);
+        removeByProperty(this.objects, "filename", obj.filename);
+        const valuesStore = useValuesStore();
 
-    //           this.fetchStat();
-    //           this.bucketInfo(diff);
-    //         }
-    //       })
-    //       .catch((err) => {
-    //         notify({
-    //           group: `${obj.filename}`,
-    //           type: "negative",
-    //           message: "Failed to delete.",
-    //         });
-    //       });
-    //   } else {
-    //     api
-    //       .delete("remove/" + obj.filename, { data: { foo: "bar" } })
-    //       .then((response) => {
-    //         if (response.data) {
-    //           notify({
-    //             group: `${obj.filename}`,
-    //             message: `${obj.filename} deleted`,
-    //           });
-    //           this.deleteUploaded(obj);
-    //         }
-    //       })
-    //       .catch((err) => {
-    //         notify({
-    //           group: `${obj.filename}`,
-    //           type: "negative",
-    //           message: "Failed to delete.",
-    //         });
-    //       });
-    //   }
-    // },
+        this.diff(-data.size);
+        valuesStore.decreaseValues(data);
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        });
+        //   .catch((err) => {
+        //     notify({
+        //       group: `${obj.filename}`,
+        //       type: "negative",
+        //       message: "Failed to delete.",
+        //     });
+      } else {
+        const stoRef = storageRef(storage, obj.filename);
+        const thumbRef = storageRef(storage, thumbName(obj.filename));
+        await deleteObject(stoRef);
+        await deleteObject(thumbRef);
+
+        removeByProperty(this.uploaded, "filename", obj.filename);
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        });
+        //   .catch((err) => {
+        //     notify({
+        //       group: `${obj.filename}`,
+        //       type: "negative",
+        //       message: "Failed to delete.",
+        //     });
+      }
+    },
     resetObjects() {
       this.objects.length = 0;
-      this.pages.length = 0;
       this.next = null;
     },
-    updateObjects(data) {
-      if (this.pages[0] === "FP" && data._page === "FP") return;
-      this.objects = [...this.objects, ...data.objects];
-      this.pages = [...this.pages, data._page];
-      this.next = data._next;
-    },
-    // fetchRecords(reset = false, invoked = "") {
-    //   if (this.busy) {
-    //     if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
-    //     return;
-    //   }
-    //   const params = Object.assign({}, this.find, { per_page: CONFIG.limit });
-    //   if (this.next && !reset) params._page = this.next;
-    //   const url = "search?" + querystring.stringify(params);
+    // updateObjects(data) {
+    //   this.objects = [...this.objects, ...data.objects];
+    //   this.next = data._next;
+    // },
+    async getLast() {
+      let q, querySnapshot;
+      const auth = useAuthStore();
+      const constraints = [orderBy("date", "desc"), limit(1)];
+      if (auth.user && auth.user.isAuthorized) {
+        q = query(
+          photosRef,
+          where("email", "==", auth.user.email),
+          ...constraints
+        );
+      } else {
+        q = query(photosRef, ...constraints);
+      }
+      querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return null;
 
-    //   this.error = null;
-    //   this.busy = true;
-    //   api
-    //     .get(url)
-    //     .then((response) => {
-    //       if (response.error) {
-    //         this.error = response.error;
-    //       } else if (
-    //         response.data.objects &&
-    //         response.data.objects.length === 0
-    //       ) {
-    //         this.error = 0;
-    //       }
-    //       if (reset) this.resetObjects(); // late reset
-    //       this.updateObjects(response.data);
-    //       this.busy = false;
-    //       if (process.env.DEV)
-    //         console.log(
-    //           "FETCHED FOR " + invoked + " " + JSON.stringify(this.find)
-    //         );
-    //     })
-    //     .catch((err) => {
-    //       notify({ type: "negative", message: err.message });
-    //       this.busy = false;
-    //     });
-    // },
-    // fetchStat() {
-    //   api.get("counters").then((response) => {
-    //     this.values = response.data;
-    //     // dispatch bucketInfo
-    //     if (this.bucket.count === 0) {
-    //       this.bucketInfo({ verb: "set" });
-    //     } else {
-    //       this.bucketInfo({ verb: "get" });
-    //     }
-    //   });
-    // },
+      querySnapshot.forEach(async (it) => {
+        const rec = it.data();
+        if (auth.user && auth.user.isAuthorized) {
+          rec.href = "/list?nick=" + emailNick(rec.email);
+        } else {
+          rec.href = "/list?year=" + rec.year;
+        }
+        this.last = rec;
+      });
+    },
+    async getSince() {
+      const q = query(photosRef, orderBy("date", "asc"), limit(1));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return null;
+      querySnapshot.forEach(async (it) => {
+        const rec = it.data();
+        this.since = rec.year;
+      });
+    },
   },
   persist: {
     key: "a",
     paths: [
-      "find",
       "bucket",
-      "values",
       "uploaded",
       "objects",
-      "pages",
+      "last",
+      "since",
       "next",
-      "tagsToApply",
+      "current",
     ],
     // beforeRestore: (context) => {
     //   console.log("Before hydration...", context);

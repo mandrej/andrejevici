@@ -243,11 +243,5 @@ export const useValuesStore = defineStore("values", {
   persist: {
     key: "a",
     paths: ["values"],
-    // beforeRestore: (context) => {
-    //   console.log("Before hydration...", context);
-    // },
-    // afterRestore: (context) => {
-    //   console.log("After hydration...", context);
-    // },
   },
 });

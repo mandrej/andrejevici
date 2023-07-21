@@ -1,11 +1,11 @@
 <template>
-  <Edit v-if="crudStore.showEdit" :rec="current" />
+  <Edit v-if="app.showEdit" :rec="current" />
   <Carousel
-    v-if="crudStore.showCarousel"
+    v-if="app.showCarousel"
     :filename="currentFileName"
     :list="uploaded"
     @carousel-cancel="carouselCancel"
-    @delete-record="crudStore.deleteRecord"
+    @delete-record="app.deleteRecord"
   />
 
   <q-page class="q-pa-md">
@@ -73,7 +73,7 @@
             :rec="rec"
             :canManage="true"
             @carousel-show="carouselShow"
-            @delete-record="crudStore.deleteRecord"
+            @delete-record="app.deleteRecord"
             @edit-record="editRecord"
           />
         </div>
@@ -92,7 +92,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import {
@@ -112,12 +112,12 @@ const Edit = defineAsyncComponent(() => import("../components/Edit.vue"));
 
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 
-const uploaded = computed(() => crudStore.uploaded);
-const current = computed(() => crudStore.current);
+const uploaded = computed(() => app.uploaded);
+const current = computed(() => app.current);
 
 let files = ref([]);
 let progressInfos = reactive([]);
@@ -145,14 +145,13 @@ const onSubmit = (evt) => {
     }
   }
   if (data.length === 0) {
-    console.log("nothing to upload");
+    notify({ message: `Nothing to upload` });
   }
   for (const [i, file] of data.entries()) {
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
   Promise.all(promises).then((results) => {
-    console.log("waiting over");
     results.forEach((name) => {
       removeByProperty(files.value, "name", name);
     });
@@ -206,7 +205,7 @@ const uploadTask = (i, filename, file, resolve, reject) => {
           nick: emailNick("milan.andrejevic@gmail.com"),
         };
         resolve(file.name);
-        crudStore.uploaded.push(data);
+        app.uploaded.push(data);
         progressInfos[i] = 0;
       });
     }
@@ -258,20 +257,20 @@ const editRecord = async (rec) => {
   rec.tags = tags;
   rec.email = auth.user.email;
 
-  // crudStore.current = rec;
+  // app.current = rec;
   fakeHistory();
-  crudStore.showEdit = true;
-  crudStore.current = rec;
-  crudStore.showEdit = true;
+  app.showEdit = true;
+  app.current = rec;
+  app.showEdit = true;
 };
 
 const carouselShow = (filename) => {
   currentFileName.value = filename;
   fakeHistory();
-  crudStore.showCarousel = true;
+  app.showCarousel = true;
 };
 const carouselCancel = (hash) => {
-  crudStore.showCarousel = false;
+  app.showCarousel = false;
   const el = document.querySelector("#" + hash);
   if (!el) return;
   const target = getScrollTarget(el);

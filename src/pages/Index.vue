@@ -32,24 +32,22 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <div class="q-px-md text-subtitle1 gt-xs">
-    This site is made for my personal photographic needs. I couldn't find better
-    nor cheeper solutions to store my photos
+  <div class="q-pa-md text-body2 gt-xs">
+    This application is made for my personal photographic needs. I couldn't find
+    any better nor cheeper solutions to store my photos. Application provide
+    serching based on tags, year, month, day, model, lens and author. Enjoy
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
-// import { useCrudStore } from "../stores/crud";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 
-// const crudStore = useCrudStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 
 onMounted(() => {
-  // crudStore.getLast();
   auth.getPermission();
 });
 </script>

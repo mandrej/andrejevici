@@ -17,17 +17,17 @@
         </q-toolbar-title>
 
         <div v-if="$route.name === 'list'">
-          {{ crudStore.counter.more ? "+" : "" }}{{ crudStore.counter.count }}
+          {{ app.hasmore.more ? "+" : "" }}{{ app.hasmore.count }}
         </div>
         <q-btn
           v-else
           flat
           round
           icon="history"
-          :to="{ name: 'list', query: crudStore.find }"
+          :to="{ name: 'list', query: app.find }"
         />
         <q-linear-progress
-          v-show="crudStore.busy"
+          v-show="app.busy"
           color="warning"
           class="absolute-bottom"
           indeterminate
@@ -59,9 +59,9 @@
 
 <script setup>
 import { ref } from "vue";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import Menu from "../components/Menu.vue";
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 const drawer = ref(false);
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="crudStore.showCarousel" :maximized="true" persistent>
+  <q-dialog v-model="app.showCarousel" :maximized="true" persistent>
     <swiper
       :keyboard="true"
       :grab-cursor="true"
@@ -65,7 +65,7 @@
 <script setup>
 import { useQuasar } from "quasar";
 import { ref } from "vue";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useAuthStore } from "../stores/auth";
 import { useRoute } from "vue-router";
 import { formatBytes, removeHash, CONFIG, U } from "../helpers";
@@ -84,7 +84,7 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
-const crudStore = useCrudStore();
+const app = useAppStore();
 const auth = useAuthStore();
 const route = useRoute();
 const hash = ref(null);
@@ -150,12 +150,12 @@ const caption = (rec) => {
 
 window.onpopstate = function () {
   emit("carouselCancel", hash.value);
-  crudStore.showCarousel = false;
+  app.showCarousel = false;
 };
 const onCancel = () => {
   removeHash();
   emit("carouselCancel", hash.value);
-  crudStore.showCarousel = false;
+  app.showCarousel = false;
 };
 </script>
 

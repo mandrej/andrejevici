@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="crudStore.showEdit"
+    v-model="app.showEdit"
     :maximized="$q.screen.lt.md"
     transition-show="slide-up"
     transition-hide="slide-down"
@@ -207,7 +207,7 @@
 import { reactive } from "vue";
 import { CONFIG, fileBroken, formatBytes, U } from "../helpers";
 import readExif from "../helpers/exif";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import Complete from "./Complete.vue";
@@ -217,7 +217,7 @@ const props = defineProps({
   rec: Object,
 });
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const tmp = reactive({ ...props.rec });
@@ -276,15 +276,15 @@ const addNewLens = (inputValue) => {
 };
 
 window.onpopstate = function () {
-  crudStore.showEdit = false;
+  app.showEdit = false;
 };
 const onCancel = () => {
-  crudStore.showEdit = false;
+  app.showEdit = false;
 };
 const onSubmit = () => {
   tmp.tags = tmp.tags ? tmp.tags : [];
-  crudStore.saveRecord(tmp);
+  app.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
-  crudStore.showEdit = false;
+  app.showEdit = false;
 };
 </script>

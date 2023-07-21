@@ -1,5 +1,5 @@
 <template>
-  <q-list class="q-py-md" v-if="bucketStore.bucket.count > 0">
+  <q-list class="q-py-md" v-if="app.bucket.count > 0">
     <q-item>
       <q-item-section>
         <q-item-label class="text-white" overline>SITE STATISTICS</q-item-label>
@@ -23,20 +23,20 @@
 
 <script setup>
 import { computed } from "vue";
-import { useBucketStore } from "../stores/bucket";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { formatBytes } from "../helpers";
 
-const bucketStore = useBucketStore();
+const app = useAppStore();
 const valuesStore = useValuesStore();
 const list = computed(() => [
   {
     text: "storage",
-    value: formatBytes(bucketStore.bucket.size),
+    value: formatBytes(app.bucket.size),
   },
   {
     text: "photographs",
-    value: bucketStore.bucket.count,
+    value: app.bucket.count,
   },
   {
     text: "years",

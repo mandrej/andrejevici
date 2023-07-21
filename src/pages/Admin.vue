@@ -82,12 +82,10 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useValuesStore } from "../stores/values";
-import { useBucketStore } from "../stores/bucket";
 import { useAuthStore } from "../stores/auth";
 import { formatDatum } from "../helpers";
 
 const valuesStore = useValuesStore();
-const bucketStore = useBucketStore();
 const auth = useAuthStore();
 const message = ref("NEW IMAGES");
 
@@ -97,14 +95,10 @@ const rebuild = () => {
   valuesStore.photos2counters2store();
 };
 const bucket = () => {
-  bucketStore.scretch();
+  app.scretch();
 };
-// const repair = () => {
-//   callApi("repair");
-// };
-// const fix = () => {
-//   callApi("fix");
-// };
+const repair = () => {};
+const fix = () => {};
 const send = () => {
   auth.sendNotifications(message.value);
 };

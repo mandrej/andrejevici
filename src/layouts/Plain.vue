@@ -52,17 +52,17 @@
               {{ $route.meta.title }}
               <br />
               <span v-if="bucket.count > 0" class="text-body1"
-                >{{ bucket.count }} photos since {{ crudStore.since }} and
+                >{{ bucket.count }} photos since {{ app.since }} and
                 counting</span
               >
             </q-toolbar-title>
             <q-btn
-              v-if="crudStore.find && Object.keys(crudStore.find).length"
+              v-if="app.find && Object.keys(app.find).length"
               size="2em"
               flat
               round
               icon="history"
-              :to="{ name: 'list', query: crudStore.find }"
+              :to="{ name: 'list', query: app.find }"
             />
           </q-toolbar>
 
@@ -76,17 +76,15 @@
 <script setup>
 import { computed } from "vue";
 import { isEmpty } from "lodash";
-import { useBucketStore } from "../stores/bucket";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useAuthStore } from "../stores/auth";
 import { fileBroken, version } from "../helpers";
 
-const crudStore = useCrudStore();
-const bucketStore = useBucketStore();
+const app = useAppStore();
 const auth = useAuthStore();
 
-const last = computed(() => crudStore.last);
-const bucket = computed(() => bucketStore.bucket);
+const last = computed(() => app.last);
+const bucket = computed(() => app.bucket);
 
 const styling = computed(() => {
   if (isEmpty(last.value)) {

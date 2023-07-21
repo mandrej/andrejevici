@@ -2,7 +2,7 @@
   <div class="q-pa-md q-gutter-md">
     <q-input
       v-model="tmp.text"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       label="by text"
       clearable
       @blur="submit"
@@ -14,7 +14,7 @@
       :options="valuesStore.tagValues"
       multiple
       label="by tags"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -31,7 +31,7 @@
       :options="valuesStore.yearValues"
       autocomplete="label"
       label="by year"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -49,7 +49,7 @@
         :options="optionsMonth"
         autocomplete="label"
         label="by month"
-        :disable="crudStore.busy"
+        :disable="app.busy"
         behavior="menu"
         :dense="$q.screen.xs"
         dark
@@ -67,7 +67,7 @@
         :options="optionsDay"
         autocomplete="label"
         label="by day"
-        :disable="crudStore.busy"
+        :disable="app.busy"
         behavior="menu"
         :dense="$q.screen.xs"
         dark
@@ -83,7 +83,7 @@
       v-model="tmp.model"
       :options="valuesStore.modelValues"
       label="by model"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -98,7 +98,7 @@
       v-model="tmp.lens"
       :options="valuesStore.lensValues"
       label="by lens"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -113,7 +113,7 @@
       v-model="tmp.nick"
       :options="valuesStore.nickValues"
       label="by author"
-      :disable="crudStore.busy"
+      :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
       dark
@@ -130,16 +130,16 @@
 <script setup>
 import { onMounted, computed, watch, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useCrudStore } from "../stores/crud";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import Complete from "./Complete.vue";
 import { months } from "../helpers";
 
-const crudStore = useCrudStore();
+const app = useAppStore();
 const valuesStore = useValuesStore();
 const route = useRoute();
 const router = useRouter();
-const tmp = ref({ ...crudStore.find });
+const tmp = ref({ ...app.find });
 
 const queryDispatch = (query, invoked = "") => {
   tmp.value = { ...query };
@@ -163,9 +163,9 @@ const queryDispatch = (query, invoked = "") => {
     }
   });
   // store query
-  crudStore.find = tmp.value;
+  app.find = tmp.value;
   // fetch new query
-  crudStore.fetchRecords(true, invoked); // new filter with reset
+  app.fetchRecords(true, invoked); // new filter with reset
   // this dispatch route change
   if (Object.keys(tmp.value).length) {
     if (route.hash) {
