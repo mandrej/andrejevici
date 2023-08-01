@@ -55,7 +55,7 @@ export const useAppStore = defineStore("app", {
   }),
   getters: {
     hasmore: (state) => {
-      return { count: state.objects.length, more: state.next };
+      return { count: state.objects.length, more: Boolean(state.next) };
     },
     groupObjects: (state) => {
       const groups = [];
@@ -123,26 +123,30 @@ export const useAppStore = defineStore("app", {
           return where(key, "==", val);
         }
       });
-      const constraints = [
-        ...filters,
-        orderBy("date", "desc"),
-        limit(CONFIG.limit),
-      ];
+      const constraints = [...filters, orderBy("date", "desc")];
+      if (reset) this.next = null;
       if (this.next) {
-        constraints.push(startAfter(doc(db, "Photo", this.next)));
+        const cursor = await getDoc(doc(db, "Photo", this.next));
+        constraints.push(startAfter(cursor));
       }
+      constraints.push(limit(CONFIG.limit));
       const q = query(photosRef, ...constraints);
       this.error = null;
       this.busy = true;
-      const querySnapshot = await getDocs(q);
-      this.next = querySnapshot.docs[querySnapshot.docs.length - 1];
-      if (reset) this.resetObjects(); // late reset
 
-      querySnapshot.forEach(async (it) => {
+      const querySnapshot = await getDocs(q);
+      if (reset) this.objects.length = 0;
+      querySnapshot.forEach((it) => {
         this.objects.push(it.data());
       });
+
+      const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      if (next && next.id) {
+        next.id === this.next ? (this.next = null) : (this.next = next.id);
+      } else {
+        this.next = null;
+      }
       this.error = this.objects.length === 0 ? 0 : null;
-      // this.updateObjects(response.data);
       this.busy = false;
       if (process.env.DEV)
         console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
@@ -249,14 +253,6 @@ export const useAppStore = defineStore("app", {
         //     });
       }
     },
-    resetObjects() {
-      this.objects.length = 0;
-      this.next = null;
-    },
-    // updateObjects(data) {
-    //   this.objects = [...this.objects, ...data.objects];
-    //   this.next = data._next;
-    // },
     async getLast() {
       let q, querySnapshot;
       const auth = useAuthStore();

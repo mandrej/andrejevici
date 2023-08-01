@@ -241,7 +241,7 @@ export const useValuesStore = defineStore("values", {
     },
   },
   persist: {
-    key: "a",
+    key: "v",
     paths: ["values"],
   },
 });

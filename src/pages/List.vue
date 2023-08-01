@@ -107,13 +107,13 @@ const scrollHandler = throttle((obj) => {
   // trottle until busy: true
   const scrollHeight = document.documentElement.scrollHeight;
   if (
-    scrollHeight - obj.position.top < 3000 &&
+    scrollHeight - obj.position.top < 2000 &&
     obj.direction === "down" &&
     app.next
   ) {
     app.fetchRecords(false, "scroll");
   }
-}, 500);
+}, 100);
 
 const isAuthorOrAdmin = (rec) => {
   return auth.user.isAdmin || auth.user.email === rec.email;
