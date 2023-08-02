@@ -201,9 +201,10 @@ const uploadTask = (i, filename, file, resolve, reject) => {
           url: downloadURL,
           filename: filename,
           size: file.size,
-          email: "milan.andrejevic@gmail.com", // FIXME auth user
-          nick: emailNick("milan.andrejevic@gmail.com"),
+          email: auth.user.email,
+          nick: emailNick(auth.user.email),
         };
+        console.log(data);
         resolve(file.name);
         app.uploaded.push(data);
         progressInfos[i] = 0;

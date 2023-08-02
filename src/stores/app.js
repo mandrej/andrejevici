@@ -15,6 +15,8 @@ import {
 } from "firebase/firestore";
 import {
   ref as storageRef,
+  listAll,
+  getMetadata,
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
@@ -98,17 +100,30 @@ export const useAppStore = defineStore("app", {
           res.size += it.data().size;
         });
       }
-      // const refs = await listAll(storageRef(storage, ""));
-      // for (let r of refs.items) {
-      //   const meta = await getMetadata(r);
-      //   if (meta.contentType === "image/jpeg") {
-      //     res.size += meta.size;
-      //     res.count++;
-      //   }
-      // }
       this.bucket = { ...res };
       await setDoc(bucketRef, res, { merge: true });
       // notify({ message: `Bucket size and count recalculated` });
+    },
+    async mismatch() {
+      const auth = useAuthStore();
+      const refs = await listAll(storageRef(storage, ""));
+      for (let r of refs.items) {
+        const meta = await getMetadata(r);
+        if (meta.contentType === "image/jpeg") {
+          const find = await getDoc(doc(db, "Photo", meta.name));
+          if (!find.exists()) {
+            const downloadURL = await getDownloadURL(r);
+            this.uploaded.push({
+              url: downloadURL,
+              filename: meta.name,
+              size: meta.size,
+              email: auth.user.email,
+              nick: emailNick(auth.user.email),
+            });
+          }
+        }
+      }
+      return this.uploaded.length > 0;
     },
     // bucket
     async fetchRecords(reset = false, invoked = "") {

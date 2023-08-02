@@ -48,7 +48,7 @@
           />
         </q-item-section>
       </q-item>
-      <q-item-label header
+      <!-- <q-item-label header
         >Fix on {{ formatDatum("2023-04-27", "DD.MM.YYYY") }}</q-item-label
       >
       <q-item>
@@ -58,18 +58,22 @@
         <q-item-section side>
           <q-btn :disabled="true" color="primary" label="Fix" @click="fix" />
         </q-item-section>
-      </q-item>
-      <q-item-label header>Cloud storage related</q-item-label>
+      </q-item> -->
+      <!-- <q-item-label header>Cloud storage related</q-item-label> -->
       <q-item>
         <q-item-section>
           <q-item-label
-            >Synchronize datastore records and Cloud bucket</q-item-label
+            >Repair Cloud storage and datastore mismatch</q-item-label
           >
+          <q-item-label caption v-if="resolve">
+            Resolve all mismathed files either by publish or delete. Files exist
+            on <router-link to="/add">Add</router-link> page
+          </q-item-label>
         </q-item-section>
         <q-item-section side>
           <q-btn
             :disabled="!auth.fcm_token"
-            color="negative"
+            color="primary"
             label="Repair"
             @click="repair"
           />
@@ -81,13 +85,16 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import { formatDatum } from "../helpers";
 
+const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const message = ref("NEW IMAGES");
+const resolve = ref(false);
 
 const values = computed(() => valuesStore.values);
 
@@ -97,7 +104,9 @@ const rebuild = () => {
 const bucket = () => {
   app.scretch();
 };
-const repair = () => {};
+const repair = async () => {
+  resolve.value = await app.mismatch();
+};
 const fix = () => {};
 const send = () => {
   auth.sendNotifications(message.value);
