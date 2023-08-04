@@ -106,24 +106,29 @@ export const useAppStore = defineStore("app", {
     },
     async mismatch() {
       const auth = useAuthStore();
+      const uploadedFilenames = this.uploaded.length
+        ? this.uploaded.map((it) => it.filename)
+        : [];
       const refs = await listAll(storageRef(storage, ""));
       for (let r of refs.items) {
         const meta = await getMetadata(r);
         if (meta.contentType === "image/jpeg") {
           const find = await getDoc(doc(db, "Photo", meta.name));
           if (!find.exists()) {
-            const downloadURL = await getDownloadURL(r);
-            this.uploaded.push({
-              url: downloadURL,
-              filename: meta.name,
-              size: meta.size,
-              email: auth.user.email,
-              nick: emailNick(auth.user.email),
-            });
+            if (uploadedFilenames.indexOf(meta.name) === -1) {
+              const downloadURL = await getDownloadURL(r);
+              this.uploaded.push({
+                url: downloadURL,
+                filename: meta.name,
+                size: meta.size,
+                email: auth.user.email,
+                nick: emailNick(auth.user.email),
+              });
+            }
           }
         }
       }
-      return this.uploaded.length > 0;
+      return this.uploaded.length;
     },
     // bucket
     async fetchRecords(reset = false, invoked = "") {

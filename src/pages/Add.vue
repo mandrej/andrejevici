@@ -3,20 +3,13 @@
   <Carousel
     v-if="app.showCarousel"
     :filename="currentFileName"
-    :list="uploaded"
+    :list="app.uploaded"
     @carousel-cancel="carouselCancel"
     @delete-record="app.deleteRecord"
   />
 
   <q-page class="q-pa-md">
     <div class="relative-position column" style="height: 10px">
-      <!-- <div v-if="progressInfos.length > 0">
-        Upload in progress. Plase wait ...
-      </div>
-      <div v-else class="text-body1 text-center" style="width: 70%">
-        Drag your images here to upload, or click to browse. Then publish image
-        on site. Accepts only jpg (jpeg) files less then 4 Mb in size.
-      </div> -->
       <div class="row absolute-top">
         <q-linear-progress
           v-for="(progress, index) in progressInfos"
@@ -34,11 +27,15 @@
       <q-file
         name="photos"
         v-model="files"
+        use-chips
         multiple
         :accept="CONFIG.fileType"
         :max-file-size="CONFIG.fileSize"
         :max-files="CONFIG.fileMax"
         label="Select images to upload"
+        hint="Drag your images above to upload, or click to browse and select. Then
+          publish image on site. Accepts maximum 10 jpg (jpeg) files less then 4
+          Mb in size."
         @rejected="onRejected"
       />
       <div class="column">
@@ -65,7 +62,7 @@
     <div class="q-mt-md">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
         <div
-          v-for="rec in uploaded"
+          v-for="rec in app.uploaded"
           :key="rec.filename"
           class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
         >
@@ -115,8 +112,6 @@ const { getScrollTarget, setVerticalScrollPosition } = scroll;
 const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
-
-const uploaded = computed(() => app.uploaded);
 const current = computed(() => app.current);
 
 let files = ref([]);
@@ -151,11 +146,15 @@ const onSubmit = (evt) => {
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
-  Promise.all(promises).then((results) => {
-    results.forEach((name) => {
-      removeByProperty(files.value, "name", name);
+  Promise.all(promises)
+    .then((results) => {
+      results.forEach((it) => {
+        removeByProperty(files.value, "name", it);
+      });
+    })
+    .catch(function (err) {
+      console.log(err);
     });
-  });
 };
 
 const uploadPromise = (i, file) => {
@@ -164,20 +163,26 @@ const uploadPromise = (i, file) => {
     getDownloadURL(_ref)
       .then((url) => {
         const filename = rename(file.name);
-        uploadTask(i, filename, file, resolve, reject);
+        uploadTask(i, filename, file).then(() => {
+          resolve(file.name);
+          // removeByProperty(files.value, "name", file.name);
+        });
       })
       .catch((error) => {
+        const filename = file.name;
         if (error.code === "storage/object-not-found") {
-          const filename = file.name;
-          uploadTask(i, filename, file, resolve, reject);
+          uploadTask(i, filename, file).then(() => {
+            resolve(filename);
+            // removeByProperty(files.value, "name", file.name);
+          });
         } else {
-          reject(file.name);
+          reject(filename);
         }
       });
   });
 };
 
-const uploadTask = (i, filename, file, resolve, reject) => {
+const uploadTask = async (i, filename, file) => {
   progressInfos[i] = 0;
   const _ref = storageRef(storage, filename);
   const task = uploadBytesResumable(_ref, file, {
@@ -191,7 +196,8 @@ const uploadTask = (i, filename, file, resolve, reject) => {
         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
     },
     (error) => {
-      reject(error);
+      console.log(error);
+      progressInfos[i] = 0;
     },
     () => {
       getDownloadURL(task.snapshot.ref).then((downloadURL) => {
@@ -204,8 +210,6 @@ const uploadTask = (i, filename, file, resolve, reject) => {
           email: auth.user.email,
           nick: emailNick(auth.user.email),
         };
-        console.log(data);
-        resolve(file.name);
         app.uploaded.push(data);
         progressInfos[i] = 0;
       });
@@ -214,15 +218,17 @@ const uploadTask = (i, filename, file, resolve, reject) => {
 };
 
 const onRejected = (rejectedEntries) => {
-  // Notify plugin needs to be installed
-  // https://quasar.dev/quasar-plugins/notify#Installation
-  rejectedEntries.forEach((it) => {
-    console.log(it.failedPropValidation, it.file.name);
-  });
-  // $q.notify({
-  //   type: "negative",
-  //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  // rejectedEntries.forEach((it) => {
+  //   notify({
+  //     type: "warning",
+  //     message: `${it.file.name}: ${it.failedPropValidation}`,
+  //     timeout: 0,
+  //   });
   // });
+  notify({
+    type: "warning",
+    message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  });
 };
 
 const rename = (filename) => {
@@ -278,17 +284,3 @@ const carouselCancel = (hash) => {
   setVerticalScrollPosition(target, el.offsetTop, 500);
 };
 </script>
-
-<style scoped>
-/* input#files {
-  opacity: 0;
-  width: 100%;
-  height: inherit;
-  position: absolute;
-  cursor: pointer;
-}
-.disabled,
-[disabled] {
-  opacity: 0 !important;
-} */
-</style>

@@ -6,7 +6,8 @@ export default function notify(options) {
    * type: 'positive', 'negative', 'warning', 'info', 'ongoing', 'external'
    */
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
-  let { type, message, multiLine, timeout, spinner, group, position } = options;
+  let { type, message, multiLine, timeout, spinner, group, html, position } =
+    options;
   if (!message) return;
   if (
     message.startsWith(CONFIG.start_message) ||
@@ -21,8 +22,9 @@ export default function notify(options) {
     timeout: timeout ? timeout : 5000,
     spinner: spinner ? true : false,
     group: group ? group : false,
+    html: html ? true : false,
     position: position ? position : "bottom",
-    textColor: "white",
+    textColor: "dark",
     actions: [{ icon: "close", color: "white" }],
   });
 }

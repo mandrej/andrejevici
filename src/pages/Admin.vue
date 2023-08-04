@@ -65,10 +65,6 @@
           <q-item-label
             >Repair Cloud storage and datastore mismatch</q-item-label
           >
-          <q-item-label caption v-if="resolve">
-            Resolve all mismathed files either by publish or delete. Files exist
-            on <router-link to="/add">Add</router-link> page
-          </q-item-label>
         </q-item-section>
         <q-item-section side>
           <q-btn
@@ -89,12 +85,13 @@ import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useAuthStore } from "../stores/auth";
 import { formatDatum } from "../helpers";
+import notify from "../helpers/notify";
 
 const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useAuthStore();
 const message = ref("NEW IMAGES");
-const resolve = ref(false);
+const resolve = ref(0);
 
 const values = computed(() => valuesStore.values);
 
@@ -105,7 +102,20 @@ const bucket = () => {
   app.scretch();
 };
 const repair = async () => {
+  notify({ message: `Please wait...`, group: "repair" });
   resolve.value = await app.mismatch();
+  if (resolve.value === 0) {
+    notify({ message: `All good. Nothing to reslove`, group: "repair" });
+  } else {
+    notify({
+      type: "warning",
+      message: `Resolve ${resolve.value} mismathed files either by<br>publish or delete. Files exist
+            on Add page`,
+      html: true,
+      timeout: 0,
+      group: "repair",
+    });
+  }
 };
 const fix = () => {};
 const send = () => {
