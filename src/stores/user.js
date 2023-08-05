@@ -2,13 +2,11 @@ import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
 import { auth } from "../boot/fire";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
 const authorization = getAuth();
-const messaging = getMessaging();
 
 const familyMember = (email) => {
   return CONFIG.family.find((el) => el === email);
@@ -46,43 +44,13 @@ export const useUserStore = defineStore("auth", {
             };
             this.user = { ...payload };
             // this.updateUser(this.user);
-            this.requestPermission();
+            // this.getPermission();
           })
           .catch((err) => {
             console.error(err.message);
           });
       }
     },
-  },
-  requestPermission() {
-    try {
-      Notification.requestPermission().then((permission) =>
-        this.fetchToken(permission)
-      );
-    } catch (error) {
-      // https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API
-      Notification.requestPermission(function (permission) {
-        this.fetchToken(permission);
-      });
-    }
-  },
-  fetchToken(permission) {
-    if (permission === "granted") {
-      return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
-        .then((token) => {
-          if (token) {
-            if (this.fcm_token === null || token !== this.fcm_token) {
-              this.fcm_token = token;
-              // if (this.user && this.user.uid) {
-              //   this.addRegistration();
-              // }
-            }
-          }
-        })
-        .catch(function (err) {
-          console.error("Unable to retrieve token ", err);
-        });
-    }
   },
   persist: {
     key: "b",

@@ -32,24 +32,23 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <div class="q-pa-md text-body2 gt-xs">
+  <div
+    v-if="valuesStore.values.year.length === 0"
+    class="q-pa-md text-body2 gt-xs"
+  >
     This application is made for my personal photographic needs. I couldn't find
     any better nor cheeper solutions to store my photos. Application provide
-    serching based on tags, year, month, day, model, lens and author. Enjoy
+    serching based on tags, year, month, day, model, lens and author.
+    Application is build using
+    <a href="https://firebase.google.com/">Firebase</a> on
+    <a href="https://nodejs.org/">node.js</a> and
+    <a href="https://quasar.dev/">Quasar</a> vue.js framework
   </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
 import { useValuesStore } from "../stores/values";
-import { useUserStore } from "../stores/user";
-
 const valuesStore = useValuesStore();
-const auth = useUserStore();
-
-onMounted(() => {
-  auth.requestPermission();
-});
 </script>
 
 <style scoped>

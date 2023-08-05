@@ -80,20 +80,58 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
 import { formatDatum } from "../helpers";
+import { getMessaging, getToken } from "firebase/messaging";
+import { CONFIG } from "../helpers";
 import notify from "../helpers/notify";
 
 const app = useAppStore();
 const valuesStore = useValuesStore();
 const auth = useUserStore();
+const messaging = getMessaging();
+
 const message = ref("NEW IMAGES");
 const resolve = ref(0);
-
 const values = computed(() => valuesStore.values);
+
+onMounted(() => {
+  getPermission();
+});
+
+const getPermission = () => {
+  try {
+    Notification.requestPermission().then((permission) =>
+      fetchToken(permission)
+    );
+  } catch (error) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API
+    Notification.requestPermission(function (permission) {
+      fetchToken(permission);
+    });
+  }
+};
+const fetchToken = (permission) => {
+  if (permission === "granted") {
+    return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
+      .then((token) => {
+        if (token) {
+          if (auth.fcm_token === null || token !== auth.fcm_token) {
+            auth.fcm_token = token;
+            // if (this.user && this.user.uid) {
+            //   this.addRegistration();
+            // }
+          }
+        }
+      })
+      .catch(function (err) {
+        console.error("Unable to retrieve token ", err);
+      });
+  }
+};
 
 const rebuild = () => {
   valuesStore.photos2counters2store();
