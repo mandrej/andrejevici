@@ -77,11 +77,11 @@
 import { computed } from "vue";
 import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import { fileBroken, version } from "../helpers";
 
 const app = useAppStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 
 const last = computed(() => app.last);
 const bucket = computed(() => app.bucket);

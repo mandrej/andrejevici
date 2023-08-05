@@ -66,7 +66,7 @@
 import { useQuasar } from "quasar";
 import { ref } from "vue";
 import { useAppStore } from "../stores/app";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { formatBytes, removeHash, CONFIG, U } from "../helpers";
 import notify from "../helpers/notify";
@@ -85,7 +85,7 @@ const props = defineProps({
 
 const $q = useQuasar();
 const app = useAppStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash

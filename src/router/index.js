@@ -1,6 +1,6 @@
 import { nextTick } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import { CONFIG } from "../helpers";
 import routes from "./routes";
 
@@ -11,7 +11,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
-  const auth = useAuthStore();
+  const auth = useUserStore();
   const user = auth.user;
   // Unlog user after 7 days
   if (user && user.uid) {

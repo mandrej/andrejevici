@@ -91,7 +91,7 @@ import {
 } from "firebase/storage";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import {
   CONFIG,
   fakeHistory,
@@ -111,7 +111,7 @@ const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const app = useAppStore();
 const valuesStore = useValuesStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 const current = computed(() => app.current);
 
 let files = ref([]);
@@ -165,7 +165,6 @@ const uploadPromise = (i, file) => {
         const filename = rename(file.name);
         uploadTask(i, filename, file).then(() => {
           resolve(file.name);
-          // removeByProperty(files.value, "name", file.name);
         });
       })
       .catch((error) => {
@@ -173,7 +172,6 @@ const uploadPromise = (i, file) => {
         if (error.code === "storage/object-not-found") {
           uploadTask(i, filename, file).then(() => {
             resolve(filename);
-            // removeByProperty(files.value, "name", file.name);
           });
         } else {
           reject(filename);

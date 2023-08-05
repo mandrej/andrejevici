@@ -76,7 +76,7 @@
 import { scroll, throttle } from "quasar";
 import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useAppStore } from "../stores/app";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { fakeHistory } from "../helpers";
 
@@ -89,7 +89,7 @@ const Confirm = defineAsyncComponent(() => import("../components/Confirm.vue"));
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const app = useAppStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 const route = useRoute();
 const currentFileName = ref(null);
 

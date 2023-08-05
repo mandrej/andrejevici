@@ -83,13 +83,13 @@
 import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import { formatDatum } from "../helpers";
 import notify from "../helpers/notify";
 
 const app = useAppStore();
 const valuesStore = useValuesStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 const message = ref("NEW IMAGES");
 const resolve = ref(0);
 

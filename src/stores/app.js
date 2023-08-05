@@ -30,7 +30,7 @@ import {
 import notify from "../helpers/notify";
 // import pushMessage from "../helpers/push";
 import { useValuesStore } from "./values";
-import { useAuthStore } from "./auth";
+import { useUserStore } from "./user";
 
 const bucketRef = doc(db, "Bucket", "total");
 const photosRef = collection(db, "Photo");
@@ -105,7 +105,7 @@ export const useAppStore = defineStore("app", {
       // notify({ message: `Bucket size and count recalculated` });
     },
     async mismatch() {
-      const auth = useAuthStore();
+      const auth = useUserStore();
       const uploadedFilenames = this.uploaded.length
         ? this.uploaded.map((it) => it.filename)
         : [];
@@ -275,7 +275,7 @@ export const useAppStore = defineStore("app", {
     },
     async getLast() {
       let q, querySnapshot;
-      const auth = useAuthStore();
+      const auth = useUserStore();
       const constraints = [orderBy("date", "desc"), limit(1)];
       if (auth.user && auth.user.isAuthorized) {
         q = query(

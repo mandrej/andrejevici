@@ -209,7 +209,7 @@ import { CONFIG, fileBroken, formatBytes, U } from "../helpers";
 import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 import Complete from "./Complete.vue";
 
 const emit = defineEmits(["editOk"]);
@@ -219,7 +219,7 @@ const props = defineProps({
 
 const app = useAppStore();
 const valuesStore = useValuesStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
 
 const getExif = async () => {

@@ -42,13 +42,13 @@
 <script setup>
 import { onMounted } from "vue";
 import { useValuesStore } from "../stores/values";
-import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
 
 const valuesStore = useValuesStore();
-const auth = useAuthStore();
+const auth = useUserStore();
 
 onMounted(() => {
-  auth.getPermission();
+  auth.requestPermission();
 });
 </script>
 
