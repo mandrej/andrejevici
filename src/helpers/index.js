@@ -61,7 +61,6 @@ export const thumbUrl = (filename) => {
   return [
     "https://storage.googleapis.com",
     CONFIG.firebase.storageBucket,
-    CONFIG.thumbnails,
     thumbName(filename),
   ].join("/");
 };
