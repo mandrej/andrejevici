@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md q-gutter-md">
-    <q-input
+    <!-- <q-input
       v-model="tmp.text"
       :disable="app.busy"
       label="by text"
@@ -8,7 +8,7 @@
       @blur="submit"
       :dense="$q.screen.xs"
       dark
-    />
+    /> -->
     <Complete
       v-model="tmp.tags"
       :options="valuesStore.tagValues"
