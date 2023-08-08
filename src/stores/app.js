@@ -22,9 +22,11 @@ import {
 } from "firebase/storage";
 import {
   CONFIG,
+  META,
   thumbName,
   thumbUrl,
   emailNick,
+  reFilename,
   removeByProperty,
 } from "../helpers";
 import notify from "../helpers/notify";
@@ -306,6 +308,24 @@ export const useAppStore = defineStore("app", {
       querySnapshot.forEach(async (it) => {
         const rec = it.data();
         this.since = rec.year;
+      });
+    },
+    migration() {
+      META.forEach((rec) => {
+        const docRef = doc(db, "Photo", rec.filename);
+        const _ref = storageRef(storage, rec.filename);
+        getDownloadURL(_ref)
+          .then((url) => {})
+          .catch((error) => {
+            if (error.code === "storage/object-not-found") {
+              uploadTask(i, filename, file).then(() => {
+                resolve(filename);
+              });
+            } else {
+              reject(filename);
+            }
+          });
+        console.log(filename);
       });
     },
   },

@@ -75,6 +75,19 @@
           />
         </q-item-section>
       </q-item>
+      <q-item>
+        <q-item-section>
+          <q-item-label>Migration meta data from andsnews</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn
+            :disabled="!auth.fcm_token"
+            color="primary"
+            label="Migrate"
+            @click="migrate"
+          />
+        </q-item-section>
+      </q-item>
     </q-list>
   </q-page>
 </template>
@@ -158,6 +171,9 @@ const repair = async () => {
 const fix = () => {};
 const send = () => {
   auth.sendNotifications(message.value);
+};
+const migrate = () => {
+  app.migration();
 };
 </script>
 
