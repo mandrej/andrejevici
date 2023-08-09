@@ -19,14 +19,12 @@ import {
   getMetadata,
   getDownloadURL,
   deleteObject,
-  uploadBytes,
 } from "firebase/storage";
 import {
   CONFIG,
   thumbName,
   thumbUrl,
   emailNick,
-  reFilename,
   removeByProperty,
 } from "../helpers";
 import notify from "../helpers/notify";

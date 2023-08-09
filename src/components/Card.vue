@@ -86,7 +86,7 @@
         round
         color="grey"
         icon="download"
-        :href="`${props.rec.url}`"
+        :href="props.rec.url"
         :download="rec.filename"
         @click="emit('googleAnalytics', 'download-picture', rec)"
       />

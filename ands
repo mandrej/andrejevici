@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+proj_id=andrejevici
+version=`date +%Y%m%d%H%M`
+
+function syntax {
+  echo $"Usage:"
+  echo $"$0 run    - Run development server"
+  echo $"$0 icons  - Build icons"
+  echo $"$0 build  - Build client"
+  echo $"$0 deploy - Deploy"
+  exit 1
+}
+
+if [ $# -eq 0 ]
+  then
+    syntax
+else
+  gcloud config set project $proj_id
+  case $1 in
+    run)
+      firebase emulators:start --import=data --export-on-exit=data
+      # quasar dev -m pwa
+      exit ;;
+    icons)
+      inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
+      icongenie g -i AppIcon.png --skip-trim
+      exit ;;
+    build)
+      sed -i -E "/ANDREJEVICI_VERSION/s/[[:digit:]]{12}/$version/g" .env
+      quasar build -m pwa
+      exit ;;
+    deploy)
+      firebase deploy
+      exit ;;
+    *)
+      syntax
+  esac
+fi
