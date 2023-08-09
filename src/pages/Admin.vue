@@ -27,12 +27,7 @@
           >
         </q-item-section>
         <q-item-section side>
-          <q-btn
-            :disabled="!auth.fcm_token"
-            color="primary"
-            label="rebuild"
-            @click="rebuild"
-          />
+          <q-btn color="primary" label="rebuild" @click="rebuild" />
         </q-item-section>
       </q-item>
       <q-item>
@@ -40,26 +35,20 @@
           <q-item-label>Bucket count and size</q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-btn
-            :disabled="!auth.fcm_token"
-            color="primary"
-            label="Recalc"
-            @click="bucket"
-          />
+          <q-btn color="primary" label="Recalc" @click="bucket" />
         </q-item-section>
       </q-item>
-      <!-- <q-item-label header
-        >Fix on {{ formatDatum("2023-04-27", "DD.MM.YYYY") }}</q-item-label
+      <q-item-label header
+        >Fix on {{ formatDatum("2023-08-09", "DD.MM.YYYY") }}</q-item-label
       >
       <q-item>
         <q-item-section>
-          <q-item-label>Add dimension to all images</q-item-label>
+          <q-item-label>Remove some records after migration</q-item-label>
         </q-item-section>
         <q-item-section side>
           <q-btn :disabled="true" color="primary" label="Fix" @click="fix" />
         </q-item-section>
-      </q-item> -->
-      <!-- <q-item-label header>Cloud storage related</q-item-label> -->
+      </q-item>
       <q-item>
         <q-item-section>
           <q-item-label
@@ -67,25 +56,7 @@
           >
         </q-item-section>
         <q-item-section side>
-          <q-btn
-            :disabled="!auth.fcm_token"
-            color="primary"
-            label="Repair"
-            @click="repair"
-          />
-        </q-item-section>
-      </q-item>
-      <q-item>
-        <q-item-section>
-          <q-item-label>Migration meta data from andsnews</q-item-label>
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            :disabled="!auth.fcm_token"
-            color="primary"
-            label="Migrate"
-            @click="migrate"
-          />
+          <q-btn color="primary" label="Repair" @click="repair" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -168,13 +139,15 @@ const repair = async () => {
     });
   }
 };
-const fix = () => {};
+const fix = () => {
+  app.fix();
+};
 const send = () => {
   auth.sendNotifications(message.value);
 };
-const migrate = () => {
-  app.migration();
-};
+// const migrate = () => {
+//   app.migration();
+// };
 </script>
 
 <style scoped>

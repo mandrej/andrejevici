@@ -19,10 +19,10 @@ import {
   getMetadata,
   getDownloadURL,
   deleteObject,
+  uploadBytes,
 } from "firebase/storage";
 import {
   CONFIG,
-  META,
   thumbName,
   thumbUrl,
   emailNick,
@@ -310,24 +310,53 @@ export const useAppStore = defineStore("app", {
         this.since = rec.year;
       });
     },
-    migration() {
-      META.forEach((rec) => {
-        const docRef = doc(db, "Photo", rec.filename);
-        const _ref = storageRef(storage, rec.filename);
-        getDownloadURL(_ref)
-          .then((url) => {})
-          .catch((error) => {
-            if (error.code === "storage/object-not-found") {
-              uploadTask(i, filename, file).then(() => {
-                resolve(filename);
-              });
-            } else {
-              reject(filename);
-            }
-          });
-        console.log(filename);
-      });
+    async fix() {
+      const toRemove = [
+        "sankanje.jpg",
+        "carl-zeiss-planar-1.7-50mm.jpg",
+        "SDIM7960.X3F.jpg",
+        "SDIM7936.X3F.jpg",
+        "SDIM4002-SDIM4004_pregamma_1_reinhard05_brightness_-10_chromatic_adaptation_0.2_light_adaptation_0.8_postsaturation_1_postgamma_1_2019-11-24_01.jpg",
+      ];
+      for (var name of toRemove) {
+        const docRef = doc(db, "Photo", name);
+        try {
+          await deleteDoc(docRef);
+          notify({ message: `${name} removed` });
+        } catch {
+          notify({ message: `${name} failed` });
+        }
+      }
     },
+    // async migration() {
+    //   for (var obj of META) {
+    //     const docRef = doc(db, "Photo", obj.filename);
+    //     const imgRef = storageRef(storage, obj.filename);
+    //     const thumbRef = storageRef(storage, thumbName(obj.filename));
+
+    //     const snap = await getDoc(docRef);
+    //     if (!snap.exists()) {
+    //       await setDoc(docRef, obj);
+    //     } else {
+    //       const rec = snap.data();
+    //       if (!rec.url) {
+    //         try {
+    //           rec.url = await getDownloadURL(imgRef);
+    //         } catch {
+    //           console.log("url:", rec.filename);
+    //         }
+    //       }
+    //       if (!rec.thumb) {
+    //         try {
+    //           rec.thumb = await getDownloadURL(thumbRef);
+    //         } catch {
+    //           console.log("thumb:", rec.filename);
+    //         }
+    //       }
+    //       await setDoc(docRef, rec, { merge: true });
+    //     }
+    //   }
+    // },
   },
   persist: {
     key: "a",

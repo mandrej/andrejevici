@@ -44,3 +44,6 @@ See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-
 
 inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
 icongenie g -i AppIcon.png --skip-trim
+
+quasar build -m pwa
+firebase deploy

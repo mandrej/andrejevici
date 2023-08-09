@@ -10,12 +10,8 @@
     "rules": "database.rules.json"
   },
   "hosting": {
-    "public": "dist/spa",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "public": "dist/pwa",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {
         "source": "/sw.js",

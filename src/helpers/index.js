@@ -1,5 +1,4 @@
 import CONFIG from "../../config.json";
-import META from "../../meta.json";
 import { date, format } from "quasar";
 import { computed } from "vue";
 
@@ -67,7 +66,6 @@ export const thumbUrl = (filename) => {
 };
 export {
   CONFIG,
-  META,
   months,
   formatBytes,
   formatDatum,
