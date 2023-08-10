@@ -32,10 +32,7 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <div
-    v-if="valuesStore.values.year.length === 0"
-    class="q-pa-md text-body2 gt-xs"
-  >
+  <div class="q-pa-md text-body2 gt-xs">
     This application is made for my personal photographic needs. I couldn't find
     any better nor cheeper solutions to store my photos. Application provide
     serching based on tags, year, month, day, model, lens and author.
@@ -47,8 +44,17 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
+import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
+
+const app = useAppStore();
 const valuesStore = useValuesStore();
+
+onMounted(() => {
+  valuesStore.counters2store();
+  app.refresh();
+});
 </script>
 
 <style scoped>

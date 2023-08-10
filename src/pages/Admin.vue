@@ -121,7 +121,7 @@ const rebuild = () => {
   valuesStore.photos2counters2store();
 };
 const bucket = () => {
-  app.scretch();
+  app.bucketBuild();
 };
 const repair = async () => {
   notify({ message: `Please wait...`, group: "repair" });

@@ -31,6 +31,7 @@ import notify from "../helpers/notify";
 // import pushMessage from "../helpers/push";
 import { useValuesStore } from "./values";
 import { useUserStore } from "./user";
+import { isEmpty } from "lodash";
 
 const bucketRef = doc(db, "Bucket", "total");
 const photosRef = collection(db, "Photo");
@@ -69,11 +70,11 @@ export const useAppStore = defineStore("app", {
   },
   actions: {
     // bucket
-    async read() {
+    async bucketRead() {
       const docSnap = await getDoc(bucketRef);
       this.bucket = { ...docSnap.data() };
     },
-    async diff(num) {
+    async bucketDiff(num) {
       if (num > 0) {
         this.bucket.size += num;
         this.bucket.count++;
@@ -87,7 +88,7 @@ export const useAppStore = defineStore("app", {
       }
       await setDoc(bucketRef, this.bucket, { merge: true });
     },
-    async scretch() {
+    async bucketBuild() {
       const res = {
         count: 0,
         size: 0,
@@ -208,21 +209,10 @@ export const useAppStore = defineStore("app", {
         );
         if (idx > -1) this.uploaded.splice(idx, 1);
 
-        this.diff(obj.size);
+        this.bucketDiff(obj.size);
         valuesStore.increaseValues(obj);
-
-        // api.put("edit", obj).then((response) => {
-        //   const obj = response.data.rec;
-        //   const diff = { verb: "add", size: obj.size };
-        //   // addRecord
-        //   const dates = this.objects.map((item) => item.date);
-        //   const idx = dates.findIndex((date) => date < obj.date);
-        //   this.objects.splice(idx, 0, obj);
-
-        //   this.deleteUploaded(obj);
-        //   this.bucketInfo(diff);
-        // });
       }
+      this.refresh();
     },
     async deleteRecord(obj) {
       notify({
@@ -242,7 +232,7 @@ export const useAppStore = defineStore("app", {
         removeByProperty(this.objects, "filename", obj.filename);
         const valuesStore = useValuesStore();
 
-        this.diff(-data.size);
+        this.bucketDiff(-data.size);
         valuesStore.decreaseValues(data);
         notify({
           group: `${obj.filename}`,
@@ -265,13 +255,17 @@ export const useAppStore = defineStore("app", {
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
         });
-        //   .catch((err) => {
-        //     notify({
-        //       group: `${obj.filename}`,
-        //       type: "negative",
-        //       message: "Failed to delete.",
-        //     });
       }
+      this.refresh();
+    },
+    refresh() {
+      if (isEmpty(this.bucket) || this.bucket.count === 0) {
+        this.bucketBuild();
+      } else {
+        this.bucketRead();
+      }
+      this.getLast();
+      this.getSince();
     },
     async getLast() {
       let q, querySnapshot;
