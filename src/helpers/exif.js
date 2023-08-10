@@ -71,7 +71,7 @@ const readExif = async (url) => {
   if (has(data, "FocalLength")) exif.focal_length = parseInt(data.FocalLength);
   if (has(data, "ISO")) exif.iso = data.ISO;
   if (has(data, "Flash"))
-    exif.flash = data.Flash === "Flash did not fire" ? false : true;
+    exif.flash = data.Flash.startsWith("Flash did not") ? false : true;
   if (
     has(data, "GPSLatitude") &&
     has(data, "GPSLatitudeRef") &&
