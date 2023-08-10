@@ -6,10 +6,7 @@
       :src="rec.thumb ? rec.thumb : rec.url"
       v-ripple.early="{ color: 'purple' }"
       no-spinner
-      @click="
-        emit('carouselShow', rec.filename);
-        emit('googleAnalytics', 'popular-picture', rec);
-      "
+      @click="emit('carouselShow', rec.filename)"
     >
       <template #error>
         <img :src="fileBroken" />
@@ -72,23 +69,23 @@
         :icon="rec.thumb ? 'edit' : 'publish'"
         @click="emit('editRecord', rec)"
       />
-      <q-btn
+      <!-- <q-btn
         v-if="rec.thumb"
         flat
         round
         color="grey"
         icon="share"
         @click="onShare"
-      />
+      /> -->
       <q-btn
         v-if="rec.thumb"
         flat
         round
         color="grey"
         icon="download"
-        :href="props.rec.url"
+        href=""
         :download="rec.filename"
-        @click="emit('googleAnalytics', 'download-picture', rec)"
+        @click="download"
       />
     </q-card-actions>
   </q-card>
@@ -110,7 +107,6 @@ const emit = defineEmits([
   "confirmDelete",
   "editRecord",
   "deleteRecord",
-  "googleAnalytics",
 ]);
 const props = defineProps({
   rec: Object,
@@ -125,14 +121,26 @@ const cardAttributes = (filename) => {
   };
 };
 
-const onShare = () => {
-  const url = window.location.href + "#" + U + props.rec.filename;
-  copyToClipboard(url)
-    .then(() => {
-      notify({ type: "info", message: "URL copied to clipboard" });
-    })
-    .catch(() => {
-      notify({ type: "warning", message: "Unable to copy URL to clipboard" });
+const download = (evt) => {
+  const a = evt.target.parentElement.parentElement;
+  fetch(props.rec.url)
+    .then((resp) => resp.blob())
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.click();
+      window.URL.revokeObjectURL(url);
     });
 };
+
+// const onShare = () => {
+//   const url = window.location.href + "#" + U + props.rec.filename;
+//   copyToClipboard(url)
+//     .then(() => {
+//       notify({ type: "info", message: "URL copied to clipboard" });
+//     })
+//     .catch(() => {
+//       notify({ type: "warning", message: "Unable to copy URL to clipboard" });
+//     });
+// };
 </script>

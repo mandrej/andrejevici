@@ -55,7 +55,6 @@
               @edit-record="editRecord"
               @confirm-delete="confirmShow"
               @delete-record="app.deleteRecord"
-              @google-analytics="ga"
             />
           </div>
         </transition-group>
@@ -151,18 +150,5 @@ const carouselCancel = (hash) => {
   if (!el) return;
   const target = getScrollTarget(el);
   setVerticalScrollPosition(target, el.offsetTop, 500);
-};
-const ga = (event_name, rec) => {
-  /**
-   * popular-picture
-   * download-picture
-   *
-   */
-  // gtag("event", event_name, {
-  //   filename: rec.filename,
-  //   user: auth.user && auth.user.email ? auth.user.email : "anonymous",
-  //   count: 1,
-  // });
-  if (process.env.DEV) console.log("GA", event_name + ": " + rec.filename);
 };
 </script>
