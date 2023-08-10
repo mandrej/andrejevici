@@ -97,6 +97,7 @@ import {
   fakeHistory,
   removeByProperty,
   emailNick,
+  reClean,
   reFilename,
 } from "../helpers";
 import notify from "../helpers/notify";
@@ -159,16 +160,17 @@ const onSubmit = (evt) => {
 
 const uploadPromise = (i, file) => {
   return new Promise((resolve, reject) => {
-    const _ref = storageRef(storage, file.name);
+    const [name, ext] = file.name.match(reFilename);
+    let filename = name.replace(reClean, "") + "." + ext;
+    const _ref = storageRef(storage, filename);
     getDownloadURL(_ref)
       .then((url) => {
-        const filename = rename(file.name);
+        filename = alter(filename);
         uploadTask(i, filename, file).then(() => {
           resolve(file.name);
         });
       })
       .catch((error) => {
-        const filename = file.name;
         if (error.code === "storage/object-not-found") {
           uploadTask(i, filename, file).then(() => {
             resolve(filename);
@@ -229,7 +231,7 @@ const onRejected = (rejectedEntries) => {
   });
 };
 
-const rename = (filename) => {
+const alter = (filename) => {
   const id = uuid4();
   const [name, ext] = filename.match(reFilename);
   if (!ext) ext = "jpg";
