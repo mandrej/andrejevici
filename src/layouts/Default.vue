@@ -16,9 +16,7 @@
           }}</router-link>
         </q-toolbar-title>
 
-        <div v-if="$route.name === 'list'">
-          {{ app.hasmore.more ? "+" : "" }}{{ app.hasmore.count }}
-        </div>
+        <div v-if="$route.name === 'list'">{{ app.hasmore.count }}</div>
         <q-btn
           v-else
           flat

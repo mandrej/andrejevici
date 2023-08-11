@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-sm text-h4">
     <router-link
-      v-for="obj in valuesStore.nickCountValues"
+      v-for="obj in meta.nickCountValues"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { nick: obj.value } }"
@@ -10,7 +10,7 @@
     >
   </div>
   <div class="q-pa-sm text-h5">
-    <span v-for="(obj, index) in valuesStore.values.year" :key="index">
+    <span v-for="(obj, index) in meta.values.year" :key="index">
       <template v-if="index <= $q.screen.xs ? 9 : 99">
         <router-link
           :key="obj.value"
@@ -24,7 +24,7 @@
   </div>
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
-      v-for="obj in valuesStore.values.tags"
+      v-for="obj in meta.values.tags"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { tags: obj.value } }"
@@ -32,7 +32,7 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <div class="q-pa-md text-body2 gt-xs">
+  <div class="q-pa-md text-body2 gt-sm">
     This application is made for my personal photographic needs. I couldn't find
     any better nor cheeper solutions to store my photos. Application provide
     serching based on tags, year, month, day, model, lens and author.
@@ -49,10 +49,10 @@ import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 
 onMounted(() => {
-  valuesStore.counters2store();
+  if (meta.values.year.length === 0) meta.counters2store();
   app.refresh();
 });
 </script>

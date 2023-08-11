@@ -77,7 +77,7 @@
         icon="share"
         @click="onShare"
       /> -->
-      <q-btn
+      <!-- <q-btn
         v-if="rec.thumb"
         flat
         round
@@ -86,7 +86,7 @@
         href=""
         :download="rec.filename"
         @click="download"
-      />
+      /> -->
     </q-card-actions>
   </q-card>
 </template>
@@ -121,16 +121,15 @@ const cardAttributes = (filename) => {
   };
 };
 
-const download = (evt) => {
-  const a = evt.target.parentElement.parentElement;
-  fetch(props.rec.url)
-    .then((resp) => resp.blob())
-    .then((blob) => {
-      const url = URL.createObjectURL(blob);
-      a.href = url;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    });
+const download = async (evt) => {
+  const a = evt.target.closest("a.q-btn");
+  const resp = await fetch(props.rec.url);
+  const blob = await resp.blob();
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.click();
+  evt.stopPropagation();
+  window.URL.revokeObjectURL(url);
 };
 
 // const onShare = () => {

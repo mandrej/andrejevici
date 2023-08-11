@@ -28,7 +28,7 @@ import { useValuesStore } from "../stores/values";
 import { formatBytes } from "../helpers";
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 const list = computed(() => [
   {
     text: "storage",
@@ -40,23 +40,23 @@ const list = computed(() => [
   },
   {
     text: "years",
-    value: valuesStore.values.year.length,
+    value: meta.values.year.length,
   },
   {
     text: "tags",
-    value: valuesStore.values.tags.length,
+    value: meta.values.tags.length,
   },
   {
     text: "cameras",
-    value: valuesStore.values.model.length,
+    value: meta.values.model.length,
   },
   {
     text: "lenses",
-    value: valuesStore.values.lens.length,
+    value: meta.values.lens.length,
   },
   {
     text: "authors",
-    value: valuesStore.values.email.length,
+    value: meta.values.email.length,
   },
 ]);
 </script>

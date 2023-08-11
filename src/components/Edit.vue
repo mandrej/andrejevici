@@ -73,7 +73,7 @@
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Complete
                 v-model="tmp.email"
-                :options="valuesStore.emailValues"
+                :options="meta.emailValues"
                 canadd
                 label="Author"
                 hint="Existing member can add freind's photo and email"
@@ -135,7 +135,7 @@
             <div class="col-12">
               <Complete
                 v-model="tmp.tags"
-                :options="valuesStore.tagValues"
+                :options="meta.tagValues"
                 canadd
                 multiple
                 label="Tags"
@@ -146,7 +146,7 @@
             <div class="col-xs-12 col-sm-6">
               <Complete
                 v-model="tmp.model"
-                :options="valuesStore.modelValues"
+                :options="meta.modelValues"
                 canadd
                 label="Camera Model"
                 @update:model-value="(newValue) => (tmp.model = newValue)"
@@ -156,7 +156,7 @@
             <div class="col-xs-12 col-sm-6">
               <Complete
                 v-model="tmp.lens"
-                :options="valuesStore.lensValues"
+                :options="meta.lensValues"
                 canadd
                 label="Camera Lens"
                 @update:model-value="(newValue) => (tmp.lens = newValue)"
@@ -205,7 +205,7 @@
 
 <script setup>
 import { reactive } from "vue";
-import { CONFIG, fileBroken, formatBytes, U } from "../helpers";
+import { CONFIG, fileBroken, formatBytes, U, emailNick } from "../helpers";
 import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
@@ -218,7 +218,7 @@ const props = defineProps({
 });
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
 
@@ -248,28 +248,28 @@ const isValidEmail = (val) => {
 // new values
 const addNewEmail = (inputValue) => {
   tmp.email = inputValue;
-  valuesStore.values.email.push({
+  meta.values.email.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewTag = (inputValue) => {
   tmp.tags.push(inputValue);
-  valuesStore.values.tags.push({
+  meta.values.tags.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewModel = (inputValue) => {
   tmp.model = inputValue;
-  valuesStore.values.model.push({
+  meta.values.model.push({
     count: 1,
     value: inputValue,
   });
 };
 const addNewLens = (inputValue) => {
   tmp.lens = inputValue;
-  valuesStore.values.lens.push({
+  meta.values.lens.push({
     count: 1,
     value: inputValue,
   });
@@ -282,7 +282,12 @@ const onCancel = () => {
   app.showEdit = false;
 };
 const onSubmit = () => {
+  const datum = new Date(Date.parse(tmp.date));
+  tmp.year = datum.getFullYear();
+  tmp.month = datum.getMonth() + 1;
+  tmp.day = datum.getDate();
   tmp.tags = tmp.tags ? tmp.tags : [];
+  tmp.nick = emailNick(tmp.email);
   app.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
   app.showEdit = false;

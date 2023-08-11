@@ -38,12 +38,13 @@
           <q-btn color="primary" label="Recalc" @click="bucket" />
         </q-item-section>
       </q-item>
-      <q-item-label header
-        >Fix on {{ formatDatum("2023-08-09", "DD.MM.YYYY") }}</q-item-label
-      >
+      <!-- <q-item-label header>Fix on </q-item-label> -->
       <q-item>
         <q-item-section>
-          <q-item-label>Remove some records after migration</q-item-label>
+          <q-item-label
+            >{{ formatDatum("2023-08-09", "DD.MM.YYYY") }} Remove some records
+            after migration</q-item-label
+          >
         </q-item-section>
         <q-item-section side>
           <q-btn :disabled="true" color="primary" label="Fix" @click="fix" />
@@ -74,13 +75,13 @@ import { CONFIG } from "../helpers";
 import notify from "../helpers/notify";
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 const auth = useUserStore();
 const messaging = getMessaging();
 
 const message = ref("NEW IMAGES");
 const resolve = ref(0);
-const values = computed(() => valuesStore.values);
+const values = computed(() => meta.values);
 
 onMounted(() => {
   getPermission();
@@ -118,7 +119,7 @@ const fetchToken = (permission) => {
 };
 
 const rebuild = () => {
-  valuesStore.photos2counters2store();
+  meta.photos2counters2store();
 };
 const bucket = () => {
   app.bucketBuild();

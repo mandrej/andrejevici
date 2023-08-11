@@ -11,7 +11,7 @@
     /> -->
     <Complete
       v-model="tmp.tags"
-      :options="valuesStore.tagValues"
+      :options="meta.tagValues"
       multiple
       label="by tags"
       :disable="app.busy"
@@ -28,7 +28,7 @@
     <Complete
       v-model="tmp.year"
       class="col"
-      :options="valuesStore.yearValues"
+      :options="meta.yearValues"
       autocomplete="label"
       label="by year"
       :disable="app.busy"
@@ -81,7 +81,7 @@
     </div>
     <Complete
       v-model="tmp.model"
-      :options="valuesStore.modelValues"
+      :options="meta.modelValues"
       label="by model"
       :disable="app.busy"
       behavior="menu"
@@ -96,7 +96,7 @@
     />
     <Complete
       v-model="tmp.lens"
-      :options="valuesStore.lensValues"
+      :options="meta.lensValues"
       label="by lens"
       :disable="app.busy"
       behavior="menu"
@@ -111,7 +111,7 @@
     />
     <Complete
       v-model="tmp.nick"
-      :options="valuesStore.nickValues"
+      :options="meta.nickValues"
       label="by author"
       :disable="app.busy"
       behavior="menu"
@@ -136,7 +136,7 @@ import Complete from "./Complete.vue";
 import { months } from "../helpers";
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 const route = useRoute();
 const router = useRouter();
 const tmp = ref({ ...app.find });

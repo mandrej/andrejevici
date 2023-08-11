@@ -17,7 +17,7 @@ import { CONFIG, emailNick } from "../helpers";
 const photosRef = collection(db, "Photo");
 const countersRef = collection(db, "Counter");
 
-export const useValuesStore = defineStore("values", {
+export const useValuesStore = defineStore("meta", {
   state: () => ({
     tagsToApply: [],
     values: { year: [], tags: [], model: [], lens: [], email: [] },

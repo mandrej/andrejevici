@@ -50,7 +50,7 @@
 
     <Complete
       v-model="tagsToApply"
-      :options="valuesStore.tagValues"
+      :options="meta.tagValues"
       canadd
       multiple
       label="Tags to apply for next publish"
@@ -111,7 +111,7 @@ const Edit = defineAsyncComponent(() => import("../components/Edit.vue"));
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const app = useAppStore();
-const valuesStore = useValuesStore();
+const meta = useValuesStore();
 const auth = useUserStore();
 const current = computed(() => app.current);
 
@@ -121,10 +121,10 @@ const inProgress = ref(false);
 
 const tagsToApply = computed({
   get() {
-    return valuesStore.tagsToApply;
+    return meta.tagsToApply;
   },
   set(newValue) {
-    valuesStore.tagsToApply = newValue;
+    meta.tagsToApply = newValue;
   },
 });
 
@@ -241,7 +241,7 @@ const alter = (filename) => {
 const addNewTag = (inputValue) => {
   // new value
   tagsToApply.value.push(inputValue);
-  valuesStore.values.tags.push({
+  meta.values.tags.push({
     count: 1,
     value: inputValue,
   });

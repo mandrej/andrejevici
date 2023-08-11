@@ -24,7 +24,7 @@ export default function notify(options) {
     group: group ? group : false,
     html: html ? true : false,
     position: position ? position : "bottom",
-    textColor: "dark",
+    // textColor: "dark",
     actions: [{ icon: "close", color: "white" }],
   });
 }

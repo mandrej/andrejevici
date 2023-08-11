@@ -58,7 +58,10 @@ export const useAppStore = defineStore("app", {
   }),
   getters: {
     hasmore: (state) => {
-      return { count: state.objects.length, more: Boolean(state.next) };
+      return {
+        count: state.objects.length,
+        more: Boolean(state.next && state.objects.length > CONFIG.limit),
+      };
     },
     groupObjects: (state) => {
       const groups = [];
@@ -174,10 +177,10 @@ export const useAppStore = defineStore("app", {
     },
     async saveRecord(obj) {
       const docRef = doc(db, "Photo", obj.filename);
-      const valuesStore = useValuesStore();
+      const meta = useValuesStore();
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef);
-        valuesStore.decreaseValues(oldDoc.data());
+        meta.decreaseValues(oldDoc.data());
         await setDoc(docRef, obj, { merge: true });
         if (this.objects && this.objects.length) {
           const idx = this.objects.findIndex(
@@ -186,7 +189,7 @@ export const useAppStore = defineStore("app", {
           if (idx > -1) this.objects.splice(idx, 1, obj);
           notify({ message: `${obj.filename} updated` });
         }
-        valuesStore.increaseValues(obj);
+        meta.increaseValues(obj);
       } else {
         // set thumbnail url = publish
         if (process.env.DEV) {
@@ -210,7 +213,7 @@ export const useAppStore = defineStore("app", {
         if (idx > -1) this.uploaded.splice(idx, 1);
 
         this.bucketDiff(obj.size);
-        valuesStore.increaseValues(obj);
+        meta.increaseValues(obj);
       }
       this.refresh();
     },
@@ -230,10 +233,10 @@ export const useAppStore = defineStore("app", {
         await deleteObject(thumbRef);
 
         removeByProperty(this.objects, "filename", obj.filename);
-        const valuesStore = useValuesStore();
+        const meta = useValuesStore();
 
         this.bucketDiff(-data.size);
-        valuesStore.decreaseValues(data);
+        meta.decreaseValues(data);
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
