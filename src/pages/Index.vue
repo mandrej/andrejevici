@@ -10,7 +10,7 @@
     >
   </div>
   <div class="q-pa-sm text-h5">
-    <span v-for="(obj, index) in meta.values.year" :key="index">
+    <span v-for="(obj, index) in values.year" :key="index">
       <template v-if="index <= $q.screen.xs ? 9 : 99">
         <router-link
           :key="obj.value"
@@ -24,7 +24,7 @@
   </div>
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
-      v-for="obj in meta.values.tags"
+      v-for="obj in values.tags"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { tags: obj.value } }"
@@ -44,16 +44,14 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { useAppStore } from "../stores/app";
+import { onMounted, computed } from "vue";
 import { useValuesStore } from "../stores/values";
 
-const app = useAppStore();
 const meta = useValuesStore();
+const values = computed(() => meta.values);
 
 onMounted(() => {
-  if (meta.values.year.length === 0) meta.counters2store();
-  app.refresh();
+  meta.counters2store();
 });
 </script>
 
