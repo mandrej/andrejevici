@@ -77,7 +77,7 @@
         icon="share"
         @click="onShare"
       />
-      <q-btn
+      <!-- <q-btn
         v-if="rec.thumb"
         flat
         round
@@ -86,7 +86,7 @@
         href=""
         :download="rec.filename"
         @click="onDownload"
-      />
+      /> -->
     </q-card-actions>
   </q-card>
 </template>
