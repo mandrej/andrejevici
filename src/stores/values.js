@@ -148,8 +148,8 @@ export const useValuesStore = defineStore("meta", {
             },
             { merge: true }
           );
-          notify({ message: `Values for ${field} ${obj.value} updated` });
         }
+        notify({ message: `Values for ${field} updated` });
       }
     },
     async increase(id, field, val) {

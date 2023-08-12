@@ -98,14 +98,14 @@ export const useAppStore = defineStore("app", {
       const q = query(photosRef, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        querySnapshot.forEach(async (it) => {
+        querySnapshot.forEach((it) => {
           res.count++;
           res.size += it.data().size;
         });
       }
       this.bucket = { ...res };
-      await setDoc(bucketRef, res, { merge: true });
-      // notify({ message: `Bucket size and count recalculated` });
+      await setDoc(bucketRef, this.bucket, { merge: true });
+      notify({ message: `Bucket size calculated` });
     },
     async mismatch() {
       const auth = useUserStore();
