@@ -17,7 +17,7 @@
       <swiper-slide
         v-for="obj in list"
         :key="obj.filename"
-        :data-hash="obj.filename"
+        :data-hash="U + obj.filename"
       >
         <div
           class="absolute-top row no-wrap justify-between"

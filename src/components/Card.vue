@@ -69,15 +69,15 @@
         :icon="rec.thumb ? 'edit' : 'publish'"
         @click="emit('editRecord', rec)"
       />
-      <!-- <q-btn
+      <q-btn
         v-if="rec.thumb"
         flat
         round
         color="grey"
         icon="share"
         @click="onShare"
-      /> -->
-      <!-- <q-btn
+      />
+      <q-btn
         v-if="rec.thumb"
         flat
         round
@@ -85,14 +85,14 @@
         icon="download"
         href=""
         :download="rec.filename"
-        @click="download"
-      /> -->
+        @click="onDownload"
+      />
     </q-card-actions>
   </q-card>
 </template>
 
 <script setup>
-import { copyToClipboard } from "quasar";
+import { copyToClipboard, throttle } from "quasar";
 import {
   fileBroken,
   formatDatum,
@@ -121,25 +121,27 @@ const cardAttributes = (filename) => {
   };
 };
 
-const download = async (evt) => {
+const onDownload = throttle((evt) => {
+  evt.preventDefault();
   const a = evt.target.closest("a.q-btn");
-  const resp = await fetch(props.rec.url);
-  const blob = await resp.blob();
-  const url = URL.createObjectURL(blob);
-  a.href = url;
-  a.click();
-  evt.stopPropagation();
-  window.URL.revokeObjectURL(url);
-};
+  fetch(props.rec.url)
+    .then((resp) => resp.blob())
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+}, 200);
 
-// const onShare = () => {
-//   const url = window.location.href + "#" + U + props.rec.filename;
-//   copyToClipboard(url)
-//     .then(() => {
-//       notify({ type: "info", message: "URL copied to clipboard" });
-//     })
-//     .catch(() => {
-//       notify({ type: "warning", message: "Unable to copy URL to clipboard" });
-//     });
-// };
+const onShare = () => {
+  const url = window.location.href + "#" + U + props.rec.filename;
+  copyToClipboard(url)
+    .then(() => {
+      notify({ type: "info", message: "URL copied to clipboard" });
+    })
+    .catch(() => {
+      notify({ type: "warning", message: "Unable to copy URL to clipboard" });
+    });
+};
 </script>
