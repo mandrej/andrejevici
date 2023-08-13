@@ -44,15 +44,11 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
+import { computed } from "vue";
 import { useValuesStore } from "../stores/values";
 
 const meta = useValuesStore();
 const values = computed(() => meta.values);
-
-onMounted(() => {
-  meta.counters2store();
-});
 </script>
 
 <style scoped>
