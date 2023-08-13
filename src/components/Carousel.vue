@@ -132,7 +132,7 @@ const zoomRatio = (rec) => {
 };
 const caption = (rec) => {
   let tmp = "";
-  if (rec.id) {
+  if (rec.thumb) {
     const { headline, aperture, shutter, iso, model, lens } = rec;
     tmp += headline + "<br/>";
     tmp += aperture ? " f" + aperture : "";
