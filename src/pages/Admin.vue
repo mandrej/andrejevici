@@ -80,7 +80,6 @@ const auth = useUserStore();
 const messaging = getMessaging();
 
 const message = ref("NEW IMAGES");
-const resolve = ref(0);
 const values = computed(() => meta.values);
 
 onMounted(() => {
@@ -125,14 +124,14 @@ const bucket = () => {
   app.bucketBuild();
 };
 const repair = async () => {
-  notify({ message: `Please wait...`, group: "repair" });
-  resolve.value = await app.mismatch();
-  if (resolve.value === 0) {
+  notify({ message: `Please wait...`, group: "repair", timeout: 0 });
+  const result = await app.mismatch();
+  if (result.fail === 0) {
     notify({ message: `All good. Nothing to reslove`, group: "repair" });
   } else {
     notify({
       type: "warning",
-      message: `Resolve ${resolve.value} mismathed files either by<br>publish or delete. Files exist
+      message: `Resolve ${result.fail} mismathed files either by<br>publish or delete. Files exist
             on Add page`,
       html: true,
       timeout: 0,

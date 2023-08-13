@@ -108,6 +108,7 @@ export const useAppStore = defineStore("app", {
       notify({ message: `Bucket size calculated` });
     },
     async mismatch() {
+      const result = { good: 0, fail: 0 };
       const auth = useUserStore();
       const uploadedFilenames = this.uploaded.length
         ? this.uploaded.map((it) => it.filename)
@@ -128,10 +129,17 @@ export const useAppStore = defineStore("app", {
                 nick: emailNick(auth.user.email),
               });
             }
+            result.fail++;
+            notify({
+              message: `Progress failed / successful = ${result.fail} / ${result.good}`,
+              group: "repair",
+            });
+          } else {
+            result.good++;
           }
         }
       }
-      return this.uploaded.length;
+      return result;
     },
     // bucket
     async fetchRecords(reset = false, invoked = "") {
