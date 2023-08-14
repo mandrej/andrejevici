@@ -138,7 +138,7 @@ const onShare = () => {
   const url = window.location.href + "#" + U + props.rec.filename;
   copyToClipboard(url)
     .then(() => {
-      notify({ type: "info", message: "URL copied to clipboard" });
+      notify({ message: "URL copied to clipboard" });
     })
     .catch(() => {
       notify({ type: "warning", message: "Unable to copy URL to clipboard" });

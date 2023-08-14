@@ -1,4 +1,3 @@
-import { CONFIG } from "./index";
 import { Notify } from "quasar";
 
 export default function notify(options) {
@@ -6,25 +5,28 @@ export default function notify(options) {
    * type: 'positive', 'negative', 'warning', 'info', 'ongoing', 'external'
    */
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
-  let { type, message, multiLine, timeout, spinner, group, html, position } =
-    options;
+  let {
+    type,
+    message,
+    multiLine,
+    timeout,
+    spinner,
+    group,
+    html,
+    position,
+    actions,
+  } = options;
   if (!message) return;
-  if (
-    message.startsWith(CONFIG.start_message) ||
-    message.startsWith(CONFIG.end_message)
-  ) {
-    timeout = 0;
-  }
   Notify.create({
-    type: type ? type : "info",
+    type: type,
     message: message,
     multiLine: multiLine ? true : false,
-    timeout: timeout ? timeout : 5000,
+    timeout: timeout,
     spinner: spinner ? true : false,
     group: group ? group : false,
     html: html ? true : false,
-    position: position ? position : "bottom",
+    position: position,
+    actions: actions,
     textColor: type === "negative" ? "white" : "dark",
-    actions: [{ icon: "close", color: "white" }],
   });
 }

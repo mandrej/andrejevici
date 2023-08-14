@@ -40,23 +40,23 @@ const list = computed(() => [
   },
   {
     text: "years",
-    value: meta.values.year.length,
+    value: meta.yearValues.length,
   },
   {
     text: "tags",
-    value: meta.values.tags.length,
+    value: meta.tagValues.length,
   },
   {
     text: "cameras",
-    value: meta.values.model.length,
+    value: meta.modelValues.length,
   },
   {
     text: "lenses",
-    value: meta.values.lens.length,
+    value: meta.lensValues.length,
   },
   {
     text: "authors",
-    value: meta.values.email.length,
+    value: meta.emailValues.length,
   },
 ]);
 </script>

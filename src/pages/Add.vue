@@ -227,6 +227,8 @@ const onRejected = (rejectedEntries) => {
   // });
   notify({
     type: "warning",
+    timeout: 0,
+    actions: [{ icon: "close", color: "white" }],
     message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
   });
 };

@@ -27,10 +27,10 @@ import {
   emailNick,
   removeByProperty,
 } from "../helpers";
+import router from "../router";
 import notify from "../helpers/notify";
 import { useValuesStore } from "./values";
 import { useUserStore } from "./user";
-import { isEmpty } from "lodash";
 
 const bucketRef = doc(db, "Bucket", "total");
 const photosRef = collection(db, "Photo");
@@ -108,40 +108,71 @@ export const useAppStore = defineStore("app", {
       notify({ message: `Bucket size calculated` });
     },
     async mismatch() {
-      const result = { good: 0, fail: 0 };
+      notify({
+        message: `Please wait`,
+        timeout: 0,
+        actions: [{ icon: "close", color: "white" }],
+        group: "mismatch",
+      });
+      let result = 0;
+      const bucketNames = [];
+      const storageNames = [];
       const auth = useUserStore();
       const uploadedFilenames = this.uploaded.length
         ? this.uploaded.map((it) => it.filename)
         : [];
       const refs = await listAll(storageRef(storage, ""));
       for (let r of refs.items) {
-        const meta = await getMetadata(r);
-        if (meta.contentType === "image/jpeg") {
-          const find = await getDoc(doc(db, "Photo", meta.name));
-          if (!find.exists()) {
-            if (uploadedFilenames.indexOf(meta.name) === -1) {
-              const downloadURL = await getDownloadURL(r);
-              this.uploaded.push({
-                url: downloadURL,
-                filename: meta.name,
-                size: meta.size,
-                email: auth.user.email,
-                nick: emailNick(auth.user.email),
-              });
-            }
-            result.fail++;
-            notify({
-              message: `Progress failed / successful = ${result.fail} / ${result.good}`,
-              group: "repair",
-            });
-          } else {
-            result.good++;
-          }
+        bucketNames.push(r.name);
+      }
+      const q = query(photosRef);
+      const snapshot = await getDocs(q);
+      snapshot.forEach((doc) => {
+        storageNames.push(doc.id);
+      });
+
+      bucketNames.sort();
+      storageNames.sort();
+      // uploaded to bucket but no record in firestore
+      const missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1);
+      for (let name of missing) {
+        if (uploadedFilenames.indexOf(name) === -1) {
+          const _ref = storageRef(storage, name);
+          const meta = await getMetadata(_ref);
+          const downloadURL = await getDownloadURL(_ref);
+          this.uploaded.push({
+            url: downloadURL,
+            filename: name,
+            size: meta.size,
+            email: auth.user.email,
+            nick: emailNick(auth.user.email),
+          });
+          result++;
         }
       }
-      return result;
+      if (result > 0) {
+        notify({
+          message: `${result} files uploaded to bucket, but doesn't have record in firestore.<br>
+          Resolve mismathed files either by publish or delete.`,
+          actions: [
+            {
+              label: "Resolve",
+              color: "white",
+              handler: () => {
+                router.push({ path: "/add" });
+              },
+            },
+          ],
+          multiLine: true,
+          html: true,
+          type: "warning",
+          timeout: 0,
+          group: "mismatch",
+        });
+      } else {
+        notify({ message: `All good. Nothing to reslove`, group: "mismatch" });
+      }
     },
-    // bucket
     async fetchRecords(reset = false, invoked = "") {
       if (this.busy) {
         if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
@@ -248,12 +279,7 @@ export const useAppStore = defineStore("app", {
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
         });
-        //   .catch((err) => {
-        //     notify({
-        //       group: `${obj.filename}`,
-        //       type: "negative",
-        //       message: "Failed to delete.",
-        //     });
+        // TODO transaction, handle errors
       } else {
         const stoRef = storageRef(storage, obj.filename);
         const thumbRef = storageRef(storage, thumbName(obj.filename));
@@ -269,11 +295,9 @@ export const useAppStore = defineStore("app", {
       this.refresh();
     },
     refresh() {
-      if (isEmpty(this.bucket) || this.bucket.count === 0) {
-        this.bucketBuild();
-      } else {
-        this.bucketRead();
-      }
+      const meta = useValuesStore();
+      meta.counters2store();
+      this.bucketRead();
       this.getLast();
       this.getSince();
     },

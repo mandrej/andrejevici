@@ -53,11 +53,11 @@
       <q-item>
         <q-item-section>
           <q-item-label
-            >Repair Cloud storage and datastore mismatch</q-item-label
+            >Resolve Cloud storage and datastore mismatch</q-item-label
           >
         </q-item-section>
         <q-item-section side>
-          <q-btn color="primary" label="Repair" @click="repair" />
+          <q-btn color="primary" label="Resolve" @click="repair" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -124,20 +124,7 @@ const bucket = () => {
   app.bucketBuild();
 };
 const repair = async () => {
-  notify({ message: `Please wait...`, group: "repair", timeout: 0 });
-  const result = await app.mismatch();
-  if (result.fail === 0) {
-    notify({ message: `All good. Nothing to reslove`, group: "repair" });
-  } else {
-    notify({
-      type: "warning",
-      message: `Resolve ${result.fail} mismathed files either by<br>publish or delete. Files exist
-            on Add page`,
-      html: true,
-      timeout: 0,
-      group: "repair",
-    });
-  }
+  await app.mismatch();
 };
 const fix = () => {
   app.fix();

@@ -1,4 +1,4 @@
-import { QInput, QSelect } from "quasar";
+import { QInput, QSelect, Notify } from "quasar";
 
 const setDefault = (component, key, value) => {
   const prop = component.props[key];
@@ -23,3 +23,8 @@ const setDefault = (component, key, value) => {
 
 setDefault(QInput, "clearIcon", "clear");
 setDefault(QSelect, "clearIcon", "clear");
+Notify.setDefaults({
+  type: "info",
+  position: "bottom",
+  timeout: 5000,
+});

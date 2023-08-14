@@ -107,6 +107,12 @@ export const useValuesStore = defineStore("meta", {
       });
     },
     async photos2counters2store() {
+      notify({
+        message: `Please wait`,
+        timeout: 0,
+        actions: [{ icon: "close", color: "white" }],
+        group: "build",
+      });
       const q = query(photosRef, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       const val = { year: [], tags: [], model: [], lens: [], email: [] };
@@ -151,6 +157,12 @@ export const useValuesStore = defineStore("meta", {
         }
         notify({ message: `Values for ${field} updated` });
       }
+      notify({
+        message: `All done`,
+        timeout: 0,
+        actions: [{ icon: "close", color: "white" }],
+        group: "build",
+      });
     },
     async increase(id, field, val) {
       const [find] = this.values[field].filter((it) => it.value === val);
