@@ -23,7 +23,7 @@
         <q-item-section>
           <q-item-label
             >Recreate existing field values for
-            {{ Object.keys(values).join(" ") }}</q-item-label
+            {{ Object.keys(values).join(", ") }}</q-item-label
           >
         </q-item-section>
         <q-item-section side>
@@ -65,57 +65,18 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
 import { formatDatum } from "../helpers";
-import { getMessaging, getToken } from "firebase/messaging";
-import { CONFIG } from "../helpers";
-import notify from "../helpers/notify";
 
 const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
-const messaging = getMessaging();
 
 const message = ref("NEW IMAGES");
 const values = computed(() => meta.values);
-
-onMounted(() => {
-  getPermission();
-});
-
-const getPermission = () => {
-  try {
-    Notification.requestPermission().then((permission) =>
-      fetchToken(permission)
-    );
-  } catch (error) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API/Using_the_Notifications_API
-    Notification.requestPermission(function (permission) {
-      fetchToken(permission);
-    });
-  }
-};
-const fetchToken = (permission) => {
-  if (permission === "granted") {
-    return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
-      .then((token) => {
-        if (token) {
-          if (auth.fcm_token === null || token !== auth.fcm_token) {
-            auth.fcm_token = token;
-            // if (this.user && this.user.uid) {
-            //   this.addRegistration();
-            // }
-          }
-        }
-      })
-      .catch(function (err) {
-        console.error("Unable to retrieve token ", err);
-      });
-  }
-};
 
 const rebuild = () => {
   meta.photos2counters2store();

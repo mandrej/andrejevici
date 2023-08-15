@@ -1,12 +1,19 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
 import { auth } from "../boot/fire";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  getIdToken,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
+const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
-const authorization = getAuth();
 
 const familyMember = (email) => {
   return CONFIG.family.find((el) => el === email);
@@ -21,6 +28,28 @@ export const useUserStore = defineStore("auth", {
     fcm_token: null,
   }),
   actions: {
+    checkSession() {
+      onAuthStateChanged(getAuth(), (user) => {
+        if (user) {
+          getIdToken(user, true)
+            .then((token) => {
+              const payload = {
+                name: user.displayName,
+                email: user.email,
+                uid: user.uid,
+                isAuthorized: Boolean(familyMember(user.email)), // only family members
+                isAdmin: Boolean(adminMember(user.email)),
+                lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
+              };
+              this.user = { ...payload };
+            })
+            .catch((error) => {
+              console.log(error.code);
+              this.signIn();
+            });
+        }
+      });
+    },
     signIn() {
       if (this.user && this.user.uid) {
         auth.signOut().then(() => {
@@ -31,23 +60,31 @@ export const useUserStore = defineStore("auth", {
           }
         });
       } else {
-        signInWithPopup(authorization, provider)
+        signInWithPopup(getAuth(), provider)
           .then((result) => {
-            const payload = {
-              name: result.user.displayName,
-              email: result.user.email,
-              uid: result.user.uid,
-              photo: result.user.photoURL,
-              isAuthorized: Boolean(familyMember(result.user.email)), // only family members
-              isAdmin: Boolean(adminMember(result.user.email)),
-              lastLogin: Date.now(), // millis
-            };
-            this.user = { ...payload };
             // this.updateUser(this.user);
             // this.getPermission();
           })
           .catch((err) => {
             console.error(err.message);
+          });
+      }
+    },
+    fetchFCMToken(permission) {
+      if (permission === "granted") {
+        return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
+          .then((token) => {
+            if (token) {
+              if (this.fcm_token === null || token !== this.fcm_token) {
+                this.fcm_token = token;
+                // if (this.user && this.user.uid) {
+                //   this.addRegistration();
+                // }
+              }
+            }
+          })
+          .catch(function (err) {
+            console.error("Unable to retrieve token ", err);
           });
       }
     },
