@@ -33,7 +33,7 @@ import { useValuesStore } from "./values";
 import { useUserStore } from "./user";
 
 const bucketRef = doc(db, "Bucket", "total");
-const photosRef = collection(db, "Photo");
+const photosCol = collection(db, "Photo");
 
 export const useAppStore = defineStore("app", {
   state: () => ({
@@ -94,7 +94,7 @@ export const useAppStore = defineStore("app", {
         count: 0,
         size: 0,
       };
-      const q = query(photosRef, orderBy("date", "desc"));
+      const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         querySnapshot.forEach((it) => {
@@ -124,7 +124,7 @@ export const useAppStore = defineStore("app", {
       for (let r of refs.items) {
         bucketNames.push(r.name);
       }
-      const q = query(photosRef);
+      const q = query(photosCol);
       const snapshot = await getDocs(q);
       snapshot.forEach((doc) => {
         storageNames.push(doc.id);
@@ -191,7 +191,7 @@ export const useAppStore = defineStore("app", {
         constraints.push(startAfter(cursor));
       }
       constraints.push(limit(CONFIG.limit));
-      const q = query(photosRef, ...constraints);
+      const q = query(photosCol, ...constraints);
       this.error = null;
       this.busy = true;
 
@@ -297,12 +297,12 @@ export const useAppStore = defineStore("app", {
       const constraints = [orderBy("date", "desc"), limit(1)];
       if (auth.user && auth.user.isAuthorized) {
         q = query(
-          photosRef,
+          photosCol,
           where("email", "==", auth.user.email),
           ...constraints
         );
       } else {
-        q = query(photosRef, ...constraints);
+        q = query(photosCol, ...constraints);
       }
       querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
@@ -318,7 +318,7 @@ export const useAppStore = defineStore("app", {
       });
     },
     async getSince() {
-      const q = query(photosRef, orderBy("date", "asc"), limit(1));
+      const q = query(photosCol, orderBy("date", "asc"), limit(1));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
       querySnapshot.forEach(async (it) => {

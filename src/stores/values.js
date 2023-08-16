@@ -14,8 +14,8 @@ import {
 import notify from "../helpers/notify";
 import { CONFIG, emailNick } from "../helpers";
 
-const photosRef = collection(db, "Photo");
-const countersRef = collection(db, "Counter");
+const photosCol = collection(db, "Photo");
+const countersCol = collection(db, "Counter");
 
 export const useValuesStore = defineStore("meta", {
   state: () => ({
@@ -89,7 +89,7 @@ export const useValuesStore = defineStore("meta", {
   actions: {
     async countersRead() {
       this.values = { year: [], tags: [], model: [], lens: [], email: [] };
-      const q = query(countersRef);
+      const q = query(countersCol);
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
@@ -107,7 +107,7 @@ export const useValuesStore = defineStore("meta", {
         actions: [{ icon: "close", color: "white" }],
         group: "build",
       });
-      const q = query(photosRef, orderBy("date", "desc"));
+      const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       const val = { year: [], tags: [], model: [], lens: [], email: [] };
       querySnapshot.forEach((doc) => {

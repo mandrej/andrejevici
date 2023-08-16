@@ -21,7 +21,7 @@ import {
 import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
-const usersRef = collection(db, "User");
+const usersCol = collection(db, "User");
 const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
