@@ -9,6 +9,7 @@ import {
   limit,
   orderBy,
   getDoc,
+  getDocs,
   setDoc,
 } from "firebase/firestore";
 import {
@@ -108,6 +109,13 @@ export const useUserStore = defineStore("auth", {
           .catch(function (err) {
             console.error("Unable to retrieve token ", err);
           });
+      }
+    },
+    async subscribers() {
+      const q = query(usersCol, where(token, ">", ""));
+      const snapshot = await getDocs(q);
+      for (const user of snapshot) {
+        console.log(user.data());
       }
     },
   },
