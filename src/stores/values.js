@@ -24,76 +24,70 @@ export const useValuesStore = defineStore("meta", {
   }),
   getters: {
     // values getters
-    tagValues: (state) => {
-      if (state.values && state.values.tags) {
-        const res = state.values.tags.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => obj.value);
-      }
-      return [];
+    tagsValues: (state) => {
+      const res = state.values.tags.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => obj.value);
     },
     modelValues: (state) => {
-      if (state.values && state.values.model) {
-        const res = state.values.model.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => obj.value);
-      }
-      return [];
+      const res = state.values.model.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => obj.value);
     },
     lensValues: (state) => {
-      if (state.values && state.values.lens) {
-        const res = state.values.lens.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => obj.value);
-      }
-      return [];
+      const res = state.values.lens.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => obj.value);
     },
     nickValues: (state) => {
-      if (state.values && state.values.email) {
-        const res = state.values.email.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => emailNick(obj.value));
-      }
-      return [];
+      const res = state.values.email.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => emailNick(obj.value));
     },
     emailValues: (state) => {
-      if (state.values && state.values.email) {
-        const res = state.values.email.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => obj.value);
-      }
-      return [];
-    },
-    nickCountValues: (state) => {
-      if (state.values && state.values.email) {
-        const res = state.values.email.sort((a, b) => {
-          return b.count - a.count;
-        });
-        return res.map((obj) => {
-          return { value: emailNick(obj.value), count: obj.count };
-        });
-      }
-      return [];
+      const res = state.values.email.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => obj.value);
     },
     yearValues: (state) => {
-      if (state.values && state.values.year) {
-        const res = state.values.year.sort((a, b) => {
-          return b.value - a.value;
-        });
-        return res.map((obj) => {
-          return { label: obj.value, value: obj.value };
-        });
-      }
-      return [];
+      const res = state.values.year.sort((a, b) => {
+        return b.value - a.value;
+      });
+      return res.map((obj) => obj.value);
+    },
+    // for Index page only
+    yearCountValues: (state) => {
+      const res = state.values.year.sort((a, b) => {
+        return b.value - a.value;
+      });
+      return res.map((obj) => {
+        return { value: obj.value, count: obj.count };
+      });
+    },
+    nickCountValues: (state) => {
+      const res = state.values.email.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => {
+        return { value: emailNick(obj.value), count: obj.count };
+      });
+    },
+    tagsCountValues: (state) => {
+      const res = state.values.tags.sort((a, b) => {
+        return b.count - a.count;
+      });
+      return res.map((obj) => {
+        return { value: obj.value, count: obj.count };
+      });
     },
   },
   actions: {
-    async counters2store() {
+    async countersRead() {
       this.values = { year: [], tags: [], model: [], lens: [], email: [] };
       const q = query(countersRef);
       const querySnapshot = await getDocs(q);
@@ -106,7 +100,7 @@ export const useValuesStore = defineStore("meta", {
         }
       });
     },
-    async photos2counters2store() {
+    async countersBuild() {
       notify({
         message: `Please wait`,
         timeout: 0,

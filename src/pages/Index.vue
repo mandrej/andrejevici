@@ -10,7 +10,7 @@
     >
   </div>
   <div class="q-pa-sm text-h5">
-    <span v-for="(obj, index) in values.year" :key="index">
+    <span v-for="(obj, index) in meta.yearCountValues" :key="index">
       <template v-if="index <= $q.screen.xs ? 9 : 99">
         <router-link
           :key="obj.value"
@@ -24,7 +24,7 @@
   </div>
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
-      v-for="obj in values.tags"
+      v-for="obj in meta.tagsCountValues"
       :key="obj.value"
       :title="obj.value + ': ' + obj.count"
       :to="{ path: '/list', query: { tags: obj.value } }"
@@ -44,11 +44,8 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
 import { useValuesStore } from "../stores/values";
-
 const meta = useValuesStore();
-const values = computed(() => meta.values);
 </script>
 
 <style scoped>

@@ -44,7 +44,7 @@ const list = computed(() => [
   },
   {
     text: "tags",
-    value: meta.tagValues.length,
+    value: meta.tagsValues.length,
   },
   {
     text: "cameras",

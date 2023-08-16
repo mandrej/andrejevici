@@ -11,7 +11,7 @@
     /> -->
     <Complete
       v-model="tmp.tags"
-      :options="meta.tagValues"
+      :options="meta.tagsValues"
       multiple
       label="by tags"
       :disable="app.busy"
@@ -29,7 +29,6 @@
       v-model="tmp.year"
       class="col"
       :options="meta.yearValues"
-      autocomplete="label"
       label="by year"
       :disable="app.busy"
       behavior="menu"

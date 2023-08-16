@@ -135,7 +135,7 @@
             <div class="col-12">
               <Complete
                 v-model="tmp.tags"
-                :options="meta.tagValues"
+                :options="meta.tagsValues"
                 canadd
                 multiple
                 label="Tags"

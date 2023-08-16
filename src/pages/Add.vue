@@ -50,7 +50,7 @@
 
     <Complete
       v-model="tagsToApply"
-      :options="meta.tagValues"
+      :options="meta.tagsValues"
       canadd
       multiple
       label="Tags to apply for next publish"

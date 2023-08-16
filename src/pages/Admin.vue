@@ -79,7 +79,7 @@ const message = ref("NEW IMAGES");
 const values = computed(() => meta.values);
 
 const rebuild = () => {
-  meta.photos2counters2store();
+  meta.countersBuild();
 };
 const bucket = () => {
   app.bucketBuild();

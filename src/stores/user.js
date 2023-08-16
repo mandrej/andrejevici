@@ -1,6 +1,16 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
-import { auth } from "../boot/fire";
+import { auth, db } from "../boot/fire";
+import {
+  doc,
+  collection,
+  query,
+  where,
+  limit,
+  orderBy,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 import {
   getAuth,
   signInWithPopup,
@@ -11,6 +21,7 @@ import {
 import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
+const usersRef = collection(db, "User");
 const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
@@ -32,7 +43,7 @@ export const useUserStore = defineStore("auth", {
       onAuthStateChanged(getAuth(), (user) => {
         if (user) {
           getIdToken(user, true)
-            .then((token) => {
+            .then(async (token) => {
               const payload = {
                 name: user.displayName,
                 email: user.email,
@@ -42,6 +53,14 @@ export const useUserStore = defineStore("auth", {
                 lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
               };
               this.user = { ...payload };
+              await setDoc(
+                doc(db, "User", this.user.uid),
+                {
+                  email: this.user.email,
+                  signedIn: this.user.lastLoginAt,
+                },
+                { merge: true }
+              );
             })
             .catch((error) => {
               console.log(error.code);
@@ -61,10 +80,7 @@ export const useUserStore = defineStore("auth", {
         });
       } else {
         signInWithPopup(getAuth(), provider)
-          .then((result) => {
-            // this.updateUser(this.user);
-            // this.getPermission();
-          })
+          .then((result) => {})
           .catch((err) => {
             console.error(err.message);
           });
@@ -73,13 +89,19 @@ export const useUserStore = defineStore("auth", {
     fetchFCMToken(permission) {
       if (permission === "granted") {
         return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
-          .then((token) => {
+          .then(async (token) => {
             if (token) {
               if (this.fcm_token === null || token !== this.fcm_token) {
                 this.fcm_token = token;
-                // if (this.user && this.user.uid) {
-                //   this.addRegistration();
-                // }
+                if (this.user && this.user.uid) {
+                  await setDoc(
+                    doc(db, "User", this.user.uid),
+                    {
+                      token: this.fcm_token,
+                    },
+                    { merge: true }
+                  );
+                }
               }
             }
           })

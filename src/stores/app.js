@@ -59,7 +59,6 @@ export const useAppStore = defineStore("app", {
     hasmore: (state) => {
       return {
         count: state.objects.length,
-        more: Boolean(state.next && state.objects.length > CONFIG.limit),
       };
     },
     groupObjects: (state) => {
@@ -138,12 +137,12 @@ export const useAppStore = defineStore("app", {
       for (let name of missing) {
         if (uploadedFilenames.indexOf(name) === -1) {
           const _ref = storageRef(storage, name);
-          const meta = await getMetadata(_ref);
+          const metadata = await getMetadata(_ref);
           const downloadURL = await getDownloadURL(_ref);
           this.uploaded.push({
             url: downloadURL,
             filename: name,
-            size: meta.size,
+            size: metadata.size,
             email: auth.user.email,
             nick: emailNick(auth.user.email),
           });
@@ -253,7 +252,6 @@ export const useAppStore = defineStore("app", {
         this.bucketDiff(obj.size);
         meta.increaseValues(obj);
       }
-      this.refresh();
     },
     async deleteRecord(obj) {
       notify({
@@ -292,14 +290,6 @@ export const useAppStore = defineStore("app", {
           message: `${obj.filename} deleted`,
         });
       }
-      this.refresh();
-    },
-    refresh() {
-      const meta = useValuesStore();
-      meta.counters2store();
-      this.bucketRead();
-      this.getLast();
-      this.getSince();
     },
     async getLast() {
       let q, querySnapshot;
