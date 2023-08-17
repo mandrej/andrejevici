@@ -3,7 +3,7 @@
     <q-page-container>
       <q-page class="row">
         <q-page-sticky
-          v-if="auth.user.isAuthorized && bucket.count > 0"
+          v-if="auth.user.isAuthorized && app.bucket.count > 0"
           position="top-left"
           :offset="[16, 16]"
           style="z-index: 1000"
@@ -11,7 +11,7 @@
           <q-btn fab icon="add" color="warning" to="/add" />
         </q-page-sticky>
         <q-responsive
-          v-if="bucket.count > 0"
+          v-if="app.bucket.count > 0"
           :ratio="1"
           class="col-xs-12 col-sm-6 last"
           :style="styling"
@@ -51,8 +51,8 @@
             <q-toolbar-title class="text-h4" style="line-height: 100%">
               {{ $route.meta.title }}
               <br />
-              <span v-if="bucket.count > 0" class="text-body1"
-                >{{ bucket.count }} photos since {{ app.since }} and
+              <span v-if="app.bucket.count > 0" class="text-body1"
+                >{{ app.bucket.count }} photos since {{ app.since }} and
                 counting</span
               >
             </q-toolbar-title>
@@ -82,9 +82,7 @@ import { fileBroken, version } from "../helpers";
 
 const app = useAppStore();
 const auth = useUserStore();
-
 const last = computed(() => app.last);
-const bucket = computed(() => app.bucket);
 
 const styling = computed(() => {
   if (isEmpty(last.value)) {

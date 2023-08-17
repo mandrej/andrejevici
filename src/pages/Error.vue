@@ -1,6 +1,6 @@
 <template>
   <div class="absolute-center text-center">
-    <q-banner rounded class="text-white q-pa-md q-gutter-sm bg-negative">
+    <q-banner rounded class="text-white q-pa-md bg-negative">
       <div class="text-h3">{{ props.code }}</div>
       {{ text }}
       <template v-slot:action>

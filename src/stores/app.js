@@ -56,7 +56,7 @@ export const useAppStore = defineStore("app", {
     showCarousel: false,
   }),
   getters: {
-    hasmore: (state) => {
+    record: (state) => {
       return {
         count: state.objects.length,
       };
@@ -73,7 +73,9 @@ export const useAppStore = defineStore("app", {
     // bucket
     async bucketRead() {
       const docSnap = await getDoc(bucketRef);
-      this.bucket = { ...docSnap.data() };
+      if (docSnap.exists()) {
+        this.bucket = docSnap.data();
+      }
     },
     async bucketDiff(num) {
       if (num > 0) {
@@ -307,7 +309,7 @@ export const useAppStore = defineStore("app", {
       querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
 
-      querySnapshot.forEach(async (it) => {
+      querySnapshot.forEach((it) => {
         const rec = it.data();
         if (auth.user && auth.user.isAuthorized) {
           rec.href = "/list?nick=" + emailNick(rec.email);
@@ -321,7 +323,7 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, orderBy("date", "asc"), limit(1));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
-      querySnapshot.forEach(async (it) => {
+      querySnapshot.forEach((it) => {
         const rec = it.data();
         this.since = rec.year;
       });

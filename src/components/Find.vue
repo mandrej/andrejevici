@@ -179,6 +179,7 @@ const queryDispatch = (query, invoked = "") => {
 
 onMounted(() => {
   if (route.name !== "list") return;
+  meta.countersRead();
   queryDispatch(route.query, "mounted");
 });
 
