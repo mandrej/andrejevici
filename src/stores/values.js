@@ -4,6 +4,7 @@ import {
   doc,
   collection,
   query,
+  where,
   orderBy,
   getDoc,
   setDoc,
@@ -25,79 +26,111 @@ export const useValuesStore = defineStore("meta", {
   getters: {
     // values getters
     tagsValues: (state) => {
-      const res = state.values.tags.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => obj.value);
+      return state.values.tags.map((obj) => obj.value);
     },
     modelValues: (state) => {
-      const res = state.values.model.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => obj.value);
+      return state.values.model.map((obj) => obj.value);
     },
     lensValues: (state) => {
-      const res = state.values.lens.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => obj.value);
-    },
-    nickValues: (state) => {
-      const res = state.values.email.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => emailNick(obj.value));
+      return state.values.lens.map((obj) => obj.value);
     },
     emailValues: (state) => {
-      const res = state.values.email.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => obj.value);
+      return state.values.email.map((obj) => obj.value);
     },
-    yearValues: (state) => {
-      const res = state.values.year.sort((a, b) => {
-        return b.value - a.value;
-      });
-      return res.map((obj) => obj.value);
-    },
-    // for Index page only
-    yearCountValues: (state) => {
-      const res = state.values.year.sort((a, b) => {
-        return b.value - a.value;
-      });
-      return res.map((obj) => {
-        return { value: obj.value, count: obj.count };
-      });
-    },
-    nickCountValues: (state) => {
-      const res = state.values.email.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => {
+    nickCount: (state) => {
+      return state.values.email.map((obj) => {
         return { value: emailNick(obj.value), count: obj.count };
       });
     },
-    tagsCountValues: (state) => {
-      const res = state.values.tags.sort((a, b) => {
-        return b.count - a.count;
-      });
-      return res.map((obj) => {
-        return { value: obj.value, count: obj.count };
-      });
+    nickValues: (state) => {
+      return state.values.email.map((obj) => emailNick(obj.value));
+    },
+    yearValues: (state) => {
+      return state.values.year.map((obj) => obj.value);
     },
   },
   actions: {
-    async countersRead() {
-      this.values = { year: [], tags: [], model: [], lens: [], email: [] };
-      const q = query(countersCol);
+    async yearCount() {
+      const q = query(countersCol, where("field", "==", "year"));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        for (const field of CONFIG.photo_filter) {
-          if (d.field === field) {
-            this.values[field].push({ value: d.value, count: d.count });
-          }
+        const find = this.values.year.find((el) => el.value === d.value);
+        if (find) {
+          find.count = d.count;
+        } else {
+          this.values.year.push({ value: d.value, count: d.count });
         }
+      });
+      this.values.year.sort((a, b) => {
+        return b.value - a.value;
+      });
+    },
+    async emailCount() {
+      const q = query(countersCol, where("field", "==", "email"));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const find = this.values.email.find((el) => el.value === d.value);
+        if (find) {
+          find.count = d.count;
+        } else {
+          this.values.email.push({
+            value: d.value,
+            count: d.count,
+          });
+        }
+      });
+      this.values.email.sort((a, b) => {
+        return b.count - a.count;
+      });
+    },
+    async tagsCount() {
+      const q = query(countersCol, where("field", "==", "tags"));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const find = this.values.tags.find((el) => el.value === d.value);
+        if (find) {
+          find.count = d.count;
+        } else {
+          this.values.tags.push({ value: d.value, count: d.count });
+        }
+      });
+      this.values.tags.sort((a, b) => {
+        return a.value - b.value;
+      });
+    },
+    async modelCount() {
+      const q = query(countersCol, where("field", "==", "model"));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const find = this.values.model.find((el) => el.value === d.value);
+        if (find) {
+          find.count = d.count;
+        } else {
+          this.values.model.push({ value: d.value, count: d.count });
+        }
+      });
+      this.values.model.sort((a, b) => {
+        return b.count - a.count;
+      });
+    },
+    async lensCount() {
+      const q = query(countersCol, where("field", "==", "lens"));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const find = this.values.lens.find((el) => el.value === d.value);
+        if (find) {
+          find.count = d.count;
+        } else {
+          this.values.lens.push({ value: d.value, count: d.count });
+        }
+      });
+      this.values.lens.sort((a, b) => {
+        return b.count - a.count;
       });
     },
     async countersBuild() {

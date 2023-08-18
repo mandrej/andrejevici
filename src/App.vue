@@ -17,9 +17,10 @@ onMounted(() => {
   app.getSince();
   app.bucketRead();
   auth.checkSession();
-  Notification.requestPermission().then((permission) =>
-    auth.fetchFCMToken(permission)
-  );
+
+  // Notification.requestPermission().then((permission) =>
+  //   auth.fetchFCMToken(permission)
+  // );
   onMessage(messaging, (payload) => {
     const params = {
       type: "ongoing",
