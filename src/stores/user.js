@@ -111,13 +111,13 @@ export const useUserStore = defineStore("auth", {
           });
       }
     },
-    async subscribers() {
-      const q = query(usersCol, where(token, ">", ""));
-      const snapshot = await getDocs(q);
-      for (const user of snapshot) {
-        console.log(user.data());
-      }
-    },
+    // async subscribers() {
+    //   const q = query(usersCol, where(token, ">", ""));
+    //   const snapshot = await getDocs(q);
+    //   for (const user of snapshot) {
+    //     console.log(user.data());
+    //   }
+    // },
   },
   persist: {
     key: "b",
