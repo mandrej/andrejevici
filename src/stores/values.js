@@ -166,7 +166,7 @@ export const useValuesStore = defineStore("meta", {
         for (const [key, count] of Object.entries(counts[field])) {
           dict[field].push({ value: `${key}`, count: count });
         }
-        this.values[field] = dict[field];
+        // this.values[field] = dict[field];
         // write down
         let id, counterRef;
         for (const obj of dict[field]) {
@@ -182,7 +182,11 @@ export const useValuesStore = defineStore("meta", {
             { merge: true }
           );
         }
-        notify({ message: `Values for ${field} updated` });
+        notify({
+          message: `Values for ${field} updated`,
+          group: "build",
+          timeout: 0,
+        });
       }
       notify({
         message: `All done`,
