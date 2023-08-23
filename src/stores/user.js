@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
+import notify from "src/helpers/notify";
 import { auth, db } from "../boot/fire";
 import {
   doc,
@@ -40,11 +41,22 @@ export const useUserStore = defineStore("auth", {
     fcm_token: null,
   }),
   actions: {
+    // getCurrentUser() {
+    //   return new Promise((resolve, reject) => {
+    //     const unsubscribe = getAuth().onAuthStateChanged((user) => {
+    //       unsubscribe();
+    //       resolve(user);
+    //     }, reject);
+    //   });
+    // },
     checkSession() {
       onAuthStateChanged(getAuth(), (user) => {
         if (user) {
           getIdToken(user, true)
             .then(async (token) => {
+              if (user.accessToken !== token) {
+                notify({ message: "Session expired", type: "warning" });
+              }
               const payload = {
                 name: user.displayName,
                 email: user.email,
@@ -52,6 +64,7 @@ export const useUserStore = defineStore("auth", {
                 isAuthorized: Boolean(familyMember(user.email)), // only family members
                 isAdmin: Boolean(adminMember(user.email)),
                 lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
+                accessToken: token,
               };
               this.user = { ...payload };
               await setDoc(
