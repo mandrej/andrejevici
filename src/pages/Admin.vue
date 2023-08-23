@@ -42,12 +42,12 @@
       <q-item>
         <q-item-section>
           <q-item-label
-            >{{ formatDatum("2023-08-09", "DD.MM.YYYY") }} Remove some records
-            after migration</q-item-label
+            >{{ formatDatum("2023-08-23", "DD.MM.YYYY") }} Add text
+            field</q-item-label
           >
         </q-item-section>
         <q-item-section side>
-          <q-btn :disabled="true" color="primary" label="Fix" @click="fix" />
+          <q-btn color="primary" label="Fix" @click="fix" />
         </q-item-section>
       </q-item>
       <q-item>

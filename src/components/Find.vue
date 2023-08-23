@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md q-gutter-md">
-    <!-- <q-input
+    <q-input
       v-model="tmp.text"
       :disable="app.busy"
       label="by text"
@@ -8,7 +8,7 @@
       @blur="submit"
       :dense="$q.screen.xs"
       dark
-    /> -->
+    />
     <Complete
       v-model="tmp.tags"
       :options="meta.tagsValues"
@@ -152,7 +152,7 @@ const queryDispatch = (query, invoked = "") => {
   Object.keys(tmp.value).forEach((key) => {
     if (["year", "month", "day"].includes(key)) {
       tmp.value[key] = +query[key];
-    } else if (key === "tags") {
+    } else if (key === "tags" || key === "text") {
       if (
         typeof tmp.value[key] === "string" ||
         tmp.value[key] instanceof String

@@ -1,5 +1,6 @@
 import CONFIG from "../../config.json";
 import { date, format } from "quasar";
+import { slugify } from "transliteration";
 import { computed } from "vue";
 
 const { humanStorageSize } = format;
@@ -48,6 +49,21 @@ const removeByProperty = (arr, propery, value) => {
   const idx = arr.findIndex((it) => it[propery] === value);
   if (idx !== -1) arr.splice(idx, 1);
 };
+const textSlug = (text) => {
+  // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
+  return slugify(text, { replace: [[/[\.-::^[0-9]]+/g, ""]] });
+};
+const sliceSlug = (slug) => {
+  const text = [];
+  for (const word of slug.split("-")) {
+    for (var j = 3; j < word.length + 1; j++) {
+      const part = word.slice(0, j);
+      if (part.length > 8) break;
+      text.push(part);
+    }
+  }
+  return text;
+};
 
 export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
@@ -75,4 +91,6 @@ export {
   removeHash,
   version,
   removeByProperty,
+  textSlug,
+  sliceSlug,
 };

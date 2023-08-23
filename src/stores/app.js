@@ -9,6 +9,7 @@ import {
   orderBy,
   getDoc,
   setDoc,
+  updateDoc,
   getDocs,
   deleteDoc,
   startAfter,
@@ -26,6 +27,8 @@ import {
   thumbUrl,
   emailNick,
   removeByProperty,
+  textSlug,
+  sliceSlug,
 } from "../helpers";
 import router from "../router";
 import notify from "../helpers/notify";
@@ -181,7 +184,11 @@ export const useAppStore = defineStore("app", {
       }
       const filters = Object.entries(this.find).map(([key, val]) => {
         if (key === "tags") {
-          return where("tags", "array-contains-any", val);
+          return where(key, "array-contains-any", val);
+        } else if (key === "text") {
+          const slug = textSlug(val);
+          const arr = sliceSlug(slug);
+          return where(key, "array-contains-any", arr);
         } else {
           return where(key, "==", val);
         }
@@ -220,6 +227,8 @@ export const useAppStore = defineStore("app", {
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef);
         meta.decreaseValues(oldDoc.data());
+        const slug = textSlug(obj.headline);
+        obj.text = sliceSlug(slug);
         await setDoc(docRef, obj, { merge: true });
         if (this.objects && this.objects.length) {
           const idx = this.objects.findIndex(
@@ -329,22 +338,18 @@ export const useAppStore = defineStore("app", {
       });
     },
     async fix() {
-      const toRemove = [
-        "sankanje.jpg",
-        "carl-zeiss-planar-1.7-50mm.jpg",
-        "SDIM7960.X3F.jpg",
-        "SDIM7936.X3F.jpg",
-        "SDIM4002-SDIM4004_pregamma_1_reinhard05_brightness_-10_chromatic_adaptation_0.2_light_adaptation_0.8_postsaturation_1_postgamma_1_2019-11-24_01.jpg",
-      ];
-      for (var name of toRemove) {
-        const docRef = doc(db, "Photo", name);
-        try {
-          await deleteDoc(docRef);
-          notify({ message: `${name} removed` });
-        } catch {
-          notify({ message: `${name} failed` });
+      const q = query(photosCol, orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return null;
+      querySnapshot.forEach(async (it, i) => {
+        const rec = it.data();
+        if (!rec.text) {
+          const slug = textSlug(rec.headline);
+          const docRef = doc(db, "Photo", rec.filename);
+          await updateDoc(docRef, { text: sliceSlug(slug) });
+          if (i % 10 === 0) notify({ message: `fixed ${i}` });
         }
-      }
+      });
     },
     // async migration() {
     //   for (var obj of META) {
