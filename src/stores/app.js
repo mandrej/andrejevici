@@ -338,18 +338,20 @@ export const useAppStore = defineStore("app", {
       });
     },
     async fix() {
-      const q = query(photosCol, orderBy("date", "desc"));
+      const q = query(photosCol, orderBy("date", "desc"), limit(100));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
-      querySnapshot.forEach(async (it, i) => {
+
+      querySnapshot.forEach(async (it) => {
         const rec = it.data();
         if (!rec.text) {
           const slug = textSlug(rec.headline);
           const docRef = doc(db, "Photo", rec.filename);
-          await updateDoc(docRef, { text: sliceSlug(slug) });
-          if (i % 10 === 0) notify({ message: `fixed ${i}` });
+          rec.text = sliceSlug(slug);
+          await setDoc(docRef, rec, { merge: true });
         }
       });
+      notify({ message: "fixed 100" });
     },
     // async migration() {
     //   for (var obj of META) {
