@@ -11,6 +11,7 @@ import {
   setDoc,
   updateDoc,
   getDocs,
+  deleteField,
   deleteDoc,
   startAfter,
 } from "firebase/firestore";
@@ -347,12 +348,16 @@ export const useAppStore = defineStore("app", {
       // "жеља želja", // ж z
 
       const test = ["ш", "ђ", "љ", "џ", "ћ", "ч", "ж"];
-      const q = query(photosCol, orderBy("date", "desc"), limit(100));
+      const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
 
       querySnapshot.forEach(async (it) => {
         const rec = it.data();
+
+        const docRef = doc(db, "Photo", rec.filename);
+        await updateDoc(docRef, { done: false });
+
         const headline = rec.headline.toLowerCase();
         for (const c of test) {
           if (headline.indexOf(c) !== -1) {
@@ -360,11 +365,14 @@ export const useAppStore = defineStore("app", {
             const slug = textSlug(rec.headline);
             rec.text = sliceSlug(slug);
             await setDoc(docRef, rec, { merge: true });
+            // const data = {
+            //   done: deleteField(),
+            // };
+            // await updateDoc(docRef, data);
             notify({ message: slug });
           }
         }
       });
-      notify({ message: "fixed 100" });
     },
     // async migration() {
     //   for (var obj of META) {
