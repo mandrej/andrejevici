@@ -42,8 +42,8 @@
       <q-item>
         <q-item-section>
           <q-item-label
-            >{{ formatDatum("2023-08-23", "DD.MM.YYYY") }} Add text
-            field</q-item-label
+            >{{ formatDatum("2023-08-25", "DD.MM.YYYY") }} Use twitter latin. No
+            ш, ђ, љ, џ, ћ, ч, ж</q-item-label
           >
         </q-item-section>
         <q-item-section side>

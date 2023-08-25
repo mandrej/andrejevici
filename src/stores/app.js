@@ -338,17 +338,30 @@ export const useAppStore = defineStore("app", {
       });
     },
     async fix() {
+      // "шума šuma", // ш s
+      // "ђоле đole djole", // đ dj
+      // "љубица ljibica",
+      // "џокер džoker", // џ dz
+      // "ћира ćira", // ћ c
+      // "човек čovek", // ч c
+      // "жеља želja", // ж z
+
+      const test = ["ш", "ђ", "љ", "џ", "ћ", "ч", "ж"];
       const q = query(photosCol, orderBy("date", "desc"), limit(100));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
 
       querySnapshot.forEach(async (it) => {
         const rec = it.data();
-        if (!rec.text) {
-          const slug = textSlug(rec.headline);
-          const docRef = doc(db, "Photo", rec.filename);
-          rec.text = sliceSlug(slug);
-          await setDoc(docRef, rec, { merge: true });
+        const headline = rec.headline.toLowerCase();
+        for (const c of test) {
+          if (headline.indexOf(c) !== -1) {
+            const docRef = doc(db, "Photo", rec.filename);
+            const slug = textSlug(rec.headline);
+            rec.text = sliceSlug(slug);
+            await setDoc(docRef, rec, { merge: true });
+            notify({ message: slug });
+          }
         }
       });
       notify({ message: "fixed 100" });

@@ -7,6 +7,7 @@
       clearable
       @blur="submit"
       :dense="$q.screen.xs"
+      label-color="warning"
       dark
     />
     <Complete

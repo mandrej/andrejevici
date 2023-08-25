@@ -51,7 +51,17 @@ const removeByProperty = (arr, propery, value) => {
 };
 const textSlug = (text) => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
-  return slugify(text, { replace: [[/[\.-::^[0-9]]+/g, ""]] });
+  return slugify(text, {
+    replace: [
+      ["ш", "s"],
+      ["đ", "dj"],
+      ["џ", "dz"],
+      ["ћ", "c"],
+      ["ч", "c"],
+      ["ж", "z"],
+      [/[\.-::^[0-9]]+/g, ""],
+    ],
+  });
 };
 const sliceSlug = (slug) => {
   const text = [];
