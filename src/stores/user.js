@@ -41,22 +41,22 @@ export const useUserStore = defineStore("auth", {
     fcm_token: null,
   }),
   actions: {
-    // getCurrentUser() {
-    //   return new Promise((resolve, reject) => {
-    //     const unsubscribe = getAuth().onAuthStateChanged((user) => {
-    //       unsubscribe();
-    //       resolve(user);
-    //     }, reject);
-    //   });
-    // },
+    getCurrentUser() {
+      return new Promise((resolve, reject) => {
+        const unsubscribe = getAuth().onAuthStateChanged((user) => {
+          unsubscribe();
+          resolve(user);
+        }, reject);
+      });
+    },
     checkSession() {
+      this.getCurrentUser().then((currentUser) => {
+        if (this.user && this.user.uid && currentUser === null) this.signIn();
+      });
       onAuthStateChanged(getAuth(), (user) => {
         if (user) {
           getIdToken(user, true)
             .then(async (token) => {
-              if (user.accessToken !== token) {
-                notify({ message: "Session expired", type: "warning" });
-              }
               const payload = {
                 name: user.displayName,
                 email: user.email,
@@ -64,7 +64,6 @@ export const useUserStore = defineStore("auth", {
                 isAuthorized: Boolean(familyMember(user.email)), // only family members
                 isAdmin: Boolean(adminMember(user.email)),
                 lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
-                accessToken: token,
               };
               this.user = { ...payload };
               await setDoc(
