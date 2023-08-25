@@ -55,6 +55,7 @@ export const useAppStore = defineStore("app", {
     since: "",
 
     busy: false,
+    error: null,
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
@@ -179,6 +180,7 @@ export const useAppStore = defineStore("app", {
       }
     },
     async fetchRecords(reset = false, invoked = "") {
+      this.error = null;
       if (this.busy) {
         if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
         return;
@@ -202,22 +204,28 @@ export const useAppStore = defineStore("app", {
       }
       constraints.push(limit(CONFIG.limit));
       const q = query(photosCol, ...constraints);
-      this.error = null;
+
       this.busy = true;
-
-      const querySnapshot = await getDocs(q);
-      if (reset) this.objects.length = 0;
-      querySnapshot.forEach((it) => {
-        this.objects.push(it.data());
-      });
-
-      const next = querySnapshot.docs[querySnapshot.docs.length - 1];
-      if (next && next.id) {
-        next.id === this.next ? (this.next = null) : (this.next = next.id);
-      } else {
-        this.next = null;
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          this.error = "empty";
+        }
+        if (reset) this.objects.length = 0;
+        querySnapshot.forEach((it) => {
+          this.objects.push(it.data());
+        });
+        const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+        if (next && next.id) {
+          next.id === this.next ? (this.next = null) : (this.next = next.id);
+        } else {
+          this.next = null;
+        }
+      } catch (err) {
+        this.error = err.message;
       }
-      this.error = this.objects.length === 0 ? 0 : null;
+
       this.busy = false;
       if (process.env.DEV)
         console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));

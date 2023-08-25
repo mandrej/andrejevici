@@ -3,11 +3,10 @@
     <q-input
       v-model="tmp.text"
       :disable="app.busy"
-      label="by text"
+      label="by title"
       clearable
       @blur="submit"
       :dense="$q.screen.xs"
-      label-color="warning"
       dark
     />
     <Complete

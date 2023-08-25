@@ -12,22 +12,22 @@
 
   <q-page>
     <q-banner
-      v-if="app.error"
-      class="absolute-center text-center bg-warning q-pa-md"
-      rounded
-    >
-      <q-icon name="error_outline" size="4em" />
-      <div class="text-h6">Something went wrong ...</div>
-      <div>{{ app.error }}</div>
-    </q-banner>
-    <q-banner
-      v-else-if="app.error === 0"
-      class="absolute-center text-center bg-warning q-pa-md"
+      v-if="app.error && app.error === 'empty'"
+      class="absolute-center text-center bg-warning q-pa-md z-top"
       rounded
     >
       <q-icon name="error_outline" size="4em" />
       <div class="text-h6">No data found</div>
       <div>for current filter/ search</div>
+    </q-banner>
+    <q-banner
+      v-else-if="app.error && app.error !== 'empty'"
+      class="absolute-center text-center bg-warning q-pa-md z-top"
+      rounded
+    >
+      <q-icon name="error_outline" size="4em" />
+      <div class="text-h6">Something went wrong ...</div>
+      <div>{{ app.error }}</div>
     </q-banner>
 
     <q-scroll-observer
