@@ -209,9 +209,9 @@ export const useAppStore = defineStore("app", {
       let querySnapshot;
       try {
         querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-          this.error = "empty";
-        }
+        // if (querySnapshot.empty) {
+        //   this.error = "empty";
+        // }
         if (reset) this.objects.length = 0;
         querySnapshot.forEach((it) => {
           this.objects.push(it.data());
@@ -221,6 +221,7 @@ export const useAppStore = defineStore("app", {
           next.id === this.next ? (this.next = null) : (this.next = next.id);
         } else {
           this.next = null;
+          this.error = this.objects.length === 0 ? "empty" : null;
         }
       } catch (err) {
         this.error = err.message;

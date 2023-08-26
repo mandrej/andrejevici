@@ -13,7 +13,7 @@
   <q-page>
     <q-banner
       v-if="app.error && app.error === 'empty'"
-      class="absolute-center text-center bg-warning q-pa-md"
+      class="fixed-center text-center bg-warning q-pa-md"
       style="z-index: 100"
       rounded
     >
@@ -23,7 +23,7 @@
     </q-banner>
     <q-banner
       v-else-if="app.error && app.error !== 'empty'"
-      class="absolute-center text-center bg-warning q-pa-md"
+      class="fixed-center text-center bg-warning q-pa-md"
       style="z-index: 100"
       rounded
     >
