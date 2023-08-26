@@ -53,32 +53,27 @@ export const useUserStore = defineStore("auth", {
       this.getCurrentUser().then((currentUser) => {
         if (this.user && this.user.uid && currentUser === null) this.signIn();
       });
-      onAuthStateChanged(getAuth(), (user) => {
+      onAuthStateChanged(getAuth(), async (user) => {
         if (user) {
-          getIdToken(user, true)
-            .then(async (token) => {
-              const payload = {
-                name: user.displayName,
-                email: user.email,
-                uid: user.uid,
-                isAuthorized: Boolean(familyMember(user.email)), // only family members
-                isAdmin: Boolean(adminMember(user.email)),
-                lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
-              };
-              this.user = { ...payload };
-              await setDoc(
-                doc(db, "User", this.user.uid),
-                {
-                  email: this.user.email,
-                  signedIn: this.user.lastLoginAt,
-                },
-                { merge: true }
-              );
-            })
-            .catch((error) => {
-              console.log(error.code);
-              this.signIn();
-            });
+          const payload = {
+            name: user.displayName,
+            email: user.email,
+            uid: user.uid,
+            isAuthorized: Boolean(familyMember(user.email)), // only family members
+            isAdmin: Boolean(adminMember(user.email)),
+            lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
+          };
+          this.user = { ...payload };
+          await setDoc(
+            doc(db, "User", this.user.uid),
+            {
+              email: this.user.email,
+              signedIn: this.user.lastLoginAt,
+            },
+            { merge: true }
+          );
+        } else {
+          this.signIn();
         }
       });
     },
@@ -93,7 +88,7 @@ export const useUserStore = defineStore("auth", {
         });
       } else {
         signInWithPopup(getAuth(), provider)
-          .then((result) => {})
+          .then(() => {})
           .catch((err) => {
             console.error(err.message);
           });
