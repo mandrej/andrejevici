@@ -42,9 +42,8 @@
       <q-item>
         <q-item-section>
           <q-item-label
-            >{{ formatDatum("2023-08-25", "DD.MM.YYYY") }} Use twitter latin.
-            No&nbsp; ш, ђ, љ, џ, ћ, ч, ж</q-item-label
-          >
+            >{{ formatDatum("2023-08-25", "DD.MM.YYYY") }} Use ASCII for search
+          </q-item-label>
         </q-item-section>
         <q-item-section side>
           <q-btn :disabled="true" color="primary" label="Fix" @click="fix" />

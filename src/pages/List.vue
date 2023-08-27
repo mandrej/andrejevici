@@ -148,9 +148,9 @@ const carouselShow = (filename) => {
   app.showCarousel = true;
 };
 const carouselCancel = (hash) => {
-  // const el = document.querySelector("#" + hash);
-  // if (!el) return;
-  // const target = getScrollTarget(el);
-  // setVerticalScrollPosition(target, el.offsetTop, 500);
+  const el = document.querySelector("#" + hash);
+  if (!el) return;
+  const target = getScrollTarget(el);
+  setVerticalScrollPosition(target, el.offsetTop, 500);
 };
 </script>

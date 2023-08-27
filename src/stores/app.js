@@ -348,14 +348,6 @@ export const useAppStore = defineStore("app", {
       });
     },
     async fix() {
-      // "шума šuma", // ш s
-      // "ђоле đole djole", // đ dj
-      // "љубица ljibica",
-      // "џокер džoker", // џ dz
-      // "ћира ćira", // ћ c
-      // "човек čovek", // ч c
-      // "жеља želja", // ж z
-
       const test = ["ш", "ђ", "љ", "џ", "ћ", "ч", "ж"];
       const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
@@ -383,35 +375,6 @@ export const useAppStore = defineStore("app", {
         }
       });
     },
-    // async migration() {
-    //   for (var obj of META) {
-    //     const docRef = doc(db, "Photo", obj.filename);
-    //     const imgRef = storageRef(storage, obj.filename);
-    //     const thumbRef = storageRef(storage, thumbName(obj.filename));
-
-    //     const snap = await getDoc(docRef);
-    //     if (!snap.exists()) {
-    //       await setDoc(docRef, obj);
-    //     } else {
-    //       const rec = snap.data();
-    //       if (!rec.url) {
-    //         try {
-    //           rec.url = await getDownloadURL(imgRef);
-    //         } catch {
-    //           console.log("url:", rec.filename);
-    //         }
-    //       }
-    //       if (!rec.thumb) {
-    //         try {
-    //           rec.thumb = await getDownloadURL(thumbRef);
-    //         } catch {
-    //           console.log("thumb:", rec.filename);
-    //         }
-    //       }
-    //       await setDoc(docRef, rec, { merge: true });
-    //     }
-    //   }
-    // },
   },
   persist: {
     key: "a",
