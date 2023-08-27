@@ -1,7 +1,6 @@
 import { nextTick } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "../stores/user";
-import { CONFIG } from "../helpers";
 import routes from "./routes";
 
 const router = createRouter({
@@ -13,12 +12,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const auth = useUserStore();
   const user = auth.user;
-  // Unlog user after 7 days
-  if (user && user.uid) {
-    if (+new Date() - +new Date(user.lastLogin) > CONFIG.lifeSpan) {
-      auth.signIn();
-    }
-  }
+
   if (to.meta.requiresAuth && !user.isAuthorized) {
     return { name: "401", replace: true };
   } else if (to.meta.requiresAdmin && !user.isAdmin) {
