@@ -114,10 +114,10 @@ const props = defineProps({
 });
 
 const cardAttributes = (filename) => {
-  const [name, ext] = filename.match(reFilename);
+  const [, name, ext] = filename.match(reFilename);
   return {
     id: U + name,
-    class: ext + " bg-grey-2",
+    class: ext.substring(1) + " bg-grey-2",
   };
 };
 

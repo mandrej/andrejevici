@@ -144,6 +144,7 @@ const onSubmit = (evt) => {
     notify({ message: `Nothing to upload` });
   }
   for (const [i, file] of data.entries()) {
+    // console.log(file);
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
@@ -160,8 +161,8 @@ const onSubmit = (evt) => {
 
 const uploadPromise = (i, file) => {
   return new Promise((resolve, reject) => {
-    const [name, ext] = file.name.match(reFilename);
-    let filename = name.replace(reClean, "") + "." + ext;
+    const [, name, ext] = file.name.match(reFilename);
+    let filename = name.replace(reClean, "") + ext;
     const _ref = storageRef(storage, filename);
     getDownloadURL(_ref)
       .then((url) => {
@@ -173,10 +174,10 @@ const uploadPromise = (i, file) => {
       .catch((error) => {
         if (error.code === "storage/object-not-found") {
           uploadTask(i, filename, file).then(() => {
-            resolve(filename);
+            resolve(file.name);
           });
         } else {
-          reject(filename);
+          resolve(file.name);
         }
       });
   });
@@ -218,26 +219,26 @@ const uploadTask = async (i, filename, file) => {
 };
 
 const onRejected = (rejectedEntries) => {
-  // rejectedEntries.forEach((it) => {
-  //   notify({
-  //     type: "warning",
-  //     message: `${it.file.name}: ${it.failedPropValidation}`,
-  //     timeout: 0,
-  //   });
-  // });
-  notify({
-    type: "warning",
-    timeout: 0,
-    actions: [{ icon: "close", color: "white" }],
-    message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  rejectedEntries.forEach((it) => {
+    notify({
+      type: "warning",
+      message: `${it.file.name}: ${it.failedPropValidation} validation error`,
+      actions: [{ icon: "close", color: "dark" }],
+      timeout: 0,
+    });
   });
+  // notify({
+  //   type: "warning",
+  //   timeout: 0,
+  //   actions: [{ icon: "close", color: "white" }],
+  //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
+  // });
 };
 
 const alter = (filename) => {
   const id = uuid4();
-  const [name, ext] = filename.match(reFilename);
-  if (!ext) ext = "jpg";
-  return name + "_" + id.substring(id.length - 12) + "." + ext;
+  const [, name, ext] = filename.match(reFilename);
+  return name + "_" + id.substring(id.length - 12) + ext;
 };
 
 const addNewTag = (inputValue) => {
