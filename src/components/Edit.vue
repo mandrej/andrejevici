@@ -50,13 +50,7 @@
                 v-model="tmp.headline"
                 label="Headline"
                 :placeholder="CONFIG.noTitle"
-                :hint="`Image without name is called '${CONFIG.noTitle}'. Required`"
-                @update:model-value="
-                  (val) => {
-                    tmp.headline =
-                      val && val.charAt(0).toUpperCase() + val.slice(1);
-                  }
-                "
+                :hint="`Image without name is called '${CONFIG.noTitle}'`"
                 @blur="
                   tmp.headline === undefined || tmp.headline.trim() === ''
                     ? (tmp.headline = CONFIG.noTitle)
@@ -288,6 +282,7 @@ const onSubmit = () => {
   tmp.day = datum.getDate();
   tmp.tags = tmp.tags ? tmp.tags : [];
   tmp.nick = emailNick(tmp.email);
+  tmp.headline = tmp.headline.trim();
   app.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
   app.showEdit = false;

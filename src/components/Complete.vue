@@ -46,7 +46,7 @@ const options = ref(props.options);
 const field = ref(props.autocomplete); // label
 const debounce = 300;
 
-function filter(val, update) {
+const filter = (val, update) => {
   if (val === "") {
     update(() => {
       options.value = props.options;
@@ -65,5 +65,5 @@ function filter(val, update) {
       );
     }
   });
-}
+};
 </script>

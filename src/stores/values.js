@@ -285,6 +285,6 @@ export const useValuesStore = defineStore("meta", {
   },
   persist: {
     key: "v",
-    paths: ["values"],
+    paths: ["values", "tagsToApply"],
   },
 });
