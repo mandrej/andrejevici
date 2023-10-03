@@ -75,7 +75,6 @@
                   (val) => !!val || 'Email is missing',
                   (val) => isValidEmail(val),
                 ]"
-                @update:model-value="(newValue) => (tmp.email = newValue)"
                 @new-value="addNewEmail"
               />
               <q-input v-model="tmp.date" label="Date taken">
@@ -133,7 +132,6 @@
                 canadd
                 multiple
                 label="Tags"
-                @update:model-value="(newValue) => (tmp.tags = newValue)"
                 @new-value="addNewTag"
               />
             </div>
@@ -143,7 +141,6 @@
                 :options="meta.modelValues"
                 canadd
                 label="Camera Model"
-                @update:model-value="(newValue) => (tmp.model = newValue)"
                 @new-value="addNewModel"
               />
             </div>
@@ -153,7 +150,6 @@
                 :options="meta.lensValues"
                 canadd
                 label="Camera Lens"
-                @update:model-value="(newValue) => (tmp.lens = newValue)"
                 @new-value="addNewLens"
               />
             </div>
@@ -240,33 +236,21 @@ const isValidEmail = (val) => {
 };
 
 // new values
-const addNewEmail = (inputValue) => {
-  tmp.email = inputValue;
-  meta.values.email.push({
-    count: 1,
-    value: inputValue,
-  });
+const addNewEmail = (inputValue, done) => {
+  meta.addNewEmail(inputValue);
+  done(inputValue);
 };
-const addNewTag = (inputValue) => {
-  tmp.tags.push(inputValue);
-  meta.values.tags.push({
-    count: 1,
-    value: inputValue,
-  });
+const addNewTag = (inputValue, done) => {
+  meta.addNewTag(inputValue);
+  done(inputValue);
 };
-const addNewModel = (inputValue) => {
-  tmp.model = inputValue;
-  meta.values.model.push({
-    count: 1,
-    value: inputValue,
-  });
+const addNewModel = (inputValue, done) => {
+  meta.addNewModel(inputValue);
+  done(inputValue);
 };
-const addNewLens = (inputValue) => {
-  tmp.lens = inputValue;
-  meta.values.lens.push({
-    count: 1,
-    value: inputValue,
-  });
+const addNewLens = (inputValue, done) => {
+  meta.addNewLens(inputValue);
+  done(inputValue);
 };
 
 window.onpopstate = function () {

@@ -55,7 +55,6 @@
       multiple
       label="Tags to apply for next publish"
       hint="You can add / remove tag later"
-      @update:model-value="(newValue) => (tagsToApply = newValue)"
       @new-value="addNewTag"
     />
 
@@ -114,11 +113,6 @@ const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
 const current = computed(() => app.current);
-
-let files = ref([]);
-let progressInfos = reactive([]);
-const inProgress = ref(false);
-
 const tagsToApply = computed({
   get() {
     return meta.tagsToApply;
@@ -128,6 +122,9 @@ const tagsToApply = computed({
   },
 });
 
+let files = ref([]);
+let progressInfos = reactive([]);
+const inProgress = ref(false);
 const currentFileName = ref(null);
 
 const onSubmit = (evt) => {
@@ -241,13 +238,9 @@ const alter = (filename) => {
   return name + "_" + id.substring(id.length - 12) + ext;
 };
 
-const addNewTag = (inputValue) => {
-  // new value
-  tagsToApply.value.push(inputValue);
-  meta.values.tags.push({
-    count: 1,
-    value: inputValue,
-  });
+const addNewTag = (inputValue, done) => {
+  meta.addNewTag(inputValue);
+  done(inputValue);
 };
 const editRecord = async (rec) => {
   // /**

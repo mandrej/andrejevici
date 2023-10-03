@@ -282,6 +282,30 @@ export const useValuesStore = defineStore("meta", {
         }
       }
     },
+    addNewTag(val) {
+      this.values.tags.push({
+        count: 1,
+        value: val,
+      });
+    },
+    addNewEmail(val) {
+      this.values.email.push({
+        count: 1,
+        value: val,
+      });
+    },
+    addNewModel(val) {
+      this.values.model.push({
+        count: 1,
+        value: val,
+      });
+    },
+    addNewLens(val) {
+      this.values.lens.push({
+        count: 1,
+        value: val,
+      });
+    },
   },
   persist: {
     key: "v",
