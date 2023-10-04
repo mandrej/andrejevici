@@ -380,6 +380,7 @@ export const useAppStore = defineStore("app", {
     key: "a",
     paths: [
       "bucket",
+      "find",
       "uploaded",
       "objects",
       "last",
