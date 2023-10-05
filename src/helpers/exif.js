@@ -77,11 +77,14 @@ const readExif = async (url) => {
     has(data, "GPSLatitudeRef") &&
     has(data, "GPSLongitude") &&
     has(data, "GPSLongitudeRef")
-  )
-    exif.loc = [
-      decimal_coords(data.GPSLatitude, data.GPSLatitudeRef),
-      decimal_coords(data.GPSLongitude, data.GPSLongitudeRef),
-    ];
+  ) {
+    if (!isNaN(data.GPSLatitude) && !isNaN(data.GPSLongitude)) {
+      exif.loc = [
+        decimal_coords(data.GPSLatitude, data.GPSLatitudeRef),
+        decimal_coords(data.GPSLongitude, data.GPSLongitudeRef),
+      ];
+    }
+  }
 
   // console.log(exif);
   return exif;

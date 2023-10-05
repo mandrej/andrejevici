@@ -266,7 +266,8 @@ const onSubmit = () => {
   tmp.day = datum.getDate();
   tmp.tags = tmp.tags ? tmp.tags : [];
   tmp.nick = emailNick(tmp.email);
-  tmp.headline = tmp.headline.trim();
+  tmp.headline =
+    tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
   app.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
   app.showEdit = false;
