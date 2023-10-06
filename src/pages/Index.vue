@@ -39,7 +39,8 @@
     Application is build using
     <a href="https://firebase.google.com/">Firebase</a> on
     <a href="https://nodejs.org/">node.js</a> and
-    <a href="https://quasar.dev/">Quasar</a> vue.js framework
+    <a href="https://quasar.dev/">Quasar</a>&nbsp;
+    <a href="https://vuejs.org/">vue.js</a> framework
   </div>
 </template>
 

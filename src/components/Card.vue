@@ -30,8 +30,8 @@
               day: rec.day,
             },
           }"
-          class="text-secondary"
-          style="text-decoration: none"
+          class="text-dark"
+          style="text-decoration: underline"
           >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
         >
         {{ rec.date.substring(11) }}
