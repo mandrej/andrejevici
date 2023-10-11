@@ -66,6 +66,15 @@
             />
           </q-toolbar>
 
+          <q-banner v-if="showAskBanner" class="text-white q-pa-md bg-grey-9">
+            Would you like to enable notifications?
+            <template v-slot:action>
+              <q-btn flat label="Dismiss" @click="disableNotification" />
+              <q-btn flat label="Later" @click="askLater" />
+              <q-btn flat label="Enable" @click="enableNotifications" />
+            </template>
+          </q-banner>
+
           <router-view />
         </div>
       </q-page>
@@ -74,7 +83,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
@@ -83,6 +92,29 @@ import { fileBroken, version } from "../helpers";
 const app = useAppStore();
 const auth = useUserStore();
 const last = computed(() => app.last);
+
+onMounted(() => {
+  if (auth.allow_push) enableNotifications();
+});
+
+const showAskBanner = computed(() => "Notification" in window && auth.ask_push);
+const disableNotification = () => {
+  auth.ask_push = false;
+  auth.allow_push = false;
+};
+const askLater = () => {
+  auth.ask_push = true;
+  auth.allow_push = false;
+};
+const enableNotifications = () => {
+  Notification.requestPermission().then((permission) => {
+    console.log(permission);
+    if (permission === "granted") {
+      auth.ask_push = false;
+      auth.fetchFCMToken();
+    }
+  });
+};
 
 const styling = computed(() => {
   if (isEmpty(last.value)) {

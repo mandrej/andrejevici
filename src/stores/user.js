@@ -1,29 +1,16 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
-import notify from "src/helpers/notify";
 import { auth, db } from "../boot/fire";
-import {
-  doc,
-  collection,
-  query,
-  where,
-  limit,
-  orderBy,
-  getDoc,
-  getDocs,
-  setDoc,
-} from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import {
   getAuth,
   signInWithPopup,
   GoogleAuthProvider,
-  getIdToken,
   onAuthStateChanged,
 } from "firebase/auth";
 import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
-const usersCol = collection(db, "User");
 const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
@@ -39,6 +26,8 @@ export const useUserStore = defineStore("auth", {
   state: () => ({
     user: {},
     fcm_token: null,
+    ask_push: true,
+    allow_push: false,
   }),
   actions: {
     getCurrentUser() {
@@ -61,14 +50,14 @@ export const useUserStore = defineStore("auth", {
             uid: user.uid,
             isAuthorized: Boolean(familyMember(user.email)), // only family members
             isAdmin: Boolean(adminMember(user.email)),
-            lastLoginAt: 1 * user.metadata.lastLoginAt, // millis
+            signedIn: 1 * user.metadata.lastLoginAt, // millis
           };
           this.user = { ...payload };
           await setDoc(
-            doc(db, "User", this.user.uid),
+            doc(db, "User", payload.uid),
             {
-              email: this.user.email,
-              signedIn: this.user.lastLoginAt,
+              email: payload.email,
+              signedIn: payload.signedIn,
             },
             { merge: true }
           );
@@ -94,29 +83,27 @@ export const useUserStore = defineStore("auth", {
           });
       }
     },
-    fetchFCMToken(permission) {
-      if (permission === "granted") {
-        return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
-          .then(async (token) => {
-            if (token) {
-              if (this.fcm_token === null || token !== this.fcm_token) {
-                this.fcm_token = token;
-                if (this.user && this.user.uid) {
-                  await setDoc(
-                    doc(db, "User", this.user.uid),
-                    {
-                      token: this.fcm_token,
-                    },
-                    { merge: true }
-                  );
-                }
-              }
+    fetchFCMToken() {
+      return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
+        .then(async (token) => {
+          if (token) {
+            this.fcm_token = token;
+            this.allow_push = true;
+            console.log(this.fcm_token === token);
+            if (this.fcm_token !== token) {
+              await setDoc(
+                doc(db, "Subscriber", token),
+                {
+                  at: +new Date(),
+                },
+                { merge: true }
+              );
             }
-          })
-          .catch(function (err) {
-            console.error("Unable to retrieve token ", err);
-          });
-      }
+          }
+        })
+        .catch(function (err) {
+          console.error("Unable to retrieve token ", err);
+        });
     },
     // async subscribers() {
     //   const q = query(usersCol, where(token, ">", ""));
@@ -128,6 +115,6 @@ export const useUserStore = defineStore("auth", {
   },
   persist: {
     key: "b",
-    paths: ["user", "fcm_token"],
+    paths: ["user", "fcm_token", "ask_push", "allow_push"],
   },
 });

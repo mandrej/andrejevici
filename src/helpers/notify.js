@@ -27,6 +27,6 @@ export default function notify(options) {
     html: html ? true : false,
     position: position,
     actions: actions,
-    textColor: type === "negative" ? "white" : "dark",
+    textColor: type === "negative" || "ongoing" ? "white" : "dark",
   });
 }
