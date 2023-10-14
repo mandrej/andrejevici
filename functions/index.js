@@ -36,27 +36,30 @@ const sendPromise = (token, text) => {
   });
 };
 
-exports.send = onRequest(async (req, res) => {
-  const promises = [];
-  const period = 3 * 30 * 24 * 3600 * 1000; // 3 months
-  const now = +new Date();
-  const text = req.query.text;
-  const query = getFirestore()
-    .collection("Subscriber")
-    .where("at", ">=", now - period);
-  const querySnapshot = await query.get();
-  querySnapshot.forEach((documentSnapshot) => {
-    promises.push(sendPromise(documentSnapshot.id, text));
-  });
-
-  Promise.all(promises)
-    .then((results) => {
-      results.forEach((it) => {
-        logger.info(it);
-        res.send(it);
-      });
-    })
-    .catch((err) => {
-      logger.error(err);
+exports.send = onRequest(
+  { cors: [/andrejevici\.web\.app/, "localhost"] },
+  async (req, res) => {
+    const promises = [];
+    const period = 3 * 30 * 24 * 3600 * 1000; // 3 months
+    const now = +new Date();
+    const text = req.body.text;
+    const query = getFirestore()
+      .collection("Subscriber")
+      .where("at", ">=", now - period);
+    const querySnapshot = await query.get();
+    querySnapshot.forEach((documentSnapshot) => {
+      promises.push(sendPromise(documentSnapshot.id, text));
     });
-});
+
+    Promise.all(promises)
+      .then((results) => {
+        results.forEach((it) => {
+          logger.info(it);
+          res.send(it);
+        });
+      })
+      .catch((err) => {
+        logger.error(err);
+      });
+  }
+);

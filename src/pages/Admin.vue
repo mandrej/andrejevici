@@ -68,13 +68,13 @@ import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import { CONFIG, formatDatum } from "../helpers";
+import { CONFIG, formatDatum, emailNick } from "../helpers";
 
 const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
 
-const message = ref("NEW IMAGES");
+const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
 const values = computed(() => meta.values);
 
 const rebuild = () => {
@@ -91,12 +91,23 @@ const fix = () => {
 };
 const send = async () => {
   let url;
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "POST",
+  };
   if (process.env.DEV) {
-    url = "http://localhost:5001/andrejevici/us-central1/";
+    url = "http://localhost:5001/andrejevici/us-central1/send";
   } else {
-    url = CONFIG.cloudFunctionUrl;
+    url = CONFIG.sendFunctionUrl;
   }
-  const res = await fetch(url + "send?text=" + message.value);
+  const res = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    headers: headers,
+    body: JSON.stringify({ text: message.value }),
+  });
   return res;
 };
 // const migrate = () => {

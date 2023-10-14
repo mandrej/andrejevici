@@ -14,6 +14,16 @@ module.exports = {
     "object-curly-spacing": ["error", "always"],
     indent: ["error", 2],
     "max-len": ["error", { code: 120 }],
+    "comma-dangle": [
+      "error",
+      {
+        arrays: "never",
+        objects: "never",
+        imports: "never",
+        exports: "never",
+        functions: "never",
+      },
+    ],
   },
   overrides: [
     {

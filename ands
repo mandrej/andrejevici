@@ -30,7 +30,8 @@ else
       quasar build -m pwa
       exit ;;
     deploy)
-      firebase deploy
+      firebase deploy --except functions
+      # firebase deploy --only functions
       exit ;;
     *)
       syntax
