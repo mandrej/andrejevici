@@ -151,7 +151,7 @@ const onSubmit = (evt) => {
         removeByProperty(files.value, "name", it);
       });
     })
-    .catch(function (err) {
+    .catch((err) => {
       console.log(err);
     });
 };

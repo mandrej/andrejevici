@@ -108,7 +108,6 @@ const askLater = () => {
 };
 const enableNotifications = () => {
   Notification.requestPermission().then((permission) => {
-    console.log(permission);
     if (permission === "granted") {
       auth.ask_push = false;
       auth.fetchFCMToken();

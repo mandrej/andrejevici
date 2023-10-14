@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pt-md">
     <q-list separator>
-      <!-- <q-item>
+      <q-item>
         <q-item-section>
           <q-item-label>
             <q-input v-model="message" label="Send message to subscribers" />
@@ -15,7 +15,7 @@
             @click="send"
           />
         </q-item-section>
-      </q-item> -->
+      </q-item>
     </q-list>
     <q-item-label header>Various helper counters</q-item-label>
     <q-list separator>
@@ -68,7 +68,7 @@ import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import { formatDatum } from "../helpers";
+import { CONFIG, formatDatum } from "../helpers";
 
 const app = useAppStore();
 const meta = useValuesStore();
@@ -89,8 +89,15 @@ const repair = async () => {
 const fix = () => {
   app.fix();
 };
-const send = () => {
-  auth.sendNotifications(message.value);
+const send = async () => {
+  let url;
+  if (process.env.DEV) {
+    url = "http://localhost:5001/andrejevici/us-central1/";
+  } else {
+    url = CONFIG.cloudFunctionUrl;
+  }
+  const res = await fetch(url + "send?text=" + message.value);
+  return res;
 };
 // const migrate = () => {
 //   app.migration();

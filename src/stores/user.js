@@ -89,29 +89,19 @@ export const useUserStore = defineStore("auth", {
           if (token) {
             this.fcm_token = token;
             this.allow_push = true;
-            console.log(this.fcm_token === token);
-            if (this.fcm_token !== token) {
-              await setDoc(
-                doc(db, "Subscriber", token),
-                {
-                  at: +new Date(),
-                },
-                { merge: true }
-              );
-            }
+            await setDoc(
+              doc(db, "Subscriber", token),
+              {
+                at: +new Date(),
+              },
+              { merge: true }
+            );
           }
         })
         .catch(function (err) {
           console.error("Unable to retrieve token ", err);
         });
     },
-    // async subscribers() {
-    //   const q = query(usersCol, where(token, ">", ""));
-    //   const snapshot = await getDocs(q);
-    //   for (const user of snapshot) {
-    //     console.log(user.data());
-    //   }
-    // },
   },
   persist: {
     key: "b",
