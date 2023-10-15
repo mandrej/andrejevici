@@ -1,15 +1,16 @@
-importScripts(
-  "https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"
-);
-importScripts(
-  "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"
-);
+import { getMessaging } from "firebase/messaging/sw";
+import { onBackgroundMessage } from "firebase/messaging/sw";
 
-fetch("../config.json")
-  .then((res) => {
-    return res.json();
-  })
-  .then((data) => {
-    firebase.initializeApp(data.firebase);
-    const messaging = firebase.messaging();
-  });
+const messaging = getMessaging();
+onBackgroundMessage(messaging, (payload) => {
+  console.log(payload);
+
+  // Customize notification here
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: "icons/favicon-32x32.png",
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});

@@ -96,13 +96,12 @@ const send = () => {
     "Access-Control-Allow-Origin": "*",
   };
   if (process.env.DEV) {
-    url = "http://localhost:5001/andrejevici/us-central1/send";
+    url = "http://localhost:5001/andrejevici/us-central1/notify";
   } else {
     url = CONFIG.sendFunctionUrl;
   }
   fetch(url, {
     method: "POST",
-    mode: "cors",
     headers: headers,
     body: JSON.stringify({ text: message.value }),
   })

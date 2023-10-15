@@ -83,7 +83,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
@@ -92,10 +92,6 @@ import { fileBroken, version } from "../helpers";
 const app = useAppStore();
 const auth = useUserStore();
 const last = computed(() => app.last);
-
-onMounted(() => {
-  if (auth.allow_push) enableNotifications();
-});
 
 const showAskBanner = computed(() => "Notification" in window && auth.ask_push);
 const disableNotification = () => {

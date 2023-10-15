@@ -36,7 +36,7 @@ const sendPromise = (token, text) => {
   });
 };
 
-exports.send = onRequest(
+exports.notify = onRequest(
   { cors: [/andrejevici\.web\.app/, "localhost"] },
   async (req, res) => {
     const promises = [];
@@ -55,11 +55,11 @@ exports.send = onRequest(
       .then((results) => {
         results.forEach((it) => {
           logger.info(it);
-          res.send(it);
         });
       })
       .catch((err) => {
         logger.error(err);
       });
+    // eslint-disable-next-line comma-dangle
   }
 );

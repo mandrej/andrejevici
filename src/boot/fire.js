@@ -15,4 +15,4 @@ if (location.hostname === "localhost") {
   connectStorageEmulator(storage, "127.0.0.1", 9199);
 }
 
-export { firebaseApp, auth, db, storage };
+export { auth, db, storage };
