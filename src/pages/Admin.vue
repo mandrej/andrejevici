@@ -89,26 +89,27 @@ const repair = async () => {
 const fix = () => {
   app.fix();
 };
-const send = async () => {
+const send = () => {
   let url;
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "*",
-    "Access-Control-Allow-Methods": "POST",
   };
   if (process.env.DEV) {
     url = "http://localhost:5001/andrejevici/us-central1/send";
   } else {
     url = CONFIG.sendFunctionUrl;
   }
-  const res = await fetch(url, {
+  fetch(url, {
     method: "POST",
     mode: "cors",
     headers: headers,
     body: JSON.stringify({ text: message.value }),
-  });
-  return res;
+  })
+    .then((response) => response.text())
+    .then((text) => {
+      return text;
+    });
 };
 // const migrate = () => {
 //   app.migration();

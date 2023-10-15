@@ -8,6 +8,7 @@ function syntax {
   echo $"$0 icons  - Build icons"
   echo $"$0 build  - Build client"
   echo $"$0 deploy - Deploy"
+  echo $"$0 functions - Deploy functions only"
   exit 1
 }
 
@@ -31,7 +32,9 @@ else
       exit ;;
     deploy)
       firebase deploy --except functions
-      # firebase deploy --only functions
+      exit ;;
+    functions)
+      firebase deploy --only functions
       exit ;;
     *)
       syntax
