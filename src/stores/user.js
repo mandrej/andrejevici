@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
 import { auth, db } from "../boot/fire";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   getAuth,
   signInWithPopup,
@@ -53,14 +53,21 @@ export const useUserStore = defineStore("auth", {
             signedIn: 1 * user.metadata.lastLoginAt, // millis
           };
           this.user = { ...payload };
+
+          const docRef = doc(db, "User", payload.uid);
           await setDoc(
-            doc(db, "User", payload.uid),
+            docRef,
             {
               email: payload.email,
               signedIn: payload.signedIn,
             },
             { merge: true }
           );
+
+          const docSnap = await getDoc(docRef);
+          const data = docSnap.data();
+          this.ask_push = data.ask_push || true;
+          this.allow_push = data.allow_push || false;
         } else {
           this.signIn();
         }
@@ -90,9 +97,11 @@ export const useUserStore = defineStore("auth", {
             this.fcm_token = token;
             this.allow_push = true;
             await setDoc(
-              doc(db, "Subscriber", token),
+              doc(db, "User", this.user.uid),
               {
-                at: +new Date(),
+                token: token,
+                ask_push: false,
+                allow_push: true,
               },
               { merge: true }
             );
@@ -105,6 +114,6 @@ export const useUserStore = defineStore("auth", {
   },
   persist: {
     key: "b",
-    paths: ["user", "fcm_token", "ask_push", "allow_push"],
+    paths: ["user", "fcm_token"],
   },
 });

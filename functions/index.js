@@ -1,3 +1,4 @@
+/* eslint-disable comma-dangle */
 /**
  * Import function triggers from their respective submodules:
  *
@@ -11,7 +12,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, deleteField } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
 initializeApp();
@@ -19,47 +20,56 @@ initializeApp();
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 
-const sendPromise = (token, text) => {
-  return new Promise((resolve, reject) => {
+exports.notify = onRequest(
+  { cors: [/andrejevici\.web\.app/, "localhost"] },
+  async (req, res) => {
+    const text = req.body.text.trim();
+    if (text.length === 0) res.send("No message error");
+
     const msg = {
       notification: {
         title: "Notification from Andrejevici",
         body: text,
       },
-      token: token,
     };
-    getMessaging()
-      .send(msg)
-      .then((response) => {
-        resolve(response);
-      });
-  });
-};
-
-exports.notify = onRequest(
-  { cors: [/andrejevici\.web\.app/, "localhost"] },
-  async (req, res) => {
-    const promises = [];
-    const period = 3 * 30 * 24 * 3600 * 1000; // 3 months
-    const now = +new Date();
-    const text = req.body.text;
     const query = getFirestore()
-      .collection("Subscriber")
-      .where("at", ">=", now - period);
+      .collection("User")
+      .where("allow_push", "==", true);
     const querySnapshot = await query.get();
-    querySnapshot.forEach((documentSnapshot) => {
-      promises.push(sendPromise(documentSnapshot.id, text));
-    });
+    if (querySnapshot.size === 0) res.send("No subscribers error");
 
-    Promise.all(promises)
-      .then((results) => {
-        results.forEach((it) => {
-          logger.info(it);
+    querySnapshot.forEach((documentSnapshot) => {
+      msg.token = documentSnapshot.data().token;
+      getMessaging()
+        .send(msg)
+        .then((response) => {
+          logger.info(response);
+          res.send(response);
+        })
+        .catch((error) => {
+          if (error.code == "messaging/registration-token-not-registered") {
+            removeToken(documentSnapshot.token);
+          } else {
+            logger.error(error);
+          }
         });
-      })
-      .catch((err) => {
-        logger.error(err);
-      });
-    // eslint-disable-next-line comma-dangle
+    });
   }
 );
+
+const removeToken = async (token) => {
+  const query = getFirestore().collection("User").where("token", "==", token);
+  const querySnapshot = await query.get();
+  querySnapshot.forEach(async (documentSnapshot) => {
+    const docRef = getFirestore().doc("User/" + documentSnapshot.id);
+    await docRef.update({
+      token: deleteField(),
+      ask_push: true,
+      allow_push: false,
+    });
+  });
+  const docRef = getFirestore().doc("Subscriber/" + token);
+  await docRef.delete().then(() => {
+    logger.info("Expired token deleted");
+  });
+};

@@ -93,7 +93,9 @@ const app = useAppStore();
 const auth = useUserStore();
 const last = computed(() => app.last);
 
-const showAskBanner = computed(() => "Notification" in window && auth.ask_push);
+const showAskBanner = computed(
+  () => "Notification" in window && auth.user && auth.user.uid && auth.ask_push
+);
 const disableNotification = () => {
   auth.ask_push = false;
   auth.allow_push = false;

@@ -19,7 +19,7 @@ else
   gcloud config set project $proj_id
   case $1 in
     run)
-      firebase emulators:start --import=data --export-on-exit=data
+      firebase emulators:start --import=data #--export-on-exit=data
       # quasar dev -m pwa
       exit ;;
     icons)

@@ -102,6 +102,7 @@ const send = () => {
   }
   fetch(url, {
     method: "POST",
+    mode: "cors",
     headers: headers,
     body: JSON.stringify({ text: message.value }),
   })
