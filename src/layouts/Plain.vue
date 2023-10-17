@@ -94,20 +94,23 @@ const auth = useUserStore();
 const last = computed(() => app.last);
 
 const showAskBanner = computed(
-  () => "Notification" in window && auth.user && auth.user.uid && auth.ask_push
+  () => "Notification" in window && auth.user && auth.user.ask_push
 );
 const disableNotification = () => {
-  auth.ask_push = false;
-  auth.allow_push = false;
+  auth.user.ask_push = false;
+  auth.user.allow_push = false;
+  auth.updateUser();
 };
 const askLater = () => {
-  auth.ask_push = true;
+  auth.user.ask_push = true;
   auth.allow_push = false;
+  auth.updateUser();
 };
 const enableNotifications = () => {
   Notification.requestPermission().then((permission) => {
     if (permission === "granted") {
-      auth.ask_push = false;
+      auth.user.ask_push = false;
+      auth.updateUser();
       auth.fetchFCMToken();
     }
   });

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { CONFIG } from "../helpers";
 import { auth, db } from "../boot/fire";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import {
   getAuth,
   signInWithPopup,
@@ -25,9 +25,6 @@ const adminMember = (email) => {
 export const useUserStore = defineStore("auth", {
   state: () => ({
     user: {},
-    fcm_token: null,
-    ask_push: true,
-    allow_push: false,
   }),
   actions: {
     getCurrentUser() {
@@ -44,30 +41,35 @@ export const useUserStore = defineStore("auth", {
       });
       onAuthStateChanged(getAuth(), async (user) => {
         if (user) {
-          const payload = {
-            name: user.displayName,
-            email: user.email,
-            uid: user.uid,
-            isAuthorized: Boolean(familyMember(user.email)), // only family members
-            isAdmin: Boolean(adminMember(user.email)),
-            signedIn: 1 * user.metadata.lastLoginAt, // millis
-          };
-          this.user = { ...payload };
-
-          const docRef = doc(db, "User", payload.uid);
-          await setDoc(
-            docRef,
-            {
-              email: payload.email,
-              signedIn: payload.signedIn,
-            },
-            { merge: true }
-          );
-
+          const docRef = doc(db, "User", user.uid);
           const docSnap = await getDoc(docRef);
-          const data = docSnap.data();
-          this.ask_push = data.ask_push || true;
-          this.allow_push = data.allow_push || false;
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            this.user = {
+              name: user.displayName,
+              email: user.email,
+              uid: user.uid,
+              isAuthorized: Boolean(familyMember(user.email)), // only family members
+              isAdmin: Boolean(adminMember(user.email)),
+              signedIn: 1 * user.metadata.lastLoginAt, // millis
+              ask_push: data.ask_push,
+              allow_push: data.allow_push,
+              token: data.token,
+            };
+          } else {
+            this.user = {
+              name: user.displayName,
+              email: user.email,
+              uid: user.uid,
+              isAuthorized: Boolean(familyMember(user.email)), // only family members
+              isAdmin: Boolean(adminMember(user.email)),
+              signedIn: 1 * user.metadata.lastLoginAt, // millis
+              ask_push: true,
+              allow_push: false,
+              token: "no",
+            };
+          }
+          await setDoc(docRef, { ...this.user }, { merge: true });
         } else {
           this.signIn();
         }
@@ -90,30 +92,32 @@ export const useUserStore = defineStore("auth", {
           });
       }
     },
-    fetchFCMToken() {
-      return getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
-        .then(async (token) => {
-          if (token) {
-            this.fcm_token = token;
-            this.allow_push = true;
-            await setDoc(
-              doc(db, "User", this.user.uid),
-              {
-                token: token,
-                ask_push: false,
-                allow_push: true,
-              },
-              { merge: true }
-            );
-          }
-        })
-        .catch(function (err) {
-          console.error("Unable to retrieve token ", err);
-        });
+    async updateUser() {
+      const docRef = doc(db, "User", this.user.uid);
+      await updateDoc(docRef, this.user);
     },
+    async fetchFCMToken() {
+      try {
+        const token = await getToken(messaging, {
+          vapidKey: CONFIG.firebase.vapidKey,
+        });
+        if (token) {
+          this.user.fcm_token = token;
+          this.user.allow_push = true;
+          await updateDoc(doc(db, "User", this.user.uid), {
+            token: token,
+            ask_push: false,
+            allow_push: true,
+          });
+        }
+      } catch (err) {
+        console.error("Unable to retrieve token ", err);
+      }
+    },
+    // TODO after service worker update User on snapshot change sync with this.user
   },
   persist: {
     key: "b",
-    paths: ["user", "fcm_token"],
+    paths: ["user"],
   },
 });

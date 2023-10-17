@@ -12,7 +12,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore, deleteField } = require("firebase-admin/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
 initializeApp();
@@ -32,9 +32,7 @@ exports.notify = onRequest(
         body: text,
       },
     };
-    const query = getFirestore()
-      .collection("User")
-      .where("allow_push", "==", true);
+    const query = getFirestore().collection("User").where("token", "!=", "no");
     const querySnapshot = await query.get();
     if (querySnapshot.size === 0) res.send("No subscribers error");
 
@@ -63,13 +61,10 @@ const removeToken = async (token) => {
   querySnapshot.forEach(async (documentSnapshot) => {
     const docRef = getFirestore().doc("User/" + documentSnapshot.id);
     await docRef.update({
-      token: deleteField(),
+      token: "no",
       ask_push: true,
       allow_push: false,
     });
   });
-  const docRef = getFirestore().doc("Subscriber/" + token);
-  await docRef.delete().then(() => {
-    logger.info("Expired token deleted");
-  });
+  logger.info("Expired token deleted");
 };

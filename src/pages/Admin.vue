@@ -9,7 +9,7 @@
         </q-item-section>
         <q-item-section side>
           <q-btn
-            :disabled="!auth.fcm_token"
+            :disabled="!auth.user.token"
             color="positive"
             label="Send"
             @click="send"
