@@ -52,9 +52,9 @@ export const useUserStore = defineStore("auth", {
               isAuthorized: Boolean(familyMember(user.email)), // only family members
               isAdmin: Boolean(adminMember(user.email)),
               signedIn: 1 * user.metadata.lastLoginAt, // millis
-              ask_push: data.ask_push,
-              allow_push: data.allow_push,
-              token: data.token,
+              ask_push: data.ask_push || data.token ? false : true,
+              allow_push: data.allow_push || data.token ? true : false,
+              token: data.token || "no",
             };
           } else {
             this.user = {
@@ -69,7 +69,7 @@ export const useUserStore = defineStore("auth", {
               token: "no",
             };
           }
-          await setDoc(docRef, { ...this.user }, { merge: true });
+          await setDoc(docRef, this.user, { merge: true });
         } else {
           this.signIn();
         }
