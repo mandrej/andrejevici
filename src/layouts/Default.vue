@@ -49,7 +49,7 @@
 
     <q-page-container>
       <q-page>
-        <!-- <q-dialog
+        <q-dialog
           v-model="showAskBanner"
           transition-show="slide-down"
           transition-hide="slide-up"
@@ -69,7 +69,7 @@
               <q-btn flat label="Enable" @click="enableNotifications" />
             </q-card-actions>
           </q-card>
-        </q-dialog> -->
+        </q-dialog>
         <router-view />
       </q-page>
     </q-page-container>
@@ -85,30 +85,30 @@ import Menu from "../components/Menu.vue";
 const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
-// const open = ref(true);
+const open = ref(true);
 
-// const showAskBanner = computed(
-//   () =>
-//     "Notification" in window && auth.user && auth.user.ask_push && open.value
-// );
-// const disableNotification = () => {
-//   auth.user.ask_push = false;
-//   auth.user.allow_push = false;
-//   auth.updateUser();
-// };
-// const askLater = () => {
-//   open.value = false;
-//   auth.user.ask_push = true;
-//   auth.allow_push = false;
-//   auth.updateUser();
-// };
-// const enableNotifications = () => {
-//   Notification.requestPermission().then((permission) => {
-//     if (permission === "granted") {
-//       auth.user.ask_push = false;
-//       auth.updateUser();
-//       auth.fetchFCMToken();
-//     }
-//   });
-// };
+const showAskBanner = computed(
+  () =>
+    "Notification" in window && auth.user && auth.user.ask_push && open.value
+);
+const disableNotification = () => {
+  auth.user.ask_push = false;
+  auth.user.allow_push = false;
+  auth.updateUser();
+};
+const askLater = () => {
+  open.value = false;
+  auth.user.ask_push = true;
+  auth.allow_push = false;
+  auth.updateUser();
+};
+const enableNotifications = () => {
+  Notification.requestPermission().then((permission) => {
+    if (permission === "granted") {
+      auth.user.ask_push = false;
+      auth.updateUser();
+      auth.fetchFCMToken();
+    }
+  });
+};
 </script>

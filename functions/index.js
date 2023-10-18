@@ -42,7 +42,7 @@ exports.notify = onRequest(
         .send(msg)
         .then((response) => {
           logger.info(response);
-          res.send(response);
+          res.end();
         })
         .catch((error) => {
           if (error.code == "messaging/registration-token-not-registered") {
