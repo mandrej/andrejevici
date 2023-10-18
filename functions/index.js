@@ -11,11 +11,16 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
+const admin = require("firebase-admin");
+const serviceAccount = require("../credentials.json");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
-initializeApp();
+initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://andrejevici.firebaseio.com",
+});
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
