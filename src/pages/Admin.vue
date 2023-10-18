@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pt-md">
     <q-list separator>
-      <q-item>
+      <!-- <q-item>
         <q-item-section>
           <q-item-label>
             <q-input v-model="message" label="Send message to subscribers" />
@@ -15,7 +15,7 @@
             @click="send"
           />
         </q-item-section>
-      </q-item>
+      </q-item> -->
     </q-list>
     <q-item-label header>Various helper counters</q-item-label>
     <q-list separator>

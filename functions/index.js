@@ -65,6 +65,6 @@ const removeToken = async (token) => {
       ask_push: true,
       allow_push: false,
     });
+    logger.info("Expired token deleted");
   });
-  logger.info("Expired token deleted");
 };

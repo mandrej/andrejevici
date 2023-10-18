@@ -52,8 +52,8 @@ export const useUserStore = defineStore("auth", {
               isAuthorized: Boolean(familyMember(user.email)), // only family members
               isAdmin: Boolean(adminMember(user.email)),
               signedIn: 1 * user.metadata.lastLoginAt, // millis
-              ask_push: data.ask_push || data.token ? false : true,
-              allow_push: data.allow_push || data.token ? true : false,
+              ask_push: data.ask_push || data.token !== "no" ? false : true,
+              allow_push: data.allow_push || data.token !== "no" ? true : false,
               token: data.token || "no",
             };
           } else {
