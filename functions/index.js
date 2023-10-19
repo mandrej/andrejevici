@@ -12,7 +12,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
 const admin = require("firebase-admin");
-const serviceAccount = require("../credentials.json");
+const serviceAccount = require("./credentials.json");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
@@ -21,12 +21,17 @@ initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://andrejevici.firebaseio.com",
 });
+admin.firestore().settings({ ignoreUndefinedProperties: true });
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 
 exports.notify = onRequest(
-  { cors: [/andrejevici\.web\.app/, "localhost"] },
+  {
+    timeoutSeconds: 120,
+    region: ["us-central1"],
+    cors: [/andrejevici\.web\.app/, "localhost"],
+  },
   async (req, res) => {
     const text = req.body.text.trim();
     if (text.length === 0) res.send("No message error");
@@ -61,6 +66,7 @@ exports.notify = onRequest(
 );
 
 const removeToken = async (token) => {
+  if (token === undefined) return;
   const query = getFirestore().collection("User").where("token", "==", token);
   const querySnapshot = await query.get();
   querySnapshot.forEach(async (documentSnapshot) => {
