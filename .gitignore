@@ -34,4 +34,5 @@ data
 
 # secret
 config.json
+credentials.json
 

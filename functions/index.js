@@ -12,14 +12,13 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./credentials.json");
-const { initializeApp } = require("firebase-admin/app");
+const { initializeApp, applicationDefault } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
 initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://andrejevici.firebaseio.com",
+  credential: applicationDefault(),
+  projectId: "andrejevici",
 });
 admin.firestore().settings({ ignoreUndefinedProperties: true });
 
@@ -33,37 +32,58 @@ exports.notify = onRequest(
     cors: [/andrejevici\.web\.app/, "localhost"],
   },
   async (req, res) => {
+    const promises = [];
     const text = req.body.text.trim();
     if (text.length === 0) res.send("No message error");
 
+    const query = getFirestore().collection("User").where("token", "!=", "no");
+    const querySnapshot = await query.get();
+    if (querySnapshot.size === 0) res.status(200).send("No subscribers error");
+
+    querySnapshot.forEach((documentSnapshot) => {
+      promises.push(messagePromise(text, documentSnapshot.data().token));
+    });
+
+    Promise.all(promises)
+      .then((results) => {
+        results.forEach((it) => {
+          logger.info(it);
+          res.status(200).send(it);
+        });
+      })
+      .catch((error) => {
+        // on first rejected promise
+        logger.info(error);
+        res.status(500).send(error);
+      });
+  }
+);
+
+const messagePromise = (text, token) => {
+  return new Promise((resolve, reject) => {
     const msg = {
       notification: {
         title: "Notification from Andrejevici",
         body: text,
       },
+      token: token,
     };
-    const query = getFirestore().collection("User").where("token", "!=", "no");
-    const querySnapshot = await query.get();
-    if (querySnapshot.size === 0) res.send("No subscribers error");
 
-    querySnapshot.forEach((documentSnapshot) => {
-      msg.token = documentSnapshot.data().token;
-      getMessaging()
-        .send(msg)
-        .then((response) => {
-          logger.info(response);
-          res.end();
-        })
-        .catch((error) => {
-          if (error.code == "messaging/registration-token-not-registered") {
-            removeToken(documentSnapshot.token);
-          } else {
-            logger.error(error);
-          }
-        });
-    });
-  }
-);
+    getMessaging()
+      .send(msg)
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error) => {
+        if (error.code == "messaging/registration-token-not-registered") {
+          removeToken(msg.token);
+          resolve(msg.token);
+        } else {
+          reject(error);
+        }
+      });
+  });
+};
 
 const removeToken = async (token) => {
   if (token === undefined) return;
