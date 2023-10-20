@@ -40,8 +40,8 @@ exports.notify = onRequest(
     const querySnapshot = await query.get();
     if (querySnapshot.size === 0) res.status(200).send("No subscribers error");
 
-    querySnapshot.forEach((documentSnapshot) => {
-      promises.push(messagePromise(text, documentSnapshot.data().token));
+    querySnapshot.forEach((docSnap) => {
+      promises.push(messagePromise(text, docSnap.data().token));
     });
 
     Promise.all(promises)
@@ -89,13 +89,13 @@ const removeToken = async (token) => {
   if (token === undefined) return;
   const query = getFirestore().collection("User").where("token", "==", token);
   const querySnapshot = await query.get();
-  querySnapshot.forEach(async (documentSnapshot) => {
-    const docRef = getFirestore().doc("User/" + documentSnapshot.id);
+  querySnapshot.forEach(async (docSnap) => {
+    const docRef = getFirestore().doc("User/" + docSnap.id);
     await docRef.update({
       token: "no",
       ask_push: true,
       allow_push: false,
     });
-    logger.info("Expired token deleted");
+    logger.info(`Expired token deleted for ${docSnap.data().email}`);
   });
 };
