@@ -48,13 +48,16 @@ exports.notify = onRequest(
       .then((results) => {
         results.forEach((it) => {
           logger.info(it);
-          res.status(200).send(it);
+          res.write(it);
         });
       })
       .catch((error) => {
         // on first rejected promise
         logger.info(error);
-        res.status(500).send(error);
+        res.write(error);
+      })
+      .finally(() => {
+        res.end();
       });
   }
 );

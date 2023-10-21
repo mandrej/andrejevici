@@ -102,7 +102,7 @@ export const useUserStore = defineStore("auth", {
           vapidKey: CONFIG.firebase.vapidKey,
         });
         if (token) {
-          this.user.fcm_token = token;
+          this.user.token = token;
           this.user.allow_push = true;
           await updateDoc(doc(db, "User", this.user.uid), {
             token: token,
@@ -111,6 +111,10 @@ export const useUserStore = defineStore("auth", {
           });
         }
       } catch (err) {
+        this.user.token = "no";
+        this.user.ask_push = true;
+        this.user.allow_push = false;
+        this.updateUser();
         console.error("Unable to retrieve token ", err);
       }
     },

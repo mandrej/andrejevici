@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import Menu from "../components/Menu.vue";
@@ -86,6 +86,12 @@ const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
 const open = ref(true);
+
+onMounted(() => {
+  if ((auth.user && auth.user, auth.allow_push)) {
+    enableNotifications();
+  }
+});
 
 const showAskBanner = computed(
   () =>
@@ -106,8 +112,11 @@ const enableNotifications = () => {
   Notification.requestPermission().then((permission) => {
     if (permission === "granted") {
       auth.user.ask_push = false;
-      auth.updateUser();
       auth.fetchFCMToken();
+    } else {
+      auth.user.ask_push = true;
+      auth.allow_push = false;
+      auth.updateUser();
     }
   });
 };

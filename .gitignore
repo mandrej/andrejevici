@@ -33,6 +33,6 @@ data
 *.log
 
 # secret
-config.json
+config.js
 credentials.json
 
