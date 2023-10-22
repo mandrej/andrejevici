@@ -268,11 +268,11 @@ const onSubmit = () => {
   tmp.nick = emailNick(tmp.email);
   tmp.headline =
     tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
-  app.saveRecord(tmp);
   if (!tmp.thumb) {
     const position = { day: tmp.day, month: tmp.month, year: tmp.year };
     app.find = Object.assign({}, position);
   }
+  app.saveRecord(tmp);
   emit("editOk", U + tmp.filename);
   app.showEdit = false;
 };
