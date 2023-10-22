@@ -271,7 +271,7 @@ const onSubmit = () => {
   app.saveRecord(tmp);
   if (!tmp.thumb) {
     const position = { day: tmp.day, month: tmp.month, year: tmp.year };
-    app.find = { ...position };
+    app.find = Object.assign({}, position);
   }
   emit("editOk", U + tmp.filename);
   app.showEdit = false;
