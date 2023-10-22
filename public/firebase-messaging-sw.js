@@ -14,16 +14,19 @@ firebase.initializeApp({
   messagingSenderId: "183441678976",
   appId: "1:183441678976:web:3f87f36ff673545d3fbc65",
   measurementId: "G-4HF1XHQ8Y6",
-  vapidKey:
-    "BJi0xbkOqVvlYglggQz_g2fWv_RToySqLr7__rX_aEX8b4uElfTzNNcBA9rHhaB8jJB7IGfhT5LDj_OocJ2e23g",
 });
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(({ notification: { title, body, image } }) => {
-  self.registration.showNotification(title, {
-    body,
-    icon: image || "/icons/favicon-32x32.png",
-  });
+messaging.onBackgroundMessage((payload) => {
+  console.log(payload);
+
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: "icons/favicon-32x32.png",
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // import { initializeApp } from "firebase/app";
