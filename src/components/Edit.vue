@@ -269,6 +269,10 @@ const onSubmit = () => {
   tmp.headline =
     tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
   app.saveRecord(tmp);
+  if (!tmp.thumb) {
+    const position = { day: tmp.day, month: tmp.month, year: tmp.year };
+    app.find = { ...position };
+  }
   emit("editOk", U + tmp.filename);
   app.showEdit = false;
 };
