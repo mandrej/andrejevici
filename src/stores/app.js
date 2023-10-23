@@ -55,6 +55,7 @@ export const useAppStore = defineStore("app", {
     since: "",
 
     busy: false,
+    refresh: false,
     error: null,
     showEdit: false,
     showConfirm: false,

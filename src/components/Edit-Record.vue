@@ -65,7 +65,7 @@
                 "
               />
               <q-input v-model="tmp.filename" label="Filename" readonly />
-              <Complete
+              <Auto-Complete
                 v-model="tmp.email"
                 :options="meta.emailValues"
                 canadd
@@ -126,7 +126,7 @@
             </div>
 
             <div class="col-12">
-              <Complete
+              <Auto-Complete
                 v-model="tmp.tags"
                 :options="meta.tagsValues"
                 canadd
@@ -136,7 +136,7 @@
               />
             </div>
             <div class="col-xs-12 col-sm-6">
-              <Complete
+              <Auto-Complete
                 v-model="tmp.model"
                 :options="meta.modelValues"
                 canadd
@@ -145,7 +145,7 @@
               />
             </div>
             <div class="col-xs-12 col-sm-6">
-              <Complete
+              <Auto-Complete
                 v-model="tmp.lens"
                 :options="meta.lensValues"
                 canadd
@@ -200,7 +200,7 @@ import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import Complete from "./Complete.vue";
+import AutoComplete from "./Auto-Complete.vue";
 
 const emit = defineEmits(["editOk"]);
 const props = defineProps({
@@ -270,6 +270,7 @@ const onSubmit = () => {
     tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
   if (!tmp.thumb) {
     const position = { day: tmp.day, month: tmp.month, year: tmp.year };
+    app.refresh = true;
     app.find = Object.assign({}, position);
   }
   app.saveRecord(tmp);

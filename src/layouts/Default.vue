@@ -17,13 +17,8 @@
         </q-toolbar-title>
 
         <div v-if="$route.name === 'list'">{{ app.record.count }}</div>
-        <q-btn
-          v-else
-          flat
-          round
-          icon="history"
-          :to="{ name: 'list', query: app.find }"
-        />
+        <History-Button v-else />
+
         <q-linear-progress
           v-show="app.busy"
           color="warning"
@@ -49,27 +44,7 @@
 
     <q-page-container>
       <q-page>
-        <q-dialog
-          v-model="showAskBanner"
-          transition-show="slide-down"
-          transition-hide="slide-up"
-          persistent
-        >
-          <q-card>
-            <q-card-section class="row items-center">
-              <q-icon name="img:icons/favicon-96x96.png" size="56px" />
-              <span class="q-ml-md"
-                >Would you like to enable notifications?</span
-              >
-            </q-card-section>
-
-            <q-card-actions align="right">
-              <q-btn flat label="Dismiss" @click="disableNotification" />
-              <q-btn flat label="Later" @click="askLater" />
-              <q-btn flat label="Enable" @click="enableNotifications" />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
+        <Ask-Permission v-if="showAskBanner" />
         <router-view />
       </q-page>
     </q-page-container>
@@ -77,15 +52,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, defineAsyncComponent } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
+import HistoryButton from "../components/History-Button.vue";
 import Menu from "../components/Menu.vue";
+
+const AskPermission = defineAsyncComponent(() =>
+  import("../components/Ask-Permission.vue")
+);
 
 const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
-const open = ref(true);
 
 onMounted(() => {
   if ((auth.user && auth.user, auth.allow_push)) {
@@ -94,30 +73,6 @@ onMounted(() => {
 });
 
 const showAskBanner = computed(
-  () =>
-    "Notification" in window && auth.user && auth.user.ask_push && open.value
+  () => "Notification" in window && auth.user && auth.user.ask_push
 );
-const disableNotification = () => {
-  auth.user.ask_push = false;
-  auth.user.allow_push = false;
-  auth.updateUser();
-};
-const askLater = () => {
-  open.value = false;
-  auth.user.ask_push = true;
-  auth.allow_push = false;
-  auth.updateUser();
-};
-const enableNotifications = () => {
-  Notification.requestPermission().then((permission) => {
-    if (permission === "granted") {
-      auth.user.ask_push = false;
-      auth.fetchFCMToken();
-    } else {
-      auth.user.ask_push = true;
-      auth.allow_push = false;
-      auth.updateUser();
-    }
-  });
-};
 </script>

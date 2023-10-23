@@ -1,6 +1,6 @@
 <template>
-  <Edit v-if="app.showEdit" :rec="current" />
-  <Carousel
+  <Edit-Record v-if="app.showEdit" :rec="current" />
+  <Swiper-View
     v-if="app.showCarousel"
     :filename="currentFileName"
     :list="app.uploaded"
@@ -48,7 +48,7 @@
       </div>
     </q-form>
 
-    <Complete
+    <Auto-Complete
       v-model="tagsToApply"
       :options="meta.tagsValues"
       canadd
@@ -65,7 +65,7 @@
           :key="rec.filename"
           class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
         >
-          <Card
+          <Picture-Card
             :rec="rec"
             :canManage="true"
             @carousel-show="carouselShow"
@@ -101,11 +101,13 @@ import {
 } from "../helpers";
 import notify from "../helpers/notify";
 import readExif from "../helpers/exif";
-import Card from "../components/Card.vue";
-import Complete from "../components/Complete.vue";
-import Carousel from "../components/Carousel.vue";
+import PictureCard from "../components/Picture-Card.vue";
+import AutoComplete from "../components/Auto-Complete.vue";
+import SwiperView from "../components/Swiper-View.vue";
 
-const Edit = defineAsyncComponent(() => import("../components/Edit.vue"));
+const EditRecord = defineAsyncComponent(() =>
+  import("../components/Edit-Record.vue")
+);
 
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
@@ -246,7 +248,7 @@ const editRecord = async (rec) => {
   // /**
   //  * PUBLISH RECORD
   //  * Add user email and tags: [] to new rec; read exif
-  //  * See Edit getExif
+  //  * See Edit-Record getExif
   //  */
   const exif = await readExif(rec.url);
   const tags = [...(tagsToApply.value || "")];

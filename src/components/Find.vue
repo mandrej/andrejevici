@@ -9,7 +9,7 @@
       :dense="$q.screen.xs"
       dark
     />
-    <Complete
+    <Auto-Complete
       v-model="tmp.tags"
       :options="meta.tagsValues"
       multiple
@@ -25,7 +25,7 @@
         }
       "
     />
-    <Complete
+    <Auto-Complete
       v-model="tmp.year"
       class="col"
       :options="meta.yearValues"
@@ -42,7 +42,7 @@
       "
     />
     <div class="row">
-      <Complete
+      <Auto-Complete
         v-model="tmp.month"
         class="col"
         :options="optionsMonth"
@@ -60,7 +60,7 @@
         "
       />
       <div class="col-1" />
-      <Complete
+      <Auto-Complete
         v-model="tmp.day"
         class="col"
         :options="optionsDay"
@@ -78,7 +78,7 @@
         "
       />
     </div>
-    <Complete
+    <Auto-Complete
       v-model="tmp.model"
       :options="meta.modelValues"
       label="by model"
@@ -93,7 +93,7 @@
         }
       "
     />
-    <Complete
+    <Auto-Complete
       v-model="tmp.lens"
       :options="meta.lensValues"
       label="by lens"
@@ -108,7 +108,7 @@
         }
       "
     />
-    <Complete
+    <Auto-Complete
       v-model="tmp.nick"
       :options="meta.nickValues"
       label="by author"
@@ -132,7 +132,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { isEqual } from "lodash";
-import Complete from "./Complete.vue";
+import AutoComplete from "./Auto-Complete.vue";
 import { months } from "../helpers";
 
 const app = useAppStore();
@@ -142,6 +142,7 @@ const router = useRouter();
 const tmp = ref({ ...app.find });
 
 const queryDispatch = (query, invoked = "") => {
+  app.refresh = false;
   tmp.value = { ...query };
   // delete keys without values
   Object.keys(query).forEach((key) => {

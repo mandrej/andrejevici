@@ -1,7 +1,11 @@
 <template>
-  <Edit v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
-  <Confirm v-if="app.showConfirm" :rec="app.current" @confirm-ok="confirmOk" />
-  <Carousel
+  <Edit-Record v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
+  <Confirm-Delete
+    v-if="app.showConfirm"
+    :rec="app.current"
+    @confirm-ok="confirmOk"
+  />
+  <Swiper-View
     v-if="app.showCarousel"
     :filename="currentFileName"
     :list="app.objects"
@@ -50,7 +54,7 @@
             :key="item.filename"
             class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
           >
-            <Card
+            <Picture-Card
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
               @carousel-show="carouselShow"
@@ -81,11 +85,15 @@ import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { fakeHistory } from "../helpers";
 
-import Card from "../components/Card.vue";
-import Carousel from "../components/Carousel.vue";
+import PictureCard from "../components/Picture-Card.vue";
+import SwiperView from "../components/Swiper-View.vue";
 
-const Edit = defineAsyncComponent(() => import("../components/Edit.vue"));
-const Confirm = defineAsyncComponent(() => import("../components/Confirm.vue"));
+const EditRecord = defineAsyncComponent(() =>
+  import("../components/Edit-Record.vue")
+);
+const ConfirmDelete = defineAsyncComponent(() =>
+  import("../components/Confirm-Delete.vue")
+);
 
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 

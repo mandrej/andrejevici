@@ -56,13 +56,9 @@
                 counting</span
               >
             </q-toolbar-title>
-            <q-btn
+            <History-Button
               v-if="app.find && Object.keys(app.find).length"
               size="2em"
-              flat
-              round
-              icon="history"
-              :to="{ name: 'list', query: app.find }"
             />
           </q-toolbar>
 
@@ -79,6 +75,7 @@ import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { fileBroken, version } from "../helpers";
+import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();
 const auth = useUserStore();
