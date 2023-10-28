@@ -5,38 +5,40 @@ importScripts(
   "https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"
 );
 
-firebase.initializeApp({
-  apiKey: "AIzaSyBHV3J3GAEPiTU2MCrhuRI4F9mWzdjw6B0",
-  authDomain: "andrejevici.firebaseapp.com",
-  databaseURL: "https://andrejevici.firebaseio.com",
-  projectId: "andrejevici",
-  storageBucket: "andrejevici.appspot.com",
-  messagingSenderId: "183441678976",
-  appId: "1:183441678976:web:3f87f36ff673545d3fbc65",
-  measurementId: "G-4HF1XHQ8Y6",
-});
-const messaging = firebase.messaging();
-
-messaging.setBackgroundMessageHandler(function (payload) {
-  console.log(payload);
-
-  const notificationTitle = payload.data.title;
-  const notificationOptions = {
-    body: payload.data.body,
-    icon: payload.data.icon || "icons/favicon-32x32.png",
-  };
-
-  console.log(notificationOptions);
-
-  self.addEventListener("notificationclick", function (event) {
-    clients.openWindow(payload.data.link);
+try {
+  firebase.initializeApp({
+    apiKey: "AIzaSyBHV3J3GAEPiTU2MCrhuRI4F9mWzdjw6B0",
+    authDomain: "andrejevici.firebaseapp.com",
+    databaseURL: "https://andrejevici.firebaseio.com",
+    projectId: "andrejevici",
+    storageBucket: "andrejevici.appspot.com",
+    messagingSenderId: "183441678976",
+    appId: "1:183441678976:web:3f87f36ff673545d3fbc65",
+    measurementId: "G-4HF1XHQ8Y6",
   });
+  const messaging = firebase.messaging();
 
-  return self.registration.showNotification(
-    notificationTitle,
-    notificationOptions
-  );
-});
+  messaging.setBackgroundMessageHandler(function (payload) {
+    console.log(payload);
+
+    const notificationTitle = payload.data.title;
+    const notificationOptions = {
+      body: payload.data.body,
+      icon: payload.data.icon || "icons/favicon-32x32.png",
+    };
+
+    self.addEventListener("notificationclick", function (event) {
+      clients.openWindow(payload.data.link);
+    });
+
+    return self.registration.showNotification(
+      notificationTitle,
+      notificationOptions
+    );
+  });
+} catch (error) {
+  console.log(error);
+}
 
 // messaging.onBackgroundMessage((payload) => {
 //   console.log(payload);

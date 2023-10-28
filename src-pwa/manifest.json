@@ -1,5 +1,6 @@
 {
   "name": "andrejevici",
+  "start_url": "/",
   "short_name": "ANDрејевићи",
   "description": "ANDрејевићи photo album",
   "display": "standalone",
