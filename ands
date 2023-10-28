@@ -9,6 +9,7 @@ function syntax {
   echo $"$0 build  - Build client"
   echo $"$0 deploy - Deploy"
   echo $"$0 functions - Deploy functions only"
+  echo $"$0 extensions - Deploy extensions only"
   exit 1
 }
 
@@ -31,10 +32,13 @@ else
       quasar build -m pwa
       exit ;;
     deploy)
-      firebase deploy --except functions
+      firebase deploy --except functions,extensions
       exit ;;
     functions)
       firebase deploy --only functions
+      exit ;;
+    extensions)
+      firebase deploy --only extensions
       exit ;;
     *)
       syntax

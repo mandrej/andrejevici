@@ -17,17 +17,38 @@ firebase.initializeApp({
 });
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
+messaging.setBackgroundMessageHandler(function (payload) {
   console.log(payload);
 
-  const notificationTitle = payload.notification.title;
+  const notificationTitle = payload.data.title;
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: "icons/favicon-32x32.png",
+    body: payload.data.body,
+    icon: payload.data.icon || "icons/favicon-32x32.png",
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log(notificationOptions);
+
+  self.addEventListener("notificationclick", function (event) {
+    clients.openWindow(payload.data.link);
+  });
+
+  return self.registration.showNotification(
+    notificationTitle,
+    notificationOptions
+  );
 });
+
+// messaging.onBackgroundMessage((payload) => {
+//   console.log(payload);
+
+//   const notificationTitle = payload.notification.title;
+//   const notificationOptions = {
+//     body: payload.notification.body,
+//     icon: "icons/favicon-32x32.png",
+//   };
+
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
 // import { initializeApp } from "firebase/app";
 // import { getMessaging } from "firebase/messaging/sw";

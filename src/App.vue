@@ -19,14 +19,13 @@ onMounted(() => {
   auth.checkSession();
 
   onMessage(messaging, (payload) => {
-    console.log(payload);
+    // console.log(payload);
     const params = {
       type: "external",
-      message: payload.notification.body,
+      message: payload.data.body,
+      icon: "notifications",
+      caption: payload.messageId,
     };
-    // if (payload.data && payload.data.group) {
-    //   params.group = payload.data.group;
-    // }
     notify(params);
   });
 });

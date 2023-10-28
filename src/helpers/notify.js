@@ -13,8 +13,10 @@ export default function notify(options) {
     spinner,
     group,
     html,
-    position,
+    // position,
     actions,
+    caption,
+    icon,
   } = options;
   if (!message) return;
   Notify.create({
@@ -25,8 +27,10 @@ export default function notify(options) {
     spinner: spinner ? true : false,
     group: group ? group : false,
     html: html ? true : false,
-    position: position,
+    // position: position,
     actions: actions,
+    caption: caption,
+    icon: icon,
     textColor: type === "negative" || "ongoing" ? "white" : "dark",
   });
 }

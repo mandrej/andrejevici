@@ -39,4 +39,4 @@ register(process.env.SERVICE_WORKER_FILE, {
     // console.error('Error during service worker registration:', err)
   },
 });
-register("firebase-messaging-sw.js");
+// register("firebase-messaging-sw.js");

@@ -11,16 +11,11 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
-const admin = require("firebase-admin");
-const { initializeApp, applicationDefault } = require("firebase-admin/app");
+const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
-initializeApp({
-  credential: applicationDefault(),
-  projectId: "andrejevici",
-});
-admin.firestore().settings({ ignoreUndefinedProperties: true });
+initializeApp();
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
@@ -65,9 +60,10 @@ exports.notify = onRequest(
 const messagePromise = (text, token) => {
   return new Promise((resolve, reject) => {
     const msg = {
-      notification: {
+      data: {
         title: "Notification from Andrejevici",
         body: text,
+        link: "http://andrejevici.web.app/",
       },
       token: token,
     };
