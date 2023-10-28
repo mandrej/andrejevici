@@ -90,21 +90,18 @@ const fix = () => {
   app.fix();
 };
 const send = () => {
-  let url;
+  const url = process.env.DEV
+    ? "http://localhost:5001/andrejevici/us-central1/"
+    : CONFIG.functionsUrl;
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
-  if (process.env.DEV) {
-    url = "http://localhost:5001/andrejevici/us-central1/notify";
-  } else {
-    url = CONFIG.sendFunctionUrl;
-  }
-  fetch(url, {
+  fetch(url + "notify", {
     method: "POST",
     mode: "cors",
     headers: headers,
-    body: JSON.stringify({ text: message.value }),
+    body: JSON.stringify({ text: message.value.trim() }),
   })
     .then((response) => response.text())
     .then((text) => {

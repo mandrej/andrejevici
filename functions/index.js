@@ -28,7 +28,7 @@ exports.notify = onRequest(
   },
   async (req, res) => {
     const promises = [];
-    const text = req.body.text.trim();
+    const text = req.body.text;
     if (text.length === 0) res.send("No message error");
 
     const query = getFirestore().collection("User").where("token", "!=", "no");
