@@ -67,8 +67,17 @@ const auth = useUserStore();
 const drawer = ref(false);
 
 onMounted(() => {
-  if ((auth.user && auth.user, auth.allow_push)) {
-    enableNotifications();
+  if (auth.user && auth.allow_push) {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        auth.user.ask_push = false;
+        auth.fetchFCMToken();
+      } else {
+        auth.user.ask_push = true;
+        auth.allow_push = false;
+        auth.updateUser();
+      }
+    });
   }
 });
 
