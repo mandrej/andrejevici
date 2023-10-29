@@ -18,39 +18,24 @@ try {
   });
   const messaging = firebase.messaging();
 
-  messaging.setBackgroundMessageHandler(function (payload) {
+  messaging.onBackgroundMessage((payload) => {
     console.log(payload);
-
+    // Customize notification here
     const notificationTitle = payload.data.title;
     const notificationOptions = {
       body: payload.data.body,
       icon: payload.data.icon || "icons/favicon-32x32.png",
     };
 
-    self.addEventListener("notificationclick", function (event) {
-      clients.openWindow(payload.data.link);
-    });
-
-    return self.registration.showNotification(
-      notificationTitle,
-      notificationOptions
-    );
+    self.registration.showNotification(notificationTitle, notificationOptions);
   });
+
+  // self.addEventListener("notificationclick", function (event) {
+  //   clients.openWindow(payload.data.link);
+  // });
 } catch (error) {
   console.log(error);
 }
-
-// messaging.onBackgroundMessage((payload) => {
-//   console.log(payload);
-
-//   const notificationTitle = payload.notification.title;
-//   const notificationOptions = {
-//     body: payload.notification.body,
-//     icon: "icons/favicon-32x32.png",
-//   };
-
-//   self.registration.showNotification(notificationTitle, notificationOptions);
-// });
 
 // import { initializeApp } from "firebase/app";
 // import { getMessaging } from "firebase/messaging/sw";

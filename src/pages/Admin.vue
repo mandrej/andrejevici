@@ -91,13 +91,13 @@ const fix = () => {
 };
 const send = () => {
   const url = process.env.DEV
-    ? "http://localhost:5001/andrejevici/us-central1/"
-    : CONFIG.functionsUrl;
+    ? "http://localhost:5001/andrejevici/us-central1/notify"
+    : CONFIG.notifyUrl;
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
-  fetch(url + "notify", {
+  fetch(url, {
     method: "POST",
     mode: "cors",
     headers: headers,
