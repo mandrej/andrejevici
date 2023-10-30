@@ -22,7 +22,7 @@ onMounted(() => {
     console.log(payload);
     const params = {
       type: "external",
-      message: payload.data.body,
+      message: payload.notification.body,
       icon: "notifications",
       caption: payload.messageId,
     };

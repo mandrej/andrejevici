@@ -60,10 +60,9 @@ exports.notify = onRequest(
 const messagePromise = (text, token) => {
   return new Promise((resolve, reject) => {
     const msg = {
-      data: {
-        title: "Notification from Andrejevici",
+      notification: {
+        title: "Andrejevici",
         body: text,
-        link: "http://andrejevici.web.app/",
       },
       token: token,
     };

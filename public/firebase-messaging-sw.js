@@ -18,17 +18,17 @@ try {
   });
   const messaging = firebase.messaging();
 
-  messaging.onBackgroundMessage((payload) => {
-    console.log(payload);
-    // Customize notification here
-    const notificationTitle = payload.data.title;
-    const notificationOptions = {
-      body: payload.data.body,
-      icon: payload.data.icon || "icons/favicon-32x32.png",
-    };
+  // messaging.onBackgroundMessage((payload) => {
+  //   console.log(payload);
+  //   // Customize notification here
+  //   const title = payload.notification.title;
+  //   const options = {
+  //     body: payload.notification.body,
+  //     image: "icons/favicon-32x32.png",
+  //   };
 
-    self.registration.showNotification(notificationTitle, notificationOptions);
-  });
+  //   self.registration.showNotification(title, options);
+  // });
 
   // self.addEventListener("notificationclick", function (event) {
   //   clients.openWindow(payload.data.link);
@@ -49,15 +49,12 @@ try {
 
 //     onBackgroundMessage(messaging, (payload) => {
 //       // Customize notification here
-//       const notificationTitle = payload.notification.title;
-//       const notificationOptions = {
+//       const title = payload.notification.title;
+//       const options = {
 //         body: payload.notification.body,
-//         icon: "icons/favicon-32x32.png",
+//         image: "icons/favicon-32x32.png",
 //       };
 
-//       self.registration.showNotification(
-//         notificationTitle,
-//         notificationOptions
-//       );
+//       self.registration.showNotification(title, options);
 //     });
 //   });
