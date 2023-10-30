@@ -12,7 +12,7 @@ const routes = [
       {
         path: "",
         name: "home",
-        component: () => import("../pages/Index.vue"),
+        component: () => import("../pages/Index-Page.vue"),
         meta: { title: CONFIG.title },
       },
     ],
@@ -24,7 +24,7 @@ const routes = [
     children: [
       {
         path: "",
-        component: () => import("../pages/List.vue"),
+        component: () => import("../pages/List-Page.vue"),
         name: "list",
         meta: { title: CONFIG.title },
       },
@@ -37,7 +37,7 @@ const routes = [
     children: [
       {
         path: "",
-        component: () => import("../pages/Add.vue"),
+        component: () => import("../pages/Add-Page.vue"),
         name: "add",
         meta: { title: "Add", requiresAuth: true },
       },
@@ -50,7 +50,7 @@ const routes = [
     children: [
       {
         path: "",
-        component: () => import("../pages/Admin.vue"),
+        component: () => import("../pages/Admin-Page.vue"),
         name: "admin",
         meta: { title: "Administration", requiresAdmin: true },
       },
@@ -63,7 +63,7 @@ const routes = [
       {
         path: "",
         name: "401",
-        component: () => import("../pages/Error.vue"),
+        component: () => import("../pages/Error-Page.vue"),
         props: { code: 401 },
         meta: { title: "Error 401" },
       },
@@ -78,7 +78,7 @@ const routes = [
       {
         path: "",
         name: "404",
-        component: () => import("../pages/Error.vue"),
+        component: () => import("../pages/Error-Page.vue"),
         props: { code: 404 },
         meta: { title: "Error 404" },
       },
