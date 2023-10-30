@@ -103,6 +103,7 @@ export const useUserStore = defineStore("auth", {
         });
         if (token) {
           this.user.token = token;
+          this.user.ask_push = false;
           this.user.allow_push = true;
           await updateDoc(doc(db, "User", this.user.uid), {
             token: token,

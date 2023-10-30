@@ -70,7 +70,6 @@ onMounted(() => {
   if (auth.user && auth.allow_push) {
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
-        auth.user.ask_push = false;
         auth.fetchFCMToken();
       } else {
         auth.user.ask_push = true;

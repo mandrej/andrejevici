@@ -20,7 +20,7 @@ if (location.hostname === "localhost") {
 }
 
 navigator.serviceWorker
-  .register("firebase-messaging-sw.js", {
+  .register("./firebase-messaging-sw.js", {
     scope: "firebase-cloud-messaging-push-scope",
   })
   .then((registration) => {
