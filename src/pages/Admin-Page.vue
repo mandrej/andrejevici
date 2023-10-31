@@ -1,19 +1,14 @@
 <template>
   <q-page class="q-pt-md">
     <q-list separator>
-      <q-item>
+      <q-item v-if="auth.user.allow_push">
         <q-item-section>
           <q-item-label>
             <q-input v-model="message" label="Send message to subscribers" />
           </q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-btn
-            :disabled="auth.user.token === 'no'"
-            color="positive"
-            label="Send"
-            @click="send"
-          />
+          <q-btn color="positive" label="Send" @click="send" />
         </q-item-section>
       </q-item>
     </q-list>

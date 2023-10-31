@@ -66,6 +66,9 @@ const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
 
+const showAskBanner = computed(
+  () => "Notification" in window && auth.user && auth.user.ask_push
+);
 onMounted(() => {
   if (auth.user && auth.allow_push) {
     Notification.requestPermission().then((permission) => {
@@ -79,8 +82,4 @@ onMounted(() => {
     });
   }
 });
-
-const showAskBanner = computed(
-  () => "Notification" in window && auth.user && auth.user.ask_push
-);
 </script>
