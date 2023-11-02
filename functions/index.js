@@ -14,6 +14,7 @@ const logger = require("firebase-functions/logger");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
+const TOPIC = "newimages";
 
 initializeApp();
 
@@ -27,61 +28,60 @@ exports.notify = onRequest(
     cors: [/andrejevici\.web\.app/, "localhost"],
   },
   async (req, res) => {
-    const promises = [];
+    const registrationTokens = [];
     const text = req.body.text;
     if (text.length === 0) res.send("No message error");
+    const msg = {
+      topic: TOPIC,
+      notification: {
+        title: "Andrejevici",
+        body: text,
+      },
+    };
 
     const query = getFirestore().collection("User").where("token", "!=", "no");
     const querySnapshot = await query.get();
     if (querySnapshot.size === 0) res.status(200).send("No subscribers error");
 
     querySnapshot.forEach((docSnap) => {
-      promises.push(messagePromise(text, docSnap.data().token));
+      registrationTokens.push(docSnap.data().token);
     });
 
-    Promise.all(promises)
-      .then((results) => {
-        results.forEach((it) => {
-          logger.info(it);
-          res.write(it);
+    getMessaging()
+      .subscribeToTopic(registrationTokens, TOPIC)
+      .then((response) => {
+        response.errors.forEach((it) => {
+          if (it.error.code === "messaging/registration-token-not-registered") {
+            logger.info(it.error.code, it.index);
+            removeToken(registrationTokens[it.index]);
+            registrationTokens.splice(it.index, 1);
+          }
         });
+        // logger.info("Successfully subscribed to topic:", response);
       })
       .catch((error) => {
-        // on first rejected promise
-        logger.info(error);
-        res.write(error);
-      })
-      .finally(() => {
-        res.end();
+        logger.info("Error subscribing to topic:", error);
       });
+
+    if (registrationTokens.length === 0) {
+      res.status(200).send("No subscribers error");
+    } else {
+      getMessaging()
+        .send(msg)
+        .then((response) => {
+          logger.info(response);
+          res.write(response);
+        })
+        .catch((error) => {
+          logger.error(error);
+          res.write(error);
+        })
+        .finally(() => {
+          res.end();
+        });
+    }
   }
 );
-
-const messagePromise = (text, token) => {
-  return new Promise((resolve, reject) => {
-    const msg = {
-      notification: {
-        title: "Andrejevici",
-        body: text,
-      },
-      token: token,
-    };
-
-    getMessaging()
-      .send(msg)
-      .then((response) => {
-        resolve(response);
-      })
-      .catch((error) => {
-        if (error.code == "messaging/registration-token-not-registered") {
-          removeToken(msg.token);
-          resolve(msg.token);
-        } else {
-          reject(error);
-        }
-      });
-  });
-};
 
 const removeToken = async (token) => {
   if (token === undefined) return;

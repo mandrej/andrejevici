@@ -19,7 +19,7 @@
     "firebase": "^9.22.2",
     "pinia": "^2.0.11",
     "pinia-plugin-persistedstate": "^3.1.0",
-    "quasar": "^2.12.7",
+    "quasar": "^2.13.0",
     "swiper": "8.4.6",
     "transliteration": "^2.3.5",
     "uuid4": "^2.0.3",
