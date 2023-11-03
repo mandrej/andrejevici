@@ -32,7 +32,7 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <div class="q-pa-md text-body2 gt-sm">
+  <!-- <div class="q-pa-md text-body2 gt-sm">
     This application is made for my personal photographic needs. I couldn't find
     any better nor cheeper solutions to store my photos. Application provide
     serching based on tags, year, month, day, model, lens and author.
@@ -41,7 +41,7 @@
     <a href="https://nodejs.org/">node.js</a> and
     <a href="https://quasar.dev/">Quasar</a>&nbsp;
     <a href="https://vuejs.org/">vue.js</a> framework
-  </div>
+  </div> -->
 </template>
 
 <script setup>

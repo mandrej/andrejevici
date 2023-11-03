@@ -2,14 +2,6 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page class="row">
-        <q-page-sticky
-          v-if="auth.user.isAuthorized && app.bucket.count > 0"
-          position="top-left"
-          :offset="[16, 16]"
-          style="z-index: 1000"
-        >
-          <q-btn fab icon="add" color="warning" to="/add" />
-        </q-page-sticky>
         <q-responsive
           v-if="app.bucket.count > 0"
           :ratio="1"
@@ -22,28 +14,70 @@
             style="display: block"
             v-ripple.early="{ color: 'purple' }"
           >
+            <q-btn
+              v-if="auth.user && auth.user.isAuthorized"
+              fab
+              icon="add"
+              color="warning"
+              class="absolute-top-left q-ma-md"
+              to="/add"
+            />
+            <q-btn
+              v-else
+              fab
+              icon="person"
+              color="warning"
+              class="absolute-top-left q-ma-md"
+              @click="auth.signIn"
+            />
             <div class="absolute-bottom-right text-white q-pa-sm">
               {{ version }}
             </div>
           </router-link>
         </q-responsive>
 
-        <q-responsive v-else :ratio="1" class="col-xs-12 col-sm-6">
-          <q-btn v-if="auth.user.isAuthorized" to="/add" padding="lg">
-            <div class="row items-center no-wrap">
-              <q-icon left name="add" />
-              You can add some photos<br />{{ auth.user.name }}
+        <q-responsive v-else :ratio="1" class="col-xs-12 col-sm-6 bg-grey">
+          <div class="row">
+            <div class="col self-center q-pa-lg">
+              <p class="text-center" v-if="auth.user && auth.user.isAuthorized">
+                <q-btn-group spread>
+                  <q-btn
+                    color="primary"
+                    to="/add"
+                    :label="`Add some photos ${auth.user.name}`"
+                  />
+                  <q-btn
+                    color="primary"
+                    @click="auth.signIn"
+                    label="Or Sign-Out"
+                  />
+                </q-btn-group>
+              </p>
+              <p class="text-center" v-else>
+                <q-btn
+                  color="primary"
+                  @click="auth.signIn"
+                  label="Sign in using your Google account"
+                />
+              </p>
+              <p>
+                There are no photos posted yet. To add some photos you need to
+                sign-in with your Google account. Only registered users can add,
+                delete or edit photos. Unregistered user can only browse photos
+                other people add.
+              </p>
+              <p>
+                This application is made for my personal photographic needs. I
+                couldn't find any better nor cheeper solutions to store my
+                photos. Application provide serching based on tags, year, month,
+                day, model, lens and author. Application is build using
+                <a href="https://firebase.google.com/">Firebase</a> on
+                <a href="https://nodejs.org/">node.js</a> and
+                <a href="https://quasar.dev/">Quasar</a>&nbsp;
+                <a href="https://vuejs.org/">vue.js</a> framework.
+              </p>
             </div>
-          </q-btn>
-          <q-btn v-else @click="auth.signIn" class="bg-warning" padding="lg">
-            <div class="row items-center no-wrap">
-              <q-icon left name="person" />
-              <div class="text-center">
-                Press to Sign-in with your Google<br />
-                account to add some photos
-              </div>
-            </div>
-          </q-btn>
+          </div>
         </q-responsive>
 
         <div class="col-xs-12 col-sm-6">

@@ -25,7 +25,7 @@ exports.notify = onRequest(
   {
     timeoutSeconds: 120,
     region: ["us-central1"],
-    cors: [/andrejevici\.web\.app/, "localhost"],
+    cors: [/andrejevici\.web\.app$/, "localhost"],
   },
   async (req, res) => {
     const registrationTokens = [];
@@ -52,24 +52,23 @@ exports.notify = onRequest(
       .then((response) => {
         response.errors.forEach((it) => {
           if (it.error.code === "messaging/registration-token-not-registered") {
-            logger.info(it.error.code, it.index);
+            // logger.info(it.error.code, it.index);
             removeToken(registrationTokens[it.index]);
             registrationTokens.splice(it.index, 1);
           }
         });
-        // logger.info("Successfully subscribed to topic:", response);
       })
       .catch((error) => {
         logger.info("Error subscribing to topic:", error);
       });
 
     if (registrationTokens.length === 0) {
-      res.status(200).send("No subscribers error");
+      res.status(200).send("All subscriber token expired");
     } else {
       getMessaging()
         .send(msg)
         .then((response) => {
-          logger.info(response);
+          logger.info("send response:", response);
           res.write(response);
         })
         .catch((error) => {
@@ -83,17 +82,29 @@ exports.notify = onRequest(
   }
 );
 
-const removeToken = async (token) => {
+const removeToken = (token) => {
   if (token === undefined) return;
-  const query = getFirestore().collection("User").where("token", "==", token);
-  const querySnapshot = await query.get();
-  querySnapshot.forEach(async (docSnap) => {
-    const docRef = getFirestore().doc("User/" + docSnap.id);
-    await docRef.update({
-      token: "no",
-      ask_push: true,
-      allow_push: false,
+  getMessaging()
+    .unsubscribeFromTopic(token, TOPIC)
+    .then(async (response) => {
+      logger.info("unsubscribe response:", response);
+      const query = getFirestore()
+        .collection("User")
+        .where("token", "==", token);
+      const querySnapshot = await query.get();
+      querySnapshot.forEach(async (docSnap) => {
+        const docRef = getFirestore().doc("User/" + docSnap.id);
+        await docRef.update({
+          token: "no",
+          ask_push: true,
+          allow_push: false,
+        });
+        logger.info(
+          `Expired token unsubscribed and deleted for ${docSnap.data().email}`
+        );
+      });
+    })
+    .catch((error) => {
+      logger.error(error);
     });
-    logger.info(`Expired token deleted for ${docSnap.data().email}`);
-  });
 };
