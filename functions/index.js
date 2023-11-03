@@ -25,7 +25,7 @@ exports.notify = onRequest(
   {
     timeoutSeconds: 120,
     region: ["us-central1"],
-    cors: [/andrejevici\.web\.app$/, "localhost"],
+    cors: ["https://andrejevici.web.app", "http://localhost:9200"],
   },
   async (req, res) => {
     const registrationTokens = [];
@@ -47,64 +47,61 @@ exports.notify = onRequest(
       registrationTokens.push(docSnap.data().token);
     });
 
-    getMessaging()
-      .subscribeToTopic(registrationTokens, TOPIC)
-      .then((response) => {
-        response.errors.forEach((it) => {
-          if (it.error.code === "messaging/registration-token-not-registered") {
-            // logger.info(it.error.code, it.index);
-            removeToken(registrationTokens[it.index]);
-            registrationTokens.splice(it.index, 1);
-          }
-        });
-      })
-      .catch((error) => {
-        logger.info("Error subscribing to topic:", error);
-      });
-
-    if (registrationTokens.length === 0) {
-      res.status(200).send("All subscriber token expired");
+    if (registrationTokens.length > 0) {
+      const tokens = await unsubscribe(registrationTokens);
+      if (tokens.length > 0) {
+        getMessaging()
+          .send(msg)
+          .then((response) => {
+            logger.info("send response:", response);
+            res.write(response);
+          })
+          .catch((error) => {
+            logger.error(error);
+            res.write(error);
+          })
+          .finally(() => {
+            res.end();
+          });
+      } else {
+        res.status(200).send("All tokens expired");
+      }
     } else {
-      getMessaging()
-        .send(msg)
-        .then((response) => {
-          logger.info("send response:", response);
-          res.write(response);
-        })
-        .catch((error) => {
-          logger.error(error);
-          res.write(error);
-        })
-        .finally(() => {
-          res.end();
-        });
+      res.status(200).send("No subscribers");
     }
   }
 );
 
-const removeToken = (token) => {
+const unsubscribe = async (tokens) => {
+  const resp = await getMessaging().unsubscribeFromTopic(tokens, TOPIC);
+  resp.errors.forEach((it) => {
+    if (
+      it.error.code === "messaging/invalid-registration-token" ||
+      it.error.code === "messaging/registration-token-not-registered"
+    ) {
+      removeToken(tokens[it.index]);
+      tokens.splice(it.index, 1);
+    }
+  });
+  if (tokens.length > 0) {
+    await getMessaging().subscribeToTopic(tokens, TOPIC);
+  }
+  return tokens;
+};
+
+const removeToken = async (token) => {
   if (token === undefined) return;
-  getMessaging()
-    .unsubscribeFromTopic(token, TOPIC)
-    .then(async (response) => {
-      logger.info("unsubscribe response:", response);
-      const query = getFirestore()
-        .collection("User")
-        .where("token", "==", token);
-      const querySnapshot = await query.get();
-      querySnapshot.forEach(async (docSnap) => {
-        const docRef = getFirestore().doc("User/" + docSnap.id);
-        await docRef.update({
-          token: "no",
-          ask_push: true,
-          allow_push: false,
-        });
-        logger.info(
-          `Expired token unsubscribed and deleted for ${docSnap.data().email}`
-        );
-      });
-    })
-    .catch((error) => {
-      logger.error(error);
+  const query = getFirestore().collection("User").where("token", "==", token);
+  const querySnapshot = await query.get();
+  querySnapshot.forEach(async (docSnap) => {
+    const docRef = getFirestore().doc("User/" + docSnap.id);
+    await docRef.update({
+      token: "no",
+      ask_push: true,
+      allow_push: false,
     });
+    logger.info(
+      `Expired token unsubscribed and deleted for ${docSnap.data().email}`
+    );
+  });
 };
