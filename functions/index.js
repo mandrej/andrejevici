@@ -33,7 +33,7 @@ exports.notify = onRequest(
   {
     timeoutSeconds: 120,
     region: ["us-central1"],
-    cors: ["https://andrejevici.web.app", "http://localhost:9200"],
+    cors: ["https://andrejevici.web.app"],
   },
   async (req, res) => {
     const registrationTokens = [];
