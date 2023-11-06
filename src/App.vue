@@ -5,20 +5,14 @@
 import { onMounted } from "vue";
 import { useAppStore } from "./stores/app";
 import { useUserStore } from "./stores/user";
-import { getMessaging, onMessage } from "firebase/messaging";
+import { messageListener } from "./boot/fire";
 import notify from "./helpers/notify";
 
 const app = useAppStore();
 const auth = useUserStore();
-const messaging = getMessaging();
 
-onMounted(() => {
-  app.getLast();
-  app.getSince();
-  app.bucketRead();
-  auth.checkSession();
-
-  onMessage(messaging, (payload) => {
+messageListener()
+  .then((payload) => {
     console.log(payload);
     const params = {
       type: "external",
@@ -27,6 +21,13 @@ onMounted(() => {
       caption: payload.messageId,
     };
     notify(params);
-  });
+  })
+  .catch((err) => console.log("failed: ", err));
+
+onMounted(() => {
+  app.getLast();
+  app.getSince();
+  app.bucketRead();
+  auth.checkSession();
 });
 </script>

@@ -8,11 +8,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {
-  initializeApp,
-  applicationDefault,
-  getApp,
-} = require("firebase-admin/app");
+const { initializeApp, getApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
@@ -20,10 +16,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const TOPIC = "newimages";
 
-initializeApp({
-  credential: applicationDefault(),
-  databaseURL: "https://andrejevici.firebaseio.com",
-});
+initializeApp();
 logger.info(getApp().name);
 
 // Create and deploy your first functions
@@ -44,6 +37,9 @@ exports.notify = onRequest(
       notification: {
         title: "Andrejevici",
         body: text,
+      },
+      data: {
+        link: "https://andrejevici.web.app/",
       },
     };
 
