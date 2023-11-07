@@ -34,7 +34,8 @@ const props = defineProps({
 const disableNotification = () => {
   auth.user.ask_push = false;
   auth.user.allow_push = false;
-  auth.user.token = "no";
+  auth.token = null;
+  auth.removeDevice();
   auth.updateUser();
 };
 const askLater = () => {
@@ -46,7 +47,6 @@ const askLater = () => {
 const enableNotifications = () => {
   Notification.requestPermission().then((permission) => {
     if (permission === "granted") {
-      auth.user.ask_push = false;
       auth.fetchFCMToken();
     } else {
       auth.user.ask_push = true;

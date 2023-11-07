@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pt-md">
     <q-list separator>
-      <q-item v-if="auth.user.allow_push">
+      <q-item v-if="auth.user.allow_push && auth.token">
         <q-item-section>
           <q-item-label>
             <q-input v-model="message" label="Send message to subscribers" />

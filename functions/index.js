@@ -43,12 +43,12 @@ exports.notify = onRequest(
       },
     };
 
-    const query = getFirestore().collection("User").where("token", "!=", "no");
+    const query = getFirestore().collection("Device");
     const querySnapshot = await query.get();
     if (querySnapshot.size === 0) res.status(200).send("No subscribers error");
 
     querySnapshot.forEach((docSnap) => {
-      registrationTokens.push(docSnap.data().token);
+      registrationTokens.push(docSnap.id);
     });
 
     if (registrationTokens.length > 0) {
@@ -95,17 +95,8 @@ const unsubscribe = async (tokens) => {
 
 const removeToken = async (token) => {
   if (token === undefined) return;
-  const query = getFirestore().collection("User").where("token", "==", token);
-  const querySnapshot = await query.get();
-  querySnapshot.forEach(async (docSnap) => {
-    const docRef = getFirestore().doc("User/" + docSnap.id);
-    await docRef.update({
-      token: "no",
-      ask_push: true,
-      allow_push: false,
-    });
-    logger.info(
-      `Expired token unsubscribed and deleted for ${docSnap.data().email}`
-    );
-  });
+  const docRef = getFirestore().collection("Device").doc(token);
+  const doc = docRef.get();
+  logger.info(`Remove token for ${(await doc).data.email}`);
+  await docRef.delete();
 };

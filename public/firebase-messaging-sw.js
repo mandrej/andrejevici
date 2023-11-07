@@ -17,20 +17,20 @@ firebase.initializeApp({
 });
 const messaging = firebase.messaging();
 
-// messaging.onBackgroundMessage((payload) => {
-//   console.log(payload);
-//   // Customize notification here
-//   const title = payload.notification.title;
-//   const options = {
-//     body: payload.notification.body,
-//     icon: "/icons/favicon-32x32.png",
-//   };
+messaging.onBackgroundMessage((payload) => {
+  console.log(payload);
+  // Customize notification here
+  const title = payload.notification.title;
+  const options = {
+    body: payload.notification.body,
+    icon: "/icons/favicon-32x32.png",
+  };
 
-//   self.registration.showNotification(title, options);
-//   self.addEventListener("notificationclick", function (event) {
-//     clients.openWindow(payload.data.link);
-//   });
-// });
+  self.registration.showNotification(title, options);
+  self.addEventListener("notificationclick", function (event) {
+    clients.openWindow(payload.data.link);
+  });
+});
 
 // import { initializeApp } from "firebase/app";
 // import { getMessaging } from "firebase/messaging/sw";

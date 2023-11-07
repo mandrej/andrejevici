@@ -32,23 +32,21 @@
       >{{ obj.value }}</router-link
     >
   </div>
-  <!-- <div class="q-pa-md text-body2 gt-sm">
-    This application is made for my personal photographic needs. I couldn't find
-    any better nor cheeper solutions to store my photos. Application provide
-    serching based on tags, year, month, day, model, lens and author.
-    Application is build using
-    <a href="https://firebase.google.com/">Firebase</a> on
-    <a href="https://nodejs.org/">node.js</a> and
-    <a href="https://quasar.dev/">Quasar</a>&nbsp;
-    <a href="https://vuejs.org/">vue.js</a> framework
-  </div> -->
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, onUpdated } from "vue";
+import { useUserStore } from "../stores/user";
 import { useValuesStore } from "../stores/values";
 
+const auth = useUserStore();
 const meta = useValuesStore();
+
+if ("Notification" in window && Notification.permission === "granted") {
+  if (auth.user && auth.allow_push) {
+    auth.fetchFCMToken();
+  }
+}
 
 onMounted(() => {
   meta.yearCount();
