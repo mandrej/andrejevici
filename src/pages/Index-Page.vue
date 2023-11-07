@@ -35,18 +35,10 @@
 </template>
 
 <script setup>
-import { onMounted, onUpdated } from "vue";
-import { useUserStore } from "../stores/user";
+import { onMounted } from "vue";
 import { useValuesStore } from "../stores/values";
 
-const auth = useUserStore();
 const meta = useValuesStore();
-
-if ("Notification" in window && Notification.permission === "granted") {
-  if (auth.user && auth.allow_push) {
-    auth.fetchFCMToken();
-  }
-}
 
 onMounted(() => {
   meta.yearCount();

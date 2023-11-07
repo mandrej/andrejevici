@@ -29,5 +29,11 @@ onMounted(() => {
   app.getSince();
   app.bucketRead();
   auth.checkSession();
+
+  if ("Notification" in window && Notification.permission === "granted") {
+    if (auth.user && auth.allow_push) {
+      auth.fetchFCMToken();
+    }
+  }
 });
 </script>

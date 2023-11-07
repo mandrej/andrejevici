@@ -164,6 +164,6 @@ export const useUserStore = defineStore("auth", {
   },
   persist: {
     key: "b",
-    paths: ["user"],
+    paths: ["user", "token"],
   },
 });

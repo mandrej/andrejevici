@@ -17,7 +17,6 @@ const logger = require("firebase-functions/logger");
 const TOPIC = "newimages";
 
 initializeApp();
-logger.info(getApp().name);
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
