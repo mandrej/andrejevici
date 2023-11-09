@@ -16,7 +16,7 @@ messageListener()
     console.log(payload);
     const params = {
       type: "external",
-      message: payload.notification.body,
+      message: payload.data.body,
       icon: "notifications",
       caption: payload.messageId,
     };

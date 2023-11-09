@@ -33,11 +33,9 @@ exports.notify = onRequest(
     if (text.length === 0) res.send("No message error");
     const msg = {
       topic: TOPIC,
-      notification: {
+      data: {
         title: "Andrejevici",
         body: text,
-      },
-      data: {
         link: "https://andrejevici.web.app/",
       },
     };

@@ -20,9 +20,9 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log(payload);
   // Customize notification here
-  const title = payload.notification.title;
+  const title = payload.data.title;
   const options = {
-    body: payload.notification.body,
+    body: payload.data.body,
     icon: "/icons/favicon-32x32.png",
   };
 
@@ -42,9 +42,9 @@ messaging.onBackgroundMessage((payload) => {
 
 // onBackgroundMessage(messaging, (payload) => {
 //   // Customize notification here
-//   const title = payload.notification.title;
+//   const title = payload.data.title;
 //   const options = {
-//     body: payload.notification.body,
+//     body: payload.data.body,
 //     icon: "/icons/favicon-32x32.png",
 //   };
 
