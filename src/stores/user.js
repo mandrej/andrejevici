@@ -21,7 +21,7 @@ import router from "../router";
 
 const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
-provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
+// provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
 
 const deviceCol = collection(db, "Device");
 
