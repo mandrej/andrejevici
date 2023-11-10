@@ -65,7 +65,6 @@ export const useUserStore = defineStore("auth", {
               signedIn: 1 * user.metadata.lastLoginAt, // millis
               ask_push: data.allow_push ? false : true,
               allow_push: this.token ? true : false,
-              token: data.token || "no",
             };
           } else {
             this.user = {
