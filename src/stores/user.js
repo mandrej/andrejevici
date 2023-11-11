@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { nextTick } from "vue";
 import { CONFIG } from "../helpers";
 import { auth, db } from "../boot/fire";
 import {
@@ -6,9 +7,11 @@ import {
   collection,
   setDoc,
   getDoc,
+  getDocs,
   updateDoc,
   query,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -52,31 +55,24 @@ export const useUserStore = defineStore("auth", {
       });
       onAuthStateChanged(getAuth(), async (user) => {
         if (user) {
+          this.user = {
+            name: user.displayName,
+            email: user.email,
+            uid: user.uid,
+            isAuthorized: Boolean(familyMember(user.email)), // only family members
+            isAdmin: Boolean(adminMember(user.email)),
+            signedIn: new Date(1 * user.metadata.lastLoginAt), // millis
+          };
+
           const docRef = doc(db, "User", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            this.user = {
-              name: user.displayName,
-              email: user.email,
-              uid: user.uid,
-              isAuthorized: Boolean(familyMember(user.email)), // only family members
-              isAdmin: Boolean(adminMember(user.email)),
-              signedIn: 1 * user.metadata.lastLoginAt, // millis
-              ask_push: data.allow_push ? false : true,
-              allow_push: this.token ? true : false,
-            };
+            this.user.ask_push = data.allow_push;
+            this.user.allow_push = data.allow_push;
           } else {
-            this.user = {
-              name: user.displayName,
-              email: user.email,
-              uid: user.uid,
-              isAuthorized: Boolean(familyMember(user.email)), // only family members
-              isAdmin: Boolean(adminMember(user.email)),
-              signedIn: 1 * user.metadata.lastLoginAt, // millis
-              ask_push: true,
-              allow_push: false,
-            };
+            this.user.ask_push = true;
+            this.user.allow_push = false;
           }
           await setDoc(docRef, this.user, { merge: true });
         } else {
@@ -113,30 +109,30 @@ export const useUserStore = defineStore("auth", {
       };
       await setDoc(docRef, data, { merge: true });
     },
-    async removeDevice() {
+    removeDevice() {
       const q = query(deviceCol, where("email", "==", this.user.email));
       return new Promise((resolve, reject) => {
-        deleteQueryBatch(db, query, resolve).catch(reject);
+        this.deleteQueryBatch(db, q, resolve).catch(reject);
       });
     },
     async deleteQueryBatch(db, query, resolve) {
-      const snapshot = await query.get();
-      const batchSize = snapshot.size;
+      const querySnapshot = await getDocs(query);
+      const batchSize = querySnapshot.size;
       if (batchSize === 0) {
         resolve();
         return;
       }
 
-      const batch = db.batch();
-      snapshot.docs.forEach((doc) => {
+      const batch = writeBatch(db);
+      querySnapshot.forEach((doc) => {
         batch.delete(doc.ref);
       });
       await batch.commit();
 
       // Recurse on the next process tick, to avoid
       // exploding the stack.
-      process.nextTick(() => {
-        deleteQueryBatch(db, query, resolve);
+      nextTick(() => {
+        this.deleteQueryBatch(db, query, resolve);
       });
     },
     async fetchFCMToken() {
