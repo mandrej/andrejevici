@@ -68,8 +68,8 @@ export const useUserStore = defineStore("auth", {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            this.user.ask_push = data.allow_push;
-            this.user.allow_push = data.allow_push;
+            this.user.ask_push = data.allow_push ? false : true;
+            this.user.allow_push = this.token ? true : false;
           } else {
             this.user.ask_push = true;
             this.user.allow_push = false;
