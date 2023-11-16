@@ -17,7 +17,7 @@ if [ $# -eq 0 ]
   then
     syntax
 else
-  gcloud config set project $proj_id
+  # gcloud config set project $proj_id
   case $1 in
     run)
       firebase emulators:start --import=data #--export-on-exit=data
@@ -28,7 +28,8 @@ else
       icongenie g -i AppIcon.png --skip-trim
       exit ;;
     build)
-      sed -i -E "/ANDREJEVICI_VERSION/s/[[:digit:]]{12}/$version/g" .env
+      # MacPorts, sudo port install gsed
+      gsed -i -E "/ANDREJEVICI_VERSION/s/[[:digit:]]{12}/$version/g" .env
       quasar build -m pwa
       exit ;;
     deploy)

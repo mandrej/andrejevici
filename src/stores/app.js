@@ -11,7 +11,6 @@ import {
   setDoc,
   updateDoc,
   getDocs,
-  deleteField,
   deleteDoc,
   startAfter,
 } from "firebase/firestore";

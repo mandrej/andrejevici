@@ -44,7 +44,7 @@
 
     <q-page-container>
       <q-page>
-        <Ask-Permission v-if="showAskBanner" />
+        <Ask-Permission v-if="auth.showConsent" />
         <router-view />
       </q-page>
     </q-page-container>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineAsyncComponent } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import HistoryButton from "../components/History-Button.vue";
@@ -65,8 +65,4 @@ const AskPermission = defineAsyncComponent(() =>
 const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
-
-const showAskBanner = computed(
-  () => "Notification" in window && auth.user && auth.user.ask_push
-);
 </script>

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { nextTick } from "vue";
 import { CONFIG } from "../helpers";
+import notify from "../helpers/notify";
 import { auth, db } from "../boot/fire";
 import {
   doc,
@@ -40,6 +41,11 @@ export const useUserStore = defineStore("auth", {
     user: {},
     token: null,
   }),
+  getters: {
+    showConsent: (state) => {
+      return "Notification" in window && state.user && state.user.ask_push;
+    },
+  },
   actions: {
     getCurrentUser() {
       return new Promise((resolve, reject) => {
@@ -149,11 +155,14 @@ export const useUserStore = defineStore("auth", {
           this.updateUser();
         }
       } catch (err) {
-        this.token = null;
-        this.user.ask_push = true;
+        // disable notification
+        this.user.ask_push = false;
         this.user.allow_push = false;
         this.updateUser();
-        console.error("Unable to retrieve token ", err);
+        notify({
+          type: "negative",
+          message: `Unable to retrieve token, ${err}`,
+        });
       }
     },
   },
