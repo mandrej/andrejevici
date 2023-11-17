@@ -8,9 +8,9 @@ import {
   limit,
   orderBy,
   getDoc,
+  getDocs,
   setDoc,
   updateDoc,
-  getDocs,
   deleteDoc,
   startAfter,
 } from "firebase/firestore";
@@ -312,31 +312,45 @@ export const useAppStore = defineStore("app", {
         });
       }
     },
+    getRec(snapshot) {
+      let rec;
+      snapshot.forEach(async (it) => {
+        rec = it.data();
+      });
+      return rec;
+    },
     async getLast() {
-      let q, querySnapshot;
+      let snapshotYear, snapshotUser, rec;
       const auth = useUserStore();
       const constraints = [orderBy("date", "desc"), limit(1)];
+      const qYear = query(photosCol, ...constraints);
       if (auth.user && auth.user.isAuthorized) {
-        q = query(
+        const qUser = query(
           photosCol,
           where("email", "==", auth.user.email),
           ...constraints
         );
-      } else {
-        q = query(photosCol, ...constraints);
-      }
-      querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) return null;
-
-      querySnapshot.forEach((it) => {
-        const rec = it.data();
-        if (auth.user && auth.user.isAuthorized) {
-          rec.href = "/list?nick=" + emailNick(rec.email);
-        } else {
+        snapshotUser = await getDocs(qUser);
+        if (snapshotUser.empty) {
+          snapshotYear = await getDocs(qYear);
+          rec = this.getRec(snapshotYear);
           rec.href = "/list?year=" + rec.year;
+        } else {
+          rec = this.getRec(snapshotUser);
+          const diff = Date.parse(rec.date) - +new Date();
+          if (diff > CONFIG.activeUser) {
+            rec = this.getRec(snapshotYear);
+            rec.href = "/list?year=" + rec.year;
+          } else {
+            rec.href = "/list?nick=" + emailNick(rec.email);
+          }
         }
-        this.last = rec;
-      });
+      } else {
+        snapshotYear = await getDocs(qYear);
+        rec = getRec(snapshotYear);
+        rec.href = "/list?year=" + rec.year;
+      }
+      this.last = rec;
     },
     async getSince() {
       const q = query(photosCol, orderBy("date", "asc"), limit(1));

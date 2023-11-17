@@ -155,13 +155,13 @@ export const useUserStore = defineStore("auth", {
           this.updateUser();
         }
       } catch (err) {
-        // disable notification
         this.user.ask_push = false;
         this.user.allow_push = false;
         this.updateUser();
         notify({
           type: "negative",
-          message: `Unable to retrieve token, ${err}`,
+          multiLine: true,
+          message: `Unable to retrieve token, Notification disabled, ${err}`,
         });
       }
     },
