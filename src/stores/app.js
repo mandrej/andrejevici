@@ -320,35 +320,32 @@ export const useAppStore = defineStore("app", {
       return rec;
     },
     async getLast() {
-      let snapshotYear, snapshotUser, rec;
+      let q, querySnapshot, rec;
       const auth = useUserStore();
       const constraints = [orderBy("date", "desc"), limit(1)];
-      const qYear = query(photosCol, ...constraints);
+      q = query(photosCol, ...constraints);
+      querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        rec = this.getRec(querySnapshot);
+        rec.href = "/list?year=" + rec.year;
+      } else {
+        return null;
+      }
+
       if (auth.user && auth.user.isAuthorized) {
-        const qUser = query(
+        q = query(
           photosCol,
           where("email", "==", auth.user.email),
           ...constraints
         );
-        snapshotUser = await getDocs(qUser);
-        if (snapshotUser.empty) {
-          snapshotYear = await getDocs(qYear);
-          rec = this.getRec(snapshotYear);
-          rec.href = "/list?year=" + rec.year;
-        } else {
-          rec = this.getRec(snapshotUser);
+        querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          rec = this.getRec(querySnapshot);
           const diff = Date.parse(rec.date) - +new Date();
-          if (diff > CONFIG.activeUser) {
-            rec = this.getRec(snapshotYear);
-            rec.href = "/list?year=" + rec.year;
-          } else {
+          if (diff < CONFIG.activeUser) {
             rec.href = "/list?nick=" + emailNick(rec.email);
           }
         }
-      } else {
-        snapshotYear = await getDocs(qYear);
-        rec = getRec(snapshotYear);
-        rec.href = "/list?year=" + rec.year;
       }
       this.last = rec;
     },
