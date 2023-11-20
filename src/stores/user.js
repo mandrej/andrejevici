@@ -56,9 +56,21 @@ export const useUserStore = defineStore("auth", {
       });
     },
     checkSession() {
-      this.getCurrentUser().then((currentUser) => {
-        if (this.user && this.user.uid && currentUser === null) this.signIn();
-      });
+      // LoggedIn
+      if (this.user && this.user.uid) {
+        this.getCurrentUser().then((currentUser) => {
+          if (currentUser === null) {
+            this.signIn(); // LogOut
+          } else {
+            if (
+              "Notification" in window &&
+              Notification.permission === "granted"
+            ) {
+              this.fetchFCMToken();
+            }
+          }
+        });
+      }
       onAuthStateChanged(getAuth(), async (user) => {
         if (user) {
           this.user = {
