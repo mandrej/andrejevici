@@ -16,15 +16,27 @@
       {
         "source": "/sw.js",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" },
-          { "key": "Content-Type", "value": "application/javascript" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/javascript"
+          }
         ]
       },
       {
         "source": "/firebase-messaging-sw.js",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" },
-          { "key": "Content-Type", "value": "application/javascript" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/javascript"
+          }
         ]
       }
     ],
@@ -57,6 +69,9 @@
     "singleProjectMode": true
   },
   "extensions": {
-    "storage-resize-images": "firebase/storage-resize-images@0.1.37"
+    "storage-resize-images-b01i": "firebase/storage-resize-images@0.2.0"
+  },
+  "functions": {
+    "source": "functions"
   }
 }
