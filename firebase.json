@@ -11,7 +11,11 @@
   },
   "hosting": {
     "public": "dist/pwa",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
       {
         "source": "/sw.js",
@@ -69,7 +73,7 @@
     "singleProjectMode": true
   },
   "extensions": {
-    "storage-resize-images-b01i": "firebase/storage-resize-images@0.2.0"
+    "storage-resize-images-b01i": "firebase/storage-resize-images@0.2.1"
   },
   "functions": {
     "source": "functions"
