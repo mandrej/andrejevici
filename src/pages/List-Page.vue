@@ -14,7 +14,7 @@
     @delete-record="app.deleteRecord"
   />
 
-  <q-page>
+  <q-page v-else>
     <q-banner
       v-if="app.error && app.error === 'empty'"
       class="fixed-center text-center bg-warning q-pa-md"

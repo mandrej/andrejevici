@@ -8,7 +8,7 @@
     @delete-record="app.deleteRecord"
   />
 
-  <q-page class="q-pa-md">
+  <q-page v-else class="q-pa-md">
     <div class="relative-position column" style="height: 10px">
       <div class="row absolute-top">
         <q-linear-progress

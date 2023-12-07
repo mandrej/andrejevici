@@ -43,10 +43,8 @@
     </q-drawer>
 
     <q-page-container>
-      <q-page>
-        <Ask-Permission v-if="auth.showConsent" />
-        <router-view />
-      </q-page>
+      <Ask-Permission v-if="auth.showConsent" />
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
