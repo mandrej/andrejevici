@@ -27,7 +27,7 @@
           v-if="auth.user.isAdmin"
           flat
           round
-          class="text-white q-pa-md"
+          class="text-white q-pa-sm"
           icon="delete"
           @click="
             obj.thumb ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
@@ -35,13 +35,13 @@
         />
         <div
           v-html="caption(obj)"
-          class="col q-my-md text-white text-center ellipsis"
+          class="col q-my-sm text-white text-center ellipsis"
         ></div>
 
         <q-btn
           flat
           round
-          class="text-white q-pa-md"
+          class="text-white q-pa-sm"
           icon="close"
           @click="onCancel"
         />
@@ -88,12 +88,10 @@ const auth = useUserStore();
 const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
-const swiperRef = ref(null);
 
 const modules = [Keyboard, Navigation, Zoom];
 
 const onSwiper = (sw) => {
-  swiperRef.value = sw;
   const index = props.list.findIndex((x) => x.filename === props.filename);
   if (index === -1) {
     notify({
@@ -105,7 +103,7 @@ const onSwiper = (sw) => {
     if (index === 0) {
       onSlideChange(sw);
     } else {
-      sw.slideTo(index);
+      sw.slideTo(index, 0);
     }
   }
 };

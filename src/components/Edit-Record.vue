@@ -23,7 +23,7 @@
             @click="getExif"
           />
         </div>
-        <div>{{ formatBytes(tmp.size) }} {{ tmp.dim }}</div>
+        <div>{{ formatBytes(tmp.size) }}</div>
         <div>
           <q-btn flat round dense icon="close" @click="onCancel" />
         </div>

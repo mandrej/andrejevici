@@ -121,18 +121,18 @@ const cardAttributes = (filename) => {
   };
 };
 
-const onDownload = throttle((evt) => {
-  evt.preventDefault();
-  const a = evt.target.closest("a.q-btn");
-  fetch(props.rec.url)
-    .then((resp) => resp.blob())
-    .then((blob) => {
-      const url = URL.createObjectURL(blob);
-      a.href = url;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    });
-}, 200);
+// const onDownload = throttle((evt) => {
+//   evt.preventDefault();
+//   const a = evt.target.closest("a.q-btn");
+//   fetch(props.rec.url)
+//     .then((resp) => resp.blob())
+//     .then((blob) => {
+//       const url = URL.createObjectURL(blob);
+//       a.href = url;
+//       a.click();
+//       window.URL.revokeObjectURL(url);
+//     });
+// }, 200);
 
 const onShare = () => {
   const url = window.location.href + "#" + U + props.rec.filename;

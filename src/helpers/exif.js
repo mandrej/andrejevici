@@ -1,6 +1,5 @@
 import exifr from "exifr";
 import { has } from "lodash";
-import { date } from "quasar";
 import { formatDatum } from "./index";
 
 const values = [
