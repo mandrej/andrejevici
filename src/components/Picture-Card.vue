@@ -2,6 +2,7 @@
   <q-card v-bind="cardAttributes(rec.filename)" flat>
     <q-img
       class="cursor-pointer"
+      loading="lazy"
       :ratio="5 / 4"
       :src="rec.thumb ? rec.thumb : rec.url"
       v-ripple.early="{ color: 'purple' }"
