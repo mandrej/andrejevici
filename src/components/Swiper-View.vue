@@ -47,7 +47,7 @@
         />
       </div>
       <div class="swiper-zoom-container">
-        <img :src="obj.url" loading="lazy" />
+        <img :src="obj.url" loading="lazy" @load="onLoad" />
         <div class="swiper-lazy-preloader" />
       </div>
       <q-btn
@@ -118,6 +118,15 @@ const onSlideChange = (sw) => {
     url += sufix;
   }
   window.history.replaceState(history.state, null, url);
+};
+const onLoad = (e) => {
+  const dim1 = [e.target.width, e.target.height];
+  const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
+  const wRatio = dim0[0] / dim1[0];
+  const hRatio = dim0[1] / dim1[1];
+
+  const container = e.target.closest(".swiper-zoom-container");
+  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
 };
 const caption = (rec) => {
   let tmp = "";
