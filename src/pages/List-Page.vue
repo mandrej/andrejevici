@@ -83,7 +83,7 @@ import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { fakeHistory } from "../helpers";
+import { fakeHistory, reFilename } from "../helpers";
 
 import PictureCard from "../components/Picture-Card.vue";
 import SwiperView from "../components/Swiper-View.vue";
@@ -156,9 +156,14 @@ const carouselShow = (filename) => {
   app.showCarousel = true;
 };
 const carouselCancel = (hash) => {
-  const el = document.querySelector("#" + hash);
-  if (!el) return;
-  const target = getScrollTarget(el);
-  setVerticalScrollPosition(target, el.offsetTop, 500);
+  // same as in Add-Page
+  app.showCarousel = false;
+  const [, id, _] = hash.match(reFilename);
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const target = getScrollTarget(el);
+    setVerticalScrollPosition(target, el.offsetTop, 300);
+  }, 100);
 };
 </script>

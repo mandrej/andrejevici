@@ -275,10 +275,14 @@ const carouselShow = (filename) => {
   app.showCarousel = true;
 };
 const carouselCancel = (hash) => {
+  // same as in List-Page
   app.showCarousel = false;
-  const el = document.querySelector("#" + hash);
-  if (!el) return;
-  const target = getScrollTarget(el);
-  setVerticalScrollPosition(target, el.offsetTop, 500);
+  const [, id, _] = hash.match(reFilename);
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const target = getScrollTarget(el);
+    setVerticalScrollPosition(target, el.offsetTop, 300);
+  }, 100);
 };
 </script>

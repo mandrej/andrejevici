@@ -148,12 +148,10 @@ const caption = (rec) => {
 
 window.onpopstate = function () {
   emit("carouselCancel", hash.value);
-  app.showCarousel = false;
 };
 const onCancel = () => {
   removeHash();
   emit("carouselCancel", hash.value);
-  app.showCarousel = false;
 };
 </script>
 

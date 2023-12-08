@@ -79,7 +79,6 @@ export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
 export const reClean = new RegExp(/[\.\s\\]+/g);
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/);
-export const fullsized = "";
 export const thumbName = (filename) => {
   const [, name, _] = filename.match(reFilename);
   return [CONFIG.thumbnails, name + "_400x400.jpeg"].join("/");
