@@ -2,9 +2,9 @@
   <Edit-Record v-if="app.showEdit" :rec="current" />
   <Swiper-View
     v-if="app.showCarousel"
-    :filename="currentFileName"
+    :filename="app.currentFileName"
     :list="app.uploaded"
-    @carousel-cancel="carouselCancel"
+    @carousel-cancel="useCarouselCancel"
     @delete-record="app.deleteRecord"
   />
 
@@ -68,7 +68,7 @@
           <Picture-Card
             :rec="rec"
             :canManage="true"
-            @carousel-show="carouselShow"
+            @carousel-show="useCarouselShow"
             @delete-record="app.deleteRecord"
             @edit-record="editRecord"
           />
@@ -79,7 +79,6 @@
 </template>
 
 <script setup>
-import { scroll } from "quasar";
 import uuid4 from "uuid4";
 import { defineAsyncComponent, computed, reactive, ref } from "vue";
 import { storage } from "../boot/fire";
@@ -99,6 +98,7 @@ import {
   reClean,
   reFilename,
 } from "../helpers";
+import { useCarouselShow, useCarouselCancel } from "../helpers/common";
 import notify from "../helpers/notify";
 import readExif from "../helpers/exif";
 import PictureCard from "../components/Picture-Card.vue";
@@ -108,8 +108,6 @@ import SwiperView from "../components/Swiper-View.vue";
 const EditRecord = defineAsyncComponent(() =>
   import("../components/Edit-Record.vue")
 );
-
-const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 const app = useAppStore();
 const meta = useValuesStore();
@@ -127,7 +125,6 @@ const tagsToApply = computed({
 let files = ref([]);
 let progressInfos = reactive([]);
 const inProgress = ref(false);
-const currentFileName = ref(null);
 
 const onSubmit = (evt) => {
   const data = [];
@@ -267,22 +264,5 @@ const editRecord = async (rec) => {
   app.showEdit = true;
   app.current = rec;
   app.showEdit = true;
-};
-
-const carouselShow = (filename) => {
-  currentFileName.value = filename;
-  fakeHistory();
-  app.showCarousel = true;
-};
-const carouselCancel = (hash) => {
-  // same as in List-Page
-  app.showCarousel = false;
-  const [, id, _] = hash.match(reFilename);
-  setTimeout(() => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const target = getScrollTarget(el);
-    setVerticalScrollPosition(target, el.offsetTop, 300);
-  }, 100);
 };
 </script>

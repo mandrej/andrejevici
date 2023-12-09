@@ -50,6 +50,7 @@ export const useAppStore = defineStore("app", {
     objects: [],
     next: null,
     current: {},
+    currentFileName: null,
     last: {},
     since: "",
 

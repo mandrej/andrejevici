@@ -7,9 +7,9 @@
   />
   <Swiper-View
     v-if="app.showCarousel"
-    :filename="currentFileName"
+    :filename="app.currentFileName"
     :list="app.objects"
-    @carousel-cancel="carouselCancel"
+    @carousel-cancel="useCarouselCancel"
     @confirm-delete="confirmShow"
     @delete-record="app.deleteRecord"
   />
@@ -57,7 +57,7 @@
             <Picture-Card
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
-              @carousel-show="carouselShow"
+              @carousel-show="useCarouselShow"
               @edit-record="editRecord"
               @confirm-delete="confirmShow"
               @delete-record="app.deleteRecord"
@@ -78,12 +78,13 @@
 </template>
 
 <script setup>
-import { scroll, throttle } from "quasar";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { throttle } from "quasar";
+import { defineAsyncComponent, onMounted } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { fakeHistory, reFilename } from "../helpers";
+import { fakeHistory } from "../helpers";
+import { useCarouselShow, useCarouselCancel } from "../helpers/common";
 
 import PictureCard from "../components/Picture-Card.vue";
 import SwiperView from "../components/Swiper-View.vue";
@@ -95,19 +96,16 @@ const ConfirmDelete = defineAsyncComponent(() =>
   import("../components/Confirm-Delete.vue")
 );
 
-const { getScrollTarget, setVerticalScrollPosition } = scroll;
-
 const app = useAppStore();
 const auth = useUserStore();
 const route = useRoute();
-const currentFileName = ref(null);
 
 onMounted(() => {
   const hash = route.hash;
   if (hash) {
     const filename = hash.substring(2);
     setTimeout(() => {
-      carouselShow(filename);
+      useCarouselShow(filename);
     }, 1000);
   }
 });
@@ -149,21 +147,5 @@ const confirmShow = (rec) => {
 const confirmOk = (rec) => {
   app.showConfirm = false;
   app.deleteRecord(rec);
-};
-const carouselShow = (filename) => {
-  currentFileName.value = filename;
-  fakeHistory();
-  app.showCarousel = true;
-};
-const carouselCancel = (hash) => {
-  // same as in Add-Page
-  app.showCarousel = false;
-  const [, id, _] = hash.match(reFilename);
-  setTimeout(() => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const target = getScrollTarget(el);
-    setVerticalScrollPosition(target, el.offsetTop, 300);
-  }, 100);
 };
 </script>
