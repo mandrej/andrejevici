@@ -184,7 +184,7 @@ const uploadTask = async (i, filename, file) => {
   const _ref = storageRef(storage, filename);
   const task = uploadBytesResumable(_ref, file, {
     contentType: file.type,
-    cacheControl: "max-age=604800",
+    cacheControl: "public, max-age=604800",
   });
   task.on(
     "state_changed",
