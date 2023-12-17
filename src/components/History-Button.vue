@@ -1,12 +1,5 @@
 <template>
-  <q-btn
-    flat
-    round
-    :size="size"
-    icon="history"
-    :class="app.refresh ? 'text-warning' : 'text-white'"
-    @click="previousCollection"
-  />
+  <q-btn flat round :size="size" icon="history" @click="previousCollection" />
 </template>
 
 <script setup>

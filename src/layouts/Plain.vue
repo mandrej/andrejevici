@@ -30,7 +30,10 @@
               class="absolute-top-left q-ma-md"
               @click="auth.signIn"
             />
-            <div class="absolute-bottom-right text-white q-pa-sm">
+            <div
+              class="absolute-top-right text-white q-pa-md"
+              style="top: 16px"
+            >
               {{ version }}
             </div>
           </router-link>
@@ -81,7 +84,7 @@
         </q-responsive>
 
         <div class="col-xs-12 col-sm-6">
-          <q-toolbar class="bg-grey-8 text-white q-pa-md">
+          <q-toolbar class="bg-grey-10 text-white q-pa-md">
             <q-toolbar-title class="text-h4" style="line-height: 100%">
               {{ $route.meta.title }}
               <br />
