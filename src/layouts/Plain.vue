@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { onMounted, computed } from "vue";
 import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
@@ -118,8 +118,12 @@ const app = useAppStore();
 const auth = useUserStore();
 const last = computed(() => app.last);
 
+onMounted(() => {
+  app.getLast();
+});
+
 const styling = computed(() => {
-  if (isEmpty(last.value)) {
+  if (isEmpty(last)) {
     return "background-image: url(" + fileBroken + ")";
   }
   return (

@@ -25,7 +25,6 @@ messageListener()
   .catch((err) => console.log("failed: ", err));
 
 onMounted(() => {
-  app.getLast();
   app.getSince();
   app.bucketRead();
   auth.checkSession();
