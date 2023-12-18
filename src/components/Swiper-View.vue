@@ -120,6 +120,7 @@ const onSlideChange = (sw) => {
   window.history.replaceState(history.state, null, url);
 };
 const onLoad = (e) => {
+  // calculate image dimension
   const dim1 = [e.target.width, e.target.height];
   const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
   const wRatio = dim0[0] / dim1[0];
