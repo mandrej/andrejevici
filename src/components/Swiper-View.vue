@@ -5,7 +5,6 @@
       enabled: true,
     }"
     :lazy="true"
-    :navigation="true"
     :grab-cursor="true"
     :zoom="{
       maxRatio: 2,
@@ -20,6 +19,7 @@
       :data-hash="U + obj.filename"
     >
       <div
+        v-show="!full"
         class="absolute-top row no-wrap justify-between"
         style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
       >
@@ -55,7 +55,7 @@
         round
         class="absolute-bottom-right text-white q-pa-md"
         @click="$q.fullscreen.toggle()"
-        :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
+        :icon="full ? 'fullscreen_exit' : 'fullscreen'"
       />
     </swiper-slide>
   </swiper>
@@ -63,14 +63,13 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref } from "vue";
-import { useAppStore } from "../stores/app";
+import { ref, watch } from "vue";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { formatBytes, removeHash, CONFIG, U } from "../helpers";
 import notify from "../helpers/notify";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Keyboard, Zoom } from "swiper/modules";
+import { Keyboard, Zoom } from "swiper/modules";
 
 import "swiper/scss";
 import "swiper/scss/navigation";
@@ -83,13 +82,20 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
-const app = useAppStore();
 const auth = useUserStore();
 const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
+const full = ref(false);
 
-const modules = [Keyboard, Navigation, Zoom];
+const modules = [Keyboard, Zoom];
+
+watch(
+  () => $q.fullscreen.isActive,
+  (val) => {
+    full.value = val;
+  }
+);
 
 const onSwiper = (sw) => {
   const index = props.list.findIndex((x) => x.filename === props.filename);
@@ -173,7 +179,6 @@ const onCancel = () => {
   text-align: center;
   background: #000;
 }
-
 .swiper-slide img {
   width: auto;
   height: auto;
