@@ -72,7 +72,6 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import { Keyboard, Zoom } from "swiper/modules";
 
 import "swiper/scss";
-import "swiper/scss/navigation";
 import "swiper/scss/zoom";
 
 const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
