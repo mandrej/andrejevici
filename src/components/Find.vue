@@ -166,6 +166,8 @@ const queryDispatch = (query, invoked = "") => {
   if (!isEqual(app.find, tmp.value)) {
     app.find = tmp.value;
     app.fetchRecords(true, invoked); // new filter with reset
+  } else {
+    app.fetchRecords(false, "cached");
   }
   // this dispatch route change
   if (Object.keys(tmp.value).length) {
