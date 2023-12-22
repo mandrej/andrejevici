@@ -13,6 +13,7 @@ import {
   updateDoc,
   deleteDoc,
   startAfter,
+  onSnapshot,
 } from "firebase/firestore";
 import {
   ref as storageRef,
@@ -49,6 +50,7 @@ export const useAppStore = defineStore("app", {
     uploaded: [],
     objects: [],
     next: null,
+    unsubscribe: null,
     current: {},
     currentFileName: null,
     last: {},
@@ -207,23 +209,21 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, ...constraints);
 
       this.busy = true;
-      let querySnapshot;
       try {
-        querySnapshot = await getDocs(q);
-        // if (querySnapshot.empty) {
-        //   this.error = "empty";
-        // }
+        if (this.unsubscribe) this.unsubscribe();
         if (reset) this.objects.length = 0;
-        querySnapshot.forEach((it) => {
-          this.objects.push(it.data());
+        this.unsubscribe = onSnapshot(q, (querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            this.objects.push(doc.data());
+          });
+          const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+          if (next && next.id) {
+            next.id === this.next ? (this.next = null) : (this.next = next.id);
+          } else {
+            this.next = null;
+            this.error = this.objects.length === 0 ? "empty" : null;
+          }
         });
-        const next = querySnapshot.docs[querySnapshot.docs.length - 1];
-        if (next && next.id) {
-          next.id === this.next ? (this.next = null) : (this.next = next.id);
-        } else {
-          this.next = null;
-          this.error = this.objects.length === 0 ? "empty" : null;
-        }
       } catch (err) {
         this.error = err.message;
       }
