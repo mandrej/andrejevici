@@ -220,7 +220,7 @@ export const useAppStore = defineStore("app", {
               this.objects.push(doc.data());
             }
           });
-          const next = this.objects[this.objects.length - 1];
+          const next = querySnapshot.docs[querySnapshot.docs.length - 1];
           if (next && next.id) {
             next.id === this.next ? (this.next = null) : (this.next = next.id);
           } else {
