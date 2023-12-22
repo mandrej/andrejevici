@@ -212,11 +212,15 @@ export const useAppStore = defineStore("app", {
       try {
         if (this.unsubscribe) this.unsubscribe();
         if (reset) this.objects.length = 0;
+
+        // SNAPSHOT
         this.unsubscribe = onSnapshot(q, (querySnapshot) => {
           querySnapshot.forEach((doc) => {
-            this.objects.push(doc.data());
+            if (this.objects.map((e) => e.filename).indexOf(doc.id) === -1) {
+              this.objects.push(doc.data());
+            }
           });
-          const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+          const next = this.objects[this.objects.length - 1];
           if (next && next.id) {
             next.id === this.next ? (this.next = null) : (this.next = next.id);
           } else {
