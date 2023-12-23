@@ -2,6 +2,7 @@ import CONFIG from "../../config";
 import { date, format } from "quasar";
 import { slugify } from "transliteration";
 import { computed } from "vue";
+import notify from "./notify";
 
 const { humanStorageSize } = format;
 const { formatDate } = date;
@@ -47,7 +48,18 @@ const version = computed(() => {
 });
 const removeByProperty = (arr, propery, value) => {
   const idx = arr.findIndex((it) => it[propery] === value);
-  if (idx !== -1) arr.splice(idx, 1);
+  if (idx > -1) arr.splice(idx, 1);
+};
+const changedByProperty = (arr, propery, obj, op = 1) => {
+  const idx = arr.findIndex((it) => it[propery] === obj[propery]);
+  if (idx > -1) {
+    arr.splice(idx, op, obj);
+    if (op === 0) {
+      notify({ message: `${obj.filename} published` });
+    } else {
+      notify({ message: `${obj.filename} updated` });
+    }
+  }
 };
 const textSlug = (text) => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
@@ -100,6 +112,7 @@ export {
   removeHash,
   version,
   removeByProperty,
+  changedByProperty,
   textSlug,
   sliceSlug,
 };

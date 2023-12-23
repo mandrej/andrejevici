@@ -28,6 +28,7 @@ import {
   thumbUrl,
   emailNick,
   removeByProperty,
+  changedByProperty,
   textSlug,
   sliceSlug,
 } from "../helpers";
@@ -245,13 +246,8 @@ export const useAppStore = defineStore("app", {
         const slug = textSlug(obj.headline);
         obj.text = sliceSlug(slug);
         await setDoc(docRef, obj, { merge: true });
-        if (this.objects && this.objects.length) {
-          const idx = this.objects.findIndex(
-            (item) => item.filename === obj.filename
-          );
-          if (idx > -1) this.objects.splice(idx, 1, obj);
-          notify({ message: `${obj.filename} updated` });
-        }
+
+        changedByProperty(this.objects, "filename", obj);
         meta.increaseValues(obj);
       } else {
         // set thumbnail url = publish
@@ -263,17 +259,9 @@ export const useAppStore = defineStore("app", {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true });
-        if (this.objects && this.objects.length) {
-          const idx = this.objects.findIndex(
-            (item) => item.filename === obj.filename
-          );
-          if (idx > -1) this.objects.splice(idx, 0, obj);
-        }
+        changedByProperty(this.objects, "filename", obj, 0);
         // delete uploaded
-        const idx = this.uploaded.findIndex(
-          (item) => item.filename === obj.filename
-        );
-        if (idx > -1) this.uploaded.splice(idx, 1);
+        removeByProperty(this.uploaded, "filename", obj.filename);
 
         this.bucketDiff(obj.size);
         meta.increaseValues(obj);
@@ -296,14 +284,12 @@ export const useAppStore = defineStore("app", {
 
         removeByProperty(this.objects, "filename", obj.filename);
         const meta = useValuesStore();
-
         this.bucketDiff(-data.size);
         meta.decreaseValues(data);
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
         });
-        // TODO transaction, handle errors
       } else {
         const stoRef = storageRef(storage, obj.filename);
         const thumbRef = storageRef(storage, thumbName(obj.filename));
