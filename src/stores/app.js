@@ -35,6 +35,11 @@ import { useUserStore } from "./user";
 
 const bucketRef = doc(db, "Bucket", "total");
 const photosCol = collection(db, "Photo");
+const getRec = (snapshot) => {
+  /** Only for queryset where limit=1 */
+  const [doc] = snapshot.docs;
+  return doc.data();
+};
 
 export const useAppStore = defineStore("app", {
   state: () => ({
@@ -233,13 +238,6 @@ export const useAppStore = defineStore("app", {
         });
       }
     },
-    getRec(snapshot) {
-      let rec;
-      snapshot.forEach(async (it) => {
-        rec = it.data();
-      });
-      return rec;
-    },
     async getLast() {
       let q, querySnapshot, rec;
       const auth = useUserStore();
@@ -247,7 +245,7 @@ export const useAppStore = defineStore("app", {
       q = query(photosCol, ...constraints);
       querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        rec = this.getRec(querySnapshot);
+        rec = getRec(querySnapshot);
         rec.href = "/list?year=" + rec.year;
       } else {
         return null;
@@ -261,7 +259,7 @@ export const useAppStore = defineStore("app", {
         );
         querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
-          rec = this.getRec(querySnapshot);
+          rec = getRec(querySnapshot);
           const diff = Date.parse(rec.date) - +new Date();
           if (diff < CONFIG.activeUser) {
             rec.href = "/list?nick=" + emailNick(rec.email);
