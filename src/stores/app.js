@@ -10,15 +10,12 @@ import {
   getDoc,
   getDocs,
   setDoc,
-  updateDoc,
   deleteDoc,
   startAfter,
   onSnapshot,
 } from "firebase/firestore";
 import {
   ref as storageRef,
-  listAll,
-  getMetadata,
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
@@ -32,7 +29,6 @@ import {
   textSlug,
   sliceSlug,
 } from "../helpers";
-import router from "../router";
 import notify from "../helpers/notify";
 import { useValuesStore } from "./values";
 import { useUserStore } from "./user";
@@ -116,72 +112,6 @@ export const useAppStore = defineStore("app", {
       this.bucket = { ...res };
       await setDoc(bucketRef, this.bucket, { merge: true });
       notify({ message: `Bucket size calculated` });
-    },
-    async mismatch() {
-      notify({
-        message: `Please wait`,
-        timeout: 0,
-        actions: [{ icon: "close", color: "white" }],
-        group: "mismatch",
-      });
-      let result = 0;
-      const bucketNames = [];
-      const storageNames = [];
-      const auth = useUserStore();
-      const uploadedFilenames = this.uploaded.length
-        ? this.uploaded.map((it) => it.filename)
-        : [];
-      const refs = await listAll(storageRef(storage, ""));
-      for (let r of refs.items) {
-        bucketNames.push(r.name);
-      }
-      const q = query(photosCol);
-      const snapshot = await getDocs(q);
-      snapshot.forEach((doc) => {
-        storageNames.push(doc.id);
-      });
-
-      bucketNames.sort();
-      storageNames.sort();
-      // uploaded to bucket but no record in firestore
-      const missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1);
-      for (let name of missing) {
-        if (uploadedFilenames.indexOf(name) === -1) {
-          const _ref = storageRef(storage, name);
-          const metadata = await getMetadata(_ref);
-          const downloadURL = await getDownloadURL(_ref);
-          this.uploaded.push({
-            url: downloadURL,
-            filename: name,
-            size: metadata.size,
-            email: auth.user.email,
-            nick: emailNick(auth.user.email),
-          });
-          result++;
-        }
-      }
-      if (result > 0) {
-        notify({
-          message: `${result} files uploaded to bucket, but doesn't have record in firestore.<br>
-          Resolve mismathed files either by publish or delete.`,
-          actions: [
-            {
-              label: "Resolve",
-              color: "white",
-              handler: () => {
-                router.push({ path: "/add" });
-              },
-            },
-          ],
-          multiLine: true,
-          html: true,
-          type: "warning",
-          timeout: 0,
-          group: "mismatch",
-        });
-      } else {
-        notify({ message: `All good. Nothing to reslove`, group: "mismatch" });
-      }
     },
     async fetchRecords(reset = false, invoked = "") {
       this.error = null;
@@ -347,34 +277,6 @@ export const useAppStore = defineStore("app", {
       querySnapshot.forEach((it) => {
         const rec = it.data();
         this.since = rec.year;
-      });
-    },
-    async fix() {
-      const test = ["ш", "ђ", "љ", "џ", "ћ", "ч", "ж"];
-      const q = query(photosCol, orderBy("date", "desc"));
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) return null;
-
-      querySnapshot.forEach(async (it) => {
-        const rec = it.data();
-
-        const docRef = doc(db, "Photo", rec.filename);
-        await updateDoc(docRef, { done: false });
-
-        const headline = rec.headline.toLowerCase();
-        for (const c of test) {
-          if (headline.indexOf(c) !== -1) {
-            const docRef = doc(db, "Photo", rec.filename);
-            const slug = textSlug(rec.headline);
-            rec.text = sliceSlug(slug);
-            await setDoc(docRef, rec, { merge: true });
-            // const data = {
-            //   done: deleteField(),
-            // };
-            // await updateDoc(docRef, data);
-            notify({ message: slug });
-          }
-        }
       });
     },
   },

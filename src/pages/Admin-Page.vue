@@ -51,7 +51,7 @@
           >
         </q-item-section>
         <q-item-section side>
-          <q-btn color="primary" label="Resolve" @click="repair" />
+          <q-btn color="primary" label="Resolve" @click="mismatch" />
         </q-item-section>
       </q-item>
     </q-list>
@@ -63,6 +63,7 @@ import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
+import { fix, mismatch } from "../helpers/remedy";
 import { CONFIG, formatDatum, emailNick } from "../helpers";
 
 const app = useAppStore();
@@ -77,12 +78,6 @@ const rebuild = () => {
 };
 const bucket = () => {
   app.bucketBuild();
-};
-const repair = async () => {
-  await app.mismatch();
-};
-const fix = () => {
-  app.fix();
 };
 const send = () => {
   const url = process.env.DEV
