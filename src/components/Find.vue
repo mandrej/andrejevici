@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md q-gutter-md">
+  <form class="q-pa-md q-gutter-md" autocomplete="off">
     <q-input
       v-model="tmp.text"
       :disable="app.busy"
@@ -123,7 +123,7 @@
         }
       "
     />
-  </div>
+  </form>
 </template>
 
 <script setup>
