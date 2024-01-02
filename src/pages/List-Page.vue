@@ -42,7 +42,7 @@
       :debounce="500"
     />
 
-    <div class="q-pa-md">
+    <q-pull-to-refresh class="q-pa-md" @refresh="refresh">
       <div
         v-for="(list, index) in app.groupObjects"
         :key="index"
@@ -65,7 +65,7 @@
           </div>
         </transition-group>
       </div>
-    </div>
+    </q-pull-to-refresh>
 
     <q-page-scroller
       position="bottom-right"
@@ -109,6 +109,12 @@ onMounted(() => {
     }, 1000);
   }
 });
+
+const refresh = (done) => {
+  app.find.ts = 0;
+  window.location.reload(true);
+  done();
+};
 
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
