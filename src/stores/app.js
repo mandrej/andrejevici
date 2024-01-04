@@ -246,26 +246,27 @@ export const useAppStore = defineStore("app", {
       querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         rec = getRec(querySnapshot);
-        rec.href = "/list?year=" + rec.year;
+        const obj = { year: rec.year, month: rec.month };
+        rec.href = "/list?" + new URLSearchParams(obj).toString();
       } else {
         return null;
       }
 
-      if (auth.user && auth.user.isAuthorized) {
-        q = query(
-          photosCol,
-          where("email", "==", auth.user.email),
-          ...constraints
-        );
-        querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          rec = getRec(querySnapshot);
-          const diff = Date.parse(rec.date) - +new Date();
-          if (diff < CONFIG.activeUser) {
-            rec.href = "/list?nick=" + emailNick(rec.email);
-          }
-        }
-      }
+      // if (auth.user && auth.user.isAuthorized) {
+      //   q = query(
+      //     photosCol,
+      //     where("email", "==", auth.user.email),
+      //     ...constraints
+      //   );
+      //   querySnapshot = await getDocs(q);
+      //   if (!querySnapshot.empty) {
+      //     rec = getRec(querySnapshot);
+      //     const diff = Date.parse(rec.date) - +new Date();
+      //     if (diff < CONFIG.activeUser) {
+      //       rec.href = "/list?nick=" + emailNick(rec.email);
+      //     }
+      //   }
+      // }
       this.last = rec;
     },
     async getSince() {
