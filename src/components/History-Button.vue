@@ -18,7 +18,7 @@ const props = defineProps({
 
 const previousCollection = () => {
   if (app.refresh) {
-    app.fetchRecords(true);
+    app.fetchRecords(true, "refresh");
     app.refresh = false;
   }
   router.push({ path: "/list", query: app.find });

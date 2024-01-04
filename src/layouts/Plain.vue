@@ -30,10 +30,7 @@
               class="absolute-top-left q-ma-md"
               @click="auth.signIn"
             />
-            <div
-              class="absolute-top-right text-white q-pa-md"
-              style="top: 16px"
-            >
+            <div class="absolute-top-right text-white q-ma-md">
               {{ version }}
             </div>
           </router-link>
