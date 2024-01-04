@@ -1,10 +1,10 @@
 <template>
-  <q-card v-bind="cardAttributes(rec.filename)" flat>
+  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
     <q-img
       class="cursor-pointer"
       loading="lazy"
       :ratio="5 / 4"
-      :src="rec.thumb ? rec.thumb : rec.url"
+      :src="rec.thumb"
       v-ripple.early="{ color: 'purple' }"
       no-spinner
       @click="emit('carouselShow', rec.filename)"
@@ -12,14 +12,11 @@
       <template #error>
         <img :src="fileBroken" />
       </template>
-      <div v-if="rec.thumb" class="absolute-bottom text-subtitle2">
+      <div class="absolute-bottom text-subtitle2">
         {{ rec.headline }}
       </div>
-      <q-badge v-else floating class="text-black" color="warning">
-        {{ formatBytes(rec.size) }}
-      </q-badge>
     </q-img>
-    <q-card-section v-if="rec.thumb" class="row justify-between q-py-none">
+    <q-card-section class="row justify-between q-py-none">
       <div style="line-height: 42px">
         {{ rec.nick }},
         <router-link
@@ -41,7 +38,6 @@
         v-if="rec.loc"
         flat
         round
-        color="grey"
         icon="my_location"
         target="blank"
         :href="
@@ -49,51 +45,51 @@
         "
       />
     </q-card-section>
-    <q-card-actions
-      v-if="canManage"
-      class="justify-between"
-      :class="{ 'q-pt-none': Boolean(rec.thumb) }"
-    >
+    <q-card-actions class="justify-between q-pt-none">
       <q-btn
         flat
         round
-        color="grey"
         icon="delete"
-        @click="
-          rec.thumb ? emit('confirmDelete', rec) : emit('deleteRecord', rec)
-        "
+        :disable="!canManage"
+        @click="emit('confirmDelete', rec)"
       />
       <q-btn
         flat
         round
-        color="grey"
-        :icon="rec.thumb ? 'edit' : 'publish'"
+        icon="edit"
+        :disable="!canManage"
         @click="emit('editRecord', rec)"
       />
-      <q-btn
-        v-if="rec.thumb"
-        flat
-        round
-        color="grey"
-        icon="share"
-        @click="onShare"
-      />
-      <!-- <q-btn
-        v-if="rec.thumb"
-        flat
-        round
-        color="grey"
-        icon="download"
-        href=""
-        :download="rec.filename"
-        @click="onDownload"
-      /> -->
+      <q-btn flat round icon="share" @click="onShare" />
+    </q-card-actions>
+  </q-card>
+
+  <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
+    <q-img
+      class="cursor-pointer"
+      loading="lazy"
+      :ratio="5 / 4"
+      :src="rec.url"
+      v-ripple.early="{ color: 'purple' }"
+      no-spinner
+      @click="emit('carouselShow', rec.filename)"
+    >
+      <template #error>
+        <img :src="fileBroken" />
+      </template>
+      <q-badge floating class="text-black" color="warning">
+        {{ formatBytes(rec.size) }}
+      </q-badge>
+    </q-img>
+    <q-card-actions v-if="canManage" class="justify-between">
+      <q-btn flat round icon="delete" @click="emit('deleteRecord', rec)" />
+      <q-btn flat round icon="publish" @click="emit('editRecord', rec)" />
     </q-card-actions>
   </q-card>
 </template>
 
 <script setup>
-import { copyToClipboard, throttle } from "quasar";
+import { copyToClipboard } from "quasar";
 import {
   fileBroken,
   formatDatum,
@@ -121,20 +117,6 @@ const cardAttributes = (filename) => {
     class: ext.substring(1) + " bg-grey-2",
   };
 };
-
-// const onDownload = throttle((evt) => {
-//   evt.preventDefault();
-//   const a = evt.target.closest("a.q-btn");
-//   fetch(props.rec.url)
-//     .then((resp) => resp.blob())
-//     .then((blob) => {
-//       const url = URL.createObjectURL(blob);
-//       a.href = url;
-//       a.click();
-//       window.URL.revokeObjectURL(url);
-//     });
-// }, 200);
-
 const onShare = () => {
   const url = window.location.href + "#" + U + props.rec.filename;
   copyToClipboard(url)
@@ -146,3 +128,12 @@ const onShare = () => {
     });
 };
 </script>
+
+<style lang="scss" scoped>
+.q-btn {
+  color: $grey-7;
+}
+.q-btn.disabled {
+  opacity: 0.2 !important;
+}
+</style>
