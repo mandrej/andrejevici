@@ -95,7 +95,6 @@ import {
   fakeHistory,
   removeByProperty,
   emailNick,
-  reClean,
   reFilename,
 } from "../helpers";
 import { useCarouselShow, useCarouselCancel } from "../helpers/common";
@@ -157,8 +156,9 @@ const onSubmit = (evt) => {
 
 const uploadPromise = (i, file) => {
   return new Promise((resolve, reject) => {
+    const reClean = new RegExp(/[\.\s\\){}\[\]]+/g);
     const [, name, ext] = file.name.match(reFilename);
-    let filename = name.replace(reClean, "") + ext;
+    let filename = name.replace(/[(]+/g, "_").replace(reClean, "") + ext;
     const _ref = storageRef(storage, filename);
     getDownloadURL(_ref)
       .then((url) => {

@@ -89,7 +89,6 @@ const sliceSlug = (slug) => {
 
 export const U = "_";
 export const fileBroken = CONFIG.fileBroken;
-export const reClean = new RegExp(/[\.\s\\]+/g);
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/);
 export const thumbName = (filename) => {
   const [, name, _] = filename.match(reFilename);
