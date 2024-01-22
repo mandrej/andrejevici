@@ -1,15 +1,13 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-page-container>
-      <q-page class="row">
+      <q-page v-if="last.href" class="row">
         <q-responsive
-          v-if="app.bucket.count > 0"
           :ratio="1"
           class="col-xs-12 col-sm-6 last"
           :style="styling"
         >
           <router-link
-            v-if="last.href"
             :to="last.href"
             style="display: block"
             v-ripple.early="{ color: 'purple' }"
@@ -36,56 +34,12 @@
           </router-link>
         </q-responsive>
 
-        <q-responsive v-else :ratio="1" class="col-xs-12 col-sm-6 bg-grey">
-          <div class="row">
-            <div class="col self-center q-pa-lg">
-              <p class="text-center" v-if="auth.user && auth.user.isAuthorized">
-                <q-btn-group spread>
-                  <q-btn
-                    color="primary"
-                    to="/add"
-                    :label="`Add some photos ${auth.user.name}`"
-                  />
-                  <q-btn
-                    color="primary"
-                    @click="auth.signIn"
-                    label="Or Sign-Out"
-                  />
-                </q-btn-group>
-              </p>
-              <p class="text-center" v-else>
-                <q-btn
-                  color="primary"
-                  @click="auth.signIn"
-                  label="Sign in using your Google account"
-                />
-              </p>
-              <p>
-                There are no photos posted yet. To add some photos you need to
-                sign-in with your Google account. Only registered users can add,
-                delete or edit photos. Unregistered user can only browse photos
-                other people add.
-              </p>
-              <p>
-                This application is made for my personal photographic needs. I
-                couldn't find any better nor cheeper solutions to store my
-                photos. Application provide serching based on tags, year, month,
-                day, model, lens and author. Application is build using
-                <a href="https://firebase.google.com/">Firebase</a> on
-                <a href="https://nodejs.org/">node.js</a> and
-                <a href="https://quasar.dev/">Quasar</a>&nbsp;
-                <a href="https://vuejs.org/">vue.js</a> framework.
-              </p>
-            </div>
-          </div>
-        </q-responsive>
-
         <div class="col-xs-12 col-sm-6">
           <q-toolbar class="bg-grey-10 text-white q-pa-md">
             <q-toolbar-title class="text-h4" style="line-height: 100%">
               {{ $route.meta.title }}
               <br />
-              <span v-if="app.bucket.count > 0" class="text-body1"
+              <span class="text-body1"
                 >{{ app.bucket.count }} photos since {{ app.since }} and
                 counting</span
               >
@@ -95,8 +49,49 @@
               size="2em"
             />
           </q-toolbar>
-
           <router-view />
+        </div>
+      </q-page>
+
+      <q-page v-else class="bg-amber-2">
+        <q-toolbar class="bg-grey-10 text-white q-pa-md">
+          <q-toolbar-title class="text-h4" style="line-height: 100%">
+            {{ $route.meta.title }}
+          </q-toolbar-title>
+        </q-toolbar>
+
+        <div class="q-pa-md">
+          <q-img src="broken.svg" class="fixed-full" />
+          <p>
+            There are no photos posted yet. To add some photos you need to
+            sign-in with your Google account. Only registered users can add,
+            delete or edit photos. Unregistered user can only browse photos
+            other people add.
+          </p>
+          <p>
+            This application is made for my personal photographic needs. I
+            couldn't find any better nor cheeper solutions to store my photos.
+            Application provide serching based on tags, year, month, day, model,
+            lens and author. Application is build using
+            <a href="https://firebase.google.com/">Firebase</a> on
+            <a href="https://nodejs.org/">node.js</a> and
+            <a href="https://quasar.dev/">Quasar</a>&nbsp;
+            <a href="https://vuejs.org/">vue.js</a> framework.
+          </p>
+
+          <p v-if="auth.user && auth.user.isAuthorized">
+            <q-btn-group spread flat>
+              <q-btn to="/add" :label="`Add some photos ${auth.user.name}`" />
+              <q-btn @click="auth.signIn" label="Or Sign-Out" />
+            </q-btn-group>
+          </p>
+          <p class="text-center" v-else>
+            <q-btn
+              flat
+              @click="auth.signIn"
+              label="Sign in using your Google account"
+            />
+          </p>
         </div>
       </q-page>
     </q-page-container>
@@ -138,6 +133,6 @@ const styling = computed(() => {
   position: relative;
   background-size: cover;
   background-position: center;
-  transition: background-image 0.5s ease-in-out;
+  transition: background-image 0.2s ease-in-out;
 }
 </style>
