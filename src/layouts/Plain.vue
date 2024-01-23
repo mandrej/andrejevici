@@ -54,7 +54,7 @@
       </q-page>
 
       <q-page v-else>
-        <q-toolbar class="bg-grey-10 text-white q-pa-md">
+        <q-toolbar class="bg-grey-10 text-white q-pa-md fixed">
           <q-toolbar-title class="text-h4" style="line-height: 100%">
             {{ $route.meta.title }}
           </q-toolbar-title>
@@ -62,7 +62,10 @@
 
         <div class="q-pa-md">
           <q-img src="broken.svg" class="fixed-full" />
-          <div class="row justify-center vertical-middle" style="height: 500px">
+          <div
+            class="row justify-center vertical-middle"
+            style="height: calc(100vh)"
+          >
             <div class="col-xs-12 col-sm-8 self-center">
               <p class="text-h5">
                 There are no photos posted yet. To add some photos you need to
