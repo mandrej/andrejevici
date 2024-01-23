@@ -3,8 +3,8 @@
     <q-page-container>
       <q-page v-if="last.href" class="row">
         <q-responsive
-          :ratio="1"
-          class="col-xs-12 col-sm-6 last"
+          :ratio="1.75"
+          class="col-xs-12 col-md-6 last"
           :style="styling"
         >
           <router-link
@@ -34,7 +34,7 @@
           </router-link>
         </q-responsive>
 
-        <div class="col-xs-12 col-sm-6">
+        <div class="col-xs-12 col-md-6">
           <q-toolbar class="bg-grey-10 text-white q-pa-md">
             <q-toolbar-title class="text-h4" style="line-height: 100%">
               {{ $route.meta.title }}
