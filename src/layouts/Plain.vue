@@ -2,11 +2,7 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page v-if="last.href" class="row">
-        <q-responsive
-          :ratio="1.75"
-          class="col-xs-12 col-md-6 last"
-          :style="styling"
-        >
+        <q-responsive :ratio="1.75" class="col-xs-12 col-md-6" :style="styling">
           <router-link
             :to="last.href"
             style="display: block"
@@ -114,10 +110,9 @@
 
 <script setup>
 import { onMounted, computed } from "vue";
-import { isEmpty } from "lodash";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { fileBroken, version } from "../helpers";
+import { version } from "../helpers";
 import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();
@@ -129,24 +124,14 @@ onMounted(() => {
 });
 
 const styling = computed(() => {
-  if (isEmpty(last)) {
-    return "background-image: url(" + fileBroken + ")";
-  }
   return (
     "background-image: url(" +
     last.value.url +
     "), url(" +
     last.value.thumb +
-    ")"
+    ");" +
+    "background-size: cover; background-position: center;" +
+    "transition: background-image 0.2s ease-in-out;"
   );
 });
 </script>
-
-<style scoped>
-.last {
-  position: relative;
-  background-size: cover;
-  background-position: center;
-  transition: background-image 0.2s ease-in-out;
-}
-</style>
