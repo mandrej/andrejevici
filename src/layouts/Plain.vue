@@ -2,7 +2,11 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page v-if="last.href" class="row">
-        <q-responsive :ratio="1.75" class="col-xs-12 col-md-6" :style="styling">
+        <q-responsive
+          :ratio="1.75"
+          class="col-xs-12 col-md-6"
+          :style="imageStyle"
+        >
           <router-link
             :to="last.href"
             style="display: block"
@@ -13,15 +17,15 @@
               fab
               icon="add"
               color="warning"
-              class="absolute-top-left q-ma-md"
+              text-color="dark"
+              class="absolute-top-left q-ma-md bg-warning text-dark"
               to="/add"
             />
             <q-btn
               v-else
               fab
               icon="person"
-              color="warning"
-              class="absolute-top-left q-ma-md"
+              class="absolute-top-left q-ma-md bg-warning text-dark"
               @click="auth.signIn"
             />
             <div class="absolute-top-right text-white q-ma-md">
@@ -56,8 +60,7 @@
           </q-toolbar-title>
         </q-toolbar>
 
-        <div class="q-pa-md">
-          <q-img src="broken.svg" class="fixed-full" />
+        <div class="q-pa-md" :style="brokenStyle">
           <div
             class="row justify-center vertical-middle"
             style="height: calc(100vh)"
@@ -82,12 +85,12 @@
               <p v-if="auth.user && auth.user.isAuthorized">
                 <q-btn-group spread>
                   <q-btn
-                    color="primary"
+                    class="bg-warning text-dark"
                     to="/add"
                     :label="`Add some photos ${auth.user.name}`"
                   />
                   <q-btn
-                    color="warning"
+                    class="bg-warning text-dark"
                     @click="auth.signIn"
                     label="Or Sign-Out"
                   />
@@ -95,7 +98,7 @@
               </p>
               <p class="text-center" v-else>
                 <q-btn
-                  color="warning"
+                  class="bg-warning text-dark"
                   @click="auth.signIn"
                   label="Sign in using your Google account"
                 />
@@ -112,7 +115,7 @@
 import { onMounted, computed } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { version } from "../helpers";
+import { fileBroken, version } from "../helpers";
 import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();
@@ -123,15 +126,18 @@ onMounted(() => {
   app.getLast();
 });
 
-const styling = computed(() => {
+const common =
+  "background-repeat: no-repeat; background-size: cover; background-position: center;";
+const imageStyle = computed(() => {
   return (
     "background-image: url(" +
     last.value.url +
     "), url(" +
     last.value.thumb +
     ");" +
-    "background-size: cover; background-position: center;" +
+    common +
     "transition: background-image 0.2s ease-in-out;"
   );
 });
+const brokenStyle = "background-image: url(" + fileBroken + ");" + common;
 </script>
