@@ -126,8 +126,7 @@ onMounted(() => {
   app.getLast();
 });
 
-const common =
-  "background-repeat: no-repeat; background-size: cover; background-position: center;";
+const common = "background-repeat: no-repeat; background-position: center;";
 const imageStyle = computed(() => {
   return (
     "background-image: url(" +
@@ -136,6 +135,7 @@ const imageStyle = computed(() => {
     last.value.thumb +
     ");" +
     common +
+    "background-size: cover;" +
     "transition: background-image 0.2s ease-in-out;"
   );
 });

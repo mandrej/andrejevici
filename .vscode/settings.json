@@ -9,5 +9,6 @@
   },
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "editor.linkedEditing": false,
-  "terminal.integrated.fontFamily": "Fira Code"
+  "terminal.integrated.fontFamily": "Fira Code",
+  "svg.preview.background": "dark-transparent"
 }
