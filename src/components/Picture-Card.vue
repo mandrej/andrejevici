@@ -16,7 +16,7 @@
         {{ rec.headline }}
       </div>
     </q-img>
-    <q-card-section class="row justify-between q-py-none">
+    <q-card-section class="row justify-between q-py-none q-pr-sm">
       <div style="line-height: 42px">
         {{ rec.nick }},
         <router-link
