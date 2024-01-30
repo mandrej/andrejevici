@@ -12,53 +12,49 @@
       <template #error>
         <img :src="fileBroken" />
       </template>
-      <div class="absolute-bottom text-subtitle2">
+      <div class="absolute-bottom text-subtitle2 ellipsis">
         {{ rec.headline }}
+        <div>
+          {{ rec.nick }},
+          <router-link
+            :to="{
+              path: '/list',
+              query: {
+                year: rec.year,
+                month: rec.month,
+                day: rec.day,
+              },
+            }"
+            class="text-white"
+            style="text-decoration: underline"
+            >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+          >
+          {{ rec.date.substring(11) }}
+        </div>
       </div>
     </q-img>
-    <q-card-section class="row justify-between q-py-none q-pr-sm">
-      <div style="line-height: 42px">
-        {{ rec.nick }},
-        <router-link
-          :to="{
-            path: '/list',
-            query: {
-              year: rec.year,
-              month: rec.month,
-              day: rec.day,
-            },
-          }"
-          class="text-dark"
-          style="text-decoration: underline"
-          >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
-        >
-        {{ rec.date.substring(11) }}
-      </div>
+    <q-card-actions class="justify-between">
+      <q-btn
+        v-if="canManage"
+        flat
+        round
+        icon="delete"
+        @click="emit('confirmDelete', rec)"
+      />
+      <q-btn
+        v-if="canManage"
+        flat
+        round
+        icon="edit"
+        @click="emit('editRecord', rec)"
+      />
       <q-btn
         v-if="rec.loc"
         flat
         round
         icon="my_location"
         target="blank"
-        :href="
-          'https://www.google.com/maps/search/?api=1&query=' + [...rec.loc]
-        "
-      />
-    </q-card-section>
-    <q-card-actions class="justify-between q-pt-none">
-      <q-btn
-        flat
-        round
-        icon="delete"
-        :disable="!canManage"
-        @click="emit('confirmDelete', rec)"
-      />
-      <q-btn
-        flat
-        round
-        icon="edit"
-        :disable="!canManage"
-        @click="emit('editRecord', rec)"
+        :href="'https://www.google.com/maps/search/?api=1&query=' + [rec.loc]"
       />
       <q-btn flat round icon="share" @click="onShare" />
     </q-card-actions>
