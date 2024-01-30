@@ -15,7 +15,13 @@
       <div class="absolute-bottom text-subtitle2 ellipsis">
         {{ rec.headline }}
         <div>
-          {{ rec.nick }},
+          <router-link
+            :to="{ path: '/list', query: { nick: rec.nick } }"
+            class="text-white"
+            style="text-decoration: underline"
+            >{{ rec.nick }}
+          </router-link>
+          ,
           <router-link
             :to="{
               path: '/list',
