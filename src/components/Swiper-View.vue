@@ -1,64 +1,57 @@
 <template>
-  <swiper
-    class="swiper"
-    :keyboard="{
-      enabled: true,
-    }"
-    :lazy="true"
-    :grab-cursor="true"
-    :zoom="{
-      maxRatio: 2,
-    }"
-    :modules="modules"
-    @swiper="onSwiper"
-    @slide-change="onSlideChange"
+  <q-carousel
+    fullscreen
+    animated
+    swipeable
+    transition-prev="slide-right"
+    transition-next="slide-left"
+    v-model="starting"
+    @update:model-value="changeSlide"
   >
-    <swiper-slide
+    <q-carousel-slide
       v-for="obj in list"
       :key="obj.filename"
-      :data-hash="U + obj.filename"
+      :name="obj.filename"
+      :img-src="obj.url"
     >
       <div
         v-show="!full"
-        class="absolute-top row no-wrap justify-between"
+        class="absolute-top row no-wrap justify-between q-pa-sm"
         style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
       >
         <q-btn
           v-if="auth.user.isAdmin"
           flat
           round
-          class="text-white q-pa-sm"
+          class="text-white q-pa-md"
           icon="delete"
           @click="
             obj.thumb ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
           "
         />
-        <div
-          v-html="caption(obj)"
-          class="col q-my-sm text-white text-center ellipsis"
-        ></div>
+        <div class="col text-white text-center">
+          <span class="text-h5 ellipsis">{{ obj.headline }}</span
+          ><br />
+          {{ caption(obj) }}
+        </div>
 
         <q-btn
           flat
           round
-          class="text-white q-pa-sm"
+          class="text-white q-pa-md"
           icon="close"
           @click="onCancel"
         />
       </div>
-      <div class="swiper-zoom-container">
-        <img :src="obj.url" loading="lazy" @load="onLoad" />
-        <div class="swiper-lazy-preloader" />
-      </div>
       <q-btn
         flat
         round
-        class="absolute-bottom-right text-white q-pa-md"
+        class="absolute-bottom-right text-white q-mr-sm q-mb-sm q-pa-md"
         @click="$q.fullscreen.toggle()"
         :icon="full ? 'fullscreen_exit' : 'fullscreen'"
       />
-    </swiper-slide>
-  </swiper>
+    </q-carousel-slide>
+  </q-carousel>
 </template>
 
 <script setup>
@@ -68,11 +61,6 @@ import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { formatBytes, removeHash, CONFIG, U } from "../helpers";
 import notify from "../helpers/notify";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { Keyboard, Zoom } from "swiper/modules";
-
-import "swiper/scss";
-import "swiper/scss/zoom";
 
 const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
 const props = defineProps({
@@ -81,13 +69,12 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
+const starting = ref(props.filename);
 const auth = useUserStore();
 const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
-
-const modules = [Keyboard, Zoom];
 
 watch(
   () => $q.fullscreen.isActive,
@@ -96,27 +83,9 @@ watch(
   }
 );
 
-const onSwiper = (sw) => {
-  const index = props.list.findIndex((x) => x.filename === props.filename);
-  if (index === -1) {
-    notify({
-      type: "negative",
-      timeout: 10000,
-      message: `${props.filename} couldn't be found in first ${CONFIG.limit} records`,
-    });
-  } else {
-    if (index === 0) {
-      onSlideChange(sw);
-    } else {
-      sw.slideTo(index, 0);
-    }
-  }
-};
-const onSlideChange = (sw) => {
+const changeSlide = (name) => {
   let url = route.fullPath;
-  const slide = sw.slides[sw.activeIndex];
-  hash.value = slide.dataset.hash;
-  const sufix = "#" + hash.value;
+  const sufix = "#" + U + name;
   if (urlHash.test(url)) {
     url = url.replace(urlHash, sufix);
   } else {
@@ -124,21 +93,49 @@ const onSlideChange = (sw) => {
   }
   window.history.replaceState(history.state, null, url);
 };
-const onLoad = (e) => {
-  // calculate image dimension
-  const dim1 = [e.target.width, e.target.height];
-  const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
-  const wRatio = dim0[0] / dim1[0];
-  const hRatio = dim0[1] / dim1[1];
 
-  const container = e.target.closest(".swiper-zoom-container");
-  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
-};
+// const onSwiper = (sw) => {
+//   const index = props.list.findIndex((x) => x.filename === props.filename);
+//   if (index === -1) {
+//     notify({
+//       type: "negative",
+//       timeout: 10000,
+//       message: `${props.filename} couldn't be found in first ${CONFIG.limit} records`,
+//     });
+//   } else {
+//     if (index === 0) {
+//       onSlideChange(sw);
+//     } else {
+//       sw.slideTo(index, 0);
+//     }
+//   }
+// };
+// const onSlideChange = (sw) => {
+//   let url = route.fullPath;
+//   const slide = sw.slides[sw.activeIndex];
+//   hash.value = slide.dataset.hash;
+//   const sufix = "#" + hash.value;
+//   if (urlHash.test(url)) {
+//     url = url.replace(urlHash, sufix);
+//   } else {
+//     url += sufix;
+//   }
+//   window.history.replaceState(history.state, null, url);
+// };
+// const onLoad = (e) => {
+//   // calculate image dimension
+//   const dim1 = [e.target.width, e.target.height];
+//   const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
+//   const wRatio = dim0[0] / dim1[0];
+//   const hRatio = dim0[1] / dim1[1];
+
+//   const container = e.target.closest(".swiper-zoom-container");
+//   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
+// };
 const caption = (rec) => {
   let tmp = "";
   if (rec.thumb) {
-    const { headline, aperture, shutter, iso, model, lens } = rec;
-    tmp += headline + "<br/>";
+    const { aperture, shutter, iso, model, lens } = rec;
     tmp += aperture ? " f" + aperture : "";
     tmp += shutter ? " " + shutter + "s" : "";
     tmp += iso ? " " + iso + " ASA" : "";
@@ -162,26 +159,9 @@ const onCancel = () => {
 </script>
 
 <style scoped>
-.swiper {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  z-index: 2000;
-  border-radius: 0 !important;
-  max-width: 100vw;
-  max-height: 100vh;
-}
-
-.swiper-slide {
-  text-align: center;
-  background: #000;
-}
-.swiper-slide img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+.q-carousel__slide {
+  background-color: #000;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 </style>

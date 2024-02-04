@@ -5,14 +5,15 @@
     :rec="app.current"
     @confirm-ok="confirmOk"
   />
-  <Swiper-View
-    v-if="app.showCarousel"
-    :filename="app.currentFileName"
-    :list="app.objects"
-    @carousel-cancel="useCarouselCancel"
-    @confirm-delete="confirmShow"
-    @delete-record="app.deleteRecord"
-  />
+  <q-page v-if="app.showCarousel">
+    <Swiper-View
+      :filename="app.currentFileName"
+      :list="app.objects"
+      @carousel-cancel="useCarouselCancel"
+      @confirm-delete="confirmShow"
+      @delete-record="app.deleteRecord"
+    />
+  </q-page>
 
   <q-page v-else>
     <q-banner
