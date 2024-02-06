@@ -13,6 +13,8 @@
       :key="obj.filename"
       :name="obj.filename"
       :img-src="obj.url"
+      :data-url="obj.url"
+      v-touch-hold:300.mouse="zoom"
     >
       <div
         v-show="!full"
@@ -29,8 +31,8 @@
             obj.thumb ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
           "
         />
-        <div class="col text-white text-center">
-          <span class="text-h5 ellipsis">{{ obj.headline }}</span
+        <div class="col text-white text-center" style="user-select: none">
+          <span class="text-h6 ellipsis">{{ obj.headline }}</span
           ><br />
           {{ caption(obj) }}
         </div>
@@ -59,8 +61,7 @@ import { useQuasar } from "quasar";
 import { ref, watch } from "vue";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { formatBytes, removeHash, CONFIG, U } from "../helpers";
-import notify from "../helpers/notify";
+import { formatBytes, removeHash, U, getImageDimensions } from "../helpers";
 
 const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
 const props = defineProps({
@@ -94,44 +95,6 @@ const changeSlide = (name) => {
   window.history.replaceState(history.state, null, url);
 };
 
-// const onSwiper = (sw) => {
-//   const index = props.list.findIndex((x) => x.filename === props.filename);
-//   if (index === -1) {
-//     notify({
-//       type: "negative",
-//       timeout: 10000,
-//       message: `${props.filename} couldn't be found in first ${CONFIG.limit} records`,
-//     });
-//   } else {
-//     if (index === 0) {
-//       onSlideChange(sw);
-//     } else {
-//       sw.slideTo(index, 0);
-//     }
-//   }
-// };
-// const onSlideChange = (sw) => {
-//   let url = route.fullPath;
-//   const slide = sw.slides[sw.activeIndex];
-//   hash.value = slide.dataset.hash;
-//   const sufix = "#" + hash.value;
-//   if (urlHash.test(url)) {
-//     url = url.replace(urlHash, sufix);
-//   } else {
-//     url += sufix;
-//   }
-//   window.history.replaceState(history.state, null, url);
-// };
-// const onLoad = (e) => {
-//   // calculate image dimension
-//   const dim1 = [e.target.width, e.target.height];
-//   const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
-//   const wRatio = dim0[0] / dim1[0];
-//   const hRatio = dim0[1] / dim1[1];
-
-//   const container = e.target.closest(".swiper-zoom-container");
-//   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
-// };
 const caption = (rec) => {
   let tmp = "";
   if (rec.thumb) {
@@ -156,6 +119,26 @@ const onCancel = () => {
   removeHash();
   emit("carouselCancel", hash.value);
 };
+
+// const handlePan = ({ evt, ...newInfo }) => {
+//   const el = evt.target;
+//   console.log(el.style.backgroundPosition);
+//   console.log(info.value);
+// };
+const zoom = async ({ evt, ...newInfo }) => {
+  console.log(newInfo);
+  const el = evt.target;
+  const url = el.getAttribute("data-url");
+  console.log(url);
+  const { width, height } = await getImageDimensions(url);
+
+  if (el.style.backgroundSize === "contain") {
+    el.style.backgroundSize = width + "px " + height + "px";
+    // el.style.backgroundSize = "cover";
+  } else {
+    el.style.backgroundSize = "contain";
+  }
+};
 </script>
 
 <style scoped>
@@ -163,5 +146,11 @@ const onCancel = () => {
   background-color: #000;
   background-size: contain;
   background-repeat: no-repeat;
+  /* animation: zoom 1s; */
+}
+@keyframes zoom {
+  100% {
+    background-size: cover;
+  }
 }
 </style>
