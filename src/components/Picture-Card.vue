@@ -63,6 +63,14 @@
         :href="'https://www.google.com/maps/search/?api=1&query=' + [rec.loc]"
       />
       <q-btn flat round icon="share" @click="onShare" />
+      <q-btn
+        flat
+        round
+        icon="download"
+        href=""
+        :download="rec.filename"
+        @click="onDownload"
+      />
     </q-card-actions>
   </q-card>
 
@@ -91,7 +99,7 @@
 </template>
 
 <script setup>
-import { copyToClipboard } from "quasar";
+import { copyToClipboard, throttle } from "quasar";
 import {
   fileBroken,
   formatDatum,
@@ -129,6 +137,17 @@ const onShare = () => {
       notify({ type: "warning", message: "Unable to copy URL to clipboard" });
     });
 };
+const onDownload = throttle((evt) => {
+  evt.preventDefault();
+  const a = evt.target.closest("a.q-btn");
+  fetch(props.rec.url)
+    .then((resp) => resp.blob())
+    .then((blob) => {
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+}, 200);
 </script>
 
 <style lang="scss" scoped>
