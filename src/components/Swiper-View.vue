@@ -8,13 +8,13 @@
     v-model="starting"
     @update:model-value="changeSlide"
   >
+    <!-- @dblclick="zoom" -->
     <q-carousel-slide
       v-for="obj in list"
       :key="obj.filename"
       :name="obj.filename"
       :img-src="obj.url"
       :data-url="obj.url"
-      v-touch-hold:300.mouse="zoom"
     >
       <div
         v-show="!full"
@@ -58,7 +58,7 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { formatBytes, removeHash, U, getImageDimensions } from "../helpers";
@@ -84,9 +84,14 @@ watch(
   }
 );
 
+onMounted(() => {
+  changeSlide(props.filename);
+});
+
 const changeSlide = (name) => {
   let url = route.fullPath;
-  const sufix = "#" + U + name;
+  hash.value = name;
+  const sufix = "#" + U + hash.value;
   if (urlHash.test(url)) {
     url = url.replace(urlHash, sufix);
   } else {
@@ -120,25 +125,18 @@ const onCancel = () => {
   emit("carouselCancel", hash.value);
 };
 
-// const handlePan = ({ evt, ...newInfo }) => {
+// const zoom = async (evt) => {
 //   const el = evt.target;
-//   console.log(el.style.backgroundPosition);
-//   console.log(info.value);
-// };
-const zoom = async ({ evt, ...newInfo }) => {
-  console.log(newInfo);
-  const el = evt.target;
-  const url = el.getAttribute("data-url");
-  console.log(url);
-  const { width, height } = await getImageDimensions(url);
+//   console.log(evt.screenX, evt.screenY);
+//   const url = el.getAttribute("data-url");
+//   const { width, height } = await getImageDimensions(url);
 
-  if (el.style.backgroundSize === "contain") {
-    el.style.backgroundSize = width + "px " + height + "px";
-    // el.style.backgroundSize = "cover";
-  } else {
-    el.style.backgroundSize = "contain";
-  }
-};
+//   if (el.style.backgroundSize === "contain") {
+//     el.style.backgroundSize = width + "px " + height + "px";
+//   } else {
+//     el.style.backgroundSize = "contain";
+//   }
+// };
 </script>
 
 <style scoped>
@@ -146,11 +144,5 @@ const zoom = async ({ evt, ...newInfo }) => {
   background-color: #000;
   background-size: contain;
   background-repeat: no-repeat;
-  /* animation: zoom 1s; */
-}
-@keyframes zoom {
-  100% {
-    background-size: cover;
-  }
 }
 </style>
