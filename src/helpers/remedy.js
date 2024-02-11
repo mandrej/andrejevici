@@ -6,6 +6,7 @@ import {
   orderBy,
   getDocs,
   setDoc,
+  deleteDoc,
   updateDoc,
 } from "firebase/firestore";
 import {
@@ -77,43 +78,58 @@ export const mismatch = async () => {
 
   bucketNames.sort();
   storageNames.sort();
-  // uploaded to bucket but no record in firestore
-  const missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1);
-  for (let name of missing) {
-    if (uploadedFilenames.indexOf(name) === -1) {
-      const _ref = storageRef(storage, name);
-      const metadata = await getMetadata(_ref);
-      const downloadURL = await getDownloadURL(_ref);
-      app.uploaded.push({
-        url: downloadURL,
-        filename: name,
-        size: metadata.size,
-        email: auth.user.email,
-        nick: emailNick(auth.user.email),
-      });
-      result++;
+  let missing;
+  if (bucketNames.length >= storageNames.length) {
+    // uploaded to bucket but no record in firestore
+    missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1);
+    for (let name of missing) {
+      if (uploadedFilenames.indexOf(name) === -1) {
+        const _ref = storageRef(storage, name);
+        const metadata = await getMetadata(_ref);
+        const downloadURL = await getDownloadURL(_ref);
+        app.uploaded.push({
+          url: downloadURL,
+          filename: name,
+          size: metadata.size,
+          email: auth.user.email,
+          nick: emailNick(auth.user.email),
+        });
+        result++;
+      }
     }
-  }
-  if (result > 0) {
-    notify({
-      message: `${result} files uploaded to bucket, but doesn't have record in firestore.<br>
-      Resolve mismathed files either by publish or delete.`,
-      actions: [
-        {
-          label: "Resolve",
-          color: "white",
-          handler: () => {
-            router.push({ path: "/add" });
+    if (result > 0) {
+      notify({
+        message: `${result} files uploaded to bucket, but doesn't have record in firestore.<br>
+        Resolve mismathed files either by publish or delete.`,
+        actions: [
+          {
+            label: "Resolve",
+            color: "white",
+            handler: () => {
+              router.push({ path: "/add" });
+            },
           },
-        },
-      ],
-      multiLine: true,
-      html: true,
+        ],
+        multiLine: true,
+        html: true,
+        type: "warning",
+        timeout: 0,
+        group: "mismatch",
+      });
+    } else {
+      notify({ message: `All good. Nothing to reslove`, group: "mismatch" });
+    }
+  } else {
+    // records with no image reference
+    missing = storageNames.filter((x) => bucketNames.indexOf(x) === -1);
+    for (let name of missing) {
+      const docRef = doc(db, "Photo", name);
+      await deleteDoc(docRef);
+    }
+    notify({
+      message: `${missing.length} records deleted that doesn't have image reference`,
       type: "warning",
-      timeout: 0,
       group: "mismatch",
     });
-  } else {
-    notify({ message: `All good. Nothing to reslove`, group: "mismatch" });
   }
 };
