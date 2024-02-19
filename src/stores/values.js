@@ -21,32 +21,51 @@ const countersCol = collection(db, "Counter");
 export const useValuesStore = defineStore("meta", {
   state: () => ({
     tagsToApply: [],
-    values: { year: [], tags: [], model: [], lens: [], email: [] },
+    values: { year: {}, tags: {}, model: {}, lens: {}, email: {} },
   }),
   getters: {
     // values getters
     tagsValues: (state) => {
-      return state.values.tags.map((obj) => obj.value);
+      return Object.keys(state.values.tags);
     },
     modelValues: (state) => {
-      return state.values.model.map((obj) => obj.value);
+      return Object.keys(state.values.model);
     },
     lensValues: (state) => {
-      return state.values.lens.map((obj) => obj.value);
+      return Object.keys(state.values.lens);
     },
     emailValues: (state) => {
-      return state.values.email.map((obj) => obj.value);
-    },
-    nickCount: (state) => {
-      return state.values.email.map((obj) => {
-        return { value: emailNick(obj.value), count: obj.count };
-      });
+      return Object.keys(state.values.email);
     },
     nickValues: (state) => {
-      return state.values.email.map((obj) => emailNick(obj.value));
+      return Object.keys(state.values.email).map((el) => emailNick(el));
     },
     yearValues: (state) => {
-      return state.values.year.map((obj) => obj.value);
+      return Object.keys(state.values.year).reverse();
+    },
+    // for Index-Page
+    yearWithCount: (state) => {
+      const ret = [];
+      for (const [value, count] of Object.entries(state.values.year)) {
+        ret.push({ value: value, count: count });
+      }
+      ret.sort((a, b) => b.value - a.value);
+      return ret;
+    },
+    nickWithCount: (state) => {
+      const ret = [];
+      for (const [value, count] of Object.entries(state.values.email)) {
+        ret.push({ value: emailNick(value), count: count });
+      }
+      return ret;
+    },
+    tagsWithCount: (state) => {
+      const ret = [];
+      for (const [value, count] of Object.entries(state.values.tags)) {
+        ret.push({ value: value, count: count });
+      }
+      ret.sort((a, b) => b.value - a.value);
+      return ret;
     },
   },
   actions: {
@@ -55,15 +74,7 @@ export const useValuesStore = defineStore("meta", {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        const find = this.values.year.find((el) => el.value === d.value);
-        if (find) {
-          find.count = d.count;
-        } else {
-          this.values.year.push({ value: d.value, count: d.count });
-        }
-      });
-      this.values.year.sort((a, b) => {
-        return b.value - a.value;
+        this.values.year[d.value] = d.count;
       });
     },
     async emailCount() {
@@ -71,18 +82,7 @@ export const useValuesStore = defineStore("meta", {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        const find = this.values.email.find((el) => el.value === d.value);
-        if (find) {
-          find.count = d.count;
-        } else {
-          this.values.email.push({
-            value: d.value,
-            count: d.count,
-          });
-        }
-      });
-      this.values.email.sort((a, b) => {
-        return b.count - a.count;
+        this.values.email[d.value] = d.count;
       });
     },
     async tagsCount() {
@@ -90,15 +90,7 @@ export const useValuesStore = defineStore("meta", {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        const find = this.values.tags.find((el) => el.value === d.value);
-        if (find) {
-          find.count = d.count;
-        } else {
-          this.values.tags.push({ value: d.value, count: d.count });
-        }
-      });
-      this.values.tags.sort((a, b) => {
-        return a.value - b.value;
+        this.values.tags[d.value] = d.count;
       });
     },
     async modelCount() {
@@ -106,15 +98,7 @@ export const useValuesStore = defineStore("meta", {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        const find = this.values.model.find((el) => el.value === d.value);
-        if (find) {
-          find.count = d.count;
-        } else {
-          this.values.model.push({ value: d.value, count: d.count });
-        }
-      });
-      this.values.model.sort((a, b) => {
-        return b.count - a.count;
+        this.values.model[d.value] = d.count;
       });
     },
     async lensCount() {
@@ -122,15 +106,7 @@ export const useValuesStore = defineStore("meta", {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        const find = this.values.lens.find((el) => el.value === d.value);
-        if (find) {
-          find.count = d.count;
-        } else {
-          this.values.lens.push({ value: d.value, count: d.count });
-        }
-      });
-      this.values.lens.sort((a, b) => {
-        return b.count - a.count;
+        this.values.lens[d.value] = d.count;
       });
     },
     async countersBuild() {
@@ -142,45 +118,44 @@ export const useValuesStore = defineStore("meta", {
       });
       const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
-      const val = { year: [], tags: [], model: [], lens: [], email: [] };
+      const val = { year: {}, tags: {}, model: {}, lens: {}, email: {} };
       querySnapshot.forEach((doc) => {
         const d = doc.data();
         for (const field of CONFIG.photo_filter) {
           if (field === "tags") {
             for (const tag of d[field]) {
-              val[field].push(tag);
+              if (val[field][tag]) {
+                val[field][tag]++;
+              } else {
+                val[field][tag] = 1;
+              }
             }
           } else if (d[field]) {
-            val[field].push("" + d[field]);
+            if (val[field][d[field]]) {
+              val[field][d[field]]++;
+            } else {
+              val[field][d[field]] = 1;
+            }
           }
         }
       });
-      const counts = {};
-      const dict = {};
+      // write to database
+      let id, counterRef;
       for (const field of CONFIG.photo_filter) {
-        counts[field] = {};
-        dict[field] = [];
-        for (const it of val[field]) {
-          counts[field][it] = counts[field][it] ? counts[field][it] + 1 : 1;
-        }
-        for (const [key, count] of Object.entries(counts[field])) {
-          dict[field].push({ value: `${key}`, count: count });
-        }
-        // this.values[field] = dict[field];
-        // write down
-        let id, counterRef;
-        for (const obj of dict[field]) {
-          id = ["Photo", field, obj.value].join("||");
+        for (const [key, count] of Object.entries(val[field])) {
+          id = ["Photo", field, key].join("||");
           counterRef = doc(db, "Counter", id);
           await setDoc(
             counterRef,
             {
-              count: obj.count,
+              count: count,
               field: field,
-              value: obj.value,
+              value: key,
             },
             { merge: true }
           );
+          // renew old counters
+          this.values[field] = { ...this.values[field], ...val[field] };
         }
         notify({
           message: `Values for ${field} updated`,
@@ -196,14 +171,11 @@ export const useValuesStore = defineStore("meta", {
       });
     },
     async increase(id, field, val) {
-      const [find] = this.values[field].filter((it) => it.value === val);
+      let find = this.values[field][val];
       if (find) {
-        find.count++;
+        find++;
       } else {
-        this.values[field].push({
-          count: 1,
-          value: val,
-        });
+        this.values[field][val] = 1;
       }
 
       const counterRef = doc(db, "Counter", id);
@@ -241,16 +213,11 @@ export const useValuesStore = defineStore("meta", {
       }
     },
     async decrease(id, field, val) {
-      let find, count;
-      const idx = this.values[field].findIndex((it) => it.value === val);
-      if (idx >= 0) {
-        find = this.values[field][idx];
-        count = find.count - 1;
-        if (count <= 0) {
-          this.values[field].splice(idx, 1);
-        } else {
-          find = this.values[field][idx];
-          find.count = count;
+      let find = this.values[field][val];
+      if (find) {
+        find--;
+        if (find <= 0) {
+          delete this.values[field][val];
         }
       }
 
@@ -283,28 +250,16 @@ export const useValuesStore = defineStore("meta", {
       }
     },
     addNewTag(val) {
-      this.values.tags.push({
-        count: 1,
-        value: val,
-      });
+      this.values.tags[val] = 1;
     },
     addNewEmail(val) {
-      this.values.email.push({
-        count: 1,
-        value: val,
-      });
+      this.values.email[val] = 1;
     },
     addNewModel(val) {
-      this.values.model.push({
-        count: 1,
-        value: val,
-      });
+      this.values.model[val] = 1;
     },
     addNewLens(val) {
-      this.values.lens.push({
-        count: 1,
-        value: val,
-      });
+      this.values.lens[val] = 1;
     },
   },
   persist: {
