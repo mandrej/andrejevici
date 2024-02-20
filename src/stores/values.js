@@ -51,21 +51,27 @@ export const useValuesStore = defineStore("meta", {
       }
       ret.sort((a, b) => b.value - a.value);
       return ret;
+      // const xx = Object.keys(state.values.year)
+      //   .sort((a, b) => b - a)
+      //   .reduce((obj, key) => {
+      //     obj[key] = state.values.year[key];
+      //     return obj;
+      //   }, {});
+      // console.log(xx);
+      // return xx;
     },
     nickWithCount: (state) => {
-      const ret = [];
-      for (const [value, count] of Object.entries(state.values.email)) {
-        ret.push({ value: emailNick(value), count: count });
-      }
-      return ret;
+      return Object.entries(state.values.email)
+        .sort(([, a], [, b]) => b - a)
+        .reduce((r, [k, v]) => ({ ...r, [emailNick(k)]: v }), {});
     },
     tagsWithCount: (state) => {
-      const ret = [];
-      for (const [value, count] of Object.entries(state.values.tags)) {
-        ret.push({ value: value, count: count });
-      }
-      ret.sort((a, b) => b.value - a.value);
-      return ret;
+      return Object.keys(state.values.tags)
+        .sort()
+        .reduce((obj, key) => {
+          obj[key] = state.values.tags[key];
+          return obj;
+        }, {});
     },
   },
   actions: {
@@ -112,7 +118,6 @@ export const useValuesStore = defineStore("meta", {
     async countersBuild() {
       notify({
         message: `Please wait`,
-        timeout: 0,
         actions: [{ icon: "close", color: "white" }],
         group: "build",
       });
@@ -160,12 +165,10 @@ export const useValuesStore = defineStore("meta", {
         notify({
           message: `Values for ${field} updated`,
           group: "build",
-          timeout: 0,
         });
       }
       notify({
         message: `All done`,
-        timeout: 0,
         actions: [{ icon: "close", color: "white" }],
         group: "build",
       });
