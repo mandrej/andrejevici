@@ -237,19 +237,19 @@ const isValidEmail = (val) => {
 
 // new values
 const addNewEmail = (inputValue, done) => {
-  meta.addNewEmail(inputValue);
+  meta.addNewField(inputValue, "email");
   done(inputValue);
 };
 const addNewTag = (inputValue, done) => {
-  meta.addNewTag(inputValue);
+  meta.addNewField(inputValue, "tags");
   done(inputValue);
 };
 const addNewModel = (inputValue, done) => {
-  meta.addNewModel(inputValue);
+  meta.addNewField(inputValue, "model");
   done(inputValue);
 };
 const addNewLens = (inputValue, done) => {
-  meta.addNewLens(inputValue);
+  meta.addNewField(inputValue, "lens");
   done(inputValue);
 };
 

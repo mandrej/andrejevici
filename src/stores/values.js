@@ -26,19 +26,21 @@ export const useValuesStore = defineStore("meta", {
   getters: {
     // values getters
     tagsValues: (state) => {
-      return Object.keys(state.values.tags);
+      return Object.keys(state.values.tags).sort();
     },
     modelValues: (state) => {
-      return Object.keys(state.values.model);
+      return Object.keys(state.values.model).sort();
     },
     lensValues: (state) => {
-      return Object.keys(state.values.lens);
+      return Object.keys(state.values.lens).sort();
     },
     emailValues: (state) => {
-      return Object.keys(state.values.email);
+      return Object.keys(state.values.email).sort();
     },
     nickValues: (state) => {
-      return Object.keys(state.values.email).map((el) => emailNick(el));
+      return Object.keys(state.values.email)
+        .map((el) => emailNick(el))
+        .sort();
     },
     yearValues: (state) => {
       return Object.keys(state.values.year).reverse();
@@ -51,14 +53,6 @@ export const useValuesStore = defineStore("meta", {
       }
       ret.sort((a, b) => b.value - a.value);
       return ret;
-      // const xx = Object.keys(state.values.year)
-      //   .sort((a, b) => b - a)
-      //   .reduce((obj, key) => {
-      //     obj[key] = state.values.year[key];
-      //     return obj;
-      //   }, {});
-      // console.log(xx);
-      // return xx;
     },
     nickWithCount: (state) => {
       return Object.entries(state.values.email)
@@ -75,44 +69,12 @@ export const useValuesStore = defineStore("meta", {
     },
   },
   actions: {
-    async yearCount() {
-      const q = query(countersCol, where("field", "==", "year"));
+    async fieldCount(field) {
+      const q = query(countersCol, where("field", "==", field));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const d = doc.data();
-        this.values.year[d.value] = d.count;
-      });
-    },
-    async emailCount() {
-      const q = query(countersCol, where("field", "==", "email"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        this.values.email[d.value] = d.count;
-      });
-    },
-    async tagsCount() {
-      const q = query(countersCol, where("field", "==", "tags"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        this.values.tags[d.value] = d.count;
-      });
-    },
-    async modelCount() {
-      const q = query(countersCol, where("field", "==", "model"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        this.values.model[d.value] = d.count;
-      });
-    },
-    async lensCount() {
-      const q = query(countersCol, where("field", "==", "lens"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        this.values.lens[d.value] = d.count;
+        this.values[field][d.value] = d.count;
       });
     },
     async countersBuild() {
@@ -252,17 +214,8 @@ export const useValuesStore = defineStore("meta", {
         }
       }
     },
-    addNewTag(val) {
-      this.values.tags[val] = 1;
-    },
-    addNewEmail(val) {
-      this.values.email[val] = 1;
-    },
-    addNewModel(val) {
-      this.values.model[val] = 1;
-    },
-    addNewLens(val) {
-      this.values.lens[val] = 1;
+    addNewField(val, field) {
+      this.values[field][val] = 1;
     },
   },
   persist: {

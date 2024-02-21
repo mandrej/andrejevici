@@ -181,8 +181,8 @@ const queryDispatch = (query, invoked = "") => {
 
 onMounted(() => {
   if (route.name !== "list") return;
-  meta.modelCount();
-  meta.lensCount();
+  meta.fieldCount("model");
+  meta.fieldCount("lens");
   queryDispatch(route.query, "mounted");
 });
 

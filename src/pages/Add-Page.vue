@@ -238,7 +238,7 @@ const alter = (filename) => {
 };
 
 const addNewTag = (inputValue, done) => {
-  meta.addNewTag(inputValue);
+  meta.addNewField(inputValue, "tags");
   done(inputValue);
 };
 const editRecord = async (rec) => {

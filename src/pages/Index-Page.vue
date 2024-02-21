@@ -22,19 +22,6 @@
       </template>
     </span>
   </div>
-  <!-- <div class="q-pa-sm text-h5">
-    <span v-for="(count, value, index) in meta.yearWithCount" :key="index">
-      <template v-if="index <= $q.screen.xs ? 9 : 99">
-        <router-link
-          :key="value"
-          :title="`${value}: ${count}`"
-          :to="{ path: '/list', query: { year: value } }"
-          class="q-px-sm text-black link"
-          >{{ value }}</router-link
-        >
-      </template>
-    </span>
-  </div> -->
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
       v-for="(count, value) in meta.tagsWithCount"
@@ -54,9 +41,9 @@ import { useValuesStore } from "../stores/values";
 const meta = useValuesStore();
 
 onMounted(() => {
-  meta.yearCount();
-  meta.emailCount();
-  meta.tagsCount();
+  meta.fieldCount("email");
+  meta.fieldCount("year");
+  meta.fieldCount("tags");
 });
 </script>
 
