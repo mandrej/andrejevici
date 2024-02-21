@@ -173,6 +173,8 @@ export const useValuesStore = defineStore("meta", {
           { merge: true }
         );
       }
+      if (process.env.DEV)
+        console.log("increase " + id, this.values[field][val]);
     },
     async increaseValues(newData) {
       for (const field of CONFIG.photo_filter) {
@@ -209,6 +211,8 @@ export const useValuesStore = defineStore("meta", {
             count: old.count - 1,
           });
         }
+        if (process.env.DEV)
+          console.log("decrease " + id, this.values[field][val]);
       }
     },
     async decreaseValues(oldData) {
@@ -231,7 +235,7 @@ export const useValuesStore = defineStore("meta", {
     },
   },
   persist: {
-    key: "v",
+    key: "c",
     paths: ["values", "tagsToApply"],
   },
 });
