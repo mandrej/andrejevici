@@ -18,6 +18,12 @@ import { CONFIG, emailNick } from "../helpers";
 const photosCol = collection(db, "Photo");
 const countersCol = collection(db, "Counter");
 
+const byCountReverse = (state, field) => {
+  return Object.entries(state.values[field])
+    .sort(([, a], [, b]) => b - a)
+    .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+};
+
 export const useValuesStore = defineStore("meta", {
   state: () => ({
     tagsToApply: [],
@@ -29,18 +35,21 @@ export const useValuesStore = defineStore("meta", {
       return Object.keys(state.values.tags).sort();
     },
     modelValues: (state) => {
-      return Object.keys(state.values.model).sort();
+      return Object.keys(byCountReverse(state, "model"));
     },
     lensValues: (state) => {
-      return Object.keys(state.values.lens).sort();
+      return Object.keys(byCountReverse(state, "lens"));
     },
     emailValues: (state) => {
-      return Object.keys(state.values.email).sort();
+      return Object.keys(byCountReverse(state, "email"));
     },
     nickValues: (state) => {
-      return Object.keys(state.values.email)
-        .map((el) => emailNick(el))
-        .sort();
+      const ret = [];
+      const emails = byCountReverse(state, "email");
+      Object.keys(emails).forEach((key) => {
+        ret.push(emailNick(key));
+      });
+      return ret;
     },
     yearValues: (state) => {
       return Object.keys(state.values.year).reverse();
@@ -55,9 +64,12 @@ export const useValuesStore = defineStore("meta", {
       return ret;
     },
     nickWithCount: (state) => {
-      return Object.entries(state.values.email)
-        .sort(([, a], [, b]) => b - a)
-        .reduce((r, [k, v]) => ({ ...r, [emailNick(k)]: v }), {});
+      const ret = {};
+      const emails = byCountReverse(state, "email");
+      Object.keys(emails).forEach((key) => {
+        ret[emailNick(key)] = emails[key];
+      });
+      return ret;
     },
     tagsWithCount: (state) => {
       return Object.keys(state.values.tags)
