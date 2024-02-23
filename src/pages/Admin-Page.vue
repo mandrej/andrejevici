@@ -1,17 +1,44 @@
 <template>
   <q-page class="q-pt-md">
     <q-list separator>
-      <q-item v-if="auth.user.allow_push && auth.token">
+      <q-item>
         <q-item-section>
           <q-item-label>
             <q-input v-model="message" label="Send message to subscribers" />
           </q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-btn color="positive" label="Send" @click="send" />
+          <q-btn
+            :disabled="!(auth.user.allow_push && auth.token)"
+            color="positive"
+            label="Send"
+            @click="send"
+          />
         </q-item-section>
       </q-item>
     </q-list>
+    <q-list separator>
+      <q-item v-if="auth.user.allow_push && auth.token">
+        <q-item-section>
+          <q-item-label>
+            <q-input
+              ref="newTagRef"
+              v-model="newTag"
+              label="Add new tag"
+              :rules="[
+                (val) =>
+                  meta.tagsValues.indexOf(val) === -1 || 'Tag already in use',
+              ]"
+              clearable
+            />
+          </q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn color="positive" label="Add" @click="addTag" />
+        </q-item-section>
+      </q-item>
+    </q-list>
+
     <q-item-label header>Various helper counters</q-item-label>
     <q-list separator>
       <q-item>
@@ -72,6 +99,8 @@ const auth = useUserStore();
 
 const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
 const values = computed(() => meta.values);
+const newTagRef = ref(null),
+  newTag = ref("");
 
 const rebuild = () => {
   meta.countersBuild();
@@ -79,6 +108,14 @@ const rebuild = () => {
 const bucket = () => {
   app.bucketBuild();
 };
+const addTag = () => {
+  if (newTag.value !== "" && meta.tagsValues.indexOf(newTag.value) === -1) {
+    values.value.tags[newTag.value] = 0;
+    newTag.value = "";
+  }
+  newTagRef.value.resetValidation();
+};
+
 const send = () => {
   const url = process.env.DEV
     ? "http://localhost:5001/andrejevici/us-central1/notify"

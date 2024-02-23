@@ -74,6 +74,7 @@ export const useValuesStore = defineStore("meta", {
     tagsWithCount: (state) => {
       return Object.keys(state.values.tags)
         .sort()
+        .filter((key) => state.values.tags[key] > 0)
         .reduce((obj, key) => {
           obj[key] = state.values.tags[key];
           return obj;
