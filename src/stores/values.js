@@ -231,6 +231,40 @@ export const useValuesStore = defineStore("meta", {
         }
       }
     },
+    async removeUnusedTags() {
+      // delete from store
+      let id, counterRef;
+      for (const [value, count] of Object.entries(this.values.tags)) {
+        if (count <= 0) {
+          try {
+            id = ["Photo", "tags", value].join("||");
+            console.log(id);
+            counterRef = doc(db, "Counter", id);
+            await deleteDoc(counterRef);
+          } catch (e) {
+          } finally {
+            delete this.values.tags[value];
+          }
+        }
+      }
+      // delete from database
+      const q = query(countersCol, where("field", "==", "tags"));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (doc) => {
+        const d = doc.data();
+        if (d.count <= 0) {
+          try {
+            id = ["Photo", "tags", d.value].join("||");
+            console.log(id);
+            counterRef = doc(db, "Counter", id);
+            await deleteDoc(counterRef);
+          } catch (e) {
+          } finally {
+            delete this.values.tags[d.value];
+          }
+        }
+      });
+    },
     addNewField(val, field) {
       this.values[field][val] = 1;
     },

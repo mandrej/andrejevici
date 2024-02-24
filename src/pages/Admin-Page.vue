@@ -17,8 +17,8 @@
         </q-item-section>
       </q-item>
     </q-list>
-    <q-list separator>
-      <q-item v-if="auth.user.allow_push && auth.token">
+    <q-list class="bg-light-green-1">
+      <q-item>
         <q-item-section>
           <q-item-label>
             <q-input
@@ -34,13 +34,21 @@
           </q-item-label>
         </q-item-section>
         <q-item-section side>
-          <q-btn color="positive" label="Add" @click="addTag" />
+          <q-btn label="Add" @click="addTag" />
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section>
+          <q-item-label>Remove unused tags</q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn label="Remove" @click="removeTags" />
         </q-item-section>
       </q-item>
     </q-list>
 
     <q-item-label header>Various helper counters</q-item-label>
-    <q-list separator>
+    <q-list class="bg-deep-orange-1" separator>
       <q-item>
         <q-item-section>
           <q-item-label
@@ -114,6 +122,9 @@ const addTag = () => {
     newTag.value = "";
   }
   newTagRef.value.resetValidation();
+};
+const removeTags = () => {
+  meta.removeUnusedTags();
 };
 
 const send = () => {
