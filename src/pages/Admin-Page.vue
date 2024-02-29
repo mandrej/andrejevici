@@ -17,6 +17,7 @@
         </q-item-section>
       </q-item>
     </q-list>
+
     <q-list class="bg-light-green-1">
       <q-item>
         <q-item-section>
@@ -37,6 +38,30 @@
           <q-btn label="Add" @click="addTag" />
         </q-item-section>
       </q-item>
+      <q-item class="q-pt-none">
+        <q-item-section top
+          ><Auto-Complete
+            v-model="existingTag"
+            :options="meta.tagsValues"
+            label="Rename tag"
+            behavior="menu"
+        /></q-item-section>
+        <q-item-section top>
+          <q-item-label>
+            <q-input
+              v-model="renamedTag"
+              label="to tag"
+              :rules="[
+                (val) =>
+                  meta.tagsValues.indexOf(val) === -1 || 'Tag already in use',
+              ]"
+            />
+          </q-item-label>
+        </q-item-section>
+        <q-item-section side>
+          <q-btn label="Rename" @click="renameTag" />
+        </q-item-section>
+      </q-item>
       <q-item>
         <q-item-section>
           <q-item-label>Remove unused tags</q-item-label>
@@ -47,7 +72,7 @@
       </q-item>
     </q-list>
 
-    <q-item-label header>Various helper counters</q-item-label>
+    <!-- <q-item-label header>Various helper counters</q-item-label> -->
     <q-list class="bg-deep-orange-1" separator>
       <q-item>
         <q-item-section>
@@ -98,7 +123,9 @@ import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
+import AutoComplete from "../components/Auto-Complete.vue";
 import { fix, mismatch } from "../helpers/remedy";
+import notify from "../helpers/notify";
 import { CONFIG, formatDatum, emailNick } from "../helpers";
 
 const app = useAppStore();
@@ -108,7 +135,9 @@ const auth = useUserStore();
 const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
 const values = computed(() => meta.values);
 const newTagRef = ref(null),
-  newTag = ref("");
+  newTag = ref(""),
+  existingTag = ref(""),
+  renamedTag = ref("");
 
 const rebuild = () => {
   meta.countersBuild();
@@ -125,6 +154,26 @@ const addTag = () => {
 };
 const removeTags = () => {
   meta.removeUnusedTags();
+  notify({
+    message: `Successfully removed unused tags`,
+  });
+};
+const renameTag = () => {
+  if (existingTag.value !== "" && renamedTag.value !== "") {
+    if (existingTag.value === "flash") {
+      notify({
+        type: "warning",
+        message: `Cannot change "${existingTag.value}"`,
+      });
+    } else {
+      meta.renameTag(existingTag.value, renamedTag.value);
+      notify({
+        message: `Tag ${existingTag.value} successfully renamed to ${renamedTag.value}`,
+      });
+    }
+  }
+  existingTag.value = "";
+  renamedTag.value = "";
 };
 
 const send = () => {
