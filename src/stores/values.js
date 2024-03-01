@@ -103,22 +103,22 @@ export const useValuesStore = defineStore("meta", {
       const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       const val = { year: {}, tags: {}, model: {}, lens: {}, email: {} };
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
+      querySnapshot.forEach((d) => {
+        const obj = d.data();
         for (const field of CONFIG.photo_filter) {
           if (field === "tags") {
-            for (const tag of d[field]) {
+            for (const tag of obj[field]) {
               if (val[field][tag]) {
                 val[field][tag]++;
               } else {
                 val[field][tag] = 1;
               }
             }
-          } else if (d[field]) {
-            if (val[field][d[field]]) {
-              val[field][d[field]]++;
+          } else if (obj[field]) {
+            if (val[field][obj[field]]) {
+              val[field][obj[field]]++;
             } else {
-              val[field][d[field]] = 1;
+              val[field][obj[field]] = 1;
             }
           }
         }
@@ -254,17 +254,17 @@ export const useValuesStore = defineStore("meta", {
       // delete from database
       const q = query(countersCol, where("field", "==", "tags"));
       const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(async (doc) => {
-        const d = doc.data();
-        if (d.count <= 0) {
+      querySnapshot.forEach(async (d) => {
+        const obj = d.data();
+        if (obj.count <= 0) {
           try {
-            id = counterId("tags", d.value);
+            id = counterId("tags", obj.value);
             console.log(id);
             counterRef = doc(db, "Counter", id);
             await deleteDoc(counterRef);
           } catch (e) {
           } finally {
-            delete this.values.tags[d.value];
+            delete this.values.tags[obj.value];
           }
         }
       });

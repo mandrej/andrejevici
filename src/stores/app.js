@@ -109,9 +109,9 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
-        querySnapshot.forEach((it) => {
+        querySnapshot.forEach((d) => {
           res.count++;
-          res.size += it.data().size;
+          res.size += d.data().size;
         });
       }
       this.bucket = { ...res };
@@ -151,9 +151,9 @@ export const useAppStore = defineStore("app", {
 
         // SNAPSHOT
         this.unsubscribe = onSnapshot(q, (querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            if (this.objects.map((e) => e.filename).indexOf(doc.id) === -1) {
-              this.objects.push(doc.data());
+          querySnapshot.forEach((d) => {
+            if (this.objects.map((e) => e.filename).indexOf(d.id) === -1) {
+              this.objects.push(d.data());
             }
           });
           const next = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -273,9 +273,9 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, orderBy("date", "asc"), limit(1));
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) return null;
-      querySnapshot.forEach((it) => {
-        const rec = it.data();
-        this.since = rec.year;
+      querySnapshot.forEach((d) => {
+        const obj = d.data();
+        this.since = obj.year;
       });
     },
   },
