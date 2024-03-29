@@ -1579,10 +1579,10 @@
     vite "^2.9.13"
     webpack-merge "^5.8.0"
 
-"@quasar/extras@^1.16.9":
-  version "1.16.9"
-  resolved "https://registry.yarnpkg.com/@quasar/extras/-/extras-1.16.9.tgz#6cdf9d34862e6f58009443a2d1e34b84a5e73ad0"
-  integrity sha512-SlOhwzXyPQHWgQIS2ncyDdYdksCJvUYNtgsDQqzAKEG3r3d/ejOxvThle79HTK3Q6HB+gQWFG21Ux00Osr5XSw==
+"@quasar/extras@^1.16.11":
+  version "1.16.11"
+  resolved "https://registry.yarnpkg.com/@quasar/extras/-/extras-1.16.11.tgz#84b1efb9097a6e58c3ebfdd5da83ac658056a35c"
+  integrity sha512-sbTBHOA+Hi7ah0P6qSm+xfRXqwJ94ct3NKA3Lkq3iNPYuHD7VXbSWtP2eA7Cu9Fd0WjVoPbngf6yFGg46U3IfQ==
 
 "@quasar/render-ssr-error@^1.0.3":
   version "1.0.3"
@@ -4391,10 +4391,10 @@ qs@6.11.0:
   dependencies:
     side-channel "^1.0.4"
 
-quasar@^2.15.1:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.15.1.tgz#558bdaf7352e292b8adf89d4bd0e85a07a226a2a"
-  integrity sha512-YONHT5i+znZ/4msKZXdODv+DAUnLhe6/c3d+q9vuUkwLbSdGkroc2GeDCI52YVmmw8hrF+Fiik/ZSr1wynxHIA==
+quasar@^2.15.2:
+  version "2.15.2"
+  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.15.2.tgz#8c945c87d8723696614a56a17ffcc041d8a26ab6"
+  integrity sha512-euCm5Elo5SfGNRY18HvKAknkBwesoUAFhZ6BxmliiEVHGes53ZcUKnMwZU/XsRhwiC6VQzBBSk/U0iEcdp/NyA==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
