@@ -228,10 +228,12 @@ export const useAppStore = defineStore("app", {
       } else {
         const stoRef = storageRef(storage, obj.filename);
         const thumbRef = storageRef(storage, thumbName(obj.filename));
-        await deleteObject(stoRef);
-        await deleteObject(thumbRef);
-
-        removeByProperty(this.uploaded, "filename", obj.filename);
+        try {
+          await deleteObject(stoRef);
+          await deleteObject(thumbRef);
+        } finally {
+          removeByProperty(this.uploaded, "filename", obj.filename);
+        }
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
