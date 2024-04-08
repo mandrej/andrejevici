@@ -68,17 +68,18 @@ export const useValuesStore = defineStore("meta", {
       return ret;
     },
     nickWithCount: (state) => {
-      const ret = {};
       const emails = byCountReverse(state, "email");
-      Object.keys(emails).forEach((key) => {
-        ret[emailNick(key)] = emails[key];
-      });
-      return ret;
+      return Object.keys(emails)
+        .filter((key) => emails[key] > 4)
+        .reduce((obj, key) => {
+          obj[emailNick(key)] = emails[key];
+          return obj;
+        }, {});
     },
     tagsWithCount: (state) => {
       return Object.keys(state.values.tags)
         .sort()
-        .filter((key) => state.values.tags[key] > 0)
+        .filter((key) => state.values.tags[key] > 2)
         .reduce((obj, key) => {
           obj[key] = state.values.tags[key];
           return obj;
