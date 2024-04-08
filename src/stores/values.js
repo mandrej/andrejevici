@@ -61,10 +61,9 @@ export const useValuesStore = defineStore("meta", {
     // for Index-Page
     yearWithCount: (state) => {
       const ret = [];
-      for (const [value, count] of Object.entries(state.values.year)) {
-        ret.push({ value: value, count: count });
+      for (const year of Object.keys(state.values.year).reverse()) {
+        ret.push({ value: year, count: state.values.year[year] });
       }
-      ret.sort((a, b) => b.value - a.value);
       return ret;
     },
     nickWithCount: (state) => {

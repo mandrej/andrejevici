@@ -11,15 +11,13 @@
   </div>
   <div class="q-pa-sm text-h5">
     <span v-for="(obj, index) in meta.yearWithCount" :key="index">
-      <template v-if="index <= $q.screen.xs ? 9 : 99">
-        <router-link
-          :key="obj.value"
-          :title="`${obj.value}: ${obj.count}`"
-          :to="{ path: '/list', query: { year: obj.value } }"
-          class="q-px-sm text-black link"
-          >{{ obj.value }}</router-link
-        >
-      </template>
+      <router-link
+        :key="obj.value"
+        :title="`${obj.value}: ${obj.count}`"
+        :to="{ path: '/list', query: { year: obj.value } }"
+        class="q-px-sm text-black link"
+        >{{ obj.value }}</router-link
+      >
     </span>
   </div>
   <div class="q-px-md text-subtitle1 gt-xs">
