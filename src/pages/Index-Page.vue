@@ -2,10 +2,11 @@
   <div class="q-pa-sm text-h4">
     <router-link
       v-for="(count, value) in meta.nickWithCount"
+      :class="linkAttribute(count, CONFIG.nicksMin)"
       :key="value"
       :title="`${value}: ${count}`"
       :to="{ path: '/list', query: { nick: value } }"
-      class="q-px-sm text-black link"
+      class="q-px-sm link"
       >{{ value }}</router-link
     >
   </div>
@@ -23,10 +24,11 @@
   <div class="q-px-md text-subtitle1 gt-xs">
     <router-link
       v-for="(count, value) in meta.tagsWithCount"
+      :class="linkAttribute(count, CONFIG.tagsMin)"
       :key="value"
       :title="`${value}: ${count}`"
       :to="{ path: '/list', query: { tags: value } }"
-      class="q-pr-sm text-black link"
+      class="q-pr-sm link"
       >{{ value }}</router-link
     >
   </div>
@@ -35,6 +37,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { useValuesStore } from "../stores/values";
+import CONFIG from "app/config";
 
 const meta = useValuesStore();
 
@@ -43,6 +46,13 @@ onMounted(() => {
   meta.fieldCount("year");
   meta.fieldCount("tags");
 });
+
+const linkAttribute = (count, limit = 5) => {
+  if (count < limit) {
+    return "text-grey";
+  }
+  return "text-black";
+};
 </script>
 
 <style scoped>

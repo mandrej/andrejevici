@@ -69,7 +69,7 @@ export const useValuesStore = defineStore("meta", {
     nickWithCount: (state) => {
       const emails = byCountReverse(state, "email");
       return Object.keys(emails)
-        .filter((key) => emails[key] >= CONFIG.nicksMin)
+        .filter((key) => emails[key] > 0)
         .reduce((obj, key) => {
           obj[emailNick(key)] = emails[key];
           return obj;
@@ -78,7 +78,7 @@ export const useValuesStore = defineStore("meta", {
     tagsWithCount: (state) => {
       return Object.keys(state.values.tags)
         .sort()
-        .filter((key) => state.values.tags[key] >= CONFIG.tagsMin)
+        .filter((key) => state.values.tags[key] > 0)
         .reduce((obj, key) => {
           obj[key] = state.values.tags[key];
           return obj;
