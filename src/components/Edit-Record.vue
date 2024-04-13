@@ -125,16 +125,25 @@
               </q-input>
             </div>
 
-            <div class="col-12">
-              <Auto-Complete
-                v-model="tmp.tags"
-                :options="meta.tagsValues"
-                canadd
-                multiple
-                label="Tags"
-                @new-value="addNewTag"
+            <Auto-Complete
+              class="col-11"
+              v-model="tmp.tags"
+              :options="meta.tagsValues"
+              canadd
+              multiple
+              label="Tags"
+              @new-value="addNewTag"
+            />
+            <div class="col-1 q-pt-lg text-right">
+              <q-btn
+                flat
+                round
+                icon="content_paste"
+                color="grey"
+                @click="mergeTags(tmp.tags)"
               />
             </div>
+
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
                 v-model="tmp.model"
@@ -194,7 +203,7 @@
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { reactive, computed } from "vue";
 import { CONFIG, fileBroken, formatBytes, U, emailNick } from "../helpers";
 import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
@@ -211,6 +220,8 @@ const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
+
+const tagsToApply = computed(() => meta.tagsToApply);
 
 const getExif = async () => {
   /**
@@ -251,6 +262,9 @@ const addNewModel = (inputValue, done) => {
 const addNewLens = (inputValue, done) => {
   meta.addNewField(inputValue, "lens");
   done(inputValue);
+};
+const mergeTags = async (source) => {
+  tmp.tags = Array.from(new Set([...tagsToApply.value, ...source]));
 };
 
 window.onpopstate = function () {
