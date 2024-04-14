@@ -124,24 +124,43 @@
                 </template>
               </q-input>
             </div>
-
-            <Auto-Complete
-              class="col-11"
-              v-model="tmp.tags"
-              :options="meta.tagsValues"
-              canadd
-              multiple
-              label="Tags"
-              @new-value="addNewTag"
-            />
-            <div class="col-1 q-pt-lg text-right">
-              <q-btn
-                flat
-                round
-                icon="content_paste"
-                color="grey"
-                @click="mergeTags(tmp.tags)"
-              />
+            <div class="col-xs-12">
+              <Auto-Complete
+                class="col-10"
+                v-model="tmp.tags"
+                :options="meta.tagsValues"
+                canadd
+                multiple
+                label="Tags"
+                :clearable="false"
+                hint="copy / merge with existing tags"
+                @new-value="addNewTag"
+              >
+                <template #append>
+                  <q-icon
+                    class="q-pl-sm q-pb-sm"
+                    name="content_copy"
+                    size="24px"
+                    color="grey"
+                    @click.stop.prevent="copyTags(tmp.tags)"
+                  />
+                  <q-icon
+                    class="q-pl-sm q-pb-sm"
+                    name="content_paste"
+                    size="24px"
+                    color="grey"
+                    @click.stop.prevent="mergeTags(tmp.tags)"
+                  />
+                  <q-icon
+                    v-if="tmp.tags.length > 0"
+                    class="q-pl-sm q-pb-sm"
+                    name="clear"
+                    size="24px"
+                    color="grey"
+                    @click.stop.prevent="tmp.tags = []"
+                  />
+                </template>
+              </Auto-Complete>
             </div>
 
             <div class="col-xs-12 col-sm-6">
@@ -221,7 +240,14 @@ const meta = useValuesStore();
 const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
 
-const tagsToApply = computed(() => meta.tagsToApply);
+const tagsToApply = computed({
+  get() {
+    return meta.tagsToApply;
+  },
+  set(newValue) {
+    meta.tagsToApply = newValue;
+  },
+});
 
 const getExif = async () => {
   /**
@@ -263,8 +289,11 @@ const addNewLens = (inputValue, done) => {
   meta.addNewField(inputValue, "lens");
   done(inputValue);
 };
-const mergeTags = async (source) => {
-  tmp.tags = Array.from(new Set([...tagsToApply.value, ...source]));
+const copyTags = (source) => {
+  tagsToApply.value = source;
+};
+const mergeTags = (source) => {
+  tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort();
 };
 
 window.onpopstate = function () {
