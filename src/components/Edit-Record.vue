@@ -138,6 +138,7 @@
               >
                 <template #append>
                   <q-icon
+                    v-if="tagsToApply"
                     class="q-pl-sm q-pb-sm cursor-pointer"
                     name="content_paste"
                     size="24px"
