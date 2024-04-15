@@ -7,7 +7,7 @@
     persistent
   >
     <q-card class="q-dialog-plugin full-width" style="max-width: 800px">
-      <q-toolbar class="bg-grey-2 text-black row justify-between" bordered>
+      <q-toolbar class="bg-white text-black row justify-between">
         <div>
           <q-btn
             color="primary"
@@ -133,19 +133,12 @@
                 multiple
                 label="Tags"
                 :clearable="false"
-                hint="copy / merge with existing tags"
+                :hint="tagsToApply ? 'merge with ' + tagsToApply : ''"
                 @new-value="addNewTag"
               >
                 <template #append>
                   <q-icon
-                    class="q-pl-sm q-pb-sm"
-                    name="content_copy"
-                    size="24px"
-                    color="grey"
-                    @click.stop.prevent="copyTags(tmp.tags)"
-                  />
-                  <q-icon
-                    class="q-pl-sm q-pb-sm"
+                    class="q-pl-sm q-pb-sm cursor-pointer"
                     name="content_paste"
                     size="24px"
                     color="grey"
@@ -153,7 +146,7 @@
                   />
                   <q-icon
                     v-if="tmp.tags.length > 0"
-                    class="q-pl-sm q-pb-sm"
+                    class="q-pl-sm q-pb-sm cursor-pointer"
                     name="clear"
                     size="24px"
                     color="grey"
@@ -240,14 +233,7 @@ const meta = useValuesStore();
 const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
 
-const tagsToApply = computed({
-  get() {
-    return meta.tagsToApply;
-  },
-  set(newValue) {
-    meta.tagsToApply = newValue;
-  },
-});
+const tagsToApply = computed(() => meta.tagsToApply);
 
 const getExif = async () => {
   /**
@@ -288,9 +274,6 @@ const addNewModel = (inputValue, done) => {
 const addNewLens = (inputValue, done) => {
   meta.addNewField(inputValue, "lens");
   done(inputValue);
-};
-const copyTags = (source) => {
-  tagsToApply.value = source;
 };
 const mergeTags = (source) => {
   tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort();

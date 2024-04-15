@@ -53,7 +53,7 @@
       :options="meta.tagsValues"
       canadd
       multiple
-      label="Tags to apply for next publish"
+      label="Tags to apply for next publish / or to merge with existing"
       hint="You can add / remove tag later"
       @new-value="addNewTag"
     />
