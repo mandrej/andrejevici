@@ -18,15 +18,15 @@
     "firebase": "^9.22.2",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.0",
-    "quasar": "^2.15.2",
+    "quasar": "^2.15.4",
     "swiper": "^11.0.7",
     "transliteration": "^2.3.5",
     "uuid4": "^2.0.3",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0"
+    "vue": "^3",
+    "vue-router": "^4"
   },
   "devDependencies": {
-    "@quasar/app-vite": "^1.8.0",
+    "@quasar/app-vite": "^1.8.5",
     "autoprefixer": "^10.4.2",
     "dotenv": "^16.3.1",
     "eslint": "^8.10.0",
@@ -43,7 +43,7 @@
     "workbox-strategies": "^6.5.0"
   },
   "engines": {
-    "node": "^18 || ^16 || ^14.19",
+    "node": "^20 || ^18 || ^16",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }
