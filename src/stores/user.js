@@ -160,16 +160,16 @@ export const useUserStore = defineStore("auth", {
         });
         if (token) {
           this.token = token;
-          this.updateDevice();
+          await this.updateDevice();
 
           this.user.ask_push = false;
           this.user.allow_push = true;
-          this.updateUser();
+          await this.updateUser();
         }
       } catch (err) {
         this.user.ask_push = false;
         this.user.allow_push = false;
-        this.updateUser();
+        await this.updateUser();
         notify({
           type: "negative",
           multiLine: true,

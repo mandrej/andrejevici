@@ -31,27 +31,27 @@ const props = defineProps({
   model: Boolean,
 });
 
-const disableNotification = () => {
+const disableNotification = async () => {
   auth.user.ask_push = false;
   auth.user.allow_push = false;
   auth.token = null;
   auth.removeDevice();
-  auth.updateUser();
+  await auth.updateUser();
 };
-const askLater = () => {
+const askLater = async () => {
   open.value = false;
   auth.user.ask_push = true;
   auth.allow_push = false;
-  auth.updateUser();
+  await auth.updateUser();
 };
 const enableNotifications = () => {
-  Notification.requestPermission().then((permission) => {
+  Notification.requestPermission().then(async (permission) => {
     if (permission === "granted") {
       auth.fetchFCMToken();
     } else {
       auth.user.ask_push = true;
       auth.allow_push = false;
-      auth.updateUser();
+      await auth.updateUser();
     }
   });
 };
