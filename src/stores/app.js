@@ -35,11 +35,15 @@ import { useUserStore } from "./user";
 
 const bucketRef = doc(db, "Bucket", "total");
 const photosCol = collection(db, "Photo");
-const getRec = (snapshot) => {
-  /** Only for queryset where limit=1 */
-  const [doc] = snapshot.docs;
-  return doc.data();
-};
+
+/**
+ * Retrieves the data from the first document in the given snapshot.
+ *
+ * @param {Object} snapshot - The snapshot containing the documents.
+ * @return {Object|null} The data from the first document, or null if the snapshot is empty.
+ */
+const getRec = (snapshot) =>
+  snapshot.docs.length ? snapshot.docs[0]?.data() : null;
 
 export const useAppStore = defineStore("app", {
   state: () => ({

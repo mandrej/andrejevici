@@ -46,12 +46,12 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join(".");
   return "© 2007 - " + ver;
 });
-const removeByProperty = (arr, propery, value) => {
-  const idx = arr.findIndex((it) => it[propery] === value);
+const removeByProperty = (arr, property, value) => {
+  const idx = arr.findIndex((it) => it[property] === value);
   if (idx > -1) arr.splice(idx, 1);
 };
-const changedByProperty = (arr, propery, obj, op = 1) => {
-  const idx = arr.findIndex((it) => it[propery] === obj[propery]);
+const changedByProperty = (arr, property, obj, op = 1) => {
+  const idx = arr.findIndex((it) => it[property] === obj[property]);
   if (idx > -1) {
     arr.splice(idx, op, obj);
     if (op === 0) {
