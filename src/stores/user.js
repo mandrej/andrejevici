@@ -110,7 +110,6 @@ export const useUserStore = defineStore("auth", {
           }
 
           this.user.askPush = this.token ? false : true;
-          console.log(this.user);
           await setDoc(docRef, this.user, { merge: true });
         } else {
           this.signIn();
