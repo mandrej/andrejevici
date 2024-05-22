@@ -13,6 +13,7 @@ import {
   query,
   where,
   writeBatch,
+  deleteField,
 } from "firebase/firestore";
 import {
   getAuth,
@@ -43,34 +44,38 @@ export const useUserStore = defineStore("auth", {
   }),
   getters: {
     showConsent: (state) => {
-      return "Notification" in window && state.user && state.user.ask_push;
+      return (
+        "Notification" in window &&
+        state.user &&
+        state.user.allowPush &&
+        state.user.askPush
+      );
     },
   },
   actions: {
+    /**
+     * Retrieves the current user from the authentication service.
+     *
+     * @return {Promise<Object>} A promise that resolves with the current user object, or rejects if no user is signed in.
+     */
     getCurrentUser() {
       return new Promise((resolve, reject) => {
-        const unsubscribe = getAuth().onAuthStateChanged((user) => {
-          unsubscribe();
-          resolve(user);
-        }, reject);
+        const currentUser = getAuth().currentUser;
+        if (currentUser) {
+          resolve(currentUser);
+        } else {
+          reject;
+        }
       });
     },
     checkSession() {
-      // LoggedIn
-      if (this.user && this.user.uid) {
-        this.getCurrentUser().then((currentUser) => {
-          if (currentUser === null) {
-            this.signIn(); // LogOut
-          } else {
-            if (
-              "Notification" in window &&
-              Notification.permission === "granted"
-            ) {
-              this.fetchFCMToken();
-            }
-          }
-        });
-      }
+      this.getCurrentUser().then(async (currentUser) => {
+        if (currentUser === null) {
+          this.signIn(); // LogOut
+        }
+        await this.fetchFCMToken();
+      });
+
       onAuthStateChanged(getAuth(), async (user) => {
         if (user) {
           this.user = {
@@ -84,14 +89,28 @@ export const useUserStore = defineStore("auth", {
 
           const docRef = doc(db, "User", user.uid);
           const docSnap = await getDoc(docRef);
+
           if (docSnap.exists()) {
             const data = docSnap.data();
-            this.user.ask_push = data.allow_push ? false : true;
-            this.user.allow_push = this.token ? true : false;
+            // 2024-05-22
+            if (data.ask_push || data.allow_push) {
+              await updateDoc(docRef, {
+                allow_push: deleteField(),
+                ask_push: deleteField(),
+              });
+            }
+
+            if (!data.allowPush) {
+              this.user.allowPush = true;
+            } else {
+              this.user.allowPush = data.allowPush; // preserve old
+            }
           } else {
-            this.user.ask_push = true;
-            this.user.allow_push = false;
+            this.user.allowPush = true;
           }
+
+          this.user.askPush = this.token ? false : true;
+          console.log(this.user);
           await setDoc(docRef, this.user, { merge: true });
         } else {
           this.signIn();
@@ -109,7 +128,10 @@ export const useUserStore = defineStore("auth", {
         });
       } else {
         signInWithPopup(getAuth(), provider)
-          .then(() => {})
+          .then((result) => {
+            if (process.env.DEV)
+              console.log(`Auth user: ${result.user.displayName}`);
+          })
           .catch((err) => {
             console.error(err.message);
           });
@@ -162,18 +184,18 @@ export const useUserStore = defineStore("auth", {
           this.token = token;
           await this.updateDevice();
 
-          this.user.ask_push = false;
-          this.user.allow_push = true;
+          this.user.allowPush = true;
+          this.user.askPush = false;
           await this.updateUser();
         }
       } catch (err) {
-        this.user.ask_push = false;
-        this.user.allow_push = false;
+        this.user.allowPush = true;
+        this.user.askPush = true;
         await this.updateUser();
         notify({
           type: "negative",
           multiLine: true,
-          message: `Unable to retrieve token, Notification disabled, ${err}`,
+          message: `Unable to retrieve token, ${err}`,
         });
       }
     },

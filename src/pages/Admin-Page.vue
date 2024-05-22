@@ -7,7 +7,7 @@
         </q-item-section>
         <q-item-section side>
           <q-btn
-            :disabled="!(auth.user.allow_push && auth.token)"
+            :disabled="!auth.token"
             color="positive"
             label="Send"
             @click="send"
