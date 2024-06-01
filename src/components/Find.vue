@@ -167,6 +167,16 @@ const queryDispatch = (query, invoked = "") => {
     app.find = tmp.value;
     app.fetchRecords(true, invoked); // new filter with reset
   }
+  // this dispatch route change
+  if (Object.keys(tmp.value).length) {
+    if (route.hash) {
+      router.push({ path: "/list", query: tmp.value, hash: route.hash });
+    } else {
+      router.push({ path: "/list", query: tmp.value });
+    }
+  } else {
+    router.push({ path: "/" });
+  }
 };
 
 onMounted(() => {
