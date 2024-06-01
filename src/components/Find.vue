@@ -12,8 +12,7 @@
     <Auto-Complete
       v-model="tmp.tags"
       :options="meta.tagsValues"
-      multiple
-      label="by tags"
+      label="by tag"
       :disable="app.busy"
       behavior="menu"
       :dense="$q.screen.xs"
