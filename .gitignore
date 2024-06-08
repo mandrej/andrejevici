@@ -31,7 +31,6 @@ yarn-error.log*
 dist
 data
 .quasar
-.firebase
 *.log
 
 # docker
