@@ -5,7 +5,7 @@
         <q-icon name="person" />
       </q-item-section>
 
-      <q-item-section v-if="auth.user.name">
+      <q-item-section v-if="auth.user && auth.user.name">
         <q-item-label>Sign out</q-item-label>
         <q-item-label caption>{{ auth.user.name }}</q-item-label>
       </q-item-section>
@@ -15,7 +15,7 @@
       </q-item-section>
     </q-item>
 
-    <q-item v-show="auth.user.isAuthorized" to="/add">
+    <q-item v-show="auth.user && auth.user.isAuthorized" to="/add">
       <q-item-section avatar>
         <q-icon name="add_circle" />
       </q-item-section>
@@ -26,7 +26,7 @@
       </q-item-section>
     </q-item>
 
-    <q-item v-show="auth.user.isAdmin" to="/admin">
+    <q-item v-show="auth.user && auth.user.isAdmin" to="/admin">
       <q-item-section avatar>
         <q-icon name="settings" />
       </q-item-section>

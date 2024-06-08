@@ -15,12 +15,7 @@ import {
   writeBatch,
   deleteField,
 } from "firebase/firestore";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-} from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
@@ -53,68 +48,40 @@ export const useUserStore = defineStore("auth", {
     },
   },
   actions: {
-    /**
-     * Retrieves the current user from the authentication service.
-     *
-     * @return {Promise<Object>} A promise that resolves with the current user object, or rejects if no user is signed in.
-     */
-    getCurrentUser() {
-      return new Promise((resolve, reject) => {
-        const currentUser = getAuth().currentUser;
-        if (currentUser) {
-          resolve(currentUser);
+    async storeUser(user) {
+      this.user = {
+        name: user.displayName,
+        email: user.email,
+        uid: user.uid,
+        isAuthorized: Boolean(familyMember(user.email)), // only family members
+        isAdmin: Boolean(adminMember(user.email)),
+        signedIn: new Date(1 * user.metadata.lastLoginAt), // millis
+      };
+
+      const docRef = doc(db, "User", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // 2024-05-22
+        if (data.ask_push || data.allow_push) {
+          await updateDoc(docRef, {
+            allow_push: deleteField(),
+            ask_push: deleteField(),
+          });
+        }
+
+        if (!data.allowPush) {
+          this.user.allowPush = true;
         } else {
-          reject;
+          this.user.allowPush = data.allowPush; // preserve old
         }
-      });
-    },
-    checkSession() {
-      this.getCurrentUser().then(async (currentUser) => {
-        if (currentUser === null) {
-          this.signIn(); // LogOut
-        }
-        await this.fetchFCMToken();
-      });
+      } else {
+        this.user.allowPush = true;
+      }
 
-      onAuthStateChanged(getAuth(), async (user) => {
-        if (user) {
-          this.user = {
-            name: user.displayName,
-            email: user.email,
-            uid: user.uid,
-            isAuthorized: Boolean(familyMember(user.email)), // only family members
-            isAdmin: Boolean(adminMember(user.email)),
-            signedIn: new Date(1 * user.metadata.lastLoginAt), // millis
-          };
-
-          const docRef = doc(db, "User", user.uid);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            // 2024-05-22
-            if (data.ask_push || data.allow_push) {
-              await updateDoc(docRef, {
-                allow_push: deleteField(),
-                ask_push: deleteField(),
-              });
-            }
-
-            if (!data.allowPush) {
-              this.user.allowPush = true;
-            } else {
-              this.user.allowPush = data.allowPush; // preserve old
-            }
-          } else {
-            this.user.allowPush = true;
-          }
-
-          this.user.askPush = this.token ? false : true;
-          await setDoc(docRef, this.user, { merge: true });
-        } else {
-          this.signIn();
-        }
-      });
+      this.user.askPush = this.token ? false : true;
+      await setDoc(docRef, this.user, { merge: true });
     },
     signIn() {
       if (this.user && this.user.uid) {
@@ -175,11 +142,12 @@ export const useUserStore = defineStore("auth", {
       });
     },
     async fetchFCMToken() {
-      try {
-        const token = await getToken(messaging, {
-          vapidKey: CONFIG.firebase.vapidKey,
-        });
-        if (token) {
+      // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
+      const token = await getToken(messaging, {
+        vapidKey: CONFIG.firebase.vapidKey,
+      });
+      if (token) {
+        if (this.user) {
           this.token = token;
           await this.updateDevice();
 
@@ -187,10 +155,13 @@ export const useUserStore = defineStore("auth", {
           this.user.askPush = false;
           await this.updateUser();
         }
-      } catch (err) {
-        this.user.allowPush = true;
-        this.user.askPush = true;
-        await this.updateUser();
+      } else {
+        // Failed to execute 'subscribe' on 'PushManager': Subscription failed - no active Service Worker
+        if (this.user) {
+          this.user.allowPush = true;
+          this.user.askPush = true;
+          await this.updateUser();
+        }
         notify({
           type: "negative",
           multiLine: true,

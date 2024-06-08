@@ -6,6 +6,7 @@ import { onMounted } from "vue";
 import { useAppStore } from "./stores/app";
 import { useUserStore } from "./stores/user";
 import { messageListener } from "./boot/fire";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import notify from "./helpers/notify";
 
 const app = useAppStore();
@@ -24,9 +25,17 @@ messageListener()
   })
   .catch((err) => console.log("failed: ", err));
 
+onAuthStateChanged(getAuth(), (user) => {
+  // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
+  if (user) {
+    auth.storeUser(user);
+  } else {
+    auth.user = null;
+  }
+});
+
 onMounted(() => {
   app.getSince();
   app.bucketRead();
-  auth.checkSession();
 });
 </script>

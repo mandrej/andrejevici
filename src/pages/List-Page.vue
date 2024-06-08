@@ -123,6 +123,7 @@ const scrollHandler = throttle((obj) => {
 }, 100);
 
 const isAuthorOrAdmin = (rec) => {
+  if (!auth.user) return false;
   return auth.user.isAdmin || auth.user.email === rec.email;
 };
 
