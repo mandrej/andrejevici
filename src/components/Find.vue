@@ -17,12 +17,7 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="
-        (newValue) => {
-          tmp.tags = newValue;
-          submit();
-        }
-      "
+      @update:model-value="submit"
     />
     <Auto-Complete
       v-model="tmp.year"
@@ -33,12 +28,7 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="
-        (newValue) => {
-          tmp.year = newValue;
-          submit();
-        }
-      "
+      @update:model-value="submit"
     />
     <div class="row">
       <Auto-Complete
@@ -51,12 +41,7 @@
         behavior="menu"
         :dense="$q.screen.xs"
         dark
-        @update:model-value="
-          (newValue) => {
-            tmp.month = newValue;
-            submit();
-          }
-        "
+        @update:model-value="submit"
       />
       <div class="col-1" />
       <Auto-Complete
@@ -69,12 +54,7 @@
         behavior="menu"
         :dense="$q.screen.xs"
         dark
-        @update:model-value="
-          (newValue) => {
-            tmp.day = newValue;
-            submit();
-          }
-        "
+        @update:model-value="submit"
       />
     </div>
     <Auto-Complete
@@ -85,12 +65,7 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="
-        (newValue) => {
-          tmp.model = newValue;
-          submit();
-        }
-      "
+      @update:model-value="submit"
     />
     <Auto-Complete
       v-model="tmp.lens"
@@ -100,12 +75,7 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="
-        (newValue) => {
-          tmp.lens = newValue;
-          submit();
-        }
-      "
+      @update:model-value="submit"
     />
     <Auto-Complete
       v-model="tmp.nick"
@@ -115,12 +85,7 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="
-        (newValue) => {
-          tmp.nick = newValue;
-          submit();
-        }
-      "
+      @update:model-value="submit"
     />
   </form>
 </template>
