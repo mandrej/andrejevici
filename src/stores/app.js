@@ -149,27 +149,18 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, ...constraints);
 
       this.busy = true;
-      try {
-        if (this.unsubscribe) this.unsubscribe();
-        if (reset) this.objects.length = 0;
+      if (reset) this.objects.length = 0;
+      const querySnapshot = await getDocs(q);
 
-        // SNAPSHOT
-        this.unsubscribe = onSnapshot(q, (querySnapshot) => {
-          querySnapshot.forEach((d) => {
-            if (this.objects.map((e) => e.filename).indexOf(d.id) === -1) {
-              this.objects.push(d.data());
-            }
-          });
-          const next = querySnapshot.docs[querySnapshot.docs.length - 1];
-          if (next && next.id) {
-            next.id === this.next ? (this.next = null) : (this.next = next.id);
-          } else {
-            this.next = null;
-            this.error = this.objects.length === 0 ? "empty" : null;
-          }
-        });
-      } catch (err) {
-        this.error = err.message;
+      querySnapshot.forEach((d) => {
+        this.objects.push(d.data());
+      });
+      const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      if (next && next.id) {
+        next.id === this.next ? (this.next = null) : (this.next = next.id);
+      } else {
+        this.next = null;
+        this.error = this.objects.length === 0 ? "empty" : null;
       }
 
       this.busy = false;
