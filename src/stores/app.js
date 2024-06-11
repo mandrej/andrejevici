@@ -164,7 +164,9 @@ export const useAppStore = defineStore("app", {
 
       this.busy = false;
       if (process.env.DEV)
-        console.log("FETCHED FOR " + invoked + " " + JSON.stringify(this.find));
+        console.log(
+          "FETCHED FOR " + invoked + " " + JSON.stringify(this.find, null, 2)
+        );
     },
     async saveRecord(obj) {
       const docRef = doc(db, "Photo", obj.filename);

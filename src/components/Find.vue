@@ -116,11 +116,8 @@ const queryDispatch = (query, invoked = "") => {
   Object.keys(tmp.value).forEach((key) => {
     if (["year", "month", "day"].includes(key)) {
       tmp.value[key] = +query[key];
-    } else if (key === "tags" || key === "text") {
-      if (
-        typeof tmp.value[key] === "string" ||
-        tmp.value[key] instanceof String
-      ) {
+    } else if (key === "tags") {
+      if (typeof tmp.value[key] === "string") {
         tmp.value[key] = [query[key]];
       }
     }
@@ -142,14 +139,10 @@ onMounted(() => {
   meta.fieldCount("lens");
 });
 
-watch(
-  route,
-  (to) => {
-    if (to.name !== "list") return;
-    queryDispatch(to.query, "route");
-  },
-  { deep: true, immediate: true }
-);
+watch(route, (to) => {
+  if (to.name !== "list") return;
+  queryDispatch(to.query, "route");
+});
 
 const submit = () => {
   queryDispatch(tmp.value, "submit");
