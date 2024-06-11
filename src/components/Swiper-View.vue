@@ -24,7 +24,7 @@
         style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
       >
         <q-btn
-          v-if="auth.user.isAdmin"
+          v-if="auth.user && auth.user.isAdmin"
           flat
           round
           class="text-white q-pa-sm"
