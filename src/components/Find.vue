@@ -139,10 +139,14 @@ onMounted(() => {
   meta.fieldCount("lens");
 });
 
-watch(route, (to) => {
-  if (to.name !== "list") return;
-  queryDispatch(to.query, "route");
-});
+watch(
+  route,
+  (to) => {
+    if (to.name !== "list") return;
+    queryDispatch(to.query, "route");
+  },
+  { deep: true, immediate: true }
+);
 
 const submit = () => {
   queryDispatch(tmp.value, "submit");
