@@ -106,7 +106,6 @@ const router = useRouter();
 const tmp = ref({ ...app.find });
 
 const queryDispatch = (query, invoked = "") => {
-  app.refresh = false;
   tmp.value = { ...query };
   // delete keys without values
   Object.keys(query).forEach((key) => {

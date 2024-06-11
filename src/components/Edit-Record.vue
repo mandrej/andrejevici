@@ -296,7 +296,6 @@ const onSubmit = () => {
   tmp.headline =
     tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
   if (!tmp.thumb) {
-    app.refresh = true;
     app.find = Object.assign(
       {},
       { year: tmp.year, month: tmp.month, day: tmp.day }
