@@ -2,7 +2,7 @@
   <q-list class="q-py-md" v-if="app.bucket.count > 0">
     <q-item>
       <q-item-section>
-        <q-item-label class="text-white" overline>SITE STATISTICS</q-item-label>
+        <q-item-label>SITE STATISTICS</q-item-label>
       </q-item-section>
     </q-item>
     <q-item

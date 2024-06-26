@@ -28,9 +28,6 @@
               class="absolute-top-left q-ma-md bg-warning text-dark"
               @click="auth.signIn"
             />
-            <div class="absolute-top-right text-white q-ma-md">
-              {{ version }}
-            </div>
           </router-link>
         </q-responsive>
 
@@ -115,7 +112,7 @@
 import { onMounted, computed } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { fileBroken, version } from "../helpers";
+import { fileBroken } from "../helpers";
 import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();
