@@ -16,10 +16,10 @@ export function useCarouselShow(filename) {
 export function useCarouselCancel(hash) {
   app.showCarousel = false;
   const [, id] = hash.match(reFilename);
-  nextTick(() => {
+  setTimeout(() => {
     const el = document.getElementById(id);
     if (!el) return;
     const target = getScrollTarget(el);
     setVerticalScrollPosition(target, el.offsetTop, 400);
-  });
+  }, 100);
 }
