@@ -124,38 +124,45 @@
                 </template>
               </q-input>
             </div>
-            <div class="col-xs-12">
-              <Auto-Complete
-                class="col-10"
-                v-model="tmp.tags"
-                :options="meta.tagsValues"
-                canadd
-                multiple
-                label="Tags"
-                :clearable="false"
-                :hint="tagsToApply ? 'merge with ' + tagsToApply : ''"
-                @new-value="addNewTag"
-              >
-                <template #append>
-                  <q-icon
-                    v-if="tagsToApply"
-                    class="q-pl-sm q-pb-sm cursor-pointer"
-                    name="content_paste"
-                    size="24px"
-                    color="grey"
-                    @click.stop.prevent="mergeTags(tmp.tags)"
-                  />
-                  <q-icon
-                    v-if="tmp.tags.length > 0"
-                    class="q-pl-sm q-pb-sm cursor-pointer"
-                    name="clear"
-                    size="24px"
-                    color="grey"
-                    @click.stop.prevent="tmp.tags = []"
-                  />
-                </template>
-              </Auto-Complete>
+            <div class="fit row nowrap">
+              <div class="col-xs-11">
+                <Auto-Complete
+                  class="col-auto"
+                  v-model="tmp.tags"
+                  :options="meta.tagsValues"
+                  label="Tags"
+                  canadd
+                  multiple
+                  clearable
+                  :hint="
+                    meta.tagsToApply && meta.tagsToApply.length
+                      ? 'merge with ' + meta.tagsToApply
+                      : ''
+                  "
+                  @new-value="addNewTag"
+                >
+                </Auto-Complete>
+              </div>
+              <div class="col self-center text-right">
+                <q-icon
+                  class="q-pl-sm q-pb-md cursor-pointer"
+                  name="content_copy"
+                  size="24px"
+                  color="grey"
+                  @click.stop.prevent="copyTags(tmp.tags)"
+                />
+                <q-icon
+                  class="q-pl-sm q-pb-md cursor-pointer"
+                  name="content_paste"
+                  size="24px"
+                  color="grey"
+                  @click.stop.prevent="mergeTags(tmp.tags)"
+                />
+              </div>
             </div>
+            <div class="col-xs-10"></div>
+
+            <div class="col-xs-2 vertical-bottom text-right"></div>
 
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
@@ -234,8 +241,6 @@ const meta = useValuesStore();
 const auth = useUserStore();
 const tmp = reactive({ ...props.rec });
 
-const tagsToApply = computed(() => meta.tagsToApply);
-
 const getExif = async () => {
   /**
    * Reread exif
@@ -276,8 +281,11 @@ const addNewLens = (inputValue, done) => {
   meta.addNewField(inputValue, "lens");
   done(inputValue);
 };
+const copyTags = (source) => {
+  meta.tagsToApply = source;
+};
 const mergeTags = (source) => {
-  tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort();
+  tmp.tags = Array.from(new Set([...meta.tagsToApply, ...source])).sort();
 };
 
 window.onpopstate = function () {

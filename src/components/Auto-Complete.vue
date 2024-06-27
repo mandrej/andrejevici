@@ -15,9 +15,7 @@
     :input-debounce="debounce"
     :label="label"
     @filter="filter"
-  >
-    <slot name="append" />
-  </q-select>
+  />
 </template>
 
 <script setup>
