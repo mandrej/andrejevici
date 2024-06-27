@@ -285,7 +285,11 @@ const copyTags = (source) => {
   meta.tagsToApply = source;
 };
 const mergeTags = (source) => {
-  tmp.tags = Array.from(new Set([...meta.tagsToApply, ...source])).sort();
+  if (source && source.length > 0) {
+    tmp.tags = Array.from(new Set([...meta.tagsToApply, ...source])).sort();
+  } else {
+    tmp.tags = meta.tagsToApply;
+  }
 };
 
 window.onpopstate = function () {
