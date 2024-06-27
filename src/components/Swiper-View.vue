@@ -66,7 +66,7 @@ import { useQuasar } from "quasar";
 import { ref, watch } from "vue";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { formatBytes, removeHash, CONFIG, U } from "../helpers";
+import { formatBytes, CONFIG, U } from "../helpers";
 import notify from "../helpers/notify";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Keyboard, Zoom } from "swiper/modules";
@@ -153,11 +153,9 @@ const caption = (rec) => {
 };
 
 window.onpopstate = function () {
-  removeHash();
   emit("carouselCancel", hash.value);
 };
 const onCancel = () => {
-  removeHash();
   emit("carouselCancel", hash.value);
 };
 </script>

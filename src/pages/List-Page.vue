@@ -5,77 +5,76 @@
     :rec="app.current"
     @confirm-ok="confirmOk"
   />
-  <KeepAlive>
-    <Swiper-View
-      v-if="app.showCarousel"
-      :filename="app.currentFileName"
-      :list="app.objects"
-      @carousel-cancel="useCarouselCancel"
-      @confirm-delete="confirmShow"
-      @delete-record="app.deleteRecord"
+
+  <Swiper-View
+    v-if="app.showCarousel"
+    :filename="app.currentFileName"
+    :list="app.objects"
+    @carousel-cancel="useCarouselCancel"
+    @confirm-delete="confirmShow"
+    @delete-record="app.deleteRecord"
+  />
+  <q-page v-else>
+    <q-banner
+      v-if="app.error && app.error === 'empty'"
+      class="fixed-center text-center bg-warning q-pa-md"
+      style="z-index: 100"
+      rounded
+    >
+      <q-icon name="error_outline" size="4em" />
+      <div class="text-h6">No data found</div>
+      <div>for current filter/ search</div>
+    </q-banner>
+    <q-banner
+      v-else-if="app.error && app.error !== 'empty'"
+      class="fixed-center text-center bg-warning q-pa-md"
+      style="z-index: 100"
+      rounded
+    >
+      <q-icon name="error_outline" size="4em" />
+      <div class="text-h6">Something went wrong ...</div>
+      <div>{{ app.error }}</div>
+    </q-banner>
+
+    <q-scroll-observer
+      @scroll="scrollHandler"
+      axis="vertical"
+      :debounce="500"
     />
-    <q-page v-else>
-      <q-banner
-        v-if="app.error && app.error === 'empty'"
-        class="fixed-center text-center bg-warning q-pa-md"
-        style="z-index: 100"
-        rounded
-      >
-        <q-icon name="error_outline" size="4em" />
-        <div class="text-h6">No data found</div>
-        <div>for current filter/ search</div>
-      </q-banner>
-      <q-banner
-        v-else-if="app.error && app.error !== 'empty'"
-        class="fixed-center text-center bg-warning q-pa-md"
-        style="z-index: 100"
-        rounded
-      >
-        <q-icon name="error_outline" size="4em" />
-        <div class="text-h6">Something went wrong ...</div>
-        <div>{{ app.error }}</div>
-      </q-banner>
 
-      <q-scroll-observer
-        @scroll="scrollHandler"
-        axis="vertical"
-        :debounce="500"
-      />
-
-      <div class="q-pa-md">
-        <div
-          v-for="(list, index) in app.groupObjects"
-          :key="index"
-          class="q-mb-md"
-        >
-          <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-            <div
-              v-for="item in list"
-              :key="item.filename"
-              class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
-            >
-              <Picture-Card
-                :rec="item"
-                :canManage="isAuthorOrAdmin(item)"
-                @carousel-show="useCarouselShow"
-                @edit-record="editRecord"
-                @confirm-delete="confirmShow"
-                @delete-record="app.deleteRecord"
-              />
-            </div>
-          </transition-group>
-        </div>
+    <div class="q-pa-md">
+      <div
+        v-for="(list, index) in app.groupObjects"
+        :key="index"
+        class="q-mb-md"
+      >
+        <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+          <div
+            v-for="item in list"
+            :key="item.filename"
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+          >
+            <Picture-Card
+              :rec="item"
+              :canManage="isAuthorOrAdmin(item)"
+              @carousel-show="useCarouselShow"
+              @edit-record="editRecord"
+              @confirm-delete="confirmShow"
+              @delete-record="app.deleteRecord"
+            />
+          </div>
+        </transition-group>
       </div>
+    </div>
 
-      <q-page-scroller
-        position="bottom-right"
-        :scroll-offset="150"
-        :offset="[18, 18]"
-      >
-        <q-btn fab icon="arrow_upward" color="warning" />
-      </q-page-scroller>
-    </q-page>
-  </KeepAlive>
+    <q-page-scroller
+      position="bottom-right"
+      :scroll-offset="150"
+      :offset="[18, 18]"
+    >
+      <q-btn fab icon="arrow_upward" color="warning" />
+    </q-page-scroller>
+  </q-page>
 </template>
 
 <script setup>
@@ -114,14 +113,10 @@ onMounted(() => {
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
   const scrollHeight = document.documentElement.scrollHeight;
-  if (
-    scrollHeight - obj.position.top < 2000 &&
-    obj.direction === "down" &&
-    app.next
-  ) {
+  if (scrollHeight - obj.position.top < 2000 && app.next) {
     app.fetchRecords(false, "scroll");
   }
-}, 100);
+}, 200);
 
 const isAuthorOrAdmin = (rec) => {
   if (!auth.user) return false;

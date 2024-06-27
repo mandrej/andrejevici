@@ -1,6 +1,5 @@
-import { nextTick } from "vue";
 import { scroll } from "quasar";
-import { reFilename, fakeHistory } from "./index";
+import { reFilename, fakeHistory, removeHash } from "./index";
 import { useAppStore } from "../stores/app";
 
 const app = useAppStore();
@@ -21,5 +20,6 @@ export function useCarouselCancel(hash) {
     if (!el) return;
     const target = getScrollTarget(el);
     setVerticalScrollPosition(target, el.offsetTop, 400);
+    removeHash();
   }, 100);
 }
