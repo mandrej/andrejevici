@@ -153,6 +153,7 @@ const caption = (rec) => {
 };
 
 window.onpopstate = function () {
+  removeHash();
   emit("carouselCancel", hash.value);
 };
 const onCancel = () => {
