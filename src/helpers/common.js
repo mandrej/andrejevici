@@ -5,7 +5,7 @@ import { useAppStore } from "../stores/app";
 const app = useAppStore();
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
-// used in List-Page, Add-Page
+// used in Browser-Page, Add-Page
 export function useCarouselShow(filename) {
   app.currentFileName = filename;
   fakeHistory();

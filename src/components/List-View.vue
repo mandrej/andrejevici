@@ -1,20 +1,5 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
-  <Confirm-Delete
-    v-if="app.showConfirm"
-    :rec="app.current"
-    @confirm-ok="confirmOk"
-  />
-
-  <Swiper-View
-    v-if="app.showCarousel"
-    :filename="app.currentFileName"
-    :list="app.objects"
-    @carousel-cancel="useCarouselCancel"
-    @confirm-delete="confirmShow"
-    @delete-record="app.deleteRecord"
-  />
-  <q-page v-else>
+  <q-page>
     <q-banner
       v-if="app.error && app.error === 'empty'"
       class="fixed-center text-center bg-warning q-pa-md"
@@ -57,9 +42,9 @@
             <Picture-Card
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
-              @carousel-show="useCarouselShow"
-              @edit-record="editRecord"
-              @confirm-delete="confirmShow"
+              @carousel-show="onCarouselShow(item.filename)"
+              @edit-record="emit('editRecord', item)"
+              @confirm-delete="emit('confirmDelete', item)"
               @delete-record="app.deleteRecord"
             />
           </div>
@@ -79,36 +64,22 @@
 
 <script setup>
 import { throttle } from "quasar";
-import { defineAsyncComponent, onMounted } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { fakeHistory } from "../helpers";
-import { useCarouselShow, useCarouselCancel } from "../helpers/common";
 
 import PictureCard from "../components/Picture-Card.vue";
-import SwiperView from "../components/Swiper-View.vue";
 
-const EditRecord = defineAsyncComponent(() =>
-  import("../components/Edit-Record.vue")
-);
-const ConfirmDelete = defineAsyncComponent(() =>
-  import("../components/Confirm-Delete.vue")
-);
+const emit = defineEmits([
+  "carouselShow",
+  "carouselCancel",
+  "editRecord",
+  "confirmDelete",
+]);
 
 const app = useAppStore();
 const auth = useUserStore();
 const route = useRoute();
-
-onMounted(() => {
-  const hash = route.hash;
-  if (hash) {
-    const filename = hash.substring(2);
-    setTimeout(() => {
-      useCarouselShow(filename);
-    }, 1000);
-  }
-});
 
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
@@ -123,26 +94,7 @@ const isAuthorOrAdmin = (rec) => {
   return auth.user.isAdmin || auth.user.email === rec.email;
 };
 
-const editRecord = (rec) => {
-  app.current = rec;
-  fakeHistory();
-  app.showEdit = true;
-};
-const editOk = (hash) => {
-  const el = document.querySelector("#" + hash);
-  if (!el) return;
-  el.classList.add("bounce");
-  setTimeout(() => {
-    el.classList.remove("bounce");
-  }, 2000);
-};
-const confirmShow = (rec) => {
-  app.current = rec;
-  fakeHistory();
-  app.showConfirm = true;
-};
-const confirmOk = (rec) => {
-  app.showConfirm = false;
-  app.deleteRecord(rec);
+const onCarouselShow = (filename) => {
+  emit("carouselShow", filename);
 };
 </script>

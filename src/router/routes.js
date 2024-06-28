@@ -24,7 +24,7 @@ const routes = [
     children: [
       {
         path: "",
-        component: () => import("../pages/List-Page.vue"),
+        component: () => import("../pages/Browser-Page.vue"),
         name: "list",
         meta: { title: CONFIG.title },
       },

@@ -63,7 +63,8 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
+import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
 import { formatBytes, CONFIG, U } from "../helpers";
@@ -75,17 +76,16 @@ import "swiper/scss";
 import "swiper/scss/zoom";
 
 const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
-const props = defineProps({
-  filename: String,
-  list: Array,
-});
 
 const $q = useQuasar();
+const app = useAppStore();
 const auth = useUserStore();
 const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
+
+const list = computed(() => app.objects);
 
 const modules = [Keyboard, Zoom];
 
@@ -97,12 +97,12 @@ watch(
 );
 
 const onSwiper = (sw) => {
-  const index = props.list.findIndex((x) => x.filename === props.filename);
+  const index = list.value.findIndex((x) => x.filename === app.currentFileName);
   if (index === -1) {
     notify({
       type: "negative",
       timeout: 10000,
-      message: `${props.filename} couldn't be found in first ${CONFIG.limit} records`,
+      message: `${app.currentFileName} couldn't be found in first ${CONFIG.limit} records`,
     });
   } else {
     if (index === 0) {
