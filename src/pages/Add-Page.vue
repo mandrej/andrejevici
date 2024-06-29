@@ -1,12 +1,5 @@
 <template>
   <Edit-Record v-if="app.showEdit" :rec="current" />
-  <Swiper-View
-    v-if="app.showCarousel"
-    :filename="app.currentFileName"
-    :list="app.uploaded"
-    @carousel-cancel="useCarouselCancel"
-    @delete-record="app.deleteRecord"
-  />
 
   <q-page v-else class="q-pa-md">
     <div class="relative-position column" style="height: 10px">
@@ -68,7 +61,6 @@
           <Picture-Card
             :rec="rec"
             :canManage="true"
-            @carousel-show="useCarouselShow"
             @delete-record="app.deleteRecord"
             @edit-record="editRecord"
           />
@@ -97,12 +89,10 @@ import {
   emailNick,
   reFilename,
 } from "../helpers";
-import { useCarouselShow, useCarouselCancel } from "../helpers/common";
 import notify from "../helpers/notify";
 import readExif from "../helpers/exif";
 import PictureCard from "../components/Picture-Card.vue";
 import AutoComplete from "../components/Auto-Complete.vue";
-import SwiperView from "../components/Swiper-View.vue";
 
 const EditRecord = defineAsyncComponent(() =>
   import("../components/Edit-Record.vue")

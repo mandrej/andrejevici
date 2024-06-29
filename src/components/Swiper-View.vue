@@ -29,9 +29,7 @@
           round
           class="text-white q-pa-sm"
           icon="delete"
-          @click="
-            obj.thumb ? emit('confirmDelete', obj) : emit('deleteRecord', obj)
-          "
+          @click="emit('confirmDelete', obj)"
         />
         <div
           v-html="caption(obj)"
@@ -79,7 +77,7 @@ import "swiper/scss/zoom";
 const props = defineProps({
   objects: Array,
 });
-const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
+const emit = defineEmits(["carouselCancel", "confirmDelete"]);
 
 const $q = useQuasar();
 const app = useAppStore();
@@ -150,19 +148,16 @@ const onLoad = (e) => {
 };
 const caption = (rec) => {
   let tmp = "";
-  if (rec.thumb) {
-    const { headline, aperture, shutter, iso, model, lens } = rec;
-    tmp += headline + "<br/>";
-    tmp += aperture ? " f" + aperture : "";
-    tmp += shutter ? " " + shutter + "s" : "";
-    tmp += iso ? " " + iso + " ASA" : "";
-    if ($q.screen.gt.sm) {
-      tmp += model ? " " + model : "";
-      tmp += lens ? " " + lens : "";
-    }
-  } else {
-    tmp += formatBytes(rec.size);
+  const { headline, aperture, shutter, iso, model, lens } = rec;
+  tmp += headline + "<br/>";
+  tmp += aperture ? " f" + aperture : "";
+  tmp += shutter ? " " + shutter + "s" : "";
+  tmp += iso ? " " + iso + " ASA" : "";
+  if ($q.screen.gt.sm) {
+    tmp += model ? " " + model : "";
+    tmp += lens ? " " + lens : "";
   }
+  // tmp += formatBytes(rec.size);
   return tmp;
 };
 
