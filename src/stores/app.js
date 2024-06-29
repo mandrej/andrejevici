@@ -57,7 +57,7 @@ export const useAppStore = defineStore("app", {
     next: null,
     unsubscribe: null,
     current: {},
-    currentFileName: null,
+    marker: null,
     last: {},
     since: "",
 
@@ -73,13 +73,6 @@ export const useAppStore = defineStore("app", {
         count: state.objects.length,
       };
     },
-    // groupObjects: (state) => {
-    //   const groups = [];
-    //   for (let i = 0; i < state.objects.length; i += CONFIG.group) {
-    //     groups.push(state.objects.slice(i, i + CONFIG.group));
-    //   }
-    //   return groups;
-    // },
   },
   actions: {
     // bucket

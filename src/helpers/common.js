@@ -7,7 +7,7 @@ const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 // used in Browser-Page, Add-Page
 export function useCarouselShow(filename) {
-  app.currentFileName = filename;
+  app.marker = filename;
   fakeHistory();
   app.showCarousel = true;
 }

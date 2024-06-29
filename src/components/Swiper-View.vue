@@ -88,10 +88,10 @@ const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
 
 const modules = [Keyboard, Zoom];
-const { currentFileName } = storeToRefs(app);
+const { marker } = storeToRefs(app);
 const mySwiper = ref(null);
 
-watch(currentFileName, (val) => {
+watch(marker, (val) => {
   const index = props.objects.findIndex((x) => x.filename === val);
   if (index > -1) {
     mySwiper.value.slideTo(index, 0);
@@ -107,14 +107,12 @@ watch(
 
 const onSwiper = (sw) => {
   mySwiper.value = sw;
-  const index = props.objects.findIndex(
-    (x) => x.filename === app.currentFileName
-  );
+  const index = props.objects.findIndex((x) => x.filename === app.marker);
   if (index === -1) {
     notify({
       type: "negative",
       timeout: 10000,
-      message: `${app.currentFileName} couldn't be found in first ${CONFIG.limit} records`,
+      message: `${app.marker} couldn't be found in first ${CONFIG.limit} records`,
     });
   } else {
     if (index === 0) {

@@ -47,7 +47,7 @@ onMounted(() => {
   if (hash) {
     const filename = hash.substring(2);
     currentView.value = SwiperView;
-    app.currentFileName = filename;
+    app.marker = filename;
   }
 });
 
