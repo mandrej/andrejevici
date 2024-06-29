@@ -14,7 +14,7 @@
     @slide-change="onSlideChange"
   >
     <swiper-slide
-      v-for="obj in list"
+      v-for="obj in objects"
       :key="obj.filename"
       :data-hash="U + obj.filename"
     >
@@ -63,7 +63,8 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { ref, watch, computed } from "vue";
+import { storeToRefs } from "pinia";
+import { ref, watch } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
@@ -75,6 +76,9 @@ import { Keyboard, Zoom } from "swiper/modules";
 import "swiper/scss";
 import "swiper/scss/zoom";
 
+const props = defineProps({
+  objects: Array,
+});
 const emit = defineEmits(["carouselCancel", "confirmDelete", "deleteRecord"]);
 
 const $q = useQuasar();
@@ -85,9 +89,16 @@ const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
 
-const list = computed(() => app.objects);
-
 const modules = [Keyboard, Zoom];
+const { currentFileName } = storeToRefs(app);
+const mySwiper = ref(null);
+
+watch(currentFileName, (val) => {
+  const index = props.objects.findIndex((x) => x.filename === val);
+  if (index > -1) {
+    mySwiper.value.slideTo(index, 0);
+  }
+});
 
 watch(
   () => $q.fullscreen.isActive,
@@ -97,7 +108,10 @@ watch(
 );
 
 const onSwiper = (sw) => {
-  const index = list.value.findIndex((x) => x.filename === app.currentFileName);
+  mySwiper.value = sw;
+  const index = props.objects.findIndex(
+    (x) => x.filename === app.currentFileName
+  );
   if (index === -1) {
     notify({
       type: "negative",

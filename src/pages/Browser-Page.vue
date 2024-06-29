@@ -5,17 +5,11 @@
     :rec="app.current"
     @confirm-ok="confirmOk"
   />
-  <!-- <Swiper-View
-    v-if="app.showCarousel"
-    :filename="app.currentFileName"
-    :list="app.objects"
-    @carousel-cancel="useCarouselCancel"
-    @confirm-delete="confirmShow"
-    @delete-record="app.deleteRecord"
-  /> -->
+
   <KeepAlive>
     <component
       :is="currentView"
+      :objects="app.objects"
       @carousel-show="useCarouselShow"
       @carousel-cancel="useCarouselCancel"
       @edit-record="editRecord"

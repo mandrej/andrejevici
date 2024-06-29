@@ -28,11 +28,7 @@
     />
 
     <div class="q-pa-md">
-      <div
-        v-for="(list, index) in app.groupObjects"
-        :key="index"
-        class="q-mb-md"
-      >
+      <div v-for="(list, index) in groupObjects" :key="index" class="q-mb-md">
         <transition-group tag="div" class="row q-col-gutter-md" name="fade">
           <div
             v-for="item in list"
@@ -42,7 +38,7 @@
             <Picture-Card
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
-              @carousel-show="onCarouselShow(item.filename)"
+              @carousel-show="emit('carouselShow', item.filename)"
               @edit-record="emit('editRecord', item)"
               @confirm-delete="emit('confirmDelete', item)"
               @delete-record="app.deleteRecord"
@@ -63,12 +59,17 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { throttle } from "quasar";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { useRoute } from "vue-router";
+import { CONFIG } from "../helpers";
 
 import PictureCard from "../components/Picture-Card.vue";
+
+const props = defineProps({
+  objects: Array,
+});
 
 const emit = defineEmits([
   "carouselShow",
@@ -79,7 +80,14 @@ const emit = defineEmits([
 
 const app = useAppStore();
 const auth = useUserStore();
-const route = useRoute();
+
+const groupObjects = computed(() => {
+  const groups = [];
+  for (let i = 0; i < props.objects.length; i += CONFIG.group) {
+    groups.push(props.objects.slice(i, i + CONFIG.group));
+  }
+  return groups;
+});
 
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
@@ -92,9 +100,5 @@ const scrollHandler = throttle((obj) => {
 const isAuthorOrAdmin = (rec) => {
   if (!auth.user) return false;
   return auth.user.isAdmin || auth.user.email === rec.email;
-};
-
-const onCarouselShow = (filename) => {
-  emit("carouselShow", filename);
 };
 </script>

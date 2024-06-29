@@ -12,7 +12,6 @@ import {
   setDoc,
   deleteDoc,
   startAfter,
-  onSnapshot,
 } from "firebase/firestore";
 import {
   ref as storageRef,
@@ -74,13 +73,13 @@ export const useAppStore = defineStore("app", {
         count: state.objects.length,
       };
     },
-    groupObjects: (state) => {
-      const groups = [];
-      for (let i = 0; i < state.objects.length; i += CONFIG.group) {
-        groups.push(state.objects.slice(i, i + CONFIG.group));
-      }
-      return groups;
-    },
+    // groupObjects: (state) => {
+    //   const groups = [];
+    //   for (let i = 0; i < state.objects.length; i += CONFIG.group) {
+    //     groups.push(state.objects.slice(i, i + CONFIG.group));
+    //   }
+    //   return groups;
+    // },
   },
   actions: {
     // bucket
