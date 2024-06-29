@@ -91,35 +91,19 @@ const modules = [Keyboard, Zoom];
 const { marker } = storeToRefs(app);
 const mySwiper = ref(null);
 
+const onSwiper = (sw) => {
+  mySwiper.value = sw; // instance
+  position(app.marker);
+};
+
 watch(marker, (val) => {
-  const index = props.objects.findIndex((x) => x.filename === val);
-  if (index > -1) {
-    mySwiper.value.slideTo(index, 0);
-  }
+  position(val);
 });
 
-watch(
-  () => $q.fullscreen.isActive,
-  (val) => {
-    full.value = val;
-  }
-);
-
-const onSwiper = (sw) => {
-  mySwiper.value = sw;
-  const index = props.objects.findIndex((x) => x.filename === app.marker);
-  if (index === -1) {
-    notify({
-      type: "negative",
-      timeout: 10000,
-      message: `${app.marker} couldn't be found in first ${CONFIG.limit} records`,
-    });
-  } else {
-    if (index === 0) {
-      onSlideChange(sw);
-    } else {
-      sw.slideTo(index, 0);
-    }
+const position = (marker) => {
+  const index = props.objects.findIndex((x) => x.filename === marker);
+  if (index > -1) {
+    mySwiper.value.slideTo(index, 0);
   }
 };
 const onSlideChange = (sw) => {
@@ -165,6 +149,13 @@ window.onpopstate = function () {
 const onCancel = () => {
   emit("carouselCancel", hash.value);
 };
+
+watch(
+  () => $q.fullscreen.isActive,
+  (val) => {
+    full.value = val;
+  }
+);
 </script>
 
 <style scoped>
