@@ -95,6 +95,7 @@ import { onMounted, computed, watch, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
+import { isEqual } from "lodash";
 import AutoComplete from "./Auto-Complete.vue";
 import { months } from "../helpers";
 
@@ -123,8 +124,10 @@ const queryDispatch = (query, invoked = "") => {
     }
   });
 
-  app.find = tmp.value;
-  app.fetchRecords(true, invoked); // new filter with reset
+  if (!isEqual(app.find, tmp.value)) {
+    app.find = tmp.value;
+    app.fetchRecords(true, invoked); // new filter with reset
+  }
   // this dispatch route change
   if (Object.keys(tmp.value).length) {
     router.push({ path: "/list", query: tmp.value, hash: route.hash });
