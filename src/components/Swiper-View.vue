@@ -1,17 +1,16 @@
 <template>
-  <swiper
+  <swiper-container
     class="swiper"
     :keyboard="{
       enabled: true,
     }"
-    :lazy="true"
     :grab-cursor="true"
     :zoom="{
       maxRatio: 2,
     }"
-    :modules="modules"
-    @swiper="onSwiper"
-    @slide-change="onSlideChange"
+    :lazy="true"
+    @swiperinit="onSwiper"
+    @swiperslidechange="onSlideChange"
   >
     <swiper-slide
       v-for="obj in objects"
@@ -56,7 +55,7 @@
         :icon="full ? 'fullscreen_exit' : 'fullscreen'"
       />
     </swiper-slide>
-  </swiper>
+  </swiper-container>
 </template>
 
 <script setup>
@@ -66,9 +65,8 @@ import { ref, watch } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { formatBytes, CONFIG, U } from "../helpers";
-import notify from "../helpers/notify";
-import { Swiper, SwiperSlide } from "swiper/vue";
+import { U } from "../helpers";
+import { register } from "swiper/element/bundle";
 import { Keyboard, Zoom } from "swiper/modules";
 
 import "swiper/scss";
@@ -86,13 +84,13 @@ const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
-
-const modules = [Keyboard, Zoom];
 const { marker } = storeToRefs(app);
-const mySwiper = ref(null);
 
-const onSwiper = (sw) => {
-  mySwiper.value = sw; // instance
+register({ modules: [Keyboard, Zoom] });
+let swiper = null;
+
+const onSwiper = (e) => {
+  swiper = e.detail[0]; // instance
   position(app.marker);
 };
 
@@ -102,13 +100,15 @@ watch(marker, (val) => {
 
 const position = (marker) => {
   const index = props.objects.findIndex((x) => x.filename === marker);
-  if (index > -1) {
-    mySwiper.value.slideTo(index, 0);
+  if (index === 0) {
+    onSlideChange();
+  } else if (index > 0) {
+    swiper.slideTo(index, 0);
   }
 };
-const onSlideChange = (sw) => {
+const onSlideChange = (e) => {
   let url = route.fullPath;
-  const slide = sw.slides[sw.activeIndex];
+  const slide = swiper.slides[swiper.activeIndex];
   hash.value = slide.dataset.hash;
   const sufix = "#" + hash.value;
   if (urlHash.test(url)) {
@@ -139,7 +139,6 @@ const caption = (rec) => {
     tmp += model ? " " + model : "";
     tmp += lens ? " " + lens : "";
   }
-  // tmp += formatBytes(rec.size);
   return tmp;
 };
 
@@ -159,7 +158,7 @@ watch(
 </script>
 
 <style scoped>
-.swiper {
+swiper-container {
   top: 0;
   right: 0;
   bottom: 0;
@@ -171,11 +170,11 @@ watch(
   max-height: 100vh;
 }
 
-.swiper-slide {
+swiper-slide {
   text-align: center;
   background: #000;
 }
-.swiper-slide img {
+swiper-slide img {
   width: auto;
   height: auto;
   max-width: 100%;
