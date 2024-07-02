@@ -109,14 +109,16 @@ const position = (marker) => {
 const onSlideChange = (e) => {
   let url = route.fullPath;
   const slide = swiper.slides[swiper.activeIndex];
-  hash.value = slide.dataset.hash;
-  const sufix = "#" + hash.value;
-  if (urlHash.test(url)) {
-    url = url.replace(urlHash, sufix);
-  } else {
-    url += sufix;
+  if (slide) {
+    hash.value = slide.dataset.hash;
+    const sufix = "#" + hash.value;
+    if (urlHash.test(url)) {
+      url = url.replace(urlHash, sufix);
+    } else {
+      url += sufix;
+    }
+    window.history.replaceState(history.state, null, url);
   }
-  window.history.replaceState(history.state, null, url);
 };
 const onLoad = (e) => {
   // calculate image dimension
