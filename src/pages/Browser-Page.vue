@@ -6,16 +6,18 @@
     @confirm-ok="confirmOk"
   />
 
-  <KeepAlive>
-    <component
-      :is="currentView"
-      :objects="app.objects"
-      @carousel-show="useCarouselShow"
-      @carousel-cancel="useCarouselCancel"
-      @edit-record="editRecord"
-      @confirm-delete="confirmShow"
-    ></component>
-  </KeepAlive>
+  <Transition>
+    <KeepAlive>
+      <component
+        :is="currentView"
+        :objects="app.objects"
+        @carousel-show="useCarouselShow"
+        @carousel-cancel="useCarouselCancel"
+        @edit-record="editRecord"
+        @confirm-delete="confirmShow"
+      ></component>
+    </KeepAlive>
+  </Transition>
 </template>
 
 <script setup>
