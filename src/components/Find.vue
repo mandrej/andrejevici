@@ -143,7 +143,7 @@ watch(
   route,
   (to) => {
     if (to.name !== "list") return;
-    queryDispatch(to.query, "route");
+    if (!app.busy) queryDispatch(to.query, "route");
   },
   { deep: true, immediate: true }
 );

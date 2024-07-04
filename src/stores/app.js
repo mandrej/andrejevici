@@ -140,9 +140,9 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, ...constraints);
 
       this.busy = true;
-      if (reset) this.objects.length = 0;
       const querySnapshot = await getDocs(q);
 
+      if (reset) this.objects.length = 0;
       querySnapshot.forEach((d) => {
         this.objects.push(d.data());
       });

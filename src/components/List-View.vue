@@ -95,7 +95,7 @@ const scrollHandler = throttle((obj) => {
   if (scrollHeight - obj.position.top < 2000 && app.next) {
     app.fetchRecords(false, "scroll");
   }
-}, 500);
+}, 200);
 
 const isAuthorOrAdmin = (rec) => {
   if (!auth.user) return false;
