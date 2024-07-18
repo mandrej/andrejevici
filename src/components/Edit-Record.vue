@@ -23,7 +23,7 @@
             @click="getExif"
           />
         </div>
-        <div>{{ formatBytes(tmp.size) }}</div>
+        <div>{{ formatBytes(tmp.size) }} {{ tmp.dim }}</div>
         <div>
           <q-btn flat round dense icon="close" @click="onCancel" />
         </div>
@@ -186,7 +186,7 @@
               <q-input
                 v-model="tmp.focal_length"
                 type="number"
-                label="Focal length"
+                label="Focal length [mm]"
               />
             </div>
 

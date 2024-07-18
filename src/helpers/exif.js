@@ -76,13 +76,13 @@ const readExif = async (url) => {
   }
 
   // GPS
-  console.log(tags.gps);
+  // console.log(tags.gps);
   if (has(tags.gps, "Latitude") && has(tags.gps, "Longitude")) {
     result.loc =
       "" + tags.gps.Latitude.toFixed(6) + ", " + tags.gps.Longitude.toFixed(6);
   }
 
-  console.log(result);
+  // console.log(result);
   return result;
 };
 
