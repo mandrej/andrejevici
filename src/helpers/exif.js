@@ -40,9 +40,10 @@ const readExif = async (url) => {
     result.lens = exif.LensModel.description.replace("/", "");
   }
   if (has(exif, "DateTimeOriginal")) {
-    // "2022:06:20 22:38:54"
-    const [date, time] = exif.DateTimeOriginal.description.split(" ");
-    const datum = new Date(Date.parse(date.replaceAll(":", "-") + " " + time));
+    const rex = new RegExp(/(\d{4}):(\d{2}):(\d{2})/i);
+    const date = exif.DateTimeOriginal.description.replace(rex, "$1-$2-$3");
+    if (process.env.DEV) console.log("EXIF DATE " + date);
+    const datum = new Date(Date.parse(date));
     result.date = formatDatum(datum);
     result.year = datum.getFullYear();
     result.month = datum.getMonth() + 1;
