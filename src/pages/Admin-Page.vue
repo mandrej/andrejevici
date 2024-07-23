@@ -44,14 +44,7 @@
           />
         </q-item-section>
         <q-item-section top>
-          <q-input
-            v-model="renamedTag"
-            label="to tag"
-            :rules="[
-              (val) =>
-                meta.tagsValues.indexOf(val) === -1 || 'Tag already in use',
-            ]"
-          />
+          <q-input v-model="renamedTag" label="to tag" />
         </q-item-section>
         <q-item-section side>
           <q-btn label="Rename" @click="renameTag" />
@@ -147,6 +140,12 @@ const renameTag = () => {
       notify({
         type: "warning",
         message: `Cannot change "${existingTag.value}"`,
+      });
+    } else if (meta.tagsValues.indexOf(renamedTag.value) !== -1) {
+      meta.renameTag(existingTag.value, renamedTag.value);
+      notify({
+        type: "warning",
+        message: `"${existingTag.value}" tag renamed with "${renamedTag.value}"`,
       });
     } else {
       meta.renameTag(existingTag.value, renamedTag.value);
