@@ -213,12 +213,6 @@ const onRejected = (rejectedEntries) => {
       timeout: 0,
     });
   });
-  // notify({
-  //   type: "warning",
-  //   timeout: 0,
-  //   actions: [{ icon: "close", color: "white" }],
-  //   message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
-  // });
 };
 
 const alter = (filename) => {
@@ -239,9 +233,7 @@ const editRecord = async (rec) => {
   //  */
   const exif = await readExif(rec.url);
   const tags = [...(tagsToApply.value || "")];
-  Object.keys(exif).forEach((k) => {
-    rec[k] = exif[k];
-  });
+  rec = { ...rec, ...exif };
   // // add flash tag if exif flash true
   if (rec.flash && tags.indexOf("flash") === -1) {
     tags.push("flash");
