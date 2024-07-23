@@ -151,15 +151,15 @@ const uploadPromise = (i, file) => {
     let filename = name.replace(/[(]+/g, "_").replace(reClean, "") + ext;
     const _ref = storageRef(storage, filename);
     getDownloadURL(_ref)
-      .then((url) => {
+      .then(async (url) => {
         filename = alter(filename);
-        uploadTask(i, filename, file).then(() => {
+        await uploadTask(i, filename, file).then(() => {
           resolve(file.name);
         });
       })
-      .catch((error) => {
+      .catch(async (error) => {
         if (error.code === "storage/object-not-found") {
-          uploadTask(i, filename, file).then(() => {
+          await uploadTask(i, filename, file).then(() => {
             resolve(file.name);
           });
         } else {
