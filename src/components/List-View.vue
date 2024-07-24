@@ -38,8 +38,10 @@
             <Picture-Card
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
+              :canMergeTags="tagsToApplyExist()"
               @carousel-show="emit('carouselShow', item.filename)"
               @edit-record="emit('editRecord', item)"
+              @merge-tags="mergeTags(item)"
               @confirm-delete="emit('confirmDelete', item)"
               @delete-record="app.deleteRecord"
             />
@@ -63,7 +65,8 @@ import { computed } from "vue";
 import { throttle } from "quasar";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { CONFIG } from "../helpers";
+import { useValuesStore } from "../stores/values";
+import { CONFIG, U } from "../helpers";
 
 import PictureCard from "../components/Picture-Card.vue";
 
@@ -75,11 +78,13 @@ const emit = defineEmits([
   "carouselShow",
   "carouselCancel",
   "editRecord",
+  "editOk",
   "confirmDelete",
 ]);
 
 const app = useAppStore();
 const auth = useUserStore();
+const meta = useValuesStore();
 
 const groupObjects = computed(() => {
   const groups = [];
@@ -100,5 +105,15 @@ const scrollHandler = throttle((obj) => {
 const isAuthorOrAdmin = (rec) => {
   if (!auth.user) return false;
   return auth.user.isAdmin || auth.user.email === rec.email;
+};
+
+const tagsToApplyExist = () => {
+  return Array.isArray(meta.tagsToApply);
+};
+
+const mergeTags = (rec) => {
+  rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort();
+  app.saveRecord(rec);
+  emit("editOk", U + rec.filename);
 };
 </script>

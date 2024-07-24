@@ -223,7 +223,7 @@
 </template>
 
 <script setup>
-import { reactive, computed } from "vue";
+import { reactive } from "vue";
 import { CONFIG, fileBroken, formatBytes, U, emailNick } from "../helpers";
 import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
@@ -285,7 +285,7 @@ const copyTags = (source) => {
   meta.tagsToApply = source;
 };
 const mergeTags = (source) => {
-  if (source && source.length > 0) {
+  if (Array.isArray(source)) {
     tmp.tags = Array.from(new Set([...meta.tagsToApply, ...source])).sort();
   } else {
     tmp.tags = meta.tagsToApply;

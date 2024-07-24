@@ -15,6 +15,7 @@
         @carousel-cancel="useCarouselCancel"
         @edit-record="editRecord"
         @confirm-delete="confirmShow"
+        @edit-ok="editOk"
       ></component>
     </KeepAlive>
   </Transition>

@@ -17,31 +17,36 @@
       </div>
     </q-img>
     <q-card-section>
-      <div>
-        <router-link
-          :to="{ path: '/list', query: { nick: rec.nick } }"
-          class="text-black undreline"
-          >{{ rec.nick }}
-        </router-link>
-        ,
-        <router-link
-          :to="{
-            path: '/list',
-            query: {
-              year: rec.year,
-              month: rec.month,
-              day: rec.day,
-            },
-          }"
-          class="text-black undreline"
-          >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
-        >
-        {{ rec.date.substring(11) }}
-      </div>
+      <router-link
+        :to="{ path: '/list', query: { nick: rec.nick } }"
+        class="text-black undreline"
+        >{{ rec.nick }}
+      </router-link>
+      ,
+      <router-link
+        :to="{
+          path: '/list',
+          query: {
+            year: rec.year,
+            month: rec.month,
+            day: rec.day,
+          },
+        }"
+        class="text-black undreline"
+        >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+      >
+      {{ rec.date.substring(11) }}
     </q-card-section>
     <q-card-actions v-if="canManage" class="justify-between q-pt-none">
       <q-btn flat round icon="delete" @click="emit('confirmDelete', rec)" />
       <q-btn flat round icon="edit" @click="emit('editRecord', rec)" />
+      <q-btn
+        v-if="canMergeTags"
+        flat
+        round
+        icon="content_paste"
+        @click="emit('mergeTags', rec)"
+      />
       <q-btn
         v-if="rec.loc"
         flat
@@ -93,11 +98,13 @@ const emit = defineEmits([
   "carouselShow",
   "confirmDelete",
   "editRecord",
+  "mergeTags",
   "deleteRecord",
 ]);
 const props = defineProps({
   rec: Object,
   canManage: Boolean,
+  canMergeTags: Boolean,
 });
 
 const cardAttributes = (filename) => {
