@@ -14,46 +14,34 @@
       </template>
       <div class="absolute-bottom text-subtitle2 ellipsis">
         {{ rec.headline }}
-        <div>
-          <router-link
-            :to="{ path: '/list', query: { nick: rec.nick } }"
-            class="text-white"
-            style="text-decoration: underline"
-            >{{ rec.nick }}
-          </router-link>
-          ,
-          <router-link
-            :to="{
-              path: '/list',
-              query: {
-                year: rec.year,
-                month: rec.month,
-                day: rec.day,
-              },
-            }"
-            class="text-white"
-            style="text-decoration: underline"
-            >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
-          >
-          {{ rec.date.substring(11) }}
-        </div>
       </div>
     </q-img>
-    <q-card-actions class="justify-between">
-      <q-btn
-        v-if="canManage"
-        flat
-        round
-        icon="delete"
-        @click="emit('confirmDelete', rec)"
-      />
-      <q-btn
-        v-if="canManage"
-        flat
-        round
-        icon="edit"
-        @click="emit('editRecord', rec)"
-      />
+    <q-card-section>
+      <div>
+        <router-link
+          :to="{ path: '/list', query: { nick: rec.nick } }"
+          class="text-black undreline"
+          >{{ rec.nick }}
+        </router-link>
+        ,
+        <router-link
+          :to="{
+            path: '/list',
+            query: {
+              year: rec.year,
+              month: rec.month,
+              day: rec.day,
+            },
+          }"
+          class="text-black undreline"
+          >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+        >
+        {{ rec.date.substring(11) }}
+      </div>
+    </q-card-section>
+    <q-card-actions v-if="canManage" class="justify-between q-pt-none">
+      <q-btn flat round icon="delete" @click="emit('confirmDelete', rec)" />
+      <q-btn flat round icon="edit" @click="emit('editRecord', rec)" />
       <q-btn
         v-if="rec.loc"
         flat

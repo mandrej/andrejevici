@@ -16,12 +16,12 @@
     "test:unit:ci": "vitest run"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.11",
+    "@quasar/extras": "^1.16.12",
     "exifreader": "^4.23.3",
     "firebase": "^9.22.2",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.0",
-    "quasar": "^2.16.4",
+    "quasar": "^2.16.6",
     "swiper": "^11.1.4",
     "transliteration": "^2.3.5",
     "uuid4": "^2.0.3",
