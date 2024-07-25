@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh Lpr lFf">
-    <q-header class="fixed-top">
+    <q-header class="fixed-top" elevated>
       <q-toolbar class="bg-white text-dark">
         <q-btn
           flat
@@ -33,6 +33,7 @@
       class="column no-wrap"
       :width="320"
       show-if-above
+      elevated
       dark
     >
       <keep-alive>

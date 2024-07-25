@@ -1,65 +1,74 @@
 <template>
-  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
-    <q-img
-      class="cursor-pointer"
-      loading="lazy"
-      :ratio="5 / 4"
-      :src="rec.thumb"
-      v-ripple.early="{ color: 'purple' }"
-      no-spinner
-      @click="emit('carouselShow', rec.filename)"
-    >
-      <template #error>
-        <img :src="fileBroken" />
-      </template>
-      <div class="absolute-bottom text-subtitle2 ellipsis">
-        {{ rec.headline }}
-      </div>
-    </q-img>
-    <q-card-section>
-      <router-link
-        :to="{ path: '/list', query: { nick: rec.nick } }"
-        class="text-black undreline"
-        >{{ rec.nick }}
-      </router-link>
-      ,
-      <router-link
-        :to="{
-          path: '/list',
-          query: {
-            year: rec.year,
-            month: rec.month,
-            day: rec.day,
-          },
-        }"
-        class="text-black undreline"
-        >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
+    <div class="row">
+      <q-img
+        class="cursor-pointer col"
+        loading="lazy"
+        :ratio="1"
+        :src="rec.thumb"
+        v-ripple.early="{ color: 'purple' }"
+        no-spinner
+        @click="emit('carouselShow', rec.filename)"
       >
-      {{ rec.date.substring(11) }}
-    </q-card-section>
-    <q-card-actions v-if="canManage" class="justify-between q-pt-none">
-      <q-btn flat round icon="delete" @click="emit('confirmDelete', rec)" />
-      <q-btn flat round icon="edit" @click="emit('editRecord', rec)" />
-      <q-btn
-        v-if="canMergeTags"
-        flat
-        round
-        icon="content_paste"
-        @click="emit('mergeTags', rec)"
-      />
-      <q-btn
+        <template #error>
+          <img :src="fileBroken" />
+        </template>
+        <div class="absolute-bottom text-subtitle2 ellipsis">
+          {{ rec.headline }}
+        </div>
+      </q-img>
+      <q-card-actions
+        v-if="canManage"
+        class="justify-around bg-grey-10 col"
+        style="max-width: 58px"
+        vertical
+      >
+        <q-btn flat round icon="delete" @click="emit('confirmDelete', rec)" />
+        <q-btn flat round icon="edit" @click="emit('editRecord', rec)" />
+        <q-btn
+          v-if="canMergeTags"
+          flat
+          round
+          icon="content_paste"
+          @click="emit('mergeTags', rec)"
+        />
+        <q-btn flat round icon="share" @click="onShare" />
+      </q-card-actions>
+    </div>
+    <q-card-section class="row justify-between">
+      <span>
+        <router-link
+          :to="{ path: '/list', query: { nick: rec.nick } }"
+          class="text-black undreline"
+          >{{ rec.nick }}
+        </router-link>
+        ,
+        <router-link
+          :to="{
+            path: '/list',
+            query: {
+              year: rec.year,
+              month: rec.month,
+              day: rec.day,
+            },
+          }"
+          class="text-black undreline"
+          >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+        >
+        {{ rec.date.substring(11) }}
+      </span>
+      <q-icon
         v-if="rec.loc"
-        flat
-        round
-        icon="my_location"
+        name="my_location"
+        size="24px"
         target="blank"
-        :href="'https://www.google.com/maps/search/?api=1&query=' + [rec.loc]"
+        color="grey-7"
+        @click.stop.prevent="openMaps(rec.loc)"
       />
-      <q-btn flat round icon="share" @click="onShare" />
-    </q-card-actions>
+    </q-card-section>
   </q-card>
 
-  <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
+  <q-card v-else v-bind="cardAttributes(rec.filename)">
     <q-img
       class="cursor-pointer"
       loading="lazy"
@@ -111,7 +120,7 @@ const cardAttributes = (filename) => {
   const [, name, ext] = filename.match(reFilename);
   return {
     id: U + name,
-    class: ext.substring(1) + " bg-grey-2",
+    class: ext.substring(1),
   };
 };
 const onShare = () => {
@@ -124,10 +133,16 @@ const onShare = () => {
       notify({ type: "warning", message: "Unable to copy URL to clipboard" });
     });
 };
+
+const openMaps = (loc) => {
+  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`;
+  window.open(url, "_blank");
+};
 </script>
 
 <style lang="scss" scoped>
-.q-btn {
+.q-btn,
+.q-icon {
   color: $grey-7;
 }
 .q-btn.disabled {

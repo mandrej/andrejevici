@@ -108,7 +108,7 @@ const isAuthorOrAdmin = (rec) => {
 };
 
 const tagsToApplyExist = () => {
-  return Array.isArray(meta.tagsToApply);
+  return Array.isArray(meta.tagsToApply) && auth.user && auth.user.isAdmin;
 };
 
 const mergeTags = (rec) => {
