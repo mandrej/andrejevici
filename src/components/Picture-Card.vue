@@ -4,7 +4,7 @@
       <q-img
         class="cursor-pointer col"
         loading="lazy"
-        :ratio="1"
+        :ratio="5 / 4"
         :src="rec.thumb"
         v-ripple.early="{ color: 'purple' }"
         no-spinner
