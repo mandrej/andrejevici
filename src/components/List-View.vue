@@ -104,7 +104,7 @@ const scrollHandler = throttle((obj) => {
 
 const isAuthorOrAdmin = (rec) => {
   if (!auth.user) return false;
-  return auth.user.isAdmin || auth.user.email === rec.email;
+  return (auth.user.isAdmin || auth.user.email === rec.email) && app.editMode;
 };
 
 const tagsToApplyExist = () => {

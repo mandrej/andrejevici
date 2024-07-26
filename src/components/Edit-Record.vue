@@ -9,12 +9,7 @@
     <q-card class="q-dialog-plugin full-width" style="max-width: 800px">
       <q-toolbar class="bg-white text-black row justify-between">
         <div>
-          <q-btn
-            color="primary"
-            type="submit"
-            label="Submit"
-            @click="onSubmit"
-          />
+          <q-btn color="primary" type="submit" label="Save" @click="onSubmit" />
           <q-btn
             v-if="auth.user.isAdmin"
             class="q-ml-sm gt-sm"

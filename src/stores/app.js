@@ -66,6 +66,7 @@ export const useAppStore = defineStore("app", {
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
+    editMode: false,
   }),
   getters: {
     record: (state) => {

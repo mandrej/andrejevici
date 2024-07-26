@@ -16,7 +16,19 @@
           }}</router-link>
         </q-toolbar-title>
 
-        <div v-if="$route.name === 'list'">{{ app.record.count }}</div>
+        <template v-if="$route.name === 'list'">
+          <q-btn
+            v-if="auth.user && auth.user.isAuthorized"
+            flat
+            stretch
+            @click="app.editMode = !app.editMode"
+            >{{ app.editMode ? "Edit mode" : "View mode" }}</q-btn
+          >
+          <span v-if="$route.name === 'list'" class="q-mx-md">
+            {{ app.record.count }}
+          </span>
+        </template>
+
         <History-Button v-else />
 
         <q-linear-progress
