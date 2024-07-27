@@ -22,7 +22,7 @@
             flat
             stretch
             @click="app.editMode = !app.editMode"
-            >{{ app.editMode ? "Edit mode" : "View mode" }}</q-btn
+            >{{ editMode ? "Edit mode" : "View mode" }}</q-btn
           >
           <span v-if="$route.name === 'list'" class="q-mx-md">
             {{ app.record.count }}
@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, defineAsyncComponent } from "vue";
+import { ref, computed, defineAsyncComponent } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import HistoryButton from "../components/History-Button.vue";
@@ -76,4 +76,5 @@ const AskPermission = defineAsyncComponent(() =>
 const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
+const editMode = computed(() => app.editMode);
 </script>

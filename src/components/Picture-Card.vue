@@ -3,8 +3,8 @@
     <div class="row">
       <q-img
         class="cursor-pointer col"
+        style="height: 240px"
         loading="lazy"
-        :ratio="5 / 4"
         :src="rec.thumb"
         v-ripple.early="{ color: 'purple' }"
         no-spinner

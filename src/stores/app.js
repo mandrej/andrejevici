@@ -281,6 +281,7 @@ export const useAppStore = defineStore("app", {
       "since",
       "next",
       "current",
+      "editMode",
     ],
     // beforeRestore: (context) => {
     //   console.log("Before hydration...", context);
