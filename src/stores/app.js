@@ -156,7 +156,6 @@ export const useAppStore = defineStore("app", {
         next.id === this.next ? (this.next = null) : (this.next = next.id);
       } else {
         this.next = null;
-        this.error = this.objects.length === 0 ? "empty" : null;
       }
 
       // filter by tags
@@ -166,6 +165,7 @@ export const useAppStore = defineStore("app", {
         );
       }
 
+      this.error = this.objects.length === 0 ? "empty" : null;
       this.busy = false;
       if (process.env.DEV)
         console.log(
