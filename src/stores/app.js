@@ -57,7 +57,6 @@ export const useAppStore = defineStore("app", {
     uploaded: [],
     objects: [],
     next: null,
-    unsubscribe: null,
     current: {},
     marker: null,
     last: {},
@@ -117,6 +116,7 @@ export const useAppStore = defineStore("app", {
       notify({ message: `Bucket size calculated` });
     },
     async fetchRecords(reset = false, invoked = "") {
+      let max = CONFIG.limit;
       let serachTags = null;
       this.error = null;
       if (this.busy) {
@@ -126,6 +126,7 @@ export const useAppStore = defineStore("app", {
       const filters = Object.entries(this.find).map(([key, val]) => {
         if (key === "tags") {
           serachTags = val;
+          max *= serachTags.length;
           return where(key, "array-contains-any", val);
         } else if (key === "text") {
           const slug = textSlug(val);
@@ -141,12 +142,11 @@ export const useAppStore = defineStore("app", {
         const cursor = await getDoc(doc(db, "Photo", this.next));
         constraints.push(startAfter(cursor));
       }
-      constraints.push(limit(CONFIG.limit));
+      constraints.push(limit(max));
       const q = query(photosCol, ...constraints);
 
       this.busy = true;
       const querySnapshot = await getDocs(q);
-
       if (reset) this.objects.length = 0;
       querySnapshot.forEach((d) => {
         this.objects.push(d.data());
