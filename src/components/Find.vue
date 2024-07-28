@@ -17,7 +17,13 @@
       behavior="menu"
       :dense="$q.screen.xs"
       dark
-      @update:model-value="submit"
+      multiple
+      @update:model-value="
+        (newValue) => {
+          tmp.tags = newValue;
+          submit();
+        }
+      "
     />
     <Auto-Complete
       v-model="tmp.year"

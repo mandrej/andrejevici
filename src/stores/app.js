@@ -44,6 +44,8 @@ const photosCol = collection(db, "Photo");
 const getRec = (snapshot) =>
   snapshot.docs.length ? snapshot.docs[0]?.data() : null;
 
+const includeSub = (arr, target) => target.every((v) => arr.includes(v));
+
 export const useAppStore = defineStore("app", {
   state: () => ({
     bucket: {
@@ -115,6 +117,7 @@ export const useAppStore = defineStore("app", {
       notify({ message: `Bucket size calculated` });
     },
     async fetchRecords(reset = false, invoked = "") {
+      let serachTags = null;
       this.error = null;
       if (this.busy) {
         if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
@@ -122,6 +125,7 @@ export const useAppStore = defineStore("app", {
       }
       const filters = Object.entries(this.find).map(([key, val]) => {
         if (key === "tags") {
+          serachTags = val;
           return where(key, "array-contains-any", val);
         } else if (key === "text") {
           const slug = textSlug(val);
@@ -153,6 +157,13 @@ export const useAppStore = defineStore("app", {
       } else {
         this.next = null;
         this.error = this.objects.length === 0 ? "empty" : null;
+      }
+
+      // filter by tags
+      if (serachTags) {
+        this.objects = this.objects.filter((d) =>
+          includeSub(d.tags, serachTags)
+        );
       }
 
       this.busy = false;
