@@ -117,8 +117,9 @@ export const useAppStore = defineStore("app", {
     },
     async fetchRecords(reset = false, invoked = "") {
       let max = CONFIG.limit;
-      let serachTags = null;
-      this.error = null;
+      let serachTags = null,
+        serachText = null;
+
       if (this.busy) {
         if (process.env.DEV) console.log("SKIPPED FOR " + invoked);
         return;
@@ -131,6 +132,8 @@ export const useAppStore = defineStore("app", {
         } else if (key === "text") {
           const slug = textSlug(val);
           const arr = sliceSlug(slug);
+          serachText = arr;
+          max *= arr.length;
           return where(key, "array-contains-any", arr);
         } else {
           return where(key, "==", val);
@@ -146,22 +149,34 @@ export const useAppStore = defineStore("app", {
       const q = query(photosCol, ...constraints);
 
       this.busy = true;
-      const querySnapshot = await getDocs(q);
-      if (reset) this.objects.length = 0;
-      querySnapshot.forEach((d) => {
-        this.objects.push(d.data());
-      });
-      const next = querySnapshot.docs[querySnapshot.docs.length - 1];
-      if (next && next.id) {
-        next.id === this.next ? (this.next = null) : (this.next = next.id);
-      } else {
-        this.next = null;
+      try {
+        const querySnapshot = await getDocs(q);
+        if (reset) this.objects.length = 0;
+        querySnapshot.forEach((d) => {
+          this.objects.push(d.data());
+        });
+        const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+        if (next && next.id) {
+          next.id === this.next ? (this.next = null) : (this.next = next.id);
+        } else {
+          this.next = null;
+        }
+      } catch (err) {
+        this.error = err.message;
+        this.busy = false;
+        return;
       }
 
       // filter by tags
       if (serachTags) {
         this.objects = this.objects.filter((d) =>
           includeSub(d.tags, serachTags)
+        );
+      }
+      // filter by text
+      if (serachText) {
+        this.objects = this.objects.filter((d) =>
+          includeSub(d.text, serachText)
         );
       }
 
