@@ -1,8 +1,4 @@
-import { defineAsyncComponent } from "vue";
 import { CONFIG } from "../helpers";
-
-const Find = defineAsyncComponent(() => import("../components/Find.vue"));
-const Stat = defineAsyncComponent(() => import("../components/Stat.vue"));
 
 const routes = [
   {
@@ -20,11 +16,13 @@ const routes = [
   {
     path: "/list",
     component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Find },
     children: [
       {
         path: "",
-        component: () => import("../pages/Browser-Page.vue"),
+        components: {
+          default: () => import("../pages/Browser-Page.vue"),
+          sidebar: () => import("../components/Find.vue"),
+        },
         name: "list",
         meta: { title: CONFIG.title },
       },
@@ -33,11 +31,13 @@ const routes = [
   {
     path: "/add",
     component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Stat },
     children: [
       {
         path: "",
-        component: () => import("../pages/Add-Page.vue"),
+        components: {
+          default: () => import("../pages/Add-Page.vue"),
+          sidebar: () => import("../components/Stat.vue"),
+        },
         name: "add",
         meta: { title: "Add", requiresAuth: true },
       },
@@ -46,11 +46,13 @@ const routes = [
   {
     path: "/admin",
     component: () => import("../layouts/Default.vue"),
-    meta: { sidebar: Stat },
     children: [
       {
         path: "",
-        component: () => import("../pages/Admin-Page.vue"),
+        components: {
+          default: () => import("../pages/Admin-Page.vue"),
+          sidebar: () => import("../components/Stat.vue"),
+        },
         name: "admin",
         meta: { title: "Administration", requiresAdmin: true },
       },

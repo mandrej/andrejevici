@@ -49,7 +49,7 @@
       dark
     >
       <keep-alive>
-        <component :is="$route.meta.sidebar || 'div'" />
+        <router-view name="sidebar" />
       </keep-alive>
       <q-space />
       <Menu />
