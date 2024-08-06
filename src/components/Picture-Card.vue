@@ -1,6 +1,6 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
-    <div class="row">
+    <q-card-section horizontal>
       <q-img
         class="cursor-pointer col"
         style="height: 240px"
@@ -34,7 +34,7 @@
         />
         <q-btn flat round icon="share" @click="onShare" />
       </q-card-actions>
-    </div>
+    </q-card-section>
     <q-card-section class="row justify-between">
       <span>
         <router-link
