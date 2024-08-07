@@ -21,17 +21,19 @@
       >
     </span>
   </div>
-  <div class="q-px-md text-subtitle1 gt-xs">
-    <router-link
-      v-for="(count, value) in meta.tagsWithCount"
-      :class="linkAttribute(count, CONFIG.tagsMin)"
-      :key="value"
-      :title="`${value}: ${count}`"
-      :to="{ path: '/list', query: { tags: value } }"
-      class="q-pr-sm link"
-      >{{ value }}</router-link
-    >
-  </div>
+  <q-scroll-area class="gt-xs" style="height: 400px">
+    <div class="q-px-md text-subtitle1">
+      <router-link
+        v-for="(count, value) in meta.tagsWithCount"
+        :class="linkAttribute(count, CONFIG.tagsMin)"
+        :key="value"
+        :title="`${value}: ${count}`"
+        :to="{ path: '/list', query: { tags: value } }"
+        class="q-pr-sm link"
+        >{{ value }}</router-link
+      >
+    </div>
+  </q-scroll-area>
 </template>
 
 <script setup>
