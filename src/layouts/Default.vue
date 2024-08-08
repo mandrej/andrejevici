@@ -48,9 +48,7 @@
       elevated
       dark
     >
-      <keep-alive>
-        <router-view name="sidebar" />
-      </keep-alive>
+      <router-view name="sidebar" />
       <q-space />
       <Menu />
     </q-drawer>
