@@ -36,17 +36,12 @@
         <q-item-label caption>rebuild various counters</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item>
-      <q-item-section>
-        <q-item-label caption class="text-right">{{ version }}</q-item-label>
-      </q-item-section>
-    </q-item>
+    <q-item></q-item>
   </q-list>
 </template>
 
 <script setup>
 import { useUserStore } from "../stores/user";
-import { version } from "../helpers";
 
 const auth = useUserStore();
 </script>

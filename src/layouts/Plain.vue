@@ -3,7 +3,7 @@
     <q-page-container>
       <q-page v-if="last.href" class="row">
         <q-responsive
-          :ratio="1.75"
+          :ratio="1"
           class="col-xs-12 col-md-6 shadow-12"
           :style="imageStyle"
         >
@@ -31,22 +31,23 @@
           </router-link>
         </q-responsive>
 
-        <div class="col-xs-12 col-md-6">
-          <q-toolbar class="bg-grey-10 text-white q-pa-md shadow-12">
-            <q-toolbar-title class="text-h4" style="line-height: 100%">
+        <div class="col-xs-12 col-md-6 q-pa-md row justify-center">
+          <div class="row self-center">
+            <div class="text-h3 text-right text-weight-thin">
+              <p class="q-ma-none text-body2 text-right">{{ version }}</p>
               {{ $route.meta.title }}
-              <br />
-              <span class="text-body1"
-                >{{ app.bucket.count }} photos since {{ app.since }} and
-                counting</span
-              >
-            </q-toolbar-title>
+              <p class="q-ma-none text-body1">
+                {{ app.bucket.count }} photos since {{ app.since }} and counting
+              </p>
+            </div>
             <History-Button
               v-if="app.find && Object.keys(app.find).length"
-              size="2em"
+              size="2.5em"
             />
-          </q-toolbar>
-          <router-view />
+          </div>
+          <!-- <div>
+            <router-view />
+          </div> -->
         </div>
       </q-page>
 
@@ -112,7 +113,7 @@
 import { onMounted, computed } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
-import { fileBroken } from "../helpers";
+import { fileBroken, version } from "../helpers";
 import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();

@@ -21,7 +21,7 @@
       >
     </span>
   </div>
-  <q-scroll-area class="gt-xs" style="height: 400px">
+  <q-scroll-area class="gt-sm" style="height: 30vh">
     <div class="q-px-md text-subtitle1">
       <router-link
         v-for="(count, value) in meta.tagsWithCount"
