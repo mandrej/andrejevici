@@ -33,10 +33,10 @@
 
         <div class="col-xs-12 col-md-6 q-pa-md row justify-center">
           <div class="row no-wrap self-center">
-            <div class="text-h3 text-right text-weight-thin">
+            <div class="text-h4 text-right text-weight-thin">
               <p class="q-ma-none text-body2 text-right">{{ version }}</p>
               {{ $route.meta.title }}
-              <p class="q-ma-none text-body1">
+              <p class="q-ma-none text-body2">
                 {{ app.bucket.count }} photos since {{ app.since }} and counting
               </p>
             </div>
