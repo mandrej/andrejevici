@@ -45,17 +45,18 @@
               size="2.3em"
             />
           </div>
-          <!-- <div>
+          <div>
             <router-view />
-          </div> -->
+          </div>
         </div>
       </q-page>
 
-      <q-page v-else class="q-pa-md row justify-center" :style="brokenStyle">
+      <q-page v-else class="q-pa-md row justify-center">
         <div class="q-my-xl self-center">
           <div class="text-h3 text-right text-weight-thin">
             <p class="q-ma-none text-body2 text-right">{{ version }}</p>
             {{ $route.meta.title }}
+            <p class="q-ma-none text-body2">photo album</p>
           </div>
         </div>
         <div class="row justify-center">
@@ -91,7 +92,7 @@
               This application is made for my personal photographic needs. I
               couldn't find any better nor cheeper solutions to store my photos.
               Application provide searching based on tags, year, month, day,
-              model, lens and author. Application is build using
+              model, lens and author. Application is built using
               <a href="https://firebase.google.com/">Firebase</a> on
               <a href="https://nodejs.org/">node.js</a> and
               <a href="https://quasar.dev/">Quasar</a>&nbsp;
@@ -132,5 +133,5 @@ const imageStyle = computed(() => {
     "transition: background-image 0.2s ease-in-out;"
   );
 });
-const brokenStyle = "background-image: url(" + fileBroken + ");" + common;
+// const brokenStyle = "background-image: url(" + fileBroken + ");" + common;
 </script>

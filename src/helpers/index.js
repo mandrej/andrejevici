@@ -44,7 +44,7 @@ const removeHash = () => {
 };
 const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join(".");
-  return "© 2007 - " + ver;
+  return "ver. " + ver;
 });
 const removeByProperty = (arr, property, value) => {
   const idx = arr.findIndex((it) => it[property] === value);
