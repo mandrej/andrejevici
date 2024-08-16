@@ -19,11 +19,11 @@ import CONFIG from "app/config";
 
 const meta = useValuesStore();
 
-onMounted(() => {
-  meta.fieldCount("email");
-  meta.fieldCount("year");
-  meta.fieldCount("tags");
-});
+// onMounted(() => {
+//   meta.fieldCount("email");
+//   meta.fieldCount("year");
+//   meta.fieldCount("tags");
+// });
 const linkAttribute = (count, limit = 5) => {
   if (count < limit) {
     return "text-grey";

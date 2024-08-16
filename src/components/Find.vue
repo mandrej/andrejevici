@@ -139,11 +139,11 @@ const queryDispatch = (query, invoked = "") => {
   }
 };
 
-onMounted(() => {
-  if (route.name !== "list") return;
-  meta.fieldCount("model");
-  meta.fieldCount("lens");
-});
+// onMounted(() => {
+//   if (route.name !== "list") return;
+//   meta.fieldCount("model");
+//   meta.fieldCount("lens");
+// });
 
 watch(
   route,

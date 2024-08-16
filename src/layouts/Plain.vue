@@ -45,9 +45,8 @@
               size="2.3em"
             />
           </div>
-          <div>
-            <router-view />
-          </div>
+
+          <router-view />
         </div>
       </q-page>
 
