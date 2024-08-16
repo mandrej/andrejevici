@@ -31,6 +31,13 @@
 
         <History-Button v-else />
 
+        <template v-if="$route.name === 'admin'">
+          <q-tabs v-model="app.tab" indicator-color="primary" align="justify">
+            <q-tab name="repair" label="Rebuild / Repair" />
+            <q-tab name="tags" label="Tags" />
+          </q-tabs>
+        </template>
+
         <q-linear-progress
           v-show="app.busy"
           color="warning"
@@ -75,4 +82,5 @@ const app = useAppStore();
 const auth = useUserStore();
 const drawer = ref(false);
 const editMode = computed(() => app.editMode);
+const tab = computed(() => app.tab);
 </script>

@@ -31,7 +31,7 @@
           </router-link>
         </q-responsive>
 
-        <div class="col-xs-12 col-md-6 q-pa-md row justify-center">
+        <div class="col-xs-12 col-md-6 q-pa-md column justify-center">
           <div class="row no-wrap self-center">
             <div class="text-h4 text-right text-weight-thin">
               <p class="q-ma-none text-body2 text-right">{{ version }}</p>

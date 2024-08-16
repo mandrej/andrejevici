@@ -68,6 +68,7 @@ export const useAppStore = defineStore("app", {
     showConfirm: false,
     showCarousel: false,
     editMode: false,
+    tab: "repair",
   }),
   getters: {
     record: (state) => {
