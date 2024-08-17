@@ -1719,10 +1719,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@quasar/app-vite@^1.9.4":
-  version "1.9.4"
-  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-1.9.4.tgz#25c8c45aafae4105603718019bf490a41b2d397c"
-  integrity sha512-8O90WJNCA5vP1aD33tWbOg2oSR2mkdHQhzt9s+qKmwIWDKaPB0jm+BNv87Vvan2eNM55apeM6eNJ+BTxEWnXQg==
+"@quasar/app-vite@^1.9.5":
+  version "1.9.5"
+  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-1.9.5.tgz#99c06269fc655e5a35b51d2ecdac9da98b0c3034"
+  integrity sha512-WO/S8Omav28BzV6BAOY9Gq5k/jmrIklZ+/rXtWqmW1OFIyyI9Gw62kGsVHgLQ0f1Jv1BNdaqWixD6fUcV+knTw==
   dependencies:
     "@quasar/render-ssr-error" "^1.0.3"
     "@quasar/vite-plugin" "^1.7.0"
@@ -5257,10 +5257,10 @@ qs@6.11.0:
   dependencies:
     side-channel "^1.0.4"
 
-quasar@^2.16.8:
-  version "2.16.8"
-  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.16.8.tgz#8faa9db2def36d4797c971f8d88428c98fa51846"
-  integrity sha512-vxWKXoMEzxNw208W1hANsPzvPg4RKGuhNgwX4US4Uqwy6uKAXhxnyU9Yh4J1lXGzX2z+3hnV98DaQ5wYSioxtQ==
+quasar@^2.16.9:
+  version "2.16.9"
+  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.16.9.tgz#0bda85983126f66b205752b00de7a5529aab4b44"
+  integrity sha512-cAbt5l8hbxf7GQSwtYQ/3TlrbA8cOfjXXbFvikx4amMQEFKVB/vi/PfQMjbdRVcK/zEB6hu1y5OjS/9NlpJc/Q==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
