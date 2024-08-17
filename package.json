@@ -25,8 +25,8 @@
     "swiper": "^11.1.4",
     "transliteration": "^2.3.5",
     "uuid4": "^2.0.3",
-    "vue": "^3",
-    "vue-router": "^4"
+    "vue": "^3.4.38",
+    "vue-router": "^4.4.3"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.9.4",

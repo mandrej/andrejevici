@@ -1,6 +1,5 @@
 import { nextTick } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
-import { useUserStore } from "../stores/user";
 import routes from "./routes";
 
 const router = createRouter({
@@ -9,19 +8,10 @@ const router = createRouter({
   history: createWebHistory(process.env.VUE_ROUTER_BASE),
 });
 
-router.beforeEach((to, from) => {
-  const auth = useUserStore();
-  const user = auth.user;
-
-  if (to.meta.requiresAuth && !user.isAuthorized) {
-    return { name: "401", replace: true };
-  } else if (to.meta.requiresAdmin && !user.isAdmin) {
-    return { name: "401", replace: true };
-  }
-});
 router.afterEach((to, from) => {
   // Use next tick to handle router history correctly
   // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
+
   nextTick(() => {
     document.title = to.meta.title;
   });

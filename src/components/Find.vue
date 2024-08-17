@@ -97,7 +97,7 @@
 </template>
 
 <script setup>
-import { onMounted, computed, watch, ref } from "vue";
+import { computed, watch, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
@@ -139,16 +139,9 @@ const queryDispatch = (query, invoked = "") => {
   }
 };
 
-// onMounted(() => {
-//   if (route.name !== "list") return;
-//   meta.fieldCount("model");
-//   meta.fieldCount("lens");
-// });
-
 watch(
   route,
   (to) => {
-    if (to.name !== "list") return;
     queryDispatch(to.query, "route");
   },
   { deep: true, immediate: true }
