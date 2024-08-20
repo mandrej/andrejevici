@@ -129,19 +129,24 @@ const onSubmit = (evt) => {
     notify({ message: `Nothing to upload` });
   }
   for (const [i, file] of data.entries()) {
-    // console.log(file);
     promises.push(uploadPromise(i, file));
   }
   inProgress.value = true;
-  Promise.all(promises)
-    .then((results) => {
-      results.forEach((it) => {
-        removeByProperty(files.value, "name", it);
-      });
-    })
-    .catch((err) => {
-      console.log(err);
+  Promise.allSettled(promises).then((results) => {
+    results.forEach((it) => {
+      if (it.status === "fulfilled") {
+        progressInfos[it.value] = 0;
+      } else {
+        notify({
+          type: "negative",
+          message: `Rejected ${it.value}.`,
+          actions: [{ icon: "close", color: "white" }],
+          timeout: 0,
+        });
+      }
+      removeByProperty(files.value, "name", it.value);
     });
+  });
 };
 
 const uploadPromise = (i, file) => {
@@ -154,16 +159,19 @@ const uploadPromise = (i, file) => {
       .then(async (url) => {
         filename = alter(filename);
         await uploadTask(i, filename, file).then(() => {
+          if (process.env.DEV) console.log(filename, "altered");
           resolve(file.name);
         });
       })
       .catch(async (error) => {
         if (error.code === "storage/object-not-found") {
           await uploadTask(i, filename, file).then(() => {
+            if (process.env.DEV) console.log(file.name, "resolved");
             resolve(file.name);
           });
         } else {
-          resolve(file.name);
+          if (process.env.DEV) console.log(file.name, "rejected");
+          reject(file.name);
         }
       });
   });
@@ -183,7 +191,6 @@ const uploadTask = async (i, filename, file) => {
         (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
     },
     (error) => {
-      console.log(error);
       progressInfos[i] = 0;
     },
     () => {
