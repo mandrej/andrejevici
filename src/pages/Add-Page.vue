@@ -2,16 +2,16 @@
   <Edit-Record v-if="app.showEdit" :rec="current" />
 
   <q-page v-else class="q-pa-md">
-    <div class="relative-position column" style="height: 10px">
+    <div class="relative-position column q-pb-md">
       <div class="row absolute-top">
         <q-linear-progress
-          v-for="(progress, index) in progressInfos"
-          :key="index"
-          size="10px"
-          :value="progress"
+          v-for="(it, i) in Object.entries(progressInfos)"
+          :key="i"
+          size="15px"
+          :value="it[1]"
           color="warning"
-          :style="{ width: 100 / progressInfos.length + '%' }"
-          stripe
+          :style="{ width: 100 / Object.entries(progressInfos).length + '%' }"
+          :title="it[0]"
         />
       </div>
     </div>
@@ -29,7 +29,7 @@
         hint="Drag your images above to upload, or click to browse and select. Then
           publish image on site. Accepts maximum 10 jpg (jpeg) files less then 4
           Mb in size."
-        @rejected="onRejected"
+        @rejected="onValidationError"
       />
       <div class="column">
         <q-btn
@@ -112,106 +112,118 @@ const tagsToApply = computed({
 });
 
 let files = ref([]);
-let progressInfos = reactive([]);
-const inProgress = ref(false);
+let progressInfos = reactive({});
 
-const onSubmit = (evt) => {
-  const data = [];
-  const promises = [];
-  const formData = new FormData(evt.target);
-
-  for (const [name, value] of formData.entries()) {
-    if (value.name.length > 0) {
-      data.push(value);
-    }
-  }
-  if (data.length === 0) {
-    notify({ message: `Nothing to upload` });
-  }
-  for (const [i, file] of data.entries()) {
-    promises.push(uploadPromise(i, file));
-  }
-  inProgress.value = true;
-  Promise.allSettled(promises).then((results) => {
-    results.forEach((it) => {
-      if (it.status === "fulfilled") {
-        progressInfos[it.value] = 0;
-      } else {
-        notify({
-          type: "negative",
-          message: `Rejected ${it.value}.`,
-          actions: [{ icon: "close", color: "white" }],
-          timeout: 0,
-        });
-      }
-      removeByProperty(files.value, "name", it.value);
-    });
-  });
+const alter = (filename) => {
+  const id = uuid4();
+  const [, name, ext] = filename.match(reFilename);
+  return name + "_" + id.substring(id.length - 12) + ext;
 };
 
-const uploadPromise = (i, file) => {
+const checkExists = (originalFilename) => {
+  const reClean = new RegExp(/[\.\s\\){}\[\]]+/g);
+  const [, name, ext] = originalFilename.match(reFilename);
+  let filename = name.replace(/[(]+/g, "_").replace(reClean, "") + ext;
+
   return new Promise((resolve, reject) => {
-    const reClean = new RegExp(/[\.\s\\){}\[\]]+/g);
-    const [, name, ext] = file.name.match(reFilename);
-    let filename = name.replace(/[(]+/g, "_").replace(reClean, "") + ext;
-    const _ref = storageRef(storage, filename);
-    getDownloadURL(_ref)
-      .then(async (url) => {
+    getDownloadURL(storageRef(storage, filename))
+      .then(() => {
+        // exist rename
         filename = alter(filename);
-        await uploadTask(i, filename, file).then(() => {
-          if (process.env.DEV) console.log(filename, "altered");
-          resolve(file.name);
-        });
+        resolve(filename);
       })
-      .catch(async (error) => {
+      .catch((error) => {
         if (error.code === "storage/object-not-found") {
-          await uploadTask(i, filename, file).then(() => {
-            if (process.env.DEV) console.log(file.name, "resolved");
-            resolve(file.name);
-          });
+          // does not exist
+          resolve(filename);
         } else {
-          if (process.env.DEV) console.log(file.name, "rejected");
-          reject(file.name);
+          notify({
+            type: "external",
+            html: true,
+            message: `${originalFilename}<br/>${error}`,
+            actions: [{ icon: "close", color: "white" }],
+            timeout: 0,
+          });
+          reject(filename);
         }
       });
   });
 };
+const onSubmit = async (evt) => {
+  const promises = [];
+  const formData = new FormData(evt.target);
 
-const uploadTask = async (i, filename, file) => {
-  progressInfos[i] = 0;
-  const _ref = storageRef(storage, filename);
-  const task = uploadBytesResumable(_ref, file, {
-    contentType: file.type,
-    cacheControl: "public, max-age=604800",
-  });
-  task.on(
-    "state_changed",
-    (snapshot) => {
-      progressInfos[i] =
-        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    },
-    (error) => {
-      progressInfos[i] = 0;
-    },
-    () => {
-      getDownloadURL(task.snapshot.ref).then((downloadURL) => {
-        // const urlParams = new URLSearchParams(downloadURL);
-        // console.log(urlParams.get("token"));
-        const data = {
-          url: downloadURL,
-          filename: filename,
-          size: file.size,
-          email: auth.user.email,
-          nick: emailNick(auth.user.email),
-        };
-        app.uploaded.push(data);
-        progressInfos[i] = 0;
+  if (files.value.length === 0) {
+    notify({ message: `Nothing to upload` });
+  }
+  for (const [name, file] of formData.entries()) {
+    // name = 'photos'
+    if (file instanceof File) {
+      promises.push(uploadTask(file));
+    }
+  }
+
+  files.value = [];
+  const results = await Promise.allSettled(promises);
+  results.forEach((it) => {
+    if (it.status === "rejected") {
+      notify({
+        type: "negative",
+        message: `Rejected ${it.reason}.`,
+        actions: [{ icon: "close", color: "white" }],
+        timeout: 0,
       });
     }
-  );
+    // removeByProperty(files.value, "name", it.value);
+  });
+  // progressInfos.entries
+  //   .filter((it) => it[1] > 0)
+  //   .forEach((it) => {
+  //     console.log(it[0]);
+  //   });
 };
 
-const onRejected = (rejectedEntries) => {
+const uploadTask = (file) => {
+  return new Promise(async (resolve, reject) => {
+    const filename = await checkExists(file.name);
+    progressInfos[file.name] = 0;
+    const _ref = storageRef(storage, filename);
+    const task = uploadBytesResumable(_ref, file, {
+      contentType: file.type,
+      cacheControl: "public, max-age=604800",
+    });
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        progressInfos[file.name] =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      },
+      (error) => {
+        progressInfos[file.name] = 0;
+        reject(file.name);
+      },
+      () => {
+        getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+          // const urlParams = new URLSearchParams(downloadURL);
+          // console.log(urlParams.get("token"));
+          const data = {
+            url: downloadURL,
+            filename: filename,
+            size: file.size,
+            email: auth.user.email,
+            nick: emailNick(auth.user.email),
+          };
+          app.uploaded.push(data);
+          progressInfos[file.name] = 0;
+          resolve(file.name);
+          if (process.env.DEV) console.log("uploaded", file.name);
+        });
+      }
+    );
+  });
+};
+
+const onValidationError = (rejectedEntries) => {
   rejectedEntries.forEach((it) => {
     notify({
       type: "warning",
@@ -220,12 +232,6 @@ const onRejected = (rejectedEntries) => {
       timeout: 0,
     });
   });
-};
-
-const alter = (filename) => {
-  const id = uuid4();
-  const [, name, ext] = filename.match(reFilename);
-  return name + "_" + id.substring(id.length - 12) + ext;
 };
 
 const addNewTag = (inputValue, done) => {
