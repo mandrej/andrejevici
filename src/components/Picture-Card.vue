@@ -117,11 +117,20 @@ const props = defineProps({
 });
 
 const cardAttributes = (filename) => {
-  const [, name, ext] = filename.match(reFilename);
-  return {
-    id: U + name,
-    class: ext.substring(1),
-  };
+  let attr;
+  try {
+    const [, name, ext] = filename.match(reFilename);
+    attr = {
+      id: U + name,
+      class: ext.substring(1),
+    };
+  } catch (e) {
+    attr = {
+      id: U + "x",
+      class: "jpg",
+    };
+  }
+  return attr;
 };
 const onShare = () => {
   const url = window.location.href + "#" + U + props.rec.filename;

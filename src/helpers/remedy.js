@@ -17,6 +17,7 @@ import {
 } from "firebase/storage";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
+import { emailNick } from ".";
 import router from "../router";
 import notify from "./notify";
 
@@ -53,6 +54,25 @@ export const fix = async () => {
   });
 };
 
+const getStorageData = (filename) => {
+  return new Promise(async (resolve, reject) => {
+    const _ref = storageRef(storage, filename);
+    const downloadURL = await getDownloadURL(_ref);
+    const metadata = await getMetadata(_ref);
+    if (downloadURL) {
+      resolve({
+        url: downloadURL,
+        filename: filename,
+        size: metadata.size || 0,
+        email: auth.user.email,
+        nick: emailNick(auth.user.email),
+      });
+    } else {
+      reject;
+    }
+  });
+};
+
 export const mismatch = async () => {
   notify({
     message: `Please wait`,
@@ -60,7 +80,6 @@ export const mismatch = async () => {
     actions: [{ icon: "close", color: "white" }],
     group: "mismatch",
   });
-  let result = 0;
   const bucketNames = [];
   const storageNames = [];
   const uploadedFilenames = app.uploaded.length
@@ -86,27 +105,24 @@ export const mismatch = async () => {
   });
 
   let missing;
+  let promises = [];
   if (bucketNames.length >= storageNames.length) {
     // uploaded to bucket but no record in firestore
     missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1);
     for (let name of missing) {
       if (uploadedFilenames.indexOf(name) === -1) {
-        const _ref = storageRef(storage, name);
-        const metadata = await getMetadata(_ref);
-        const downloadURL = await getDownloadURL(_ref);
-        app.uploaded.push({
-          url: downloadURL,
-          filename: name,
-          size: metadata.size,
-          email: auth.user.email,
-          nick: emailNick(auth.user.email),
-        });
-        result++;
+        promises.push(getStorageData(name));
       }
     }
-    if (result > 0) {
+    if (promises.length > 0) {
+      Promise.all(promises).then((results) => {
+        results.forEach((it) => {
+          app.uploaded.push(it);
+        });
+      });
       notify({
-        message: `${result} files uploaded to bucket, but doesn't have record in firestore.<br>
+        type: "negative",
+        message: `${promises.length} files uploaded to bucket, but doesn't have record in firestore.<br>
         Resolve mismathed files either by publish or delete.`,
         actions: [
           {
@@ -135,7 +151,7 @@ export const mismatch = async () => {
     }
     notify({
       message: `${missing.length} records deleted from firestore that doesn't have image reference`,
-      type: "warning",
+      type: "negative",
       group: "mismatch",
     });
   }
