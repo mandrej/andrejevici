@@ -221,7 +221,7 @@ export const useAppStore = defineStore("app", {
     async deleteRecord(obj) {
       notify({
         group: `${obj.filename}`,
-        message: `About to delete`,
+        message: `Please wait`,
       });
       if (obj.thumb) {
         const docRef = doc(db, "Photo", obj.filename);
