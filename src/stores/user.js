@@ -34,7 +34,7 @@ const adminMember = (email) => {
 
 export const useUserStore = defineStore("auth", {
   state: () => ({
-    user: {},
+    user: null,
     token: null,
   }),
   getters: {
@@ -86,7 +86,7 @@ export const useUserStore = defineStore("auth", {
     signIn() {
       if (this.user && this.user.uid) {
         auth.signOut().then(() => {
-          this.user = {};
+          this.user = null;
           const routeName = router.currentRoute.value.name;
           if (routeName === "add" || routeName === "admin") {
             router.push({ name: "home" });

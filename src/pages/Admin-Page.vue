@@ -134,7 +134,8 @@ const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
 
-const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
+const message = ref("TEST");
+// const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
 const values = computed(() => meta.values);
 const newTagRef = ref(null),
   newTag = ref(""),
