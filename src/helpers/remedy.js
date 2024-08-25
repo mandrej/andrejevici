@@ -97,12 +97,6 @@ export const mismatch = async () => {
 
   bucketNames.sort();
   storageNames.sort();
-  notify({
-    message: `There are ${bucketNames.length} files in bucket and ${storageNames.length} records in firestore`,
-    timeout: 0,
-    actions: [{ icon: "close", color: "white" }],
-    group: "mismatch",
-  });
 
   let missing;
   let promises = [];
