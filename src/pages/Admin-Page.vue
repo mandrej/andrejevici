@@ -11,7 +11,7 @@
             <q-item-section side>
               <q-btn
                 :disabled="!auth.token"
-                color="positive"
+                color="secondary"
                 label="Send"
                 @click="send"
               />
@@ -52,10 +52,17 @@
               Resolve Cloud storage and datastore mismatch
             </q-item-section>
             <q-item-section side>
-              <q-btn color="primary" label="Resolve" @click="mismatch" />
+              <q-btn color="negative" label="Resolve" @click="mismatch" />
             </q-item-section>
           </q-item>
         </q-list>
+
+        <!-- <q-btn color="primary" label="Show" @click="show" />
+        <q-btn class="bg-secondary text-dark" label="Show" @click="show" />
+        <q-btn color="accent" label="Show" @click="show" />
+        <q-btn color="positive" label="Show" @click="show" />
+        <q-btn color="negative" label="Show" @click="show" />
+        <q-btn color="dark" label="Show" @click="show" /> -->
       </q-tab-panel>
 
       <q-tab-panel name="tags">
@@ -129,6 +136,7 @@ import AutoComplete from "../components/Auto-Complete.vue";
 import { fix, mismatch } from "../helpers/remedy";
 import notify from "../helpers/notify";
 import { CONFIG, formatDatum, emailNick } from "../helpers";
+import { timeout } from "workbox-core/_private";
 
 const app = useAppStore();
 const meta = useValuesStore();
@@ -210,6 +218,23 @@ const linkAttribute = (count, limit = 5) => {
     return "text-grey";
   }
   return "text-black";
+};
+
+const show = () => {
+  const colors = [
+    "info",
+    "warning",
+    "positive",
+    "negative",
+    "ongoing",
+    "external",
+  ];
+  for (const color of colors) {
+    notify({
+      type: color,
+      message: `${color}`,
+    });
+  }
 };
 </script>
 

@@ -31,6 +31,5 @@ export default function notify(options) {
     actions: actions,
     caption: caption,
     icon: icon,
-    textColor: type === "negative" || "ongoing" ? "white" : "dark",
   });
 }
