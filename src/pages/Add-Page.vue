@@ -61,7 +61,7 @@
           <Picture-Card
             :rec="rec"
             :canManage="true"
-            @delete-record="app.deleteRecord"
+            @delete-record="deleteRecord"
             @edit-record="editRecord"
           />
         </div>
@@ -155,6 +155,7 @@ const onSubmit = async (evt) => {
 
   if (files.value.length === 0) {
     notify({ message: `Nothing to upload` });
+    return;
   }
   for (const [name, file] of formData.entries()) {
     // name = 'photos'
@@ -238,12 +239,17 @@ const addNewTag = (inputValue, done) => {
   meta.addNewField(inputValue, "tags");
   done(inputValue);
 };
+const deleteRecord = (rec) => {
+  delete progressInfos[rec.filename];
+  app.deleteRecord(rec);
+};
 const editRecord = async (rec) => {
   // /**
   //  * PUBLISH RECORD
   //  * Add user email and tags: [] to new rec; read exif
   //  * See Edit-Record getExif
   //  */
+  delete progressInfos[rec.filename];
   const exif = await readExif(rec.url);
   const tags = [...(tagsToApply.value || "")];
   rec = { ...rec, ...exif };
@@ -254,7 +260,6 @@ const editRecord = async (rec) => {
   rec.tags = tags;
   rec.email = auth.user.email;
 
-  // app.current = rec;
   fakeHistory();
   app.showEdit = true;
   app.current = rec;
