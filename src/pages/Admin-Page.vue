@@ -210,6 +210,9 @@ const send = () => {
     .then((response) => response.text())
     .then((text) => {
       return text;
+    })
+    .catch((error) => {
+      if (process.env.DEV) console.log(error);
     });
 };
 
