@@ -201,7 +201,6 @@ const send = () => {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
-  let body;
   fetch(url, {
     method: "POST",
     mode: "cors",
