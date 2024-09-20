@@ -93,7 +93,7 @@ const unsubscribe = async (tokens) => {
 const removeToken = async (token) => {
   if (token === undefined) return;
   const docRef = getFirestore().collection("Device").doc(token);
-  const doc = docRef.get();
-  logger.info(`Remove token for ${(await doc).data.email}`);
+  const doc = await docRef.get();
+  logger.info(`Remove token for ${doc.data().email}`);
   await docRef.delete();
 };
