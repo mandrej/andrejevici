@@ -201,18 +201,25 @@ const send = () => {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
+  let body;
   fetch(url, {
     method: "POST",
     mode: "cors",
     headers: headers,
     body: JSON.stringify({ text: message.value.trim() }),
   })
-    .then((response) => response.text())
+    .then((response) => {
+      if (!response.ok) {
+        throw response;
+      }
+      return response.text();
+    })
     .then((text) => {
+      notify({ message: `Message ${text} sent` });
       return text;
     })
     .catch((error) => {
-      if (process.env.DEV) console.log(error);
+      notify({ type: "negative", message: `${error}` });
     });
 };
 
