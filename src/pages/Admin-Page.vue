@@ -194,14 +194,11 @@ const renameTag = () => {
 };
 
 const send = () => {
-  const url = process.env.DEV
-    ? "http://localhost:5001/andrejevici/us-central1/notify"
-    : CONFIG.notifyUrl;
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
   };
-  fetch(url, {
+  fetch(CONFIG.notifyUrl, {
     method: "POST",
     mode: "cors",
     headers: headers,
