@@ -14,6 +14,7 @@ import {
   where,
   writeBatch,
   deleteField,
+  orderBy,
 } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { getMessaging, getToken } from "firebase/messaging";
@@ -24,6 +25,11 @@ const provider = new GoogleAuthProvider();
 // provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
 
 const deviceCol = collection(db, "Device");
+
+const timeStamp2Date = (ts) => {
+  const timeStamp = ts.seconds * 1000 + ts.nanoseconds / 1e6;
+  return new Date(timeStamp);
+};
 
 const familyMember = (email) => {
   return CONFIG.family.find((el) => el === email);
@@ -115,12 +121,29 @@ export const useUserStore = defineStore("auth", {
       };
       await setDoc(docRef, data, { merge: true });
     },
+    // async listDevices() {
+    //   const users = [];
+    //   let q = query(deviceCol, orderBy("email", "asc"));
+    //   let querySnapshot = await getDocs(q);
+    //   querySnapshot.forEach((d) => {
+    //     users.push(d.data().email);
+    //   });
+    //   const uniqueUsers = [...new Set(users)];
+    //   uniqueUsers.forEach(async (u) => {
+    //     q = query(deviceCol, where("email", "==", u), orderBy("stamp", "desc"));
+    //     querySnapshot = await getDocs(q);
+    //     querySnapshot.forEach((d) => {
+    //       console.log(u, timeStamp2Date(d.data().stamp));
+    //     });
+    //   });
+    // },
     removeDevice() {
       const q = query(deviceCol, where("email", "==", this.user.email));
       return new Promise((resolve, reject) => {
         this.deleteQueryBatch(db, q, resolve).catch(reject);
       });
     },
+
     async deleteQueryBatch(db, query, resolve) {
       const querySnapshot = await getDocs(query);
       const batchSize = querySnapshot.size;
