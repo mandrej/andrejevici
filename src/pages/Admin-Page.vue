@@ -47,16 +47,6 @@
               />
             </q-item-section>
           </q-item>
-          <!-- <q-item>
-            <q-item-section> List devices </q-item-section>
-            <q-item-section side>
-              <q-btn
-                color="primary"
-                label="Devices"
-                @click="auth.listDevices"
-              />
-            </q-item-section>
-          </q-item> -->
           <q-item>
             <q-item-section>
               Resolve Cloud storage and datastore mismatch

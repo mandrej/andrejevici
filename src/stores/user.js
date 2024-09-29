@@ -121,22 +121,6 @@ export const useUserStore = defineStore("auth", {
       };
       await setDoc(docRef, data, { merge: true });
     },
-    // async listDevices() {
-    //   const users = [];
-    //   let q = query(deviceCol, orderBy("email", "asc"));
-    //   let querySnapshot = await getDocs(q);
-    //   querySnapshot.forEach((d) => {
-    //     users.push(d.data().email);
-    //   });
-    //   const uniqueUsers = [...new Set(users)];
-    //   uniqueUsers.forEach(async (u) => {
-    //     q = query(deviceCol, where("email", "==", u), orderBy("stamp", "desc"));
-    //     querySnapshot = await getDocs(q);
-    //     querySnapshot.forEach((d) => {
-    //       console.log(u, timeStamp2Date(d.data().stamp));
-    //     });
-    //   });
-    // },
     removeDevice() {
       const q = query(deviceCol, where("email", "==", this.user.email));
       return new Promise((resolve, reject) => {
