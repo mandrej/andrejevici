@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { nextTick } from "vue";
 import { CONFIG } from "../helpers";
-import notify from "../helpers/notify";
 import { auth, db } from "../boot/fire";
 import {
   doc,
@@ -14,22 +13,18 @@ import {
   where,
   writeBatch,
   deleteField,
-  orderBy,
 } from "firebase/firestore";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { getMessaging, getToken } from "firebase/messaging";
 import router from "../router";
 
-const messaging = getMessaging();
 const provider = new GoogleAuthProvider();
 // provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
-
 const deviceCol = collection(db, "Device");
 
-const timeStamp2Date = (ts) => {
-  const timeStamp = ts.seconds * 1000 + ts.nanoseconds / 1e6;
-  return new Date(timeStamp);
-};
+// const timeStamp2Date = (ts) => {
+//   const timeStamp = ts.seconds * 1000 + ts.nanoseconds / 1e6;
+//   return new Date(timeStamp);
+// };
 
 const familyMember = (email) => {
   return CONFIG.family.find((el) => el === email);
@@ -147,34 +142,6 @@ export const useUserStore = defineStore("auth", {
       nextTick(() => {
         this.deleteQueryBatch(db, query, resolve);
       });
-    },
-    async fetchFCMToken() {
-      // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
-      const token = await getToken(messaging, {
-        vapidKey: CONFIG.firebase.vapidKey,
-      });
-      if (token) {
-        if (this.user) {
-          this.token = token;
-          await this.updateDevice();
-
-          this.user.allowPush = true;
-          this.user.askPush = false;
-          await this.updateUser();
-        }
-      } else {
-        // Failed to execute 'subscribe' on 'PushManager': Subscription failed - no active Service Worker
-        if (this.user) {
-          this.user.allowPush = true;
-          this.user.askPush = true;
-          await this.updateUser();
-        }
-        notify({
-          type: "negative",
-          multiLine: true,
-          message: `Unable to retrieve token, ${err}`,
-        });
-      }
     },
   },
   persist: {

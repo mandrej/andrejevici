@@ -22,9 +22,13 @@
 
 <script setup>
 import { ref } from "vue";
+import { CONFIG } from "../helpers";
+import notify from "../helpers/notify";
 import { useUserStore } from "../stores/user";
+import { getMessaging, getToken } from "firebase/messaging";
 
 const auth = useUserStore();
+const messaging = getMessaging();
 const open = ref(true);
 
 const props = defineProps({
@@ -46,11 +50,28 @@ const disableNotification = async () => {
 const enableNotifications = () => {
   Notification.requestPermission().then(async (permission) => {
     if (permission === "granted") {
-      await auth.fetchFCMToken();
-    } else {
-      auth.user.allowPush = true;
-      auth.user.askPush = true;
-      await auth.updateUser();
+      // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
+      const token = await getToken(messaging, {
+        vapidKey: CONFIG.firebase.vapidKey,
+      });
+      if (token) {
+        auth.token = token;
+        await auth.updateDevice();
+
+        auth.user.allowPush = true;
+        auth.user.askPush = false;
+        await auth.updateUser();
+      } else {
+        auth.user.allowPush = true;
+        auth.user.askPush = true;
+        await auth.updateUser();
+
+        notify({
+          type: "negative",
+          multiLine: true,
+          message: `Unable to retrieve token`,
+        });
+      }
     }
   });
 };
