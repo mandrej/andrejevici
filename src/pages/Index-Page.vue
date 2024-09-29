@@ -14,16 +14,21 @@
 
 <script setup>
 import { onMounted } from "vue";
+import { isEmpty } from "lodash";
 import { useValuesStore } from "../stores/values";
 import CONFIG from "app/config";
 
 const meta = useValuesStore();
 
-// onMounted(() => {
-//   meta.fieldCount("email");
-//   meta.fieldCount("year");
-//   meta.fieldCount("tags");
-// });
+onMounted(() => {
+  if (isEmpty(meta.values.email)) {
+    meta.fieldCount("email");
+    meta.fieldCount("year");
+    meta.fieldCount("tags");
+    meta.fieldCount("model");
+    meta.fieldCount("lens");
+  }
+});
 const linkAttribute = (count, limit = 5) => {
   if (count < limit) {
     return "text-grey";

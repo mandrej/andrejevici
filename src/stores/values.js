@@ -86,14 +86,14 @@ export const useValuesStore = defineStore("meta", {
     },
   },
   actions: {
-    // async fieldCount(field) {
-    //   const q = query(countersCol, where("field", "==", field));
-    //   const querySnapshot = await getDocs(q);
-    //   querySnapshot.forEach((d) => {
-    //     const obj = d.data();
-    //     this.values[field][obj.value] = obj.count;
-    //   });
-    // },
+    async fieldCount(field) {
+      const q = query(countersCol, where("field", "==", field));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((d) => {
+        const obj = d.data();
+        this.values[field][obj.value] = obj.count;
+      });
+    },
     async countersBuild() {
       notify({
         message: `Please wait`,
