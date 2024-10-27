@@ -36,11 +36,11 @@
           </q-item>
           <q-item>
             <q-item-section>
-              {{ formatDatum("2023-08-25", "DD.MM.YYYY") }} Use ASCII for search
+              {{ formatDatum("2024-10-27", "DD.MM.YYYY") }} Fix text array
             </q-item-section>
             <q-item-section side>
               <q-btn
-                :disabled="true"
+                :disabled="!auth.token"
                 color="primary"
                 label="Fix"
                 @click="fix"

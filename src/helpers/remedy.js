@@ -15,6 +15,7 @@ import {
   getMetadata,
   getDownloadURL,
 } from "firebase/storage";
+import { textSlug, sliceSlug } from "../helpers";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { emailNick } from ".";
@@ -26,31 +27,23 @@ const auth = useUserStore();
 const photosCol = collection(db, "Photo");
 
 export const fix = async () => {
-  const test = ["ш", "ђ", "љ", "џ", "ћ", "ч", "ж"];
+  const num = 0;
   const q = query(photosCol, orderBy("date", "desc"));
   const querySnapshot = await getDocs(q);
-  if (querySnapshot.empty) return null;
-
   querySnapshot.forEach(async (it) => {
     const rec = it.data();
-
-    const docRef = doc(db, "Photo", rec.filename);
-    await updateDoc(docRef, { done: false });
-
-    const headline = rec.headline.toLowerCase();
-    for (const c of test) {
-      if (headline.indexOf(c) !== -1) {
-        const docRef = doc(db, "Photo", rec.filename);
-        const slug = textSlug(rec.headline);
-        rec.text = sliceSlug(slug);
-        await setDoc(docRef, rec, { merge: true });
-        // const data = {
-        //   done: deleteField(),
-        // };
-        // await updateDoc(docRef, data);
-        notify({ message: slug });
-      }
+    if (!rec.text) {
+      const docRef = doc(db, "Photo", rec.filename);
+      const slug = textSlug(rec.headline);
+      rec.text = sliceSlug(slug);
+      await setDoc(docRef, rec, { merge: true });
     }
+  });
+  notify({
+    message: `Fixed ${num} records`,
+    timeout: 0,
+    actions: [{ icon: "close", color: "white" }],
+    group: "fix",
   });
 };
 
