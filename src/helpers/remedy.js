@@ -41,12 +41,17 @@ export const fix = async () => {
       rec.text = sliceSlug(slug);
       notify({
         message: `Fixed ${++num} records`,
-        actions: [{ icon: "close", color: "white" }],
         group: "fix",
       });
       await setDoc(docRef, rec, { merge: true });
     }
   });
+  if (num === 0) {
+    notify({
+      message: `No records to fix`,
+      group: "fix",
+    });
+  }
 };
 
 const getStorageData = (filename) => {
