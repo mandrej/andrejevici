@@ -15,7 +15,6 @@ import {
   getMetadata,
   getDownloadURL,
 } from "firebase/storage";
-import { nextTick } from "vue";
 import { has } from "lodash";
 import { textSlug, sliceSlug } from "../helpers";
 import { useAppStore } from "../stores/app";
