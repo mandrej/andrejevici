@@ -15,6 +15,8 @@ import {
   getMetadata,
   getDownloadURL,
 } from "firebase/storage";
+import { nextTick } from "vue";
+import { has } from "lodash";
 import { textSlug, sliceSlug } from "../helpers";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
@@ -27,23 +29,23 @@ const auth = useUserStore();
 const photosCol = collection(db, "Photo");
 
 export const fix = async () => {
-  const num = 0;
+  let num = 0;
   const q = query(photosCol, orderBy("date", "desc"));
   const querySnapshot = await getDocs(q);
+
   querySnapshot.forEach(async (it) => {
     const rec = it.data();
-    if (!rec.text) {
+    if (!has(rec, "text")) {
       const docRef = doc(db, "Photo", rec.filename);
       const slug = textSlug(rec.headline);
       rec.text = sliceSlug(slug);
+      notify({
+        message: `Fixed ${++num} records`,
+        actions: [{ icon: "close", color: "white" }],
+        group: "fix",
+      });
       await setDoc(docRef, rec, { merge: true });
     }
-  });
-  notify({
-    message: `Fixed ${num} records`,
-    timeout: 0,
-    actions: [{ icon: "close", color: "white" }],
-    group: "fix",
   });
 };
 

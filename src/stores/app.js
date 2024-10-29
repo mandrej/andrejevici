@@ -194,8 +194,6 @@ export const useAppStore = defineStore("app", {
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef);
         meta.decreaseValues(oldDoc.data());
-        const slug = textSlug(obj.headline);
-        obj.text = sliceSlug(slug);
         await setDoc(docRef, obj, { merge: true });
 
         changedByProperty(this.objects, "filename", obj);
@@ -209,8 +207,6 @@ export const useAppStore = defineStore("app", {
           obj.thumb = thumbUrl(obj.filename);
         }
         // save everything
-        const slug = textSlug(obj.headline);
-        obj.text = sliceSlug(slug);
         await setDoc(docRef, obj, { merge: true });
         changedByProperty(this.objects, "filename", obj, 0);
         // delete uploaded

@@ -219,7 +219,15 @@
 
 <script setup>
 import { reactive } from "vue";
-import { CONFIG, fileBroken, formatBytes, U, emailNick } from "../helpers";
+import {
+  CONFIG,
+  fileBroken,
+  formatBytes,
+  U,
+  emailNick,
+  textSlug,
+  sliceSlug,
+} from "../helpers";
 import readExif from "../helpers/exif";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
@@ -302,6 +310,9 @@ const onSubmit = () => {
   tmp.nick = emailNick(tmp.email);
   tmp.headline =
     tmp.headline.trim() === "" ? CONFIG.noTitle : tmp.headline.trim();
+  const slug = textSlug(tmp.headline);
+  tmp.text = sliceSlug(slug);
+  // set find on new added image
   if (!tmp.thumb) {
     app.find = Object.assign(
       {},
