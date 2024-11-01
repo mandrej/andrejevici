@@ -2,7 +2,7 @@
   <Edit-Record v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
   <Confirm-Delete
     v-if="app.showConfirm"
-    :rec="app.current"
+    :rec="selected"
     @confirm-ok="confirmOk"
   />
 
@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { shallowRef, onMounted, watch, defineAsyncComponent } from "vue";
+import { ref, shallowRef, onMounted, watch, defineAsyncComponent } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppStore } from "../stores/app";
 import { useRoute } from "vue-router";
@@ -41,6 +41,7 @@ const ConfirmDelete = defineAsyncComponent(() =>
 
 const app = useAppStore();
 const route = useRoute();
+const selected = ref({});
 
 const { showCarousel } = storeToRefs(app);
 const currentView = shallowRef(ListView);
@@ -63,7 +64,7 @@ watch(showCarousel, (show) => {
 });
 
 const confirmShow = (rec) => {
-  app.current = rec;
+  selected.value = rec;
   fakeHistory();
   app.showConfirm = true;
 };

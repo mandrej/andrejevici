@@ -1,5 +1,5 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="current" />
+  <Edit-Record v-if="app.showEdit" :rec="app.current" />
 
   <q-page v-else class="q-pa-md">
     <div class="relative-position column q-pb-md">
@@ -101,7 +101,6 @@ const EditRecord = defineAsyncComponent(() =>
 const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
-const current = computed(() => app.current);
 const tagsToApply = computed({
   get() {
     return meta.tagsToApply;
@@ -253,7 +252,7 @@ const editRecord = async (rec) => {
   const exif = await readExif(rec.url);
   const tags = [...(tagsToApply.value || "")];
   rec = { ...rec, ...exif };
-  // // add flash tag if exif flash true
+  // add flash tag if exif flash true
   if (rec.flash && tags.indexOf("flash") === -1) {
     tags.push("flash");
   }
