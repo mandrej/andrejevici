@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pt-md">
-    <q-tab-panels v-model="app.tab" animated>
+    <q-tab-panels v-model="app.adminTab" animated>
       <q-tab-panel name="repair">
         <div class="text-h6">Rebuild / Repair</div>
         <q-list class="bg-grey-2">

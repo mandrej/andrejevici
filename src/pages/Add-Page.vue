@@ -1,5 +1,5 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="app.current" />
+  <Edit-Record v-if="app.showEdit" :rec="app.currentEdit" />
 
   <q-page v-else class="q-pa-md">
     <div class="relative-position column q-pb-md">
@@ -261,7 +261,7 @@ const editRecord = async (rec) => {
 
   fakeHistory();
   app.showEdit = true;
-  app.current = rec;
+  app.currentEdit = rec;
   app.showEdit = true;
 };
 </script>

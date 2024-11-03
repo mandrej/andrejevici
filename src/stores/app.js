@@ -57,10 +57,10 @@ export const useAppStore = defineStore("app", {
     uploaded: [],
     objects: [],
     next: null,
-    current: {},
-    marker: null,
-    last: {},
-    since: "",
+    currentEdit: {},
+    markerFileName: null,
+    lastRecord: {},
+    sinceYear: "",
 
     busy: false,
     error: null,
@@ -68,7 +68,7 @@ export const useAppStore = defineStore("app", {
     showConfirm: false,
     showCarousel: false,
     editMode: false,
-    tab: "repair",
+    adminTab: "repair",
   }),
   getters: {
     record: (state) => {
@@ -283,7 +283,7 @@ export const useAppStore = defineStore("app", {
       //     }
       //   }
       // }
-      this.last = rec;
+      this.lastRecord = rec;
     },
     async getSince() {
       const q = query(photosCol, orderBy("date", "asc"), limit(1));
@@ -291,7 +291,7 @@ export const useAppStore = defineStore("app", {
       if (querySnapshot.empty) return null;
       querySnapshot.forEach((d) => {
         const obj = d.data();
-        this.since = obj.year;
+        this.sinceYear = obj.year;
       });
     },
   },
@@ -302,10 +302,10 @@ export const useAppStore = defineStore("app", {
       "find",
       "uploaded",
       "objects",
-      "last",
-      "since",
+      "lastRecord",
+      "sinceYear",
       "next",
-      "current",
+      "currentEdit",
       "editMode",
     ],
     // beforeRestore: (context) => {

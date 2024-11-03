@@ -1,14 +1,14 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-page-container>
-      <q-page v-if="last.href" class="row">
+      <q-page v-if="lastRecord.href" class="row">
         <q-responsive
           :ratio="1"
           class="col-xs-12 col-md-6 shadow-12"
           :style="imageStyle"
         >
           <router-link
-            :to="last.href"
+            :to="lastRecord.href"
             style="display: block"
             v-ripple.early="{ color: 'purple' }"
           >
@@ -37,7 +37,8 @@
               <p class="q-ma-none text-body2 text-right">{{ version }}</p>
               {{ $route.meta.title }}
               <p class="q-ma-none text-body2">
-                {{ app.bucket.count }} photos since {{ app.since }} and counting
+                {{ app.bucket.count }} photos since {{ app.sinceYear }} and
+                counting
               </p>
             </div>
             <History-Button
@@ -113,7 +114,7 @@ import HistoryButton from "../components/History-Button.vue";
 
 const app = useAppStore();
 const auth = useUserStore();
-const last = computed(() => app.last);
+const lastRecord = computed(() => app.lastRecord);
 
 onMounted(() => {
   app.getLast();
@@ -123,9 +124,9 @@ const common = "background-repeat: no-repeat; background-position: center;";
 const imageStyle = computed(() => {
   return (
     "background-image: url(" +
-    last.value.url +
+    lastRecord.value.url +
     "), url(" +
-    last.value.thumb +
+    lastRecord.value.thumb +
     ");" +
     common +
     "background-size: cover;" +

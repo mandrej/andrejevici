@@ -1,8 +1,8 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="app.current" @edit-ok="editOk" />
+  <Edit-Record v-if="app.showEdit" :rec="app.currentEdit" @edit-ok="editOk" />
   <Confirm-Delete
     v-if="app.showConfirm"
-    :rec="selected"
+    :rec="select2delete"
     @confirm-ok="confirmOk"
   />
 
@@ -41,7 +41,7 @@ const ConfirmDelete = defineAsyncComponent(() =>
 
 const app = useAppStore();
 const route = useRoute();
-const selected = ref({});
+const select2delete = ref({});
 
 const { showCarousel } = storeToRefs(app);
 const currentView = shallowRef(ListView);
@@ -51,7 +51,7 @@ onMounted(() => {
   if (hash) {
     const filename = hash.substring(2);
     currentView.value = SwiperView;
-    app.marker = filename;
+    app.markerFileName = filename;
   }
 });
 
@@ -64,7 +64,7 @@ watch(showCarousel, (show) => {
 });
 
 const confirmShow = (rec) => {
-  selected.value = rec;
+  select2delete.value = rec;
   fakeHistory();
   app.showConfirm = true;
 };
@@ -74,7 +74,7 @@ const confirmOk = (rec) => {
 };
 
 const editRecord = (rec) => {
-  app.current = rec;
+  app.currentEdit = rec;
   fakeHistory();
   app.showEdit = true;
 };

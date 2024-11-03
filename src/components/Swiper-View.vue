@@ -84,22 +84,22 @@ const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
-const { marker } = storeToRefs(app);
+const { markerFileName } = storeToRefs(app);
 
 register({ modules: [Keyboard, Zoom] });
 let swiper = null;
 
 const onSwiper = (e) => {
   swiper = e.detail[0]; // instance
-  position(app.marker);
+  position(app.markerFileName);
 };
 
-watch(marker, (val) => {
+watch(markerFileName, (val) => {
   position(val);
 });
 
-const position = (marker) => {
-  const index = props.objects.findIndex((x) => x.filename === marker);
+const position = (markerFileName) => {
+  const index = props.objects.findIndex((x) => x.filename === markerFileName);
   if (index === 0) {
     onSlideChange();
   } else if (index > 0) {
