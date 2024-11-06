@@ -2,13 +2,14 @@ import exifReader from "exifreader";
 import { has } from "lodash";
 import { formatDatum } from "./index";
 
-// const LENSES = {
-//   "Nikon NIKKOR Z 24-70mm f4 S": "NIKKOR Z 24-70mm f4 S",
-//   "70-300 mm f4.5-5.6": "70.0-300.0 mm f4.5-5.6",
-//   "Canon EF-S 17-55mm f2.8 IS USM": "EF-S17-55mm f2.8 IS USM",
-//   "Canon EF 100mm f2.8 Macro USM": "EF100mm f2.8 Macro USM",
-//   "Canon EF 50mm f1.8 STM": "EF50mm f1.8 STM",
-// };
+const LENSES = {
+  "Nikon NIKKOR Z 24-70mm f4 S": "NIKKOR Z 24-70mm f4 S",
+  "70-300 mm f4.5-5.6": "70.0-300.0 mm f4.5-5.6",
+  "VR 70-300mm f4.5-5.6E": "70.0-300.0 mm f4.5-5.6",
+  "Canon EF-S 17-55mm f2.8 IS USM": "EF-S17-55mm f2.8 IS USM",
+  "Canon EF 100mm f2.8 Macro USM": "EF100mm f2.8 Macro USM",
+  "Canon EF 50mm f1.8 STM": "EF50mm f1.8 STM",
+};
 
 const readExif = async (url) => {
   const result = { model: "UNKNOWN", date: formatDatum(new Date()) };
@@ -21,7 +22,7 @@ const readExif = async (url) => {
 
   // EXIF
   const exif = tags.exif;
-  // console.log(exif);
+  // console.log(exif.LensModel);
   if (has(exif, "Make") && has(exif, "Model")) {
     const make = exif.Make.description.replace("/", "");
     const model = exif.Model.description.replace("/", "");
@@ -37,7 +38,8 @@ const readExif = async (url) => {
     }
   }
   if (has(exif, "LensModel")) {
-    result.lens = exif.LensModel.description.replace("/", "");
+    const lens = exif.LensModel.description.replace("/", "");
+    result.lens = LENSES[lens] || lens;
   }
   if (has(exif, "DateTimeOriginal")) {
     const rex = new RegExp(/(\d{4}):(\d{2}):(\d{2})/i);
