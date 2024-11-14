@@ -1,9 +1,9 @@
 <template>
   <q-page class="q-pt-md">
-    <q-tab-panels v-model="app.adminTab" animated>
-      <q-tab-panel name="repair">
-        <div class="text-h6">Rebuild / Repair</div>
-        <q-list class="bg-grey-2">
+    <q-tab-panels v-model="app.adminTab">
+      <q-tab-panel name="repair" class="q-pa-none">
+        <q-list>
+          <q-item class="text-h6">Rebuild / Repair</q-item>
           <q-item>
             <q-item-section>
               <q-input v-model="message" label="Send message to subscribers" />
@@ -18,7 +18,7 @@
             </q-item-section>
           </q-item>
         </q-list>
-        <q-list class="bg-grey-2" separator>
+        <q-list separator>
           <q-item>
             <q-item-section>
               Recreate existing field values for
@@ -65,9 +65,9 @@
         <q-btn color="dark" label="Show" @click="show" /> -->
       </q-tab-panel>
 
-      <q-tab-panel name="tags">
-        <div class="text-h6">Tags</div>
-        <q-list class="bg-grey-2">
+      <q-tab-panel name="tags" class="q-pa-none">
+        <q-list>
+          <q-item class="text-h6">Tags</q-item>
           <q-item>
             <q-item-section>
               <q-input
@@ -82,7 +82,7 @@
               />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Add" @click="addTag" />
+              <q-btn label="Add" @click="addTag" color="primary" />
             </q-item-section>
           </q-item>
           <q-item class="q-pt-none">
@@ -95,16 +95,16 @@
               />
             </q-item-section>
             <q-item-section top>
-              <q-input v-model="renamedTag" label="to tag" />
+              <q-input v-model="changedTag" label="to tag" />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Rename" @click="renameTag" />
+              <q-btn label="Rename" @click="renameTag" color="primary" />
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section> Remove unused tags</q-item-section>
             <q-item-section side>
-              <q-btn label="Remove" @click="removeTags" />
+              <q-btn label="Remove" @click="removeTags" color="primary" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -113,15 +113,77 @@
           <div class="q-pa-md text-subtitle1">
             <router-link
               v-for="(count, value) in meta.tagsWithCount"
-              :class="linkAttribute(count, CONFIG.tagsMin)"
               :key="value"
               :title="`${value}: ${count}`"
               :to="{ path: '/list', query: { tags: value } }"
               class="q-pr-sm link"
-              >{{ value }}</router-link
+              >{{ value }},</router-link
             >
           </div>
         </q-scroll-area>
+      </q-tab-panel>
+
+      <q-tab-panel name="camera" class="q-pa-none">
+        <q-list>
+          <q-item class="text-h6">Model</q-item>
+
+          <q-item class="q-pt-none">
+            <q-item-section top>
+              <Auto-Complete
+                v-model="existingModel"
+                :options="meta.modelValues"
+                behavior="menu"
+                label="Rename model"
+              />
+            </q-item-section>
+            <q-item-section top>
+              <q-input v-model="changedModel" label="to model" />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn label="Rename" @click="renameModel" color="primary" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <div class="q-pa-md text-subtitle1">
+          <router-link
+            v-for="value in meta.modelValues"
+            :key="value"
+            :title="`${value}`"
+            :to="{ path: '/list', query: { model: value } }"
+            class="q-pr-sm link"
+            >{{ value }},
+          </router-link>
+        </div>
+
+        <q-list>
+          <q-item class="text-h6">Lens</q-item>
+          <q-item class="q-pt-none">
+            <q-item-section top>
+              <Auto-Complete
+                v-model="existingLens"
+                :options="meta.lensValues"
+                behavior="menu"
+                label="Rename lens"
+              />
+            </q-item-section>
+            <q-item-section top>
+              <q-input v-model="changedLens" label="to lens" />
+            </q-item-section>
+            <q-item-section side>
+              <q-btn label="Rename" @click="renameLens" color="primary" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <div class="q-pa-md text-subtitle1">
+          <router-link
+            v-for="value in meta.lensValues"
+            :key="value"
+            :title="`${value}`"
+            :to="{ path: '/list', query: { model: value } }"
+            class="q-pr-sm link"
+            >{{ value }},</router-link
+          >
+        </div>
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -147,7 +209,11 @@ const values = computed(() => meta.values);
 const newTagRef = ref(null),
   newTag = ref(""),
   existingTag = ref(""),
-  renamedTag = ref("");
+  changedTag = ref(""),
+  existingModel = ref(""),
+  changedModel = ref(""),
+  existingLens = ref(""),
+  changedLens = ref("");
 
 const rebuild = () => {
   meta.countersBuild();
@@ -169,27 +235,70 @@ const removeTags = () => {
   });
 };
 const renameTag = () => {
-  if (existingTag.value !== "" && renamedTag.value !== "") {
+  if (existingTag.value !== "" && changedTag.value !== "") {
     if (existingTag.value === "flash") {
       notify({
         type: "warning",
         message: `Cannot change "${existingTag.value}"`,
       });
-    } else if (meta.tagsValues.indexOf(renamedTag.value) !== -1) {
-      meta.renameTag(existingTag.value, renamedTag.value);
+    } else if (meta.tagsValues.indexOf(changedTag.value) !== -1) {
+      meta.renameValue("tags", existingTag.value, changedTag.value);
       notify({
         type: "warning",
-        message: `"${existingTag.value}" tag renamed with "${renamedTag.value}"`,
+        message: `"${existingTag.value}" tag renamed with "${changedTag.value}"`,
       });
     } else {
-      meta.renameTag(existingTag.value, renamedTag.value);
+      meta.renameValue("tags", existingTag.value, changedTag.value);
       notify({
-        message: `Tag ${existingTag.value} successfully renamed to ${renamedTag.value}`,
+        message: `Tag ${existingTag.value} successfully renamed to ${changedTag.value}`,
       });
     }
   }
   existingTag.value = "";
-  renamedTag.value = "";
+  changedTag.value = "";
+};
+
+const renameModel = () => {
+  if (existingModel.value !== "" && changedModel.value !== "") {
+    if (existingModel.value === "UNKNOWN") {
+      notify({
+        type: "warning",
+        message: `Cannot change "${existingModel.value}"`,
+      });
+    } else if (meta.modelValues.indexOf(changedModel.value) !== -1) {
+      meta.renameValue("model", existingModel.value, changedModel.value);
+      notify({
+        type: "warning",
+        message: `"${existingModel.value}" model renamed with "${changedModel.value}"`,
+      });
+    } else {
+      meta.renameValue("model", existingModel.value, changedModel.value);
+      notify({
+        message: `Model ${existingModel.value} successfully renamed to ${changedModel.value}`,
+      });
+    }
+  }
+  existingModel.value = "";
+  changedModel.value = "";
+};
+
+const renameLens = () => {
+  if (existingLens.value !== "" && changedLens.value !== "") {
+    if (meta.modelValues.indexOf(changedLens.value) !== -1) {
+      meta.renameValue("lens", existingLens.value, changedLens.value);
+      notify({
+        type: "warning",
+        message: `"${existingLens.value}" lens renamed with "${changedLens.value}"`,
+      });
+    } else {
+      meta.renameValue("lens", existingLens.value, changedLens.value);
+      notify({
+        message: `Lens ${existingLens.value} successfully renamed to ${changedLens.value}`,
+      });
+    }
+  }
+  existingLens.value = "";
+  changedLens.value = "";
 };
 
 const send = () => {
@@ -218,13 +327,6 @@ const send = () => {
     });
 };
 
-const linkAttribute = (count, limit = 5) => {
-  if (count < limit) {
-    return "text-grey";
-  }
-  return "text-black";
-};
-
 const show = () => {
   const colors = [
     "info",
@@ -246,9 +348,5 @@ const show = () => {
 <style scoped>
 .q-btn {
   width: 100px;
-}
-.link {
-  display: inline-block;
-  text-decoration: none;
 }
 </style>

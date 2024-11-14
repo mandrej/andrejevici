@@ -269,35 +269,40 @@ export const useValuesStore = defineStore("meta", {
         }
       });
     },
-    async renameTag(oldTag, newTag) {
+    async renameValue(field, oldValue, newValue) {
       // update photos
+      const operator = field === "tags" ? "array-contains-any" : "==";
       const q = query(
         photosCol,
-        where("tags", "array-contains", oldTag),
+        where(field, operator, oldValue),
         orderBy("date", "desc")
       );
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(async (d) => {
-        const obj = d.data();
-        const idx = obj.tags.indexOf(oldTag);
-        obj.tags.splice(idx, 1, newTag);
         const photoRef = doc(db, "Photo", d.id);
-        await updateDoc(photoRef, { tags: obj.tags });
+        if (field === "tags") {
+          const obj = d.data();
+          const idx = obj.tags.indexOf(oldValue);
+          obj.tags.splice(idx, 1, newValue);
+          await updateDoc(photoRef, { field: obj.tags });
+        } else {
+          await updateDoc(photoRef, { field: newValue });
+        }
       });
       // update counters
-      const oldRef = doc(db, "Counter", counterId("tags", oldTag));
+      const oldRef = doc(db, "Counter", counterId(field, oldValue));
       const counter = await getDoc(oldRef);
       const obj = counter.data();
-      const newRef = doc(db, "Counter", counterId("tags", newTag));
+      const newRef = doc(db, "Counter", counterId(field, newValue));
       await setDoc(newRef, {
         count: obj.count,
-        field: "tags",
-        value: newTag,
+        field: field,
+        value: newValue,
       });
       await deleteDoc(oldRef);
       // update store
-      this.values.tags[newTag] = obj.count;
-      delete this.values.tags[oldTag];
+      this.values[field][newValue] = obj.count;
+      delete this.values[field][oldValue];
     },
     addNewField(val, field) {
       this.values[field][val] = 1;

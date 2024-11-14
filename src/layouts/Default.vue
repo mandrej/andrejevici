@@ -32,13 +32,10 @@
         <History-Button v-else />
 
         <template v-if="$route.name === 'admin'">
-          <q-tabs
-            v-model="app.adminTab"
-            indicator-color="primary"
-            align="justify"
-          >
-            <q-tab name="repair" label="Rebuild / Repair" />
+          <q-tabs v-model="app.adminTab" inline-label indicator-color="primary">
+            <q-tab name="repair" label="Repair" />
             <q-tab name="tags" label="Tags" />
+            <q-tab name="camera" label="Camera" />
           </q-tabs>
         </template>
 
