@@ -95,7 +95,13 @@
               />
             </q-item-section>
             <q-item-section top>
-              <q-input v-model="changedTag" label="to tag" />
+              <q-input
+                v-model="changedTag"
+                label="to tag"
+                :rules="[
+                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
+                ]"
+              />
             </q-item-section>
             <q-item-section side>
               <q-btn
@@ -141,7 +147,13 @@
               />
             </q-item-section>
             <q-item-section top>
-              <q-input v-model="changedModel" label="to model" />
+              <q-input
+                v-model="changedModel"
+                label="to model"
+                :rules="[
+                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
+                ]"
+              />
             </q-item-section>
             <q-item-section side>
               <q-btn
@@ -175,7 +187,13 @@
               />
             </q-item-section>
             <q-item-section top>
-              <q-input v-model="changedLens" label="to lens" />
+              <q-input
+                v-model="changedLens"
+                label="to lens"
+                :rules="[
+                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
+                ]"
+              />
             </q-item-section>
             <q-item-section side>
               <q-btn
