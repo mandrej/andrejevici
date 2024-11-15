@@ -98,7 +98,11 @@
               <q-input v-model="changedTag" label="to tag" />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Rename" @click="renameTag" color="primary" />
+              <q-btn
+                label="Rename"
+                @click="rename('tags', existingTag, changedTag)"
+                color="primary"
+              />
             </q-item-section>
           </q-item>
           <q-item>
@@ -140,7 +144,11 @@
               <q-input v-model="changedModel" label="to model" />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Rename" @click="renameModel" color="primary" />
+              <q-btn
+                label="Rename"
+                @click="rename('model', existingModel, changedModel)"
+                color="primary"
+              />
             </q-item-section>
           </q-item>
         </q-list>
@@ -170,7 +178,11 @@
               <q-input v-model="changedLens" label="to lens" />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Rename" @click="renameLens" color="primary" />
+              <q-btn
+                label="Rename"
+                @click="rename('lens', existingLens, changedLens)"
+                color="primary"
+              />
             </q-item-section>
           </q-item>
         </q-list>
@@ -234,71 +246,28 @@ const removeTags = () => {
     message: `Successfully removed unused tags`,
   });
 };
-const renameTag = () => {
-  if (existingTag.value !== "" && changedTag.value !== "") {
-    if (existingTag.value === "flash") {
+const rename = async (field, existing, changed) => {
+  if (existing !== "" && changed !== "") {
+    if (
+      (field === "tags" && existing === "flash") ||
+      (field === "model" && existing === "UNKNOWN")
+    ) {
       notify({
         type: "warning",
-        message: `Cannot change "${existingTag.value}"`,
+        message: `Cannot change "${existing}"`,
       });
-    } else if (meta.tagsValues.indexOf(changedTag.value) !== -1) {
-      meta.renameValue("tags", existingTag.value, changedTag.value);
+    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
       notify({
         type: "warning",
-        message: `"${existingTag.value}" tag renamed with "${changedTag.value}"`,
+        message: `"${changed}" already exists"`,
       });
     } else {
-      meta.renameValue("tags", existingTag.value, changedTag.value);
+      await meta.renameValue(field, existing, changed);
       notify({
-        message: `Tag ${existingTag.value} successfully renamed to ${changedTag.value}`,
+        message: `${existing} successfully renamed to ${changed}`,
       });
     }
   }
-  existingTag.value = "";
-  changedTag.value = "";
-};
-
-const renameModel = () => {
-  if (existingModel.value !== "" && changedModel.value !== "") {
-    if (existingModel.value === "UNKNOWN") {
-      notify({
-        type: "warning",
-        message: `Cannot change "${existingModel.value}"`,
-      });
-    } else if (meta.modelValues.indexOf(changedModel.value) !== -1) {
-      meta.renameValue("model", existingModel.value, changedModel.value);
-      notify({
-        type: "warning",
-        message: `"${existingModel.value}" model renamed with "${changedModel.value}"`,
-      });
-    } else {
-      meta.renameValue("model", existingModel.value, changedModel.value);
-      notify({
-        message: `Model ${existingModel.value} successfully renamed to ${changedModel.value}`,
-      });
-    }
-  }
-  existingModel.value = "";
-  changedModel.value = "";
-};
-
-const renameLens = () => {
-  if (existingLens.value !== "" && changedLens.value !== "") {
-    if (meta.modelValues.indexOf(changedLens.value) !== -1) {
-      meta.renameValue("lens", existingLens.value, changedLens.value);
-      notify({
-        type: "warning",
-        message: `"${existingLens.value}" lens renamed with "${changedLens.value}"`,
-      });
-    } else {
-      meta.renameValue("lens", existingLens.value, changedLens.value);
-      notify({
-        message: `Lens ${existingLens.value} successfully renamed to ${changedLens.value}`,
-      });
-    }
-  }
-  existingLens.value = "";
-  changedLens.value = "";
 };
 
 const send = () => {

@@ -58,7 +58,7 @@ export const useValuesStore = defineStore("meta", {
     yearValues: (state) => {
       return Object.keys(state.values.year).reverse();
     },
-    // for Index-Page
+    // withCount
     yearWithCount: (state) => {
       const ret = [];
       for (const year of Object.keys(state.values.year).reverse()) {
@@ -242,7 +242,6 @@ export const useValuesStore = defineStore("meta", {
         if (count <= 0) {
           try {
             id = counterId("tags", value);
-            console.log(id);
             counterRef = doc(db, "Counter", id);
             await deleteDoc(counterRef);
           } catch (e) {
@@ -259,7 +258,6 @@ export const useValuesStore = defineStore("meta", {
         if (obj.count <= 0) {
           try {
             id = counterId("tags", obj.value);
-            console.log(id);
             counterRef = doc(db, "Counter", id);
             await deleteDoc(counterRef);
           } catch (e) {
@@ -271,22 +269,25 @@ export const useValuesStore = defineStore("meta", {
     },
     async renameValue(field, oldValue, newValue) {
       // update photos
-      const operator = field === "tags" ? "array-contains-any" : "==";
-      const q = query(
-        photosCol,
-        where(field, operator, oldValue),
-        orderBy("date", "desc")
-      );
+      const filter = (field) => {
+        if (field === "tags") {
+          return where(field, "array-contains-any", [oldValue]);
+        } else {
+          return where(field, "==", oldValue);
+        }
+      };
+      const q = query(photosCol, filter(field), orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
+
       querySnapshot.forEach(async (d) => {
         const photoRef = doc(db, "Photo", d.id);
         if (field === "tags") {
           const obj = d.data();
           const idx = obj.tags.indexOf(oldValue);
           obj.tags.splice(idx, 1, newValue);
-          await updateDoc(photoRef, { field: obj.tags });
+          await updateDoc(photoRef, { [field]: obj.tags }); // TODO VARIABLE FIX
         } else {
-          await updateDoc(photoRef, { field: newValue });
+          await updateDoc(photoRef, { [field]: newValue });
         }
       });
       // update counters
