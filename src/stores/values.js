@@ -11,6 +11,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  writeBatch,
 } from "firebase/firestore";
 import notify from "../helpers/notify";
 import { CONFIG, emailNick } from "../helpers";
@@ -268,40 +269,48 @@ export const useValuesStore = defineStore("meta", {
       });
     },
     async renameValue(field, oldValue, newValue) {
-      // update photos
-      const filter = (field) => {
-        if (field === "tags") {
-          return where(field, "array-contains-any", [oldValue]);
-        } else {
-          return where(field, "==", oldValue);
-        }
-      };
-      const q = query(photosCol, filter(field), orderBy("date", "desc"));
+      // Prepare batch for photo updates
+      const batch = writeBatch(db);
+      const filter =
+        field === "tags"
+          ? where(field, "array-contains-any", [oldValue])
+          : where(field, "==", oldValue);
+      const q = query(photosCol, filter, orderBy("date", "desc"));
       const querySnapshot = await getDocs(q);
 
-      querySnapshot.forEach(async (d) => {
+      querySnapshot.forEach((d) => {
         const photoRef = doc(db, "Photo", d.id);
         if (field === "tags") {
           const obj = d.data();
           const idx = obj.tags.indexOf(oldValue);
           obj.tags.splice(idx, 1, newValue);
-          await updateDoc(photoRef, { [field]: obj.tags }); // TODO VARIABLE FIX
+          batch.update(photoRef, { [field]: obj.tags });
         } else {
-          await updateDoc(photoRef, { [field]: newValue });
+          batch.update(photoRef, { [field]: newValue });
         }
       });
-      // update counters
+
+      // Commit batch for photos
+      await batch.commit();
+
+      // Update counters
       const oldRef = doc(db, "Counter", counterId(field, oldValue));
+      const newRef = doc(db, "Counter", counterId(field, newValue));
       const counter = await getDoc(oldRef);
       const obj = counter.data();
-      const newRef = doc(db, "Counter", counterId(field, newValue));
-      await setDoc(newRef, {
-        count: obj.count,
-        field: field,
-        value: newValue,
-      });
+
+      await setDoc(
+        newRef,
+        {
+          count: obj.count,
+          field: field,
+          value: newValue,
+        },
+        { merge: true }
+      );
       await deleteDoc(oldRef);
-      // update store
+
+      // Update store
       this.values[field][newValue] = obj.count;
       delete this.values[field][oldValue];
     },
