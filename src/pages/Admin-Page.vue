@@ -132,89 +132,6 @@
           </div>
         </q-scroll-area>
       </q-tab-panel>
-
-      <q-tab-panel name="camera" class="q-pa-none">
-        <q-list>
-          <q-item class="text-h6">Model</q-item>
-
-          <q-item class="q-pt-none">
-            <q-item-section top>
-              <Auto-Complete
-                v-model="existingModel"
-                :options="meta.modelValues"
-                behavior="menu"
-                label="Rename model"
-              />
-            </q-item-section>
-            <q-item-section top>
-              <q-input
-                v-model="changedModel"
-                label="to model"
-                :rules="[
-                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
-                ]"
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                label="Rename"
-                @click="rename('model', existingModel, changedModel)"
-                color="primary"
-              />
-            </q-item-section>
-          </q-item>
-        </q-list>
-        <div class="q-pa-md text-subtitle1">
-          <router-link
-            v-for="value in meta.modelValues"
-            :key="value"
-            :title="`${value}`"
-            :to="{ path: '/list', query: { model: value } }"
-            class="q-pr-sm link"
-            >{{ value }},
-          </router-link>
-        </div>
-
-        <q-list>
-          <q-item class="text-h6">Lens</q-item>
-          <q-item class="q-pt-none">
-            <q-item-section top>
-              <Auto-Complete
-                v-model="existingLens"
-                :options="meta.lensValues"
-                behavior="menu"
-                label="Rename lens"
-              />
-            </q-item-section>
-            <q-item-section top>
-              <q-input
-                v-model="changedLens"
-                label="to lens"
-                :rules="[
-                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
-                ]"
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                label="Rename"
-                @click="rename('lens', existingLens, changedLens)"
-                color="primary"
-              />
-            </q-item-section>
-          </q-item>
-        </q-list>
-        <div class="q-pa-md text-subtitle1">
-          <router-link
-            v-for="value in meta.lensValues"
-            :key="value"
-            :title="`${value}`"
-            :to="{ path: '/list', query: { model: value } }"
-            class="q-pr-sm link"
-            >{{ value }},</router-link
-          >
-        </div>
-      </q-tab-panel>
     </q-tab-panels>
   </q-page>
 </template>
@@ -227,23 +144,18 @@ import { useUserStore } from "../stores/user";
 import AutoComplete from "../components/Auto-Complete.vue";
 import { fix, mismatch } from "../helpers/remedy";
 import notify from "../helpers/notify";
-import { CONFIG, formatDatum, emailNick } from "../helpers";
+import { CONFIG, formatDatum } from "../helpers";
 
 const app = useAppStore();
 const meta = useValuesStore();
 const auth = useUserStore();
 
 const message = ref("TEST");
-// const message = ref("NEW IMAGES from " + emailNick(auth.user.email));
 const values = computed(() => meta.values);
 const newTagRef = ref(null),
   newTag = ref(""),
   existingTag = ref(""),
-  changedTag = ref(""),
-  existingModel = ref(""),
-  changedModel = ref(""),
-  existingLens = ref(""),
-  changedLens = ref("");
+  changedTag = ref("");
 
 const rebuild = () => {
   meta.countersBuild();
