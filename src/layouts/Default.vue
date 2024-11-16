@@ -35,6 +35,7 @@
           <q-tabs v-model="app.adminTab" inline-label indicator-color="primary">
             <q-tab name="repair" label="Repair" />
             <q-tab name="tags" label="Tags" />
+            <!-- <q-tab name="camera" label="Camera" /> -->
           </q-tabs>
         </template>
 

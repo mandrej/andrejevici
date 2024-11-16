@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pt-md">
+  <q-page class="admin q-pt-md">
     <q-tab-panels v-model="app.adminTab">
       <q-tab-panel name="repair" class="q-pa-none">
         <q-list>
@@ -57,80 +57,22 @@
           </q-item>
         </q-list>
 
-        <!-- <q-btn color="primary" label="Show" @click="show" />
-        <q-btn class="bg-secondary text-dark" label="Show" @click="show" />
-        <q-btn color="accent" label="Show" @click="show" />
-        <q-btn color="positive" label="Show" @click="show" />
-        <q-btn color="negative" label="Show" @click="show" />
-        <q-btn color="dark" label="Show" @click="show" /> -->
+        <!-- <div class="q-pa-md">
+          <q-btn color="primary" label="Show" @click="show" />
+          <q-btn class="bg-secondary text-dark" label="Show" @click="show" />
+          <q-btn color="accent" label="Show" @click="show" />
+          <q-btn color="positive" label="Show" @click="show" />
+          <q-btn color="negative" label="Show" @click="show" />
+          <q-btn color="dark" label="Show" @click="show" />
+        </div> -->
       </q-tab-panel>
 
       <q-tab-panel name="tags" class="q-pa-none">
-        <q-list>
-          <q-item class="text-h6">Tags</q-item>
-          <q-item>
-            <q-item-section>
-              <q-input
-                ref="newTagRef"
-                v-model="newTag"
-                label="Add new tag"
-                :rules="[
-                  (val) =>
-                    meta.tagsValues.indexOf(val) === -1 || 'Tag already in use',
-                ]"
-                clearable
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn label="Add" @click="addTag" color="primary" />
-            </q-item-section>
-          </q-item>
-          <q-item class="q-pt-none">
-            <q-item-section top>
-              <Auto-Complete
-                v-model="existingTag"
-                :options="meta.tagsValues"
-                behavior="menu"
-                label="Rename tag"
-              />
-            </q-item-section>
-            <q-item-section top>
-              <q-input
-                v-model="changedTag"
-                label="to tag"
-                :rules="[
-                  (val) => val.indexOf('/') === -1 || 'Cannot use / here',
-                ]"
-              />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn
-                label="Rename"
-                @click="rename('tags', existingTag, changedTag)"
-                color="primary"
-              />
-            </q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section> Remove unused tags</q-item-section>
-            <q-item-section side>
-              <q-btn label="Remove" @click="removeTags" color="primary" />
-            </q-item-section>
-          </q-item>
-        </q-list>
+        <Tags-Tab />
+      </q-tab-panel>
 
-        <q-scroll-area class="gt-xs" style="height: 50vh">
-          <div class="q-pa-md text-subtitle1">
-            <router-link
-              v-for="(count, value) in meta.tagsWithCount"
-              :key="value"
-              :title="`${value}: ${count}`"
-              :to="{ path: '/list', query: { tags: value } }"
-              class="q-pr-sm link"
-              >{{ value }},</router-link
-            >
-          </div>
-        </q-scroll-area>
+      <q-tab-panel name="camera" class="q-pa-none">
+        <Camera-Tab />
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -141,7 +83,8 @@ import { computed, ref } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import AutoComplete from "../components/Auto-Complete.vue";
+import TagsTab from "../components/Tags-Tab.vue";
+import CameraTab from "../components/Camera-Tab.vue";
 import { fix, mismatch } from "../helpers/remedy";
 import notify from "../helpers/notify";
 import { CONFIG, formatDatum } from "../helpers";
@@ -152,52 +95,12 @@ const auth = useUserStore();
 
 const message = ref("TEST");
 const values = computed(() => meta.values);
-const newTagRef = ref(null),
-  newTag = ref(""),
-  existingTag = ref(""),
-  changedTag = ref("");
 
 const rebuild = () => {
   meta.countersBuild();
 };
 const bucket = () => {
   app.bucketBuild();
-};
-const addTag = () => {
-  if (newTag.value !== "" && meta.tagsValues.indexOf(newTag.value) === -1) {
-    values.value.tags[newTag.value] = 0;
-    newTag.value = "";
-  }
-  newTagRef.value.resetValidation();
-};
-const removeTags = () => {
-  meta.removeUnusedTags();
-  notify({
-    message: `Successfully removed unused tags`,
-  });
-};
-const rename = async (field, existing, changed) => {
-  if (existing !== "" && changed !== "") {
-    if (
-      (field === "tags" && existing === "flash") ||
-      (field === "model" && existing === "UNKNOWN")
-    ) {
-      notify({
-        type: "warning",
-        message: `Cannot change "${existing}"`,
-      });
-    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
-      notify({
-        type: "warning",
-        message: `"${changed}" already exists"`,
-      });
-    } else {
-      await meta.renameValue(field, existing, changed);
-      notify({
-        message: `${existing} successfully renamed to ${changed}`,
-      });
-    }
-  }
 };
 
 const send = () => {
@@ -243,9 +146,3 @@ const show = () => {
   }
 };
 </script>
-
-<style scoped>
-.q-btn {
-  width: 100px;
-}
-</style>
