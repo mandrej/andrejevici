@@ -79,15 +79,20 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, defineAsyncComponent } from "vue";
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import TagsTab from "../components/Tags-Tab.vue";
-import CameraTab from "../components/Camera-Tab.vue";
 import { fix, mismatch } from "../helpers/remedy";
 import notify from "../helpers/notify";
 import { CONFIG, formatDatum } from "../helpers";
+
+const TagsTab = defineAsyncComponent(() =>
+  import("../components/Tags-Tab.vue")
+);
+const CameraTab = defineAsyncComponent(() =>
+  import("../components/Camera-Tab.vue")
+);
 
 const app = useAppStore();
 const meta = useValuesStore();
