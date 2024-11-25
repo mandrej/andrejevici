@@ -59,7 +59,7 @@
 
         <!-- <div class="q-pa-md">
           <q-btn color="primary" label="Show" @click="show" />
-          <q-btn class="bg-secondary text-dark" label="Show" @click="show" />
+          <q-btn color="secondary" label="Show" @click="show" />
           <q-btn color="accent" label="Show" @click="show" />
           <q-btn color="positive" label="Show" @click="show" />
           <q-btn color="negative" label="Show" @click="show" />
