@@ -140,7 +140,7 @@ const checkExists = (originalFilename) => {
             type: "external",
             html: true,
             message: `${originalFilename}<br/>${error}`,
-            actions: [{ icon: "close", color: "white" }],
+            actions: [{ icon: "close" }],
             timeout: 0,
           });
           reject(filename);
@@ -170,7 +170,7 @@ const onSubmit = async (evt) => {
       notify({
         type: "negative",
         message: `Rejected ${it.reason}.`,
-        actions: [{ icon: "close", color: "white" }],
+        actions: [{ icon: "close" }],
         timeout: 0,
       });
     }
@@ -228,7 +228,7 @@ const onValidationError = (rejectedEntries) => {
     notify({
       type: "warning",
       message: `${it.file.name}: ${it.failedPropValidation} validation error`,
-      actions: [{ icon: "close", color: "dark" }],
+      actions: [{ icon: "close" }],
       timeout: 0,
     });
   });

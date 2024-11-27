@@ -7,22 +7,25 @@ export default function notify(options) {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
   let {
     type = "info",
-    message = "testing",
+    message = "no message",
     multiLine = false,
     timeout = 5000,
     spinner = false,
     group = false,
     html = false,
     position = "bottom",
-    actions,
+    actions = [],
     caption,
     icon,
   } = options;
-  if (!message) return;
+  const color = (type) =>
+    ["info", "warning", "positive"].indexOf(type) >= 0 ? "dark" : "white";
+  actions.forEach((element) => {
+    element.color = color(type);
+  });
   Notify.create({
     type: type,
-    textColor:
-      ["info", "warning", "positive"].indexOf(type) >= 0 ? "dark" : "white",
+    textColor: color(type),
     message: message,
     multiLine,
     timeout,
@@ -30,8 +33,9 @@ export default function notify(options) {
     group,
     html,
     position,
-    actions: actions,
-    caption: caption,
-    icon: icon,
+    actions,
+    caption,
+    icon,
+    width: 300,
   });
 }

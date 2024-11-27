@@ -98,7 +98,7 @@ export const useValuesStore = defineStore("meta", {
     async countersBuild() {
       notify({
         message: `Please wait`,
-        actions: [{ icon: "close", color: "white" }],
+        actions: [{ icon: "close" }],
         group: "build",
       });
       const q = query(photosCol, orderBy("date", "desc"));
@@ -149,7 +149,7 @@ export const useValuesStore = defineStore("meta", {
       }
       notify({
         message: `All done`,
-        actions: [{ icon: "close", color: "white" }],
+        actions: [{ icon: "close" }],
         group: "build",
       });
     },

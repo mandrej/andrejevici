@@ -76,7 +76,7 @@ export const mismatch = async () => {
   notify({
     message: `Please wait`,
     timeout: 0,
-    actions: [{ icon: "close", color: "white" }],
+    actions: [{ icon: "close" }],
     group: "mismatch",
   });
   const bucketNames = [];
@@ -120,7 +120,6 @@ export const mismatch = async () => {
         actions: [
           {
             label: "Resolve",
-            color: "white",
             handler: () => {
               router.push({ path: "/add" });
             },

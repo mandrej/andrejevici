@@ -146,7 +146,12 @@ const show = () => {
   for (const color of colors) {
     notify({
       type: color,
-      message: `${color}`,
+      html: true,
+      message: `${color}<br>${message.value}`,
+      actions: [{ icon: "close" }],
+      caption: "testing",
+      icon: "wifi",
+      timeout: 10000,
     });
   }
 };
