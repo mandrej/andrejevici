@@ -16,7 +16,7 @@ export default function notify(options) {
     position = "bottom",
     actions = [],
     caption,
-    icon,
+    icon = "camera",
   } = options;
   const color = (type) =>
     ["info", "warning", "positive"].indexOf(type) >= 0 ? "dark" : "white";
@@ -36,6 +36,5 @@ export default function notify(options) {
     actions,
     caption,
     icon,
-    width: 300,
   });
 }

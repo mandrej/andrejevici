@@ -150,8 +150,6 @@ const show = () => {
       message: `${color}<br>${message.value}`,
       actions: [{ icon: "close" }],
       caption: "testing",
-      icon: "wifi",
-      timeout: 10000,
     });
   }
 };

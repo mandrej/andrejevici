@@ -30,11 +30,15 @@ firebase deploy --except functions,extensions
 
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
 
+```bash
 inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
+
+yarn global add @quasar/icongenie
 icongenie g -i AppIcon.png --skip-trim
 
 quasar build -m pwa
 firebase deploy
+```
 
 ### Use docker for firebase-tools
 
