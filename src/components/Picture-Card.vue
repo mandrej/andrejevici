@@ -11,7 +11,7 @@
         @click="emit('carouselShow', rec.filename)"
       >
         <template #error>
-          <img :src="fileBroken" />
+          <img :src="fileBroken" class="center" />
         </template>
         <div class="absolute-bottom text-subtitle2 ellipsis">
           {{ rec.headline }}
@@ -156,5 +156,12 @@ const openMaps = (loc) => {
 }
 .q-btn.disabled {
   opacity: 0.2 !important;
+}
+.center {
+  width: 25%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

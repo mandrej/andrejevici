@@ -44,7 +44,7 @@
         />
       </div>
       <div class="swiper-zoom-container">
-        <img :src="obj.url" loading="lazy" @load="onLoad" />
+        <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
         <div class="swiper-lazy-preloader" />
       </div>
       <q-btn
@@ -65,7 +65,7 @@ import { ref, watch } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useRoute } from "vue-router";
-import { U } from "../helpers";
+import { fileBroken, U } from "../helpers";
 import { register } from "swiper/element/bundle";
 import { Keyboard, Zoom } from "swiper/modules";
 
@@ -129,6 +129,9 @@ const onLoad = (e) => {
 
   const container = e.target.closest(".swiper-zoom-container");
   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
+};
+const onError = (e) => {
+  e.target.src = fileBroken;
 };
 const caption = (rec) => {
   let tmp = "";
