@@ -5,13 +5,13 @@
     <div class="relative-position column q-pb-md">
       <div class="row absolute-top">
         <q-linear-progress
-          v-for="(it, i) in Object.entries(progressInfos)"
-          :key="i"
+          v-for="(value, name) in progressInfo"
+          :key="name"
           size="15px"
-          :value="it[1]"
+          :value="value"
           color="warning"
-          :style="{ width: 100 / Object.entries(progressInfos).length + '%' }"
-          :title="it[0]"
+          :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
+          :title="`${name}: ${value}%`"
         />
       </div>
     </div>
@@ -33,9 +33,8 @@
       />
       <div class="column">
         <q-btn
-          label="Upload"
+          v-bind="buttonAttributes(Object.keys(progressInfo))"
           type="submit"
-          color="primary"
           class="col self-end"
         />
       </div>
@@ -82,13 +81,7 @@ import {
 import { useAppStore } from "../stores/app";
 import { useValuesStore } from "../stores/values";
 import { useUserStore } from "../stores/user";
-import {
-  CONFIG,
-  fakeHistory,
-  removeByProperty,
-  emailNick,
-  reFilename,
-} from "../helpers";
+import { CONFIG, fakeHistory, emailNick, reFilename } from "../helpers";
 import notify from "../helpers/notify";
 import readExif from "../helpers/exif";
 import PictureCard from "../components/Picture-Card.vue";
@@ -111,7 +104,8 @@ const tagsToApply = computed({
 });
 
 let files = ref([]);
-let progressInfos = reactive({});
+let progressInfo = reactive({});
+let task = {};
 
 const alter = (filename) => {
   const id = uuid4();
@@ -148,7 +142,17 @@ const checkExists = (originalFilename) => {
       });
   });
 };
+
+const onCancel = () => {
+  Object.keys(progressInfo).forEach((it) => {
+    task[it].cancel();
+  });
+};
 const onSubmit = async (evt) => {
+  if (Object.keys(progressInfo).length > 0) {
+    onCancel();
+    return;
+  }
   const promises = [];
   const formData = new FormData(evt.target);
 
@@ -173,37 +177,40 @@ const onSubmit = async (evt) => {
         actions: [{ icon: "close" }],
         timeout: 0,
       });
+      delete task[it.reason];
+      delete progressInfo[it.reason];
+    } else if (it.status === "fulfilled") {
+      notify({
+        type: "positive",
+        message: `Uploaded ${it.value}.`,
+      });
+      delete task[it.value];
+      delete progressInfo[it.value];
     }
-    // removeByProperty(files.value, "name", it.value);
   });
-  // progressInfos.entries
-  //   .filter((it) => it[1] > 0)
-  //   .forEach((it) => {
-  //     console.log(it[0]);
-  //   });
 };
 
 const uploadTask = (file) => {
   return new Promise(async (resolve, reject) => {
     const filename = await checkExists(file.name);
-    progressInfos[file.name] = 0;
+    progressInfo[file.name] = 0;
     const _ref = storageRef(storage, filename);
-    const task = uploadBytesResumable(_ref, file, {
+    task[file.name] = uploadBytesResumable(_ref, file, {
       contentType: file.type,
       cacheControl: "public, max-age=604800",
     });
-    task.on(
+    task[file.name].on(
       "state_changed",
       (snapshot) => {
-        progressInfos[file.name] =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progressInfo[file.name] =
+          snapshot.bytesTransferred / snapshot.totalBytes;
       },
       (error) => {
-        progressInfos[file.name] = 0;
+        progressInfo[file.name] = 0;
         reject(file.name);
       },
       () => {
-        getDownloadURL(task.snapshot.ref).then((downloadURL) => {
+        getDownloadURL(task[file.name].snapshot.ref).then((downloadURL) => {
           // const urlParams = new URLSearchParams(downloadURL);
           // console.log(urlParams.get("token"));
           const data = {
@@ -214,7 +221,6 @@ const uploadTask = (file) => {
             nick: emailNick(auth.user.email),
           };
           app.uploaded.push(data);
-          progressInfos[file.name] = 0;
           resolve(file.name);
           if (process.env.DEV) console.log("uploaded", file.name);
         });
@@ -222,6 +228,11 @@ const uploadTask = (file) => {
     );
   });
 };
+
+const buttonAttributes = (list) =>
+  list.length > 0
+    ? { label: "Cancel", color: "negative" }
+    : { label: "Upload", color: "primary" };
 
 const onValidationError = (rejectedEntries) => {
   rejectedEntries.forEach((it) => {
@@ -239,7 +250,6 @@ const addNewTag = (inputValue, done) => {
   done(inputValue);
 };
 const deleteRecord = (rec) => {
-  delete progressInfos[rec.filename];
   app.deleteRecord(rec);
 };
 const editRecord = async (rec) => {
@@ -248,7 +258,6 @@ const editRecord = async (rec) => {
   //  * Add user email and tags: [] to new rec; read exif
   //  * See Edit-Record getExif
   //  */
-  delete progressInfos[rec.filename];
   const exif = await readExif(rec.url);
   const tags = [...(tagsToApply.value || "")];
   rec = { ...rec, ...exif };
