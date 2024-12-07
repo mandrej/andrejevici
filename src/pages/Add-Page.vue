@@ -11,7 +11,6 @@
           :value="value"
           color="warning"
           :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
-          :title="`${name}: ${value}%`"
         />
       </div>
     </div>
@@ -31,11 +30,22 @@
           Mb in size."
         @rejected="onValidationError"
       />
-      <div class="column">
+      <div class="row justify-end">
         <q-btn
-          v-bind="buttonAttributes(Object.keys(progressInfo))"
+          label="Cancel all"
+          type="button"
+          color="negative"
+          class="col-4"
+          @click="cancelAll"
+          v-morph:cancel:buttons:500="morphModel"
+        />
+        <q-btn
+          label="Upload"
           type="submit"
-          class="col self-end"
+          icon="cloud_upload"
+          color="primary"
+          class="col-2"
+          v-morph:upload:buttons:500="morphModel"
         />
       </div>
     </q-form>
@@ -106,6 +116,7 @@ const tagsToApply = computed({
 let files = ref([]);
 let progressInfo = reactive({});
 let task = {};
+const morphModel = ref("upload");
 
 const alter = (filename) => {
   const id = uuid4();
@@ -143,16 +154,13 @@ const checkExists = (originalFilename) => {
   });
 };
 
-const onCancel = () => {
+const cancelAll = () => {
   Object.keys(progressInfo).forEach((it) => {
     task[it].cancel();
   });
+  morphModel.value = "upload";
 };
 const onSubmit = async (evt) => {
-  if (Object.keys(progressInfo).length > 0) {
-    onCancel();
-    return;
-  }
   const promises = [];
   const formData = new FormData(evt.target);
 
@@ -167,6 +175,7 @@ const onSubmit = async (evt) => {
     }
   }
 
+  morphModel.value = "cancel";
   files.value = [];
   const results = await Promise.allSettled(promises);
   results.forEach((it) => {
@@ -188,6 +197,7 @@ const onSubmit = async (evt) => {
       delete progressInfo[it.value];
     }
   });
+  morphModel.value = "upload";
 };
 
 const uploadTask = (file) => {
@@ -228,11 +238,6 @@ const uploadTask = (file) => {
     );
   });
 };
-
-const buttonAttributes = (list) =>
-  list.length > 0
-    ? { label: "Cancel", color: "negative" }
-    : { label: "Upload", color: "primary" };
 
 const onValidationError = (rejectedEntries) => {
   rejectedEntries.forEach((it) => {
