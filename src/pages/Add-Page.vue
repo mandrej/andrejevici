@@ -42,10 +42,11 @@
         <q-btn
           label="Upload"
           type="submit"
-          icon="cloud_upload"
+          icon="file_upload"
           color="primary"
           class="col-2"
           v-morph:upload:buttons:500="morphModel"
+          :disable="files.length === 0"
         />
       </div>
     </q-form>
@@ -164,10 +165,6 @@ const onSubmit = async (evt) => {
   const promises = [];
   const formData = new FormData(evt.target);
 
-  if (files.value.length === 0) {
-    notify({ message: `Nothing to upload` });
-    return;
-  }
   for (const [name, file] of formData.entries()) {
     // name = 'photos'
     if (file instanceof File) {
