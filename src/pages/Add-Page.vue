@@ -35,7 +35,7 @@
           label="Cancel all"
           type="button"
           color="negative"
-          class="col-4"
+          class="col-lg-4 col-sm-5 col-xs-6"
           @click="cancelAll"
           v-morph:cancel:buttons:500="morphModel"
         />
@@ -44,7 +44,7 @@
           type="submit"
           icon="file_upload"
           color="primary"
-          class="col-2"
+          class="col-lg-2 col-sm-3 col-xs-4"
           v-morph:upload:buttons:500="morphModel"
           :disable="files.length === 0"
         />
