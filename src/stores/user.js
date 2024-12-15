@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, acceptHMRUpdate } from "pinia";
 import { nextTick } from "vue";
 import { CONFIG } from "../helpers";
 import { auth, db } from "../boot/fire";
@@ -149,3 +149,7 @@ export const useUserStore = defineStore("auth", {
     paths: ["user", "token"],
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useUserStore, import.meta.hot));
+}

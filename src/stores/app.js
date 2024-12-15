@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, acceptHMRUpdate } from "pinia";
 import { db, storage } from "../boot/fire";
 import {
   doc,
@@ -197,6 +197,7 @@ export const useAppStore = defineStore("app", {
         await setDoc(docRef, obj, { merge: true });
 
         changedByProperty(this.objects, "filename", obj);
+        notify({ message: `${obj.filename} updated` });
         meta.increaseValues(obj);
       } else {
         // set thumbnail url = publish
@@ -209,6 +210,7 @@ export const useAppStore = defineStore("app", {
         // save everything
         await setDoc(docRef, obj, { merge: true });
         changedByProperty(this.objects, "filename", obj, 0);
+        notify({ message: `${obj.filename} published` });
         // delete uploaded
         removeByProperty(this.uploaded, "filename", obj.filename);
 
@@ -316,3 +318,7 @@ export const useAppStore = defineStore("app", {
     // },
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useAppStore, import.meta.hot));
+}

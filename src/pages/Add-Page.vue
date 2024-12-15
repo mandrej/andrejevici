@@ -71,7 +71,7 @@
           <Picture-Card
             :rec="rec"
             :canManage="true"
-            @delete-record="deleteRecord"
+            @delete-record="app.deleteRecord"
             @edit-record="editRecord"
           />
         </div>
@@ -250,9 +250,6 @@ const onValidationError = (rejectedEntries) => {
 const addNewTag = (inputValue, done) => {
   meta.addNewField(inputValue, "tags");
   done(inputValue);
-};
-const deleteRecord = (rec) => {
-  app.deleteRecord(rec);
 };
 const editRecord = async (rec) => {
   // /**

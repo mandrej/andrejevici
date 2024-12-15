@@ -25,13 +25,17 @@
               {{ Object.keys(values).join(", ") }}
             </q-item-section>
             <q-item-section side>
-              <q-btn color="primary" label="rebuild" @click="rebuild" />
+              <q-btn
+                color="primary"
+                label="rebuild"
+                @click="meta.countersBuild"
+              />
             </q-item-section>
           </q-item>
           <q-item>
             <q-item-section> Bucket count and size </q-item-section>
             <q-item-section side>
-              <q-btn color="primary" label="Recalc" @click="bucket" />
+              <q-btn color="primary" label="Recalc" @click="app.bucketBuild" />
             </q-item-section>
           </q-item>
           <q-item>
@@ -100,13 +104,6 @@ const auth = useUserStore();
 
 const message = ref("TEST");
 const values = computed(() => meta.values);
-
-const rebuild = () => {
-  meta.countersBuild();
-};
-const bucket = () => {
-  app.bucketBuild();
-};
 
 const send = () => {
   const headers = {

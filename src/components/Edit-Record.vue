@@ -47,7 +47,7 @@
                 :placeholder="CONFIG.noTitle"
                 :hint="`Image without name is called '${CONFIG.noTitle}'`"
                 @blur="
-                  tmp.headline === undefined || tmp.headline.trim() === ''
+                  tmp.headline === undefined
                     ? (tmp.headline = CONFIG.noTitle)
                     : (tmp.headline = tmp.headline.trim())
                 "

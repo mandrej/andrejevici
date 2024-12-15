@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, acceptHMRUpdate } from "pinia";
 import { db } from "../boot/fire";
 import {
   doc,
@@ -323,3 +323,7 @@ export const useValuesStore = defineStore("meta", {
     paths: ["values", "tagsToApply"],
   },
 });
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useValuesStore, import.meta.hot));
+}

@@ -2,7 +2,6 @@ import CONFIG from "../../config";
 import { date, format } from "quasar";
 import { slugify } from "transliteration";
 import { computed } from "vue";
-import notify from "./notify";
 
 const { humanStorageSize } = format;
 const { formatDate } = date;
@@ -52,13 +51,8 @@ const removeByProperty = (arr, property, value) => {
 };
 const changedByProperty = (arr, property, obj, op = 1) => {
   const idx = arr.findIndex((it) => it[property] === obj[property]);
-  if (idx > -1) {
+  if (idx >= 0) {
     arr.splice(idx, op, obj);
-    if (op === 0) {
-      notify({ message: `${obj.filename} published` });
-    } else {
-      notify({ message: `${obj.filename} updated` });
-    }
   }
 };
 const textSlug = (text) => {
