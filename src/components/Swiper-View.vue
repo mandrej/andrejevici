@@ -60,7 +60,6 @@
 
 <script setup>
 import { useQuasar } from "quasar";
-import { storeToRefs } from "pinia";
 import { ref, watch } from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
@@ -84,7 +83,6 @@ const route = useRoute();
 const hash = ref(null);
 const urlHash = new RegExp(/#(.*)?/); // matching string hash
 const full = ref(false);
-const { markerFileName } = storeToRefs(app);
 
 register({ modules: [Keyboard, Zoom] });
 let swiper = null;
@@ -94,12 +92,8 @@ const onSwiper = (e) => {
   position(app.markerFileName);
 };
 
-watch(markerFileName, (val) => {
-  position(val);
-});
-
-const position = (markerFileName) => {
-  const index = props.objects.findIndex((x) => x.filename === markerFileName);
+const position = (marker) => {
+  const index = props.objects.findIndex((x) => x.filename === marker);
   if (index === 0) {
     onSlideChange();
   } else if (index > 0) {
