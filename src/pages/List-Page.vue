@@ -10,12 +10,9 @@
         :key="obj.filename"
         :data-hash="U + obj.filename"
       >
-        <img
-          v-if="grid"
-          :src="obj.thumb"
-          @click="grid = false"
-          @error="onError"
-        />
+        <div v-if="grid" class="grid">
+          <img :src="obj.thumb" @click="grid = false" @error="onError" />
+        </div>
         <div v-else class="swiper-zoom-container">
           <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
           <div class="swiper-lazy-preloader" />
@@ -52,7 +49,6 @@ const common = {
   },
   slidesPerView: 1,
   spaceBetween: 16,
-  direcrion: "vertical",
 };
 
 const options = (grid) => {
@@ -63,27 +59,18 @@ const options = (grid) => {
         slidesPerView: 1,
         spaceBetween: 16,
         grid: {
-          rows: 1200,
+          rows: 300,
           fill: "row",
         },
         breakpoints: {
           640: {
             slidesPerView: 2,
-            grid: {
-              fill: "row",
-            },
           },
           768: {
             slidesPerView: 3,
-            grid: {
-              fill: "row",
-            },
           },
           1024: {
             slidesPerView: 3,
-            grid: {
-              fill: "row",
-            },
           },
         },
       }
@@ -101,6 +88,9 @@ const pageStyle = (grid) => {
   return grid
     ? {
         class: "q-pa-md",
+        style: {
+          position: "relative",
+        },
       }
     : {
         class: "q-pa-none, bg-black",
@@ -151,17 +141,17 @@ swiper-slide {
   justify-content: center;
   align-items: center;
 }
-swiper-slide img {
+.grid img {
   display: block;
   width: 100%;
   height: 330px;
   object-fit: cover;
 }
 .swiper-zoom-container img {
-  width: auto;
-  height: 320px;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  /* max-width: 100%;
+  max-height: 100%; */
   object-fit: contain;
 }
 </style>
