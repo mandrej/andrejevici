@@ -1,15 +1,18 @@
 import { CONFIG } from "../helpers";
+import Plain from "../layouts/Plain.vue";
+import Default from "../layouts/Default.vue";
+import IndexPage from "../pages/Index-Page.vue";
 
 const routes = [
   {
     path: "/",
-    component: () => import("../layouts/Plain.vue"),
+    component: Plain,
     children: [
       {
         path: "",
         name: "home",
         meta: { title: CONFIG.title },
-        component: () => import("../pages/Index-Page.vue"),
+        component: IndexPage,
       },
       {
         path: "401",
@@ -29,14 +32,14 @@ const routes = [
   },
   {
     path: "/",
-    component: () => import("../layouts/Default.vue"),
+    component: Default,
     children: [
       {
         path: "list",
         name: "list",
         meta: { title: CONFIG.title },
         components: {
-          default: () => import("../pages/Browser-Page.vue"),
+          default: () => import("../pages/List-Page.vue"),
           sidebar: () => import("../components/Find.vue"),
         },
       },
