@@ -1,41 +1,77 @@
 <template>
-  <q-page v-bind="pageStyle(grid)">
+  <q-page class="q-pa-md">
+    <q-banner
+      v-if="app.error && app.error === 'empty'"
+      class="fixed-center text-center bg-warning q-pa-md"
+      style="z-index: 100"
+      rounded
+    >
+      <q-icon name="error_outline" size="4em" />
+      <div class="text-h6">No data found</div>
+      <div>for current filter/ search</div>
+    </q-banner>
+    <q-banner
+      v-else-if="app.error && app.error !== 'empty'"
+      class="fixed-center text-center bg-warning q-pa-md"
+      style="z-index: 100"
+      rounded
+    >
+      <q-icon name="error_outline" size="4em" />
+      <div class="text-h6">Something went wrong ...</div>
+      <div>{{ app.error }}</div>
+    </q-banner>
+
     <swiper-container
-      v-bind="options(grid)"
+      v-bind="options"
       @swiperinit="onSwiper"
       @swiperslidechange="onSlideChange"
     >
       <swiper-slide
-        v-for="obj in objects"
-        :key="obj.filename"
-        :data-hash="U + obj.filename"
+        v-for="item in objects"
+        :key="item.filename"
+        :data-hash="U + item.filename"
       >
-        <div v-if="grid" class="grid">
-          <img :src="obj.thumb" @click="grid = false" @error="onError" />
-        </div>
-        <div v-else class="swiper-zoom-container">
-          <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
-          <div class="swiper-lazy-preloader" />
-        </div>
+        <Picture-Card
+          :rec="item"
+          :canManage="isAuthorOrAdmin(item)"
+          :canMergeTags="tagsToApplyExist()"
+          @carousel-show="emit('carouselShow', item.filename)"
+          @edit-record="emit('editRecord', item)"
+          @merge-tags="mergeTags(item)"
+          @confirm-delete="emit('confirmDelete', item)"
+          @delete-record="app.deleteRecord"
+        />
       </swiper-slide>
     </swiper-container>
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import { useAppStore } from "../stores/app";
+import { useUserStore } from "../stores/user";
+import { useValuesStore } from "../stores/values";
 import { fileBroken, U } from "../helpers";
 import { register } from "swiper/element/bundle";
 import { Keyboard, Zoom } from "swiper/modules";
+import PictureCard from "src/components/Picture-Card.vue";
+
+const emit = defineEmits([
+  "carouselShow",
+  "carouselCancel",
+  "editRecord",
+  "editOk",
+  "confirmDelete",
+]);
 
 const app = useAppStore();
+const auth = useUserStore();
+const meta = useValuesStore();
 const objects = computed(() => app.objects);
-const grid = ref(true);
 
 register();
 let swiper = null;
-const common = {
+const options = {
   keyboard: {
     enabled: true,
   },
@@ -47,64 +83,23 @@ const common = {
     loadPrevNext: true,
     loadPrevNextAmount: 3,
   },
-  slidesPerView: 1,
+  slidesPerView: 3,
   spaceBetween: 16,
-};
-
-const options = (grid) => {
-  return grid
-    ? {
-        ...common,
-        direcrion: "vertical",
-        slidesPerView: 1,
-        spaceBetween: 16,
-        grid: {
-          rows: 300,
-          fill: "row",
-        },
-        breakpoints: {
-          640: {
-            slidesPerView: 2,
-          },
-          768: {
-            slidesPerView: 3,
-          },
-          1024: {
-            slidesPerView: 3,
-          },
-        },
-      }
-    : {
-        ...common,
-        direcrion: "horizontal",
-        slidesPerView: 1,
-        grid: {
-          rows: 1,
-        },
-      };
-};
-
-const pageStyle = (grid) => {
-  return grid
-    ? {
-        class: "q-pa-md",
-        style: {
-          position: "relative",
-        },
-      }
-    : {
-        class: "q-pa-none, bg-black",
-        style: {
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          position: "absolute",
-          zIndex: 2000,
-          height: "100vh",
-          overflow: "hidden",
-        },
-      };
+  grid: {
+    rows: 100,
+    fill: "row",
+  },
+  breakpoints: {
+    640: {
+      slidesPerView: 2,
+    },
+    768: {
+      slidesPerView: 3,
+    },
+    1024: {
+      slidesPerView: 3,
+    },
+  },
 };
 
 const onSwiper = (e) => {
@@ -124,8 +119,20 @@ const onLoad = (e) => {
   const container = e.target.closest(".swiper-zoom-container");
   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
 };
-const onError = (e) => {
-  e.target.src = fileBroken;
+
+const isAuthorOrAdmin = (rec) => {
+  if (!auth.user) return false;
+  return (auth.user.isAdmin || auth.user.email === rec.email) && app.editMode;
+};
+
+const tagsToApplyExist = () => {
+  return Array.isArray(meta.tagsToApply) && auth.user && auth.user.isAdmin;
+};
+
+const mergeTags = (rec) => {
+  rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort();
+  app.saveRecord(rec);
+  emit("editOk", U + rec.filename);
 };
 </script>
 
@@ -136,22 +143,15 @@ swiper-container {
   margin-left: auto;
   margin-right: auto;
 }
-swiper-slide {
+/* swiper-slide {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.grid img {
+} */
+swiper-slide img {
   display: block;
   width: 100%;
-  height: 330px;
+  height: 300px;
   object-fit: cover;
-}
-.swiper-zoom-container img {
-  width: 100%;
-  height: 100%;
-  /* max-width: 100%;
-  max-height: 100%; */
-  object-fit: contain;
 }
 </style>
