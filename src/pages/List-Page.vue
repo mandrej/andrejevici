@@ -1,5 +1,17 @@
 <template>
   <q-page class="q-pa-md">
+    <Edit-Record v-if="app.showEdit" :rec="app.currentEdit" @edit-ok="editOk" />
+    <Confirm-Delete
+      v-if="app.showConfirm"
+      :rec="select2delete"
+      @confirm-ok="confirmOk"
+    />
+    <SwiperView
+      v-if="app.showCarousel"
+      :objects="objects"
+      @carousel-cancel="useCarouselCancel"
+    />
+
     <q-banner
       v-if="app.error && app.error === 'empty'"
       class="fixed-center text-center bg-warning q-pa-md"
@@ -35,11 +47,10 @@
           :rec="item"
           :canManage="isAuthorOrAdmin(item)"
           :canMergeTags="tagsToApplyExist()"
-          @carousel-show="emit('carouselShow', item.filename)"
-          @edit-record="emit('editRecord', item)"
+          @carousel-show="useCarouselShow(item.filename)"
+          @edit-record="editRecord(item)"
           @merge-tags="mergeTags(item)"
-          @confirm-delete="emit('confirmDelete', item)"
-          @delete-record="app.deleteRecord"
+          @confirm-delete="confirmShow(item)"
         />
       </swiper-slide>
     </swiper-container>
@@ -47,27 +58,48 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  defineEmits,
+  defineAsyncComponent,
+} from "vue";
 import { useAppStore } from "../stores/app";
 import { useUserStore } from "../stores/user";
 import { useValuesStore } from "../stores/values";
-import { fileBroken, U } from "../helpers";
+import { useRoute } from "vue-router";
+import { U, fakeHistory } from "../helpers";
+import { useCarouselShow, useCarouselCancel } from "../helpers/common";
 import { register } from "swiper/element/bundle";
 import { Keyboard, Zoom } from "swiper/modules";
 import PictureCard from "src/components/Picture-Card.vue";
+import SwiperView from "../components/Swiper-View.vue";
 
-const emit = defineEmits([
-  "carouselShow",
-  "carouselCancel",
-  "editRecord",
-  "editOk",
-  "confirmDelete",
-]);
+const EditRecord = defineAsyncComponent(() =>
+  import("../components/Edit-Record.vue")
+);
+const ConfirmDelete = defineAsyncComponent(() =>
+  import("../components/Confirm-Delete.vue")
+);
+
+const emit = defineEmits(["editOk"]);
 
 const app = useAppStore();
 const auth = useUserStore();
 const meta = useValuesStore();
 const objects = computed(() => app.objects);
+
+const route = useRoute();
+const select2delete = ref({});
+
+onMounted(() => {
+  const hash = route.hash;
+  if (hash) {
+    const filename = hash.substring(2);
+    useCarouselShow(filename);
+  }
+});
 
 register();
 let swiper = null;
@@ -107,17 +139,6 @@ const onSwiper = (e) => {
   Object.assign(swiper, {
     modules: [Keyboard, Zoom],
   });
-  // position(app.markerFileName);
-};
-const onLoad = (e) => {
-  // calculate image dimension
-  const dim1 = [e.target.width, e.target.height];
-  const dim0 = [e.target.naturalWidth, e.target.naturalHeight];
-  const wRatio = dim0[0] / dim1[0];
-  const hRatio = dim0[1] / dim1[1];
-
-  const container = e.target.closest(".swiper-zoom-container");
-  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1);
 };
 
 const isAuthorOrAdmin = (rec) => {
@@ -134,24 +155,27 @@ const mergeTags = (rec) => {
   app.saveRecord(rec);
   emit("editOk", U + rec.filename);
 };
-</script>
 
-<style scoped>
-swiper-container {
-  width: 100%;
-  height: 100%;
-  margin-left: auto;
-  margin-right: auto;
-}
-/* swiper-slide {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-swiper-slide img {
-  display: block;
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
-}
-</style>
+const confirmShow = (rec) => {
+  select2delete.value = rec;
+  fakeHistory();
+  app.showConfirm = true;
+};
+const confirmOk = (rec) => {
+  app.showConfirm = false;
+  app.deleteRecord(rec);
+};
+const editRecord = (rec) => {
+  app.currentEdit = rec;
+  fakeHistory();
+  app.showEdit = true;
+};
+const editOk = (hash) => {
+  const el = document.querySelector("#" + hash);
+  if (!el) return;
+  el.classList.add("bounce");
+  setTimeout(() => {
+    el.classList.remove("bounce");
+  }, 2000);
+};
+</script>

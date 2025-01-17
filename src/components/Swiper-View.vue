@@ -1,14 +1,6 @@
 <template>
   <swiper-container
-    class="swiper"
-    :keyboard="{
-      enabled: true,
-    }"
-    :grab-cursor="true"
-    :zoom="{
-      maxRatio: 2,
-    }"
-    :lazy="true"
+    v-bind="options"
     @swiperinit="onSwiper"
     @swiperslidechange="onSlideChange"
   >
@@ -86,6 +78,20 @@ const full = ref(false);
 
 register({ modules: [Keyboard, Zoom] });
 let swiper = null;
+const options = {
+  keyboard: {
+    enabled: true,
+  },
+  grabCursor: true,
+  zoom: {
+    maxRatio: 2,
+  },
+  lazy: {
+    loadPrevNext: true,
+    loadPrevNextAmount: 3,
+    loadOnTransitionStart: true,
+  },
+};
 
 const onSwiper = (e) => {
   swiper = e.detail[0]; // instance

@@ -9,7 +9,6 @@ const meta = useValuesStore();
 import notify from "../helpers/notify";
 const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
-// used in Browser-Page, Add-Page
 export function useCarouselShow(filename) {
   app.markerFileName = filename;
   fakeHistory();
