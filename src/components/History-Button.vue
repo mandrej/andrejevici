@@ -3,21 +3,21 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { useAppStore } from "../stores/app";
+import { useRouter } from 'vue-router'
+import { useAppStore } from '../stores/app'
 
-const app = useAppStore();
-const router = useRouter();
+const app = useAppStore()
+const router = useRouter()
 
-const props = defineProps({
+defineProps({
   size: {
     type: String,
     required: false,
   },
-});
+})
 
 const previousCollection = () => {
-  app.fetchRecords(true, "refresh");
-  router.push({ path: "/list", query: app.find });
-};
+  app.fetchRecords(true, 'refresh')
+  router.push({ path: '/list', query: app.find })
+}
 </script>

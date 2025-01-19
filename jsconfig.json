@@ -1,18 +1,17 @@
 {
+  "extends": "./.quasar/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "src/*": ["src/*"],
-      "app/*": ["*"],
-      "components/*": ["src/components/*"],
-      "layouts/*": ["src/layouts/*"],
-      "pages/*": ["src/pages/*"],
-      "assets/*": ["src/assets/*"],
-      "helpers/*": ["src/helpers/*"],
-      "boot/*": ["src/boot/*"],
-      "stores/*": ["src/stores/*"],
-      "vue$": ["node_modules/vue/dist/vue.runtime.esm-bundler.js"]
+      "src/*": ["./src/*"],
+      "app/*": ["./src/*"],
+      "components/*": ["./src/components/*"],
+      "helpers/*": ["./src/helpers/*"],
+      "layouts/*": ["./src/layouts/*"],
+      "pages/*": ["./src/pages/*"],
+      "assets/*": ["./src/assets/*"],
+      "boot/*": ["./src/boot/*"],
+      "stores/*": ["./src/stores/*"]
     }
-  },
-  "exclude": ["dist", ".quasar", "node_modules"]
+  }
 }

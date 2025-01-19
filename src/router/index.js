@@ -1,32 +1,54 @@
-import { nextTick } from "vue";
-import { useUserStore } from "../stores/user";
-import { createRouter, createWebHistory } from "vue-router";
-import routes from "./routes";
+import { nextTick } from 'vue'
+import { defineRouter } from '#q-app/wrappers'
+import {
+  createRouter,
+  createMemoryHistory,
+  createWebHistory,
+  createWebHashHistory,
+} from 'vue-router'
+import { useUserStore } from '../stores/user'
+import routes from './routes'
 
-const router = createRouter({
-  scrollBehavior: () => ({ left: 0, top: 0 }),
-  routes,
-  history: createWebHistory(process.env.VUE_ROUTER_BASE),
-});
+/*
+ * If not building with SSR mode, you can
+ * directly export the Router instantiation;
+ *
+ * The function below can be async too; either use
+ * async/await or return a Promise which resolves
+ * with the Router instance.
+ */
 
-router.beforeEach((to, from) => {
-  const auth = useUserStore();
-  const user = auth.user;
+export default defineRouter(function (/* { store, ssrContext } */) {
+  const createHistory = process.env.SERVER
+    ? createMemoryHistory
+    : process.env.VUE_ROUTER_MODE === 'history'
+      ? createWebHistory
+      : createWebHashHistory
 
-  if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
-    return { name: "401", replace: true };
-  } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
-    return { name: "401", replace: true };
-  }
-});
+  // Leave this as is and make changes in quasar.conf.js instead!
+  const history = createHistory(process.env.VUE_ROUTER_BASE)
+  const router = createRouter({
+    history,
+    routes,
+  })
 
-router.afterEach((to, from) => {
-  // Use next tick to handle router history correctly
-  // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
+  router.beforeEach((to) => {
+    const auth = useUserStore()
+    const user = auth.user || null
 
-  nextTick(() => {
-    document.title = to.meta.title;
-  });
-});
+    if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
+      return { name: '401', replace: true }
+    } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
+      return { name: '401', replace: true }
+    }
+  })
 
-export default router;
+  router.afterEach((to) => {
+    // Use next tick to handle router history correctly
+    nextTick(() => {
+      document.title = to.meta.title
+    })
+  })
+
+  return router
+})

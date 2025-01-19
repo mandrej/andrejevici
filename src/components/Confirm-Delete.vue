@@ -11,9 +11,7 @@
           <q-toolbar-title>Confirm Delete</q-toolbar-title>
         </q-toolbar>
         <q-card-section
-          >Would you like to delete {{ formatBytes(rec.size) }} image named "{{
-            rec.headline
-          }}"?
+          >Would you like to delete {{ formatBytes(rec.size) }} image named "{{ rec.headline }}"?
         </q-card-section>
         <q-card-actions class="row justify-between q-pa-md q-col-gutter-md">
           <div class="col">
@@ -40,20 +38,20 @@
 </template>
 
 <script setup>
-import { useAppStore } from "../stores/app";
-import { formatBytes } from "../helpers";
+import { useAppStore } from '../stores/app'
+import { formatBytes } from '../helpers'
 
-const emit = defineEmits(["confirmOk"]);
-const props = defineProps({
+const emit = defineEmits(['confirmOk'])
+defineProps({
   rec: Object,
-});
+})
 
-const app = useAppStore();
+const app = useAppStore()
 
 window.onpopstate = function () {
-  app.showConfirm = false;
-};
+  app.showConfirm = false
+}
 const onCancel = () => {
-  app.showConfirm = false;
-};
+  app.showConfirm = false
+}
 </script>

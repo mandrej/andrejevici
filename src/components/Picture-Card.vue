@@ -37,9 +37,7 @@
     </q-card-section>
     <q-card-section class="row justify-between">
       <span>
-        <router-link
-          :to="{ path: '/list', query: { nick: rec.nick } }"
-          class="text-black undreline"
+        <router-link :to="{ path: '/list', query: { nick: rec.nick } }" class="text-black undreline"
           >{{ rec.nick }}
         </router-link>
         ,
@@ -53,7 +51,7 @@
             },
           }"
           class="text-black undreline"
-          >{{ formatDatum(rec.date, "DD.MM.YYYY") }}</router-link
+          >{{ formatDatum(rec.date, 'DD.MM.YYYY') }}</router-link
         >
         {{ rec.date.substring(11) }}
       </span>
@@ -93,60 +91,54 @@
 </template>
 
 <script setup>
-import { copyToClipboard } from "quasar";
-import {
-  fileBroken,
-  formatDatum,
-  formatBytes,
-  U,
-  reFilename,
-} from "../helpers";
-import notify from "../helpers/notify";
+import { copyToClipboard } from 'quasar'
+import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
+import notify from '../helpers/notify'
 
 const emit = defineEmits([
-  "carouselShow",
-  "confirmDelete",
-  "editRecord",
-  "mergeTags",
-  "deleteRecord",
-]);
+  'carouselShow',
+  'confirmDelete',
+  'editRecord',
+  'mergeTags',
+  'deleteRecord',
+])
 const props = defineProps({
   rec: Object,
   canManage: Boolean,
   canMergeTags: Boolean,
-});
+})
 
 const cardAttributes = (filename) => {
-  let attr;
+  let attr
   try {
-    const [, name, ext] = filename.match(reFilename);
+    const [, name, ext] = filename.match(reFilename)
     attr = {
       id: U + name,
       class: ext.substring(1),
-    };
-  } catch (e) {
+    }
+  } catch {
     attr = {
-      id: U + "x",
-      class: "jpg",
-    };
+      id: U + 'x',
+      class: 'jpg',
+    }
   }
-  return attr;
-};
+  return attr
+}
 const onShare = () => {
-  const url = window.location.href + "#" + U + props.rec.filename;
+  const url = window.location.href + '#' + U + props.rec.filename
   copyToClipboard(url)
     .then(() => {
-      notify({ message: "URL copied to clipboard" });
+      notify({ message: 'URL copied to clipboard' })
     })
     .catch(() => {
-      notify({ type: "warning", message: "Unable to copy URL to clipboard" });
-    });
-};
+      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+    })
+}
 
 const openMaps = (loc) => {
-  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`;
-  window.open(url, "_blank");
-};
+  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
+  window.open(url, '_blank')
+}
 </script>
 
 <style lang="scss" scoped>

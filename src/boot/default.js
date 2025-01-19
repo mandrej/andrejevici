@@ -1,25 +1,23 @@
-import { QInput, QSelect } from "quasar";
+import { QInput, QSelect } from 'quasar'
 
 const setDefault = (component, key, value) => {
-  const prop = component.props[key];
+  const prop = component.props[key]
   switch (typeof prop) {
-    case "object":
-      prop.default = value;
-      break;
-    case "function":
+    case 'object':
+      prop.default = value
+      break
+    case 'function':
       component.props[key] = {
         type: prop,
         default: value,
-      };
-      break;
-    case "undefined":
-      throw new Error("unknown prop: " + key);
-      break;
+      }
+      break
+    case 'undefined':
+      throw new Error('unknown prop: ' + key)
     default:
-      throw new Error("unhandled type: " + typeof prop);
-      break;
+      throw new Error('unhandled type: ' + typeof prop)
   }
-};
+}
 
-setDefault(QInput, "clearIcon", "clear");
-setDefault(QSelect, "clearIcon", "clear");
+setDefault(QInput, 'clearIcon', 'clear')
+setDefault(QSelect, 'clearIcon', 'clear')

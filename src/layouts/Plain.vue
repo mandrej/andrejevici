@@ -2,11 +2,7 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page v-if="lastRecord.href" class="row">
-        <q-responsive
-          :ratio="1"
-          class="col-xs-12 col-md-6 shadow-12"
-          :style="imageStyle"
-        >
+        <q-responsive :ratio="1" class="col-xs-12 col-md-6 shadow-12" :style="imageStyle">
           <router-link
             :to="lastRecord.href"
             style="display: block"
@@ -37,14 +33,10 @@
               <p class="q-ma-none text-body2 text-right">{{ version }}</p>
               {{ $route.meta.title }}
               <p class="q-ma-none text-body2">
-                {{ app.bucket.count }} photos since {{ app.sinceYear }} and
-                counting
+                {{ app.bucket.count }} photos since {{ app.sinceYear }} and counting
               </p>
             </div>
-            <History-Button
-              v-if="app.find && Object.keys(app.find).length"
-              size="2.3em"
-            />
+            <History-Button v-if="app.find && Object.keys(app.find).length" size="2.3em" />
           </div>
 
           <router-view />
@@ -62,10 +54,9 @@
         <div class="row justify-center">
           <div class="col-xs-12 col-sm-6">
             <p>
-              There are no photos posted yet. To add some photos you need to
-              sign-in with your Google account. Only registered users can add,
-              delete or edit photos. Unregistered user can only browse photos
-              other people add.
+              There are no photos posted yet. To add some photos you need to sign-in with your
+              Google account. Only registered users can add, delete or edit photos. Unregistered
+              user can only browse photos other people add.
             </p>
             <p v-if="auth.user && auth.user.isAuthorized">
               <q-btn-group spread>
@@ -74,11 +65,7 @@
                   to="/add"
                   :label="`Add some photos ${auth.user.name}`"
                 />
-                <q-btn
-                  class="bg-warning text-dark"
-                  @click="auth.signIn"
-                  label="Or Sign-Out"
-                />
+                <q-btn class="bg-warning text-dark" @click="auth.signIn" label="Or Sign-Out" />
               </q-btn-group>
             </p>
             <p class="text-center" v-else>
@@ -89,10 +76,9 @@
               />
             </p>
             <p>
-              This application is made for my personal photographic needs. I
-              couldn't find any better nor cheeper solutions to store my photos.
-              Application provide searching based on tags, year, month, day,
-              model, lens and author. Application is built using
+              This application is made for my personal photographic needs. I couldn't find any
+              better nor cheeper solutions to store my photos. Application provide searching based
+              on tags, year, month, day, model, lens and author. Application is built using
               <a href="https://firebase.google.com/">Firebase</a> on
               <a href="https://nodejs.org/">node.js</a> and
               <a href="https://quasar.dev/">Quasar</a>&nbsp;
@@ -106,32 +92,32 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
-import { useAppStore } from "../stores/app";
-import { useUserStore } from "../stores/user";
-import { fileBroken, version } from "../helpers";
-import HistoryButton from "../components/History-Button.vue";
+import { onMounted, computed } from 'vue'
+import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
+import { version } from '../helpers'
+import HistoryButton from '../components/History-Button.vue'
 
-const app = useAppStore();
-const auth = useUserStore();
-const lastRecord = computed(() => app.lastRecord);
+const app = useAppStore()
+const auth = useUserStore()
+const lastRecord = computed(() => app.lastRecord)
 
 onMounted(() => {
-  app.getLast();
-});
+  app.getLast()
+})
 
-const common = "background-repeat: no-repeat; background-position: center;";
+const common = 'background-repeat: no-repeat; background-position: center;'
 const imageStyle = computed(() => {
   return (
-    "background-image: url(" +
+    'background-image: url(' +
     lastRecord.value.url +
-    "), url(" +
+    '), url(' +
     lastRecord.value.thumb +
-    ");" +
+    ');' +
     common +
-    "background-size: cover;" +
-    "transition: background-image 0.2s ease-in-out;"
-  );
-});
+    'background-size: cover;' +
+    'transition: background-image 0.2s ease-in-out;'
+  )
+})
 // const brokenStyle = "background-image: url(" + fileBroken + ");" + common;
 </script>

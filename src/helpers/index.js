@@ -1,100 +1,83 @@
-import CONFIG from "../../config";
-import { date, format } from "quasar";
-import { slugify } from "transliteration";
-import { computed } from "vue";
+import CONFIG from '../../config'
+import { date, format } from 'quasar'
+import { slugify } from 'transliteration'
+import { computed } from 'vue'
 
-const { humanStorageSize } = format;
-const { formatDate } = date;
+const { humanStorageSize } = format
+const { formatDate } = date
 
-const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 // eslint-disable-next-line no-unused-vars
 const formatBytes = (bytes, decimals = 2) => {
-  return humanStorageSize(bytes);
-};
+  return humanStorageSize(bytes)
+}
 const formatDatum = (str, format = CONFIG.dateFormat) => {
-  const date = new Date(str);
-  return formatDate(date, format);
-};
+  const date = new Date(str)
+  return formatDate(date, format)
+}
 const emailNick = (email) => {
-  return email.match(/[^.@]+/)[0];
-};
+  return email.match(/[^.@]+/)[0]
+}
 const fakeHistory = () => {
-  window.history.pushState(history.state, null, history.state.current);
-};
+  window.history.pushState(history.state, null, history.state.current)
+}
 const removeHash = () => {
-  window.history.replaceState(
-    history.state,
-    null,
-    history.state.current.replace(/#(.*)?/, "")
-  );
-};
+  window.history.replaceState(history.state, null, history.state.current.replace(/#(.*)?/, ''))
+}
 const version = computed(() => {
-  const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join(".");
-  return "ver. " + ver;
-});
+  const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join('.')
+  return 'ver. ' + ver
+})
 const removeByProperty = (arr, property, value) => {
-  const idx = arr.findIndex((it) => it[property] === value);
-  if (idx > -1) arr.splice(idx, 1);
-};
+  const idx = arr.findIndex((it) => it[property] === value)
+  if (idx > -1) arr.splice(idx, 1)
+}
 const changedByProperty = (arr, property, obj, op = 1) => {
-  const idx = arr.findIndex((it) => it[property] === obj[property]);
+  const idx = arr.findIndex((it) => it[property] === obj[property])
   if (idx >= 0) {
-    arr.splice(idx, op, obj);
+    arr.splice(idx, op, obj)
   }
-};
+}
 const textSlug = (text) => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
   return slugify(text, {
     replace: [
-      ["ш", "s"],
-      ["đ", "dj"],
-      ["џ", "dz"],
-      ["ћ", "c"],
-      ["ч", "c"],
-      ["ж", "z"],
-      [/[\.-::^[0-9]]+/g, ""],
+      ['ш', 's'],
+      ['đ', 'dj'],
+      ['џ', 'dz'],
+      ['ћ', 'c'],
+      ['ч', 'c'],
+      ['ж', 'z'],
+      [/[.-::^[0-9]]+/g, ''],
     ],
-  });
-};
+  })
+}
 const sliceSlug = (slug) => {
-  const text = [];
-  for (const word of slug.split("-")) {
+  const text = []
+  for (const word of slug.split('-')) {
     for (var j = 3; j < word.length + 1; j++) {
-      const part = word.slice(0, j);
-      if (part.length > 8) break;
-      text.push(part);
+      const part = word.slice(0, j)
+      if (part.length > 8) break
+      text.push(part)
     }
   }
-  return text;
-};
+  return text
+}
 
-export const U = "_";
-export const fileBroken = CONFIG.fileBroken;
-export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/);
+export const U = '_'
+export const fileBroken = CONFIG.fileBroken
+export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
 export const thumbName = (filename) => {
-  const [, name, _] = filename.match(reFilename);
-  return [CONFIG.thumbnails, name + "_400x400.jpeg"].join("/");
-};
+  const [, name] = filename.match(reFilename)
+  return [CONFIG.thumbnails, name + '_400x400.jpeg'].join('/')
+}
 export const thumbUrl = (filename) => {
   return [
-    "https://storage.googleapis.com",
+    'https://storage.googleapis.com',
     CONFIG.firebase.storageBucket,
     thumbName(filename),
-  ].join("/");
-};
+  ].join('/')
+}
 export {
   CONFIG,
   months,
@@ -108,4 +91,4 @@ export {
   changedByProperty,
   textSlug,
   sliceSlug,
-};
+}

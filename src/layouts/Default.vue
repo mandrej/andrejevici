@@ -2,14 +2,7 @@
   <q-layout view="hHh Lpr lFf">
     <q-header class="fixed-top" elevated>
       <q-toolbar class="bg-white text-dark">
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="drawer = !drawer"
-        />
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="drawer = !drawer" />
         <q-toolbar-title>
           <router-link to="/" style="color: inherit; text-decoration: none">{{
             $route.meta.title
@@ -22,7 +15,7 @@
             flat
             stretch
             @click="app.editMode = !app.editMode"
-            >{{ editMode ? "Edit mode" : "View mode" }}</q-btn
+            >{{ editMode ? 'Edit mode' : 'View mode' }}</q-btn
           >
           <span v-if="$route.name === 'list'" class="q-mx-md">
             {{ app.record.count }}
@@ -48,14 +41,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="drawer"
-      class="column no-wrap"
-      :width="320"
-      show-if-above
-      elevated
-      dark
-    >
+    <q-drawer v-model="drawer" class="column no-wrap" :width="320" show-if-above elevated dark>
       <router-view name="sidebar" />
       <q-space />
       <Menu />
@@ -69,19 +55,17 @@
 </template>
 
 <script setup>
-import { ref, computed, defineAsyncComponent } from "vue";
-import { useAppStore } from "../stores/app";
-import { useUserStore } from "../stores/user";
-import HistoryButton from "../components/History-Button.vue";
-import Menu from "../components/Menu.vue";
+import { ref, computed, defineAsyncComponent } from 'vue'
+import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
+import HistoryButton from '../components/History-Button.vue'
+import Menu from '../components/Menu.vue'
 
-const AskPermission = defineAsyncComponent(() =>
-  import("../components/Ask-Permission.vue")
-);
+const AskPermission = defineAsyncComponent(() => import('../components/Ask-Permission.vue'))
 
-const app = useAppStore();
-const auth = useUserStore();
-const drawer = ref(false);
-const editMode = computed(() => app.editMode);
-const tab = computed(() => app.adminTab);
+const app = useAppStore()
+const auth = useUserStore()
+const drawer = ref(false)
+const editMode = computed(() => app.editMode)
+// const tab = computed(() => app.adminTab);
 </script>

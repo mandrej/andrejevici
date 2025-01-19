@@ -5,6 +5,8 @@ node_modules
 # Quasar core related directories
 .quasar
 /dist
+/data
+/quasar.config.*.temporary.compiled*
 
 # Cordova related directories and files
 /src-cordova/node_modules
@@ -27,10 +29,6 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
-
-dist
-data
-.quasar
 *.log
 
 # docker
@@ -40,3 +38,4 @@ data
 # secret
 config.js
 credentials.json
+.env
