@@ -83,10 +83,10 @@ export const useUserStore = defineStore('auth', {
       if (this.user && this.user.uid) {
         auth.signOut().then(() => {
           this.user = null
-          const routeName = router.currentRoute.value.name
-          if (routeName === 'add' || routeName === 'admin') {
-            router.push({ name: 'home' })
-          }
+          // const routeName = router.currentRoute.value.name
+          // if (routeName === 'add' || routeName === 'admin') {
+          router.push({ name: 'home' })
+          // }
         })
       } else {
         signInWithPopup(getAuth(), provider)
