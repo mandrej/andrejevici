@@ -7,17 +7,15 @@
   />
 
   <Transition>
-    <KeepAlive>
-      <component
-        :is="currentView"
-        :objects="app.objects"
-        @carousel-show="useCarouselShow"
-        @carousel-cancel="useCarouselCancel"
-        @edit-record="editRecord"
-        @confirm-delete="confirmShow"
-        @edit-ok="editOk"
-      ></component>
-    </KeepAlive>
+    <component
+      :is="currentView"
+      :objects="app.objects"
+      @carousel-show="useCarouselShow"
+      @carousel-cancel="useCarouselCancel"
+      @edit-record="editRecord"
+      @confirm-delete="confirmShow"
+      @edit-ok="editOk"
+    ></component>
   </Transition>
 </template>
 
