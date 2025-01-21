@@ -15,7 +15,7 @@
         </q-card-section>
         <q-card-actions class="row justify-between q-pa-md q-col-gutter-md">
           <div class="col">
-            <q-btn color="primary" label="OK" @click="emit('confirmOk', rec)" />
+            <q-btn color="primary" label="OK" @click="emit('confirm-ok', rec)" />
           </div>
           <div class="col text-right">
             <q-btn flat label="Close" @click="onCancel" />
@@ -41,7 +41,7 @@
 import { useAppStore } from '../stores/app'
 import { formatBytes } from '../helpers'
 
-const emit = defineEmits(['confirmOk'])
+const emit = defineEmits(['confirm-ok'])
 defineProps({
   rec: Object,
 })

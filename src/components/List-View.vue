@@ -21,11 +21,7 @@
       <div>{{ app.error }}</div>
     </q-banner>
 
-    <q-scroll-observer
-      @scroll="scrollHandler"
-      axis="vertical"
-      :debounce="500"
-    />
+    <q-scroll-observer @scroll="scrollHandler" axis="vertical" :debounce="500" />
 
     <div class="q-pa-md">
       <div v-for="(list, index) in groupObjects" :key="index" class="q-mb-md">
@@ -39,10 +35,10 @@
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
               :canMergeTags="tagsToApplyExist()"
-              @carousel-show="emit('carouselShow', item.filename)"
-              @edit-record="emit('editRecord', item)"
+              @carousel-show="emit('carousel-show', item.filename)"
+              @edit-record="emit('edit-record', item)"
               @merge-tags="mergeTags(item)"
-              @confirm-delete="emit('confirmDelete', item)"
+              @confirm-delete="emit('confirm-delete', item)"
               @delete-record="app.deleteRecord"
             />
           </div>
@@ -50,70 +46,66 @@
       </div>
     </div>
 
-    <q-page-scroller
-      position="bottom-right"
-      :scroll-offset="150"
-      :offset="[18, 18]"
-    >
+    <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
       <q-btn fab icon="arrow_upward" color="warning" />
     </q-page-scroller>
   </q-page>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { throttle } from "quasar";
-import { useAppStore } from "../stores/app";
-import { useUserStore } from "../stores/user";
-import { useValuesStore } from "../stores/values";
-import { CONFIG, U } from "../helpers";
+import { computed } from 'vue'
+import { throttle } from 'quasar'
+import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
+import { useValuesStore } from '../stores/values'
+import { CONFIG, U } from '../helpers'
 
-import PictureCard from "../components/Picture-Card.vue";
+import PictureCard from '../components/Picture-Card.vue'
 
 const props = defineProps({
   objects: Array,
-});
+})
 
 const emit = defineEmits([
-  "carouselShow",
-  "carouselCancel",
-  "editRecord",
-  "editOk",
-  "confirmDelete",
-]);
+  'carousel-show',
+  'carousel-cancel',
+  'edit-record',
+  'edit-ok',
+  'confirm-delete',
+])
 
-const app = useAppStore();
-const auth = useUserStore();
-const meta = useValuesStore();
+const app = useAppStore()
+const auth = useUserStore()
+const meta = useValuesStore()
 
 const groupObjects = computed(() => {
-  const groups = [];
+  const groups = []
   for (let i = 0; i < props.objects.length; i += CONFIG.group) {
-    groups.push(props.objects.slice(i, i + CONFIG.group));
+    groups.push(props.objects.slice(i, i + CONFIG.group))
   }
-  return groups;
-});
+  return groups
+})
 
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
-  const scrollHeight = document.documentElement.scrollHeight;
+  const scrollHeight = document.documentElement.scrollHeight
   if (scrollHeight - obj.position.top < 2000 && app.next) {
-    app.fetchRecords(false, "scroll");
+    app.fetchRecords(false, 'scroll')
   }
-}, 200);
+}, 200)
 
 const isAuthorOrAdmin = (rec) => {
-  if (!auth.user) return false;
-  return (auth.user.isAdmin || auth.user.email === rec.email) && app.editMode;
-};
+  if (!auth.user) return false
+  return (auth.user.isAdmin || auth.user.email === rec.email) && app.editMode
+}
 
 const tagsToApplyExist = () => {
-  return Array.isArray(meta.tagsToApply) && auth.user && auth.user.isAdmin;
-};
+  return Array.isArray(meta.tagsToApply) && auth.user && auth.user.isAdmin
+}
 
 const mergeTags = (rec) => {
-  rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort();
-  app.saveRecord(rec);
-  emit("editOk", U + rec.filename);
-};
+  rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort()
+  app.saveRecord(rec)
+  emit('editOk', U + rec.filename)
+}
 </script>

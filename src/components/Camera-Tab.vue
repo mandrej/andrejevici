@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { rename } from "../helpers/common";
+import { rename } from "../helpers/remedy";
 import { useValuesStore } from "../stores/values";
 import AutoComplete from "../components/Auto-Complete.vue";
 

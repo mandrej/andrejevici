@@ -69,7 +69,7 @@
 import { computed, ref } from "vue";
 import { useValuesStore } from "../stores/values";
 import AutoComplete from "../components/Auto-Complete.vue";
-import { rename } from "../helpers/common";
+import { rename } from "../helpers/remedy";
 import notify from "../helpers/notify";
 
 const meta = useValuesStore();

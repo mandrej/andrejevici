@@ -8,7 +8,7 @@
         :src="rec.thumb"
         v-ripple.early="{ color: 'purple' }"
         no-spinner
-        @click="emit('carouselShow', rec.filename)"
+        @click="emit('carousel-show', rec.filename)"
       >
         <template #error>
           <img :src="fileBroken" class="center" />
@@ -23,14 +23,14 @@
         style="max-width: 58px"
         vertical
       >
-        <q-btn flat round icon="delete" @click="emit('confirmDelete', rec)" />
-        <q-btn flat round icon="edit" @click="emit('editRecord', rec)" />
+        <q-btn flat round icon="delete" @click="emit('confirm-delete', rec)" />
+        <q-btn flat round icon="edit" @click="emit('edit-record', rec)" />
         <q-btn
           v-if="canMergeTags"
           flat
           round
           icon="content_paste"
-          @click="emit('mergeTags', rec)"
+          @click="emit('merge-tags', rec)"
         />
         <q-btn flat round icon="share" @click="onShare" />
       </q-card-actions>
@@ -67,15 +67,7 @@
   </q-card>
 
   <q-card v-else v-bind="cardAttributes(rec.filename)">
-    <q-img
-      class="cursor-pointer"
-      loading="lazy"
-      :ratio="5 / 4"
-      :src="rec.url"
-      v-ripple.early="{ color: 'purple' }"
-      no-spinner
-      @click="emit('carouselShow', rec.filename)"
-    >
+    <q-img class="cursor-pointer" loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
         <img :src="fileBroken" />
       </template>
@@ -84,8 +76,8 @@
       </q-badge>
     </q-img>
     <q-card-actions v-if="canManage" class="justify-between">
-      <q-btn flat round icon="delete" @click="emit('deleteRecord', rec)" />
-      <q-btn flat round icon="publish" @click="emit('editRecord', rec)" />
+      <q-btn flat round icon="delete" @click="emit('delete-record', rec)" />
+      <q-btn flat round icon="publish" @click="emit('edit-record', rec)" />
     </q-card-actions>
   </q-card>
 </template>
@@ -96,11 +88,11 @@ import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
 import notify from '../helpers/notify'
 
 const emit = defineEmits([
-  'carouselShow',
-  'confirmDelete',
-  'editRecord',
-  'mergeTags',
-  'deleteRecord',
+  'carousel-show',
+  'confirm-delete',
+  'edit-record',
+  'merge-tags',
+  'delete-record',
 ])
 const props = defineProps({
   rec: Object,

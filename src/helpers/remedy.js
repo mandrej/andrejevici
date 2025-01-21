@@ -4,12 +4,14 @@ import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebas
 import { has } from 'lodash'
 import { textSlug, sliceSlug } from '../helpers'
 import { useAppStore } from '../stores/app'
+import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import { emailNick } from '.'
 import router from '../router'
 import notify from './notify'
 
 const app = useAppStore()
+const meta = useValuesStore()
 const auth = useUserStore()
 const photosCol = collection(db, 'Photo')
 
@@ -136,5 +138,29 @@ export const mismatch = async () => {
       type: 'negative',
       group: 'mismatch',
     })
+  }
+}
+
+export const rename = async (field, existing, changed) => {
+  if (existing !== '' && changed !== '') {
+    if (
+      (field === 'tags' && existing === 'flash') ||
+      (field === 'model' && existing === 'UNKNOWN')
+    ) {
+      notify({
+        type: 'warning',
+        message: `Cannot change "${existing}"`,
+      })
+    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
+      notify({
+        type: 'warning',
+        message: `"${changed}" already exists"`,
+      })
+    } else {
+      await meta.renameValue(field, existing, changed)
+      notify({
+        message: `${existing} successfully renamed to ${changed}`,
+      })
+    }
   }
 }

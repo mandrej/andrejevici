@@ -24,7 +24,7 @@
           round
           class="text-white q-pa-sm"
           icon="delete"
-          @click="emit('confirmDelete', obj)"
+          @click="emit('confirm-delete', obj)"
         />
         <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
 
@@ -61,7 +61,7 @@ import 'swiper/scss/zoom'
 const props = defineProps({
   objects: Array,
 })
-const emit = defineEmits(['carouselCancel', 'confirmDelete'])
+const emit = defineEmits(['carousel-cancel', 'confirm-delete'])
 
 const $q = useQuasar()
 const app = useAppStore()
@@ -130,11 +130,11 @@ const caption = (rec) => {
 
 window.onpopstate = function () {
   app.showCarousel = false
-  emit('carouselCancel', hash.value)
+  emit('carousel-cancel', hash.value)
 }
 const onCancel = () => {
   app.showCarousel = false
-  emit('carouselCancel', hash.value)
+  emit('carousel-cancel', hash.value)
 }
 
 watch(
