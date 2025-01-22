@@ -8,10 +8,7 @@
           ref="newTagRef"
           v-model="newTag"
           label="Add new tag"
-          :rules="[
-            (val) =>
-              meta.tagsValues.indexOf(val) === -1 || 'Tag already in use',
-          ]"
+          :rules="[(val) => meta.tagsValues.indexOf(val) === -1 || 'Tag already in use']"
           clearable
         />
       </q-item-section>
@@ -32,15 +29,12 @@
         <q-input
           v-model="changedTag"
           label="to tag"
+          clearable
           :rules="[(val) => val.indexOf('/') === -1 || 'Cannot use / here']"
         />
       </q-item-section>
       <q-item-section side>
-        <q-btn
-          label="Rename"
-          @click="rename('tags', existingTag, changedTag)"
-          color="primary"
-        />
+        <q-btn label="Rename" @click="rename('tags', existingTag, changedTag)" color="primary" />
       </q-item-section>
     </q-item>
     <q-item>
@@ -66,31 +60,31 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { useValuesStore } from "../stores/values";
-import AutoComplete from "../components/Auto-Complete.vue";
-import { rename } from "../helpers/remedy";
-import notify from "../helpers/notify";
+import { computed, ref } from 'vue'
+import { useValuesStore } from '../stores/values'
+import AutoComplete from '../components/Auto-Complete.vue'
+import { rename } from '../helpers/remedy'
+import notify from '../helpers/notify'
 
-const meta = useValuesStore();
+const meta = useValuesStore()
 
-const values = computed(() => meta.values);
+const values = computed(() => meta.values)
 const newTagRef = ref(null),
-  newTag = ref(""),
-  existingTag = ref(""),
-  changedTag = ref("");
+  newTag = ref(''),
+  existingTag = ref(''),
+  changedTag = ref('')
 
 const addTag = () => {
-  if (newTag.value !== "" && meta.tagsValues.indexOf(newTag.value) === -1) {
-    values.value.tags[newTag.value] = 0;
-    newTag.value = "";
+  if (newTag.value !== '' && meta.tagsValues.indexOf(newTag.value) === -1) {
+    values.value.tags[newTag.value] = 0
+    newTag.value = ''
   }
-  newTagRef.value.resetValidation();
-};
+  newTagRef.value.resetValidation()
+}
 const removeTags = () => {
-  meta.removeUnusedTags();
+  meta.removeUnusedTags()
   notify({
     message: `Successfully removed unused tags`,
-  });
-};
+  })
+}
 </script>
