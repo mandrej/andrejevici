@@ -3,7 +3,11 @@
     <q-page-container>
       <q-page v-if="lastRecord.href" class="row">
         <q-responsive :ratio="1" class="col-xs-12 col-md-6 shadow-12" :style="imageStyle">
-          <router-link :to="lastRecord.href" style="display: block">
+          <router-link
+            :to="lastRecord.href"
+            style="display: block"
+            v-ripple.early="{ color: 'purple' }"
+          >
             <q-btn
               v-if="auth.user && auth.user.isAuthorized"
               fab

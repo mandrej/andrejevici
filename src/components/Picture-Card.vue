@@ -7,7 +7,8 @@
         loading="lazy"
         :src="rec.thumb"
         no-spinner
-        @click="emit('carousel-show', rec.filename)"
+        v-ripple.early="{ color: 'purple' }"
+        @click.stop="emit('carousel-show', rec.filename)"
       >
         <template #error>
           <img :src="fileBroken" class="center" />
@@ -87,7 +88,7 @@ import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
 import notify from '../helpers/notify'
 
 const emit = defineEmits([
-  'carousel-show',
+  'carousel-2show',
   'confirm-delete',
   'edit-record',
   'merge-tags',
