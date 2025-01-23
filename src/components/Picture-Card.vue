@@ -6,7 +6,6 @@
         style="height: 240px"
         loading="lazy"
         :src="rec.thumb"
-        v-ripple.early="{ color: 'purple' }"
         no-spinner
         @click="emit('carousel-show', rec.filename)"
       >
