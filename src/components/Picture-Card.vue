@@ -1,13 +1,7 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
     <q-card-section horizontal>
-      <q-img
-        class="cursor-pointer col"
-        style="height: 240px"
-        loading="lazy"
-        :src="rec.thumb"
-        no-spinner
-      >
+      <q-img class="col" style="height: 240px" loading="lazy" :src="rec.thumb" no-spinner>
         <template #error>
           <img :src="fileBroken" class="center" />
         </template>

@@ -35,7 +35,7 @@
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
               :canMergeTags="tagsToApplyExist()"
-              @carousel-show="fireEvent"
+              @carousel-show="fireAgain"
               @edit-record="emit('edit-record', item)"
               @merge-tags="mergeTags(item)"
               @confirm-delete="emit('confirm-delete', item)"
@@ -99,7 +99,7 @@ const isAuthorOrAdmin = (rec) => {
 }
 
 const tagsToApplyExist = () => {
-  return Array.isArray(meta.tagsToApply) && auth.user && auth.user.isAdmin
+  return meta.tagsToApply && meta.tagsToApply.length > 0 && auth.user && auth.user.isAdmin
 }
 
 const mergeTags = (rec) => {
@@ -108,7 +108,7 @@ const mergeTags = (rec) => {
   emit('editOk', U + rec.filename)
 }
 
-const fireEvent = (filename) => {
+const fireAgain = (filename) => {
   emit('carousel-show', filename)
 }
 </script>

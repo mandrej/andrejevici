@@ -37,14 +37,14 @@
       <q-btn
         flat
         round
-        class="absolute-bottom-left text-white q-pa-md"
+        class="absolute-bottom-left text-white q-pa-sm"
         @click="onShare(obj.filename)"
         icon="share"
       />
       <q-btn
         flat
         round
-        class="absolute-bottom-right text-white q-pa-md"
+        class="absolute-bottom-right text-white q-pa-sm"
         @click="$q.fullscreen.toggle()"
         :icon="full ? 'fullscreen_exit' : 'fullscreen'"
       />
@@ -79,11 +79,12 @@ const hash = ref(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
 const full = ref(false)
 
-register({ modules: [Keyboard, Zoom] })
+register()
 let swiper = null
 
 const onSwiper = (e) => {
   swiper = e.detail[0] // instance
+  Object.assign(swiper, { modules: [Keyboard, Zoom] })
   position(app.markerFileName)
 }
 
