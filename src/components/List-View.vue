@@ -109,8 +109,6 @@ const mergeTags = (rec) => {
 }
 
 const fireEvent = (filename) => {
-  console.log('fireEvent', filename)
-
   emit('carousel-show', filename)
 }
 </script>
