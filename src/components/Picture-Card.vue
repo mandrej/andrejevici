@@ -7,8 +7,6 @@
         loading="lazy"
         :src="rec.thumb"
         no-spinner
-        v-ripple.early="{ color: 'purple' }"
-        @click.stop="emit('carousel-show', rec.filename)"
       >
         <template #error>
           <img :src="fileBroken" class="center" />
@@ -32,7 +30,7 @@
           icon="content_paste"
           @click="emit('merge-tags', rec)"
         />
-        <q-btn flat round icon="share" @click="onShare" />
+        <q-btn flat round icon="open_in_full" @click="emit('carousel-show', rec.filename)" />
       </q-card-actions>
     </q-card-section>
     <q-card-section class="row justify-between">
@@ -83,18 +81,16 @@
 </template>
 
 <script setup>
-import { copyToClipboard } from 'quasar'
 import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
-import notify from '../helpers/notify'
 
 const emit = defineEmits([
-  'carousel-2show',
+  'carousel-show',
   'confirm-delete',
   'edit-record',
   'merge-tags',
   'delete-record',
 ])
-const props = defineProps({
+defineProps({
   rec: Object,
   canManage: Boolean,
   canMergeTags: Boolean,
@@ -115,16 +111,6 @@ const cardAttributes = (filename) => {
     }
   }
   return attr
-}
-const onShare = () => {
-  const url = window.location.href + '#' + U + props.rec.filename
-  copyToClipboard(url)
-    .then(() => {
-      notify({ message: 'URL copied to clipboard' })
-    })
-    .catch(() => {
-      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-    })
 }
 
 const openMaps = (loc) => {

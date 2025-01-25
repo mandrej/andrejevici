@@ -35,7 +35,7 @@
               :rec="item"
               :canManage="isAuthorOrAdmin(item)"
               :canMergeTags="tagsToApplyExist()"
-              @carousel-show="emit('carousel-show', item.filename)"
+              @carousel-show="fireEvent"
               @edit-record="emit('edit-record', item)"
               @merge-tags="mergeTags(item)"
               @confirm-delete="emit('confirm-delete', item)"
@@ -106,5 +106,11 @@ const mergeTags = (rec) => {
   rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort()
   app.saveRecord(rec)
   emit('editOk', U + rec.filename)
+}
+
+const fireEvent = (filename) => {
+  console.log('fireEvent', filename)
+
+  emit('carousel-show', filename)
 }
 </script>

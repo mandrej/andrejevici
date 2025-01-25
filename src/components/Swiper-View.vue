@@ -37,6 +37,13 @@
       <q-btn
         flat
         round
+        class="absolute-bottom-left text-white q-pa-md"
+        @click="onShare(obj.filename)"
+        icon="share"
+      />
+      <q-btn
+        flat
+        round
         class="absolute-bottom-right text-white q-pa-md"
         @click="$q.fullscreen.toggle()"
         :icon="full ? 'fullscreen_exit' : 'fullscreen'"
@@ -46,7 +53,7 @@
 </template>
 
 <script setup>
-import { useQuasar } from 'quasar'
+import { useQuasar, copyToClipboard } from 'quasar'
 import { ref, watch } from 'vue'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
@@ -54,6 +61,7 @@ import { useRoute } from 'vue-router'
 import { fileBroken, U } from '../helpers'
 import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
+import notify from '../helpers/notify'
 
 import 'swiper/scss'
 import 'swiper/scss/zoom'
@@ -126,6 +134,17 @@ const caption = (rec) => {
     tmp += lens ? ' ' + lens : ''
   }
   return tmp
+}
+
+const onShare = (filename) => {
+  const url = window.location.href + '#' + U + filename
+  copyToClipboard(url)
+    .then(() => {
+      notify({ message: 'URL copied to clipboard' })
+    })
+    .catch(() => {
+      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+    })
 }
 
 window.onpopstate = function () {
