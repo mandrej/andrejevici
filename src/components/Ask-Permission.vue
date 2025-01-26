@@ -19,6 +19,7 @@
 import { ref } from 'vue'
 import { CONFIG } from '../helpers'
 import notify from '../helpers/notify'
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
 import { getMessaging, getToken } from 'firebase/messaging'
 
@@ -30,35 +31,37 @@ defineProps({
   model: Boolean,
 })
 
+const { user, token } = storeToRefs(auth)
+
 const disableNotification = async () => {
-  auth.user.allowPush = false
-  auth.user.askPush = false
-  auth.token = null
+  user.value.allowPush = false
+  user.value.askPush = false
+  token.value = null
   auth.removeDevice()
   await auth.updateUser()
 }
 // const askLater = async () => {
 //   open.value = false;
-//   auth.user.askPush = true;
+//   user.value.askPush = true;
 //   await auth.updateUser();
 // };
 const enableNotifications = () => {
   Notification.requestPermission().then(async (permission) => {
     if (permission === 'granted') {
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
-      const token = await getToken(messaging, {
+      const tok = await getToken(messaging, {
         vapidKey: CONFIG.firebase.vapidKey,
       })
-      if (token) {
-        auth.token = token
+      if (tok) {
+        token.value = tok
         await auth.updateDevice()
 
-        auth.user.allowPush = true
-        auth.user.askPush = false
+        user.value.allowPush = true
+        user.value.askPush = false
         await auth.updateUser()
       } else {
-        auth.user.allowPush = true
-        auth.user.askPush = true
+        user.value.allowPush = true
+        user.value.askPush = true
         await auth.updateUser()
 
         notify({

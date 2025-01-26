@@ -6,7 +6,7 @@
       <q-item-section top>
         <Auto-Complete
           v-model="existingModel"
-          :options="meta.modelValues"
+          :options="modelValues"
           behavior="menu"
           label="Rename model"
         />
@@ -29,7 +29,7 @@
   </q-list>
   <div class="q-pa-md text-subtitle1">
     <router-link
-      v-for="value in meta.modelValues"
+      v-for="value in modelValues"
       :key="value"
       :title="`${value}`"
       :to="{ path: '/list', query: { model: value } }"
@@ -44,7 +44,7 @@
       <q-item-section top>
         <Auto-Complete
           v-model="existingLens"
-          :options="meta.lensValues"
+          :options="lensValues"
           behavior="menu"
           label="Rename lens"
         />
@@ -57,17 +57,13 @@
         />
       </q-item-section>
       <q-item-section side>
-        <q-btn
-          label="Rename"
-          @click="rename('lens', existingLens, changedLens)"
-          color="primary"
-        />
+        <q-btn label="Rename" @click="rename('lens', existingLens, changedLens)" color="primary" />
       </q-item-section>
     </q-item>
   </q-list>
   <div class="q-pa-md text-subtitle1">
     <router-link
-      v-for="value in meta.lensValues"
+      v-for="value in lensValues"
       :key="value"
       :title="`${value}`"
       :to="{ path: '/list', query: { model: value } }"
@@ -78,15 +74,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { rename } from "../helpers/remedy";
-import { useValuesStore } from "../stores/values";
-import AutoComplete from "../components/Auto-Complete.vue";
+import { ref } from 'vue'
+import { rename } from '../helpers/remedy'
+import { storeToRefs } from 'pinia'
+import { useValuesStore } from '../stores/values'
+import AutoComplete from '../components/Auto-Complete.vue'
 
-const meta = useValuesStore();
+const meta = useValuesStore()
+const { modelValues, lensValues } = storeToRefs(meta)
 
-const existingModel = ref(""),
-  changedModel = ref(""),
-  existingLens = ref(""),
-  changedLens = ref("");
+const existingModel = ref(''),
+  changedModel = ref(''),
+  existingLens = ref(''),
+  changedLens = ref('')
 </script>

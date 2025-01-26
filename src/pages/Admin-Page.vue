@@ -1,6 +1,6 @@
 <template>
   <q-page class="admin q-pt-md">
-    <q-tab-panels v-model="app.adminTab">
+    <q-tab-panels v-model="adminTab">
       <q-tab-panel name="repair" class="q-pa-none">
         <q-list>
           <q-item class="text-h6">Rebuild / Repair</q-item>
@@ -9,7 +9,7 @@
               <q-input v-model="message" label="Send message to subscribers" />
             </q-item-section>
             <q-item-section side>
-              <q-btn :disabled="!auth.token" color="secondary" label="Send" @click="send" />
+              <q-btn :disabled="!token" color="secondary" label="Send" @click="send" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -34,7 +34,7 @@
               {{ formatDatum('2024-10-27', 'DD.MM.YYYY') }} Fix text array
             </q-item-section>
             <q-item-section side>
-              <q-btn :disabled="!auth.token" color="primary" label="Fix" @click="fix" />
+              <q-btn :disabled="!token" color="primary" label="Fix" @click="fix" />
             </q-item-section>
           </q-item>
           <q-item>
@@ -68,6 +68,7 @@
 
 <script setup>
 import { computed, ref, defineAsyncComponent } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
@@ -83,6 +84,8 @@ const meta = useValuesStore()
 const auth = useUserStore()
 
 const message = ref('TEST')
+const { adminTab } = storeToRefs(app)
+const { token } = storeToRefs(auth)
 const values = computed(() => meta.values)
 
 const send = () => {

@@ -10,13 +10,9 @@
         </q-toolbar-title>
 
         <template v-if="$route.name === 'list'">
-          <q-btn
-            v-if="auth.user && auth.user.isAuthorized"
-            flat
-            stretch
-            @click="app.editMode = !app.editMode"
-            >{{ editMode ? 'Edit mode' : 'View mode' }}</q-btn
-          >
+          <q-btn v-if="user && user.isAuthorized" flat stretch @click="changeMode(editMode)">{{
+            editMode ? 'Edit mode' : 'View mode'
+          }}</q-btn>
           <span v-if="$route.name === 'list'" class="q-mx-md">
             {{ app.record.count }}
           </span>
@@ -25,19 +21,14 @@
         <History-Button v-else />
 
         <template v-if="$route.name === 'admin'">
-          <q-tabs v-model="app.adminTab" inline-label indicator-color="primary">
+          <q-tabs v-model="adminTab" inline-label indicator-color="primary">
             <q-tab name="repair" label="Repair" />
             <q-tab name="tags" label="Tags" />
             <!-- <q-tab name="camera" label="Camera" /> -->
           </q-tabs>
         </template>
 
-        <q-linear-progress
-          v-show="app.busy"
-          color="warning"
-          class="absolute-bottom"
-          indeterminate
-        />
+        <q-linear-progress v-show="busy" color="warning" class="absolute-bottom" indeterminate />
       </q-toolbar>
     </q-header>
 
@@ -48,14 +39,15 @@
     </q-drawer>
 
     <q-page-container>
-      <Ask-Permission v-if="auth.showConsent" />
+      <Ask-Permission v-if="showConsent" />
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup>
-import { ref, computed, defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import HistoryButton from '../components/History-Button.vue'
@@ -66,6 +58,11 @@ const AskPermission = defineAsyncComponent(() => import('../components/Ask-Permi
 const app = useAppStore()
 const auth = useUserStore()
 const drawer = ref(false)
-const editMode = computed(() => app.editMode)
-// const tab = computed(() => app.adminTab);
+const { busy, editMode, adminTab } = storeToRefs(app)
+const { user, showConsent } = storeToRefs(auth)
+
+const changeMode = (mode) => {
+  mode = !mode
+  editMode.value = mode
+}
 </script>

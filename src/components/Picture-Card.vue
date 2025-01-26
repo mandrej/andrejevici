@@ -1,7 +1,15 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
     <q-card-section horizontal>
-      <q-img class="col" style="height: 240px" loading="lazy" :src="rec.thumb" no-spinner>
+      <q-img
+        class="col"
+        style="height: 240px"
+        loading="lazy"
+        :src="rec.thumb"
+        v-ripple.early="{ color: 'purple' }"
+        @click="emit('carousel-show', rec.filename)"
+        no-spinner
+      >
         <template #error>
           <img :src="fileBroken" class="center" />
         </template>
@@ -10,7 +18,7 @@
         </div>
       </q-img>
       <q-card-actions
-        v-if="canManage"
+        v-if="canManage && editMode"
         class="justify-around bg-grey-10 col"
         style="max-width: 58px"
         vertical
@@ -24,7 +32,7 @@
           icon="content_paste"
           @click="emit('merge-tags', rec)"
         />
-        <q-btn flat round icon="open_in_full" @click="emit('carousel-show', rec.filename)" />
+        <!-- <q-btn flat round icon="open_in_full" @click="emit('carousel-show', rec.filename)" /> -->
       </q-card-actions>
     </q-card-section>
     <q-card-section class="row justify-between">
@@ -76,6 +84,8 @@
 
 <script setup>
 import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
+import { storeToRefs } from 'pinia'
+import { useAppStore } from 'stores/app'
 
 const emit = defineEmits([
   'carousel-show',
@@ -89,6 +99,9 @@ defineProps({
   canManage: Boolean,
   canMergeTags: Boolean,
 })
+
+const app = useAppStore()
+const { editMode } = storeToRefs(app)
 
 const cardAttributes = (filename) => {
   let attr

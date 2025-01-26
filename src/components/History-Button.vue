@@ -4,6 +4,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 
 const app = useAppStore()
@@ -16,8 +17,10 @@ defineProps({
   },
 })
 
+const { find } = storeToRefs(app)
+
 const previousCollection = () => {
   app.fetchRecords(true, 'refresh')
-  router.push({ path: '/list', query: app.find })
+  router.push({ path: '/list', query: find.value })
 }
 </script>

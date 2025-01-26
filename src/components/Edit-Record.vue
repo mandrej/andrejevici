@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="app.showEdit"
+    v-model="showEdit"
     :maximized="$q.screen.lt.md"
     transition-show="slide-up"
     transition-hide="slide-down"
@@ -11,7 +11,7 @@
         <div>
           <q-btn color="primary" type="submit" label="Save" @click="onSubmit" />
           <q-btn
-            v-if="auth.user.isAdmin"
+            v-if="user.isAdmin"
             class="q-ml-sm gt-sm"
             flat
             label="Read Exif"
@@ -62,7 +62,7 @@
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Auto-Complete
                 v-model="tmp.email"
-                :options="meta.emailValues"
+                :options="emailValues"
                 canadd
                 label="Author"
                 hint="Existing member can add freind's photo and email"
@@ -99,16 +99,12 @@
                 <Auto-Complete
                   class="col-auto"
                   v-model="tmp.tags"
-                  :options="meta.tagsValues"
+                  :options="tagsValues"
                   label="Tags"
                   canadd
                   multiple
                   clearable
-                  :hint="
-                    meta.tagsToApply && meta.tagsToApply.length
-                      ? 'merge with ' + meta.tagsToApply
-                      : ''
-                  "
+                  :hint="tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply : ''"
                   @new-value="addNewTag"
                 >
                 </Auto-Complete>
@@ -137,7 +133,7 @@
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
                 v-model="tmp.model"
-                :options="meta.modelValues"
+                :options="modelValues"
                 canadd
                 label="Camera Model"
                 @new-value="addNewModel"
@@ -146,7 +142,7 @@
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
                 v-model="tmp.lens"
-                :options="meta.lensValues"
+                :options="lensValues"
                 canadd
                 label="Camera Lens"
                 @new-value="addNewLens"
@@ -183,6 +179,7 @@
 import { reactive } from 'vue'
 import { CONFIG, fileBroken, formatBytes, U, emailNick, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
@@ -197,6 +194,9 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const tmp = reactive({ ...props.rec })
+const { showEdit, find } = storeToRefs(app)
+const { emailValues, tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
+const { user } = storeToRefs(auth)
 
 const getExif = async () => {
   /**
@@ -213,7 +213,7 @@ const getExif = async () => {
     tags.push('flash')
   }
   tmp.tags = tags
-  tmp.email = auth.user.email
+  tmp.email = user.email
 }
 const isValidEmail = (val) => {
   const emailPattern =
@@ -239,21 +239,21 @@ const addNewLens = (inputValue, done) => {
   done(inputValue)
 }
 const copyTags = (source) => {
-  meta.tagsToApply = source
+  tagsToApply.value = source
 }
 const mergeTags = (source) => {
   if (Array.isArray(source)) {
-    tmp.tags = Array.from(new Set([...meta.tagsToApply, ...source])).sort()
+    tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort()
   } else {
-    tmp.tags = meta.tagsToApply
+    tmp.tags = tagsToApply.value
   }
 }
 
 window.onpopstate = function () {
-  app.showEdit = false
+  showEdit.value = false
 }
 const onCancel = () => {
-  app.showEdit = false
+  showEdit.value = false
 }
 const onSubmit = () => {
   const datum = new Date(Date.parse(tmp.date))
@@ -267,10 +267,10 @@ const onSubmit = () => {
   tmp.text = sliceSlug(slug)
   // set find on new added image
   if (!tmp.thumb) {
-    app.find = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })
+    find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })
   }
   app.saveRecord(tmp)
   emit('edit-ok', U + tmp.filename)
-  app.showEdit = false
+  showEdit.value = false
 }
 </script>

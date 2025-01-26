@@ -3,6 +3,7 @@
 </template>
 <script setup>
 import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
 import { useUserStore } from './stores/user'
 import { messageListener } from './boot/fire'
@@ -11,6 +12,8 @@ import notify from './helpers/notify'
 
 const app = useAppStore()
 const auth = useUserStore()
+const { busy, markerFileName, error, showEdit, showConfirm } = storeToRefs(app)
+const { user } = storeToRefs(auth)
 
 messageListener()
   .then((payload) => {
@@ -25,12 +28,12 @@ messageListener()
   })
   .catch((err) => console.log('failed: ', err))
 
-onAuthStateChanged(getAuth(), (user) => {
+onAuthStateChanged(getAuth(), (usr) => {
   // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
-  if (user) {
-    auth.storeUser(user)
+  if (usr) {
+    auth.storeUser(usr)
   } else {
-    auth.user = null
+    user.value = null
   }
 })
 
@@ -38,10 +41,10 @@ onMounted(() => {
   app.getSince()
   app.bucketRead()
   // RESET
-  app.busy = false
-  app.markerFileName = null
-  app.error = null
-  app.showEdit = false
-  app.showConfirm = false
+  busy.value = false
+  markerFileName.value = null
+  error.value = null
+  showEdit.value = false
+  showConfirm.value = false
 })
 </script>

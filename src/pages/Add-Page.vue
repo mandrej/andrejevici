@@ -1,5 +1,5 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="app.currentEdit" />
+  <Edit-Record v-if="showEdit" :rec="currentEdit" />
 
   <q-page v-else class="q-pa-md">
     <div class="relative-position column q-pb-md">
@@ -53,7 +53,7 @@
 
     <Auto-Complete
       v-model="tagsToApply"
-      :options="meta.tagsValues"
+      :options="tagsValues"
       canadd
       multiple
       label="Tags to apply for next publish / or to merge with existing"
@@ -64,7 +64,7 @@
     <div class="q-mt-md">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
         <div
-          v-for="rec in app.uploaded"
+          v-for="rec in uploaded"
           :key="rec.filename"
           class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
         >
@@ -85,6 +85,7 @@ import uuid4 from 'uuid4'
 import { defineAsyncComponent, computed, reactive, ref } from 'vue'
 import { storage } from '../boot/fire'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
@@ -99,6 +100,10 @@ const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
+const { showEdit, currentEdit, uploaded } = storeToRefs(app)
+const { tagsValues } = storeToRefs(meta)
+const { user } = storeToRefs(auth)
+
 const tagsToApply = computed({
   get() {
     return meta.tagsToApply
@@ -217,10 +222,10 @@ const uploadTask = (file) => {
               url: downloadURL,
               filename: filename,
               size: file.size,
-              email: auth.user.email,
-              nick: emailNick(auth.user.email),
+              email: user.value.email,
+              nick: emailNick(user.value.email),
             }
-            app.uploaded.push(data)
+            uploaded.value.push(data)
             resolve(file.name)
             if (process.env.DEV) console.log('uploaded', file.name)
           })
@@ -259,11 +264,10 @@ const editRecord = async (rec) => {
     tags.push('flash')
   }
   rec.tags = tags
-  rec.email = auth.user.email
+  rec.email = user.value.email
 
   fakeHistory()
-  app.showEdit = true
-  app.currentEdit = rec
-  app.showEdit = true
+  showEdit.value = true
+  currentEdit.value = rec
 }
 </script>

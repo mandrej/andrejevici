@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="app.showConfirm"
+    v-model="showConfirm"
     transition-show="slide-down"
     transition-hide="slide-up"
     persistent
@@ -38,6 +38,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { formatBytes } from '../helpers'
 
@@ -47,11 +48,12 @@ defineProps({
 })
 
 const app = useAppStore()
+const { showConfirm } = storeToRefs(app)
 
 window.onpopstate = function () {
-  app.showConfirm = false
+  showConfirm.value = false
 }
 const onCancel = () => {
-  app.showConfirm = false
+  showConfirm.value = false
 }
 </script>

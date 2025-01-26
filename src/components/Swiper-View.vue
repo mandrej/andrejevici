@@ -19,7 +19,7 @@
         style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
       >
         <q-btn
-          v-if="auth.user && auth.user.isAdmin"
+          v-if="user && user.isAdmin"
           flat
           round
           class="text-white q-pa-sm"
@@ -54,9 +54,10 @@
 
 <script setup>
 import { useQuasar, copyToClipboard } from 'quasar'
+import { storeToRefs } from 'pinia'
 import { ref, watch } from 'vue'
 import { useAppStore } from '../stores/app'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from 'stores/user'
 import { useRoute } from 'vue-router'
 import { fileBroken, U } from '../helpers'
 import { register } from 'swiper/element/bundle'
@@ -75,6 +76,8 @@ const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
 const route = useRoute()
+const { showCarousel, markerFileName } = storeToRefs(app)
+const { user } = storeToRefs(auth)
 const hash = ref(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
 const full = ref(false)
@@ -85,7 +88,7 @@ let swiper = null
 const onSwiper = (e) => {
   swiper = e.detail[0] // instance
   Object.assign(swiper, { modules: [Keyboard, Zoom] })
-  position(app.markerFileName)
+  position(markerFileName.value)
 }
 
 const position = (marker) => {
@@ -149,11 +152,11 @@ const onShare = (filename) => {
 }
 
 window.onpopstate = function () {
-  app.showCarousel = false
+  showCarousel.value = false
   emit('carousel-cancel', hash.value)
 }
 const onCancel = () => {
-  app.showCarousel = false
+  showCarousel.value = false
   emit('carousel-cancel', hash.value)
 }
 

@@ -8,7 +8,7 @@
           ref="newTagRef"
           v-model="newTag"
           label="Add new tag"
-          :rules="[(val) => meta.tagsValues.indexOf(val) === -1 || 'Tag already in use']"
+          :rules="[(val) => tagsValues.indexOf(val) === -1 || 'Tag already in use']"
           clearable
         />
       </q-item-section>
@@ -20,7 +20,7 @@
       <q-item-section top>
         <Auto-Complete
           v-model="existingTag"
-          :options="meta.tagsValues"
+          :options="tagsValues"
           behavior="menu"
           label="Rename tag"
         />
@@ -48,7 +48,7 @@
   <q-scroll-area class="gt-xs" style="height: 50vh">
     <div class="q-pa-md text-subtitle1">
       <router-link
-        v-for="(count, value) in meta.tagsWithCount"
+        v-for="(count, value) in tagsWithCount"
         :key="value"
         :title="`${value}: ${count}`"
         :to="{ path: '/list', query: { tags: value } }"
@@ -61,12 +61,14 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from '../components/Auto-Complete.vue'
 import { rename } from '../helpers/remedy'
 import notify from '../helpers/notify'
 
 const meta = useValuesStore()
+const { tagsValues, tagsWithCount } = storeToRefs(meta)
 
 const values = computed(() => meta.values)
 const newTagRef = ref(null),
@@ -75,7 +77,7 @@ const newTagRef = ref(null),
   changedTag = ref('')
 
 const addTag = () => {
-  if (newTag.value !== '' && meta.tagsValues.indexOf(newTag.value) === -1) {
+  if (newTag.value !== '' && tagsValues.value.indexOf(newTag.value) === -1) {
     values.value.tags[newTag.value] = 0
     newTag.value = ''
   }

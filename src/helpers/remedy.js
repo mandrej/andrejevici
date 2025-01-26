@@ -3,6 +3,7 @@ import { doc, collection, query, orderBy, getDocs, setDoc, deleteDoc } from 'fir
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { has } from 'lodash'
 import { textSlug, sliceSlug } from '../helpers'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
@@ -13,6 +14,8 @@ import notify from './notify'
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
+const { uploaded } = storeToRefs(app)
+const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
 
 export const fix = async () => {
@@ -53,8 +56,8 @@ const getStorageData = (filename) => {
             url: downloadURL,
             filename: filename,
             size: metadata.size || 0,
-            email: auth.user.email,
-            nick: emailNick(auth.user.email),
+            email: user.value.email,
+            nick: emailNick(user.value.email),
           })
         } else {
           reject()
@@ -76,7 +79,7 @@ export const mismatch = async () => {
   })
   const bucketNames = []
   const storageNames = []
-  const uploadedFilenames = app.uploaded.length ? app.uploaded.map((it) => it.filename) : []
+  const uploadedFilenames = uploaded.value.length ? uploaded.value.map((it) => it.filename) : []
   const refs = await listAll(storageRef(storage, ''))
   for (let r of refs.items) {
     bucketNames.push(r.name)
@@ -103,7 +106,7 @@ export const mismatch = async () => {
     if (promises.length > 0) {
       Promise.all(promises).then((results) => {
         results.forEach((it) => {
-          app.uploaded.push(it)
+          uploaded.values.push(it)
         })
       })
       notify({

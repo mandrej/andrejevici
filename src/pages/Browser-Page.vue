@@ -1,11 +1,11 @@
 <template>
-  <Edit-Record v-if="app.showEdit" :rec="app.currentEdit" @edit-ok="editOk" />
-  <Confirm-Delete v-if="app.showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
+  <Edit-Record v-if="showEdit" :rec="currentEdit" @edit-ok="editOk" />
+  <Confirm-Delete v-if="showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
 
   <Transition>
     <component
       :is="currentView"
-      :objects="app.objects"
+      :objects="objects"
       @carousel-show="useCarouselShow"
       @carousel-cancel="useCarouselCancel"
       @edit-record="editRecord"
@@ -34,7 +34,8 @@ const route = useRoute()
 const select2delete = ref({})
 const { getScrollTarget, setVerticalScrollPosition } = scroll
 
-const { showCarousel } = storeToRefs(app)
+const { busy, objects, showCarousel, markerFileName, showConfirm, showEdit, currentEdit } =
+  storeToRefs(app)
 const currentView = shallowRef(ListView)
 
 onMounted(() => {
@@ -42,7 +43,7 @@ onMounted(() => {
   if (hash) {
     const filename = hash.substring(2)
     currentView.value = SwiperView
-    app.markerFileName = filename
+    markerFileName.value = filename
   }
 })
 
@@ -57,17 +58,17 @@ watch(showCarousel, (show) => {
 const confirmShow = (rec) => {
   select2delete.value = rec
   fakeHistory()
-  app.showConfirm = true
+  showConfirm.value = true
 }
 const confirmOk = (rec) => {
-  app.showConfirm = false
+  showConfirm.value = false
   app.deleteRecord(rec)
 }
 
 const editRecord = (rec) => {
-  app.currentEdit = rec
+  currentEdit.value = rec
   fakeHistory()
-  app.showEdit = true
+  showEdit.value = true
 }
 const editOk = (hash) => {
   const el = document.querySelector('#' + hash)
@@ -79,23 +80,23 @@ const editOk = (hash) => {
 }
 
 const useCarouselShow = (filename) => {
-  app.markerFileName = filename
+  markerFileName.value = filename
   fakeHistory()
   nextTick(() => {
-    app.showCarousel = true
+    showCarousel.value = true
   })
 }
 
 const useCarouselCancel = (hash) => {
   const [, id] = hash.match(reFilename)
-  app.busy = true
+  busy.value = true
   nextTick(() => {
     const el = document.getElementById(id)
     if (!el) return
     const target = getScrollTarget(el)
     setVerticalScrollPosition(target, el.offsetTop, 400)
     removeHash()
-    app.busy = false
+    busy.value = false
   })
 }
 </script>

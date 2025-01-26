@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <q-banner
-      v-if="app.error && app.error === 'empty'"
+      v-if="error && error === 'empty'"
       class="fixed-center text-center bg-warning q-pa-md"
       style="z-index: 100"
       rounded
@@ -11,14 +11,14 @@
       <div>for current filter/ search</div>
     </q-banner>
     <q-banner
-      v-else-if="app.error && app.error !== 'empty'"
+      v-else-if="error && error !== 'empty'"
       class="fixed-center text-center bg-warning q-pa-md"
       style="z-index: 100"
       rounded
     >
       <q-icon name="error_outline" size="4em" />
       <div class="text-h6">Something went wrong ...</div>
-      <div>{{ app.error }}</div>
+      <div>{{ error }}</div>
     </q-banner>
 
     <q-scroll-observer @scroll="scrollHandler" axis="vertical" :debounce="500" />
@@ -55,6 +55,7 @@
 <script setup>
 import { computed } from 'vue'
 import { throttle } from 'quasar'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
@@ -77,6 +78,9 @@ const emit = defineEmits([
 const app = useAppStore()
 const auth = useUserStore()
 const meta = useValuesStore()
+const { error, next, editMode } = storeToRefs(app)
+const { tagsToApply } = storeToRefs(meta)
+const { user } = storeToRefs(auth)
 
 const groupObjects = computed(() => {
   const groups = []
@@ -89,23 +93,23 @@ const groupObjects = computed(() => {
 const scrollHandler = throttle((obj) => {
   // trottle until busy: true
   const scrollHeight = document.documentElement.scrollHeight
-  if (scrollHeight - obj.position.top < 2000 && app.next) {
+  if (scrollHeight - obj.position.top < 2000 && next) {
     app.fetchRecords(false, 'scroll')
   }
 }, 200)
 
 const isAuthorOrAdmin = (rec) => {
-  return auth.user && (auth.user.isAdmin || auth.user.email === rec.email) && app.editMode
+  return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
 }
 
 const tagsToApplyExist = () => {
-  return meta.tagsToApply && meta.tagsToApply.length > 0 && auth.user && auth.user.isAdmin
+  return tagsToApply.value && tagsToApply.value.length > 0 && user.value && user.value.isAdmin
 }
 
 const mergeTags = (rec) => {
-  rec.tags = Array.from(new Set([...meta.tagsToApply, ...rec.tags])).sort()
+  rec.tags = Array.from(new Set([...tagsToApply.value, ...rec.tags])).sort()
   app.saveRecord(rec)
-  emit('editOk', U + rec.filename)
+  emit('edit-ok', U + rec.filename)
 }
 
 const fireAgain = (filename) => {

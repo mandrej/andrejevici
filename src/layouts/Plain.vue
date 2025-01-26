@@ -9,7 +9,7 @@
             v-ripple.early="{ color: 'purple' }"
           >
             <q-btn
-              v-if="auth.user && auth.user.isAuthorized"
+              v-if="user && user.isAuthorized"
               fab
               icon="add"
               color="warning"
@@ -33,10 +33,10 @@
               <p class="q-ma-none text-body2 text-right">{{ version }}</p>
               {{ $route.meta.title }}
               <p class="q-ma-none text-body2">
-                {{ app.bucket.count }} photos since {{ app.sinceYear }} and counting
+                {{ bucket.count }} photos since {{ sinceYear }} and counting
               </p>
             </div>
-            <History-Button v-if="app.find && Object.keys(app.find).length" size="2.3em" />
+            <History-Button v-if="find && Object.keys(find).length" size="2.3em" />
           </div>
 
           <router-view />
@@ -58,12 +58,12 @@
               Google account. Only registered users can add, delete or edit photos. Unregistered
               user can only browse photos other people add.
             </p>
-            <p v-if="auth.user && auth.user.isAuthorized">
+            <p v-if="user && user.isAuthorized">
               <q-btn-group spread>
                 <q-btn
                   class="bg-warning text-dark"
                   to="/add"
-                  :label="`Add some photos ${auth.user.name}`"
+                  :label="`Add some photos ${user.name}`"
                 />
                 <q-btn class="bg-warning text-dark" @click="auth.signIn" label="Or Sign-Out" />
               </q-btn-group>
@@ -93,6 +93,7 @@
 
 <script setup>
 import { onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { version } from '../helpers'
@@ -100,7 +101,8 @@ import HistoryButton from '../components/History-Button.vue'
 
 const app = useAppStore()
 const auth = useUserStore()
-const lastRecord = computed(() => app.lastRecord)
+const { bucket, sinceYear, lastRecord, find } = storeToRefs(app)
+const { user } = storeToRefs(auth)
 
 onMounted(() => {
   app.getLast()
