@@ -82,7 +82,7 @@
 
 <script setup>
 import uuid4 from 'uuid4'
-import { defineAsyncComponent, computed, reactive, ref } from 'vue'
+import { defineAsyncComponent, reactive, ref } from 'vue'
 import { storage } from '../boot/fire'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
@@ -101,17 +101,8 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const { showEdit, currentEdit, uploaded } = storeToRefs(app)
-const { tagsValues } = storeToRefs(meta)
+const { tagsValues, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
-
-const tagsToApply = computed({
-  get() {
-    return meta.tagsToApply
-  },
-  set(newValue) {
-    meta.tagsToApply = newValue
-  },
-})
 
 let files = ref([])
 let progressInfo = reactive({})

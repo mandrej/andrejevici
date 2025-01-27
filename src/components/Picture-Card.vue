@@ -1,13 +1,21 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
     <q-card-section horizontal>
+      <q-btn
+        flat
+        round
+        size="50px"
+        icon="camera"
+        color="white"
+        class="absolute-center"
+        style="opacity: 0.2; z-index: 2000"
+        @click="emit('carousel-show', rec.filename)"
+      />
       <q-img
         class="col"
-        style="height: 240px"
+        style="height: 240px; pointer-events: none"
         loading="lazy"
         :src="rec.thumb"
-        v-ripple.early="{ color: 'purple' }"
-        @click="emit('carousel-show', rec.filename)"
         no-spinner
       >
         <template #error>
@@ -32,7 +40,6 @@
           icon="content_paste"
           @click="emit('merge-tags', rec)"
         />
-        <!-- <q-btn flat round icon="open_in_full" @click="emit('carousel-show', rec.filename)" /> -->
       </q-card-actions>
     </q-card-section>
     <q-card-section class="row justify-between">
