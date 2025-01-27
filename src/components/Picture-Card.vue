@@ -11,13 +11,7 @@
         style="opacity: 0.2; z-index: 2000"
         @click="emit('carousel-show', rec.filename)"
       />
-      <q-img
-        class="col"
-        style="height: 240px; pointer-events: none"
-        loading="lazy"
-        :src="rec.thumb"
-        no-spinner
-      >
+      <q-img class="col" style="height: 240px" loading="lazy" :src="rec.thumb" no-spinner>
         <template #error>
           <img :src="fileBroken" class="center" />
         </template>

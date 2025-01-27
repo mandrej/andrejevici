@@ -2,22 +2,20 @@
   <Edit-Record v-if="showEdit" :rec="currentEdit" @edit-ok="editOk" />
   <Confirm-Delete v-if="showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
 
-  <Transition>
-    <component
-      :is="currentView"
-      :objects="objects"
-      @carousel-show="useCarouselShow"
-      @carousel-cancel="useCarouselCancel"
-      @edit-record="editRecord"
-      @confirm-delete="confirmShow"
-      @edit-ok="editOk"
-    ></component>
-  </Transition>
+  <component
+    :is="currentView"
+    :objects="objects"
+    @carousel-show="useCarouselShow"
+    @carousel-cancel="useCarouselCancel"
+    @edit-record="editRecord"
+    @confirm-delete="confirmShow"
+    @edit-ok="editOk"
+  ></component>
 </template>
 
 <script setup>
 import { scroll } from 'quasar'
-import { ref, shallowRef, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
+import { ref, shallowRef, onMounted, nextTick, defineAsyncComponent, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useRoute } from 'vue-router'
@@ -34,7 +32,7 @@ const route = useRoute()
 const select2delete = ref({})
 const { getScrollTarget, setVerticalScrollPosition } = scroll
 
-const { busy, objects, showCarousel, markerFileName, showConfirm, showEdit, currentEdit } =
+const { objects, showCarousel, markerFileName, showConfirm, showEdit, currentEdit } =
   storeToRefs(app)
 const currentView = shallowRef(ListView)
 
@@ -47,12 +45,8 @@ onMounted(() => {
   }
 })
 
-watch(showCarousel, (show) => {
-  if (show) {
-    currentView.value = SwiperView
-  } else {
-    currentView.value = ListView
-  }
+watchEffect(() => {
+  currentView.value = showCarousel.value ? SwiperView : ListView
 })
 
 const confirmShow = (rec) => {
@@ -82,21 +76,19 @@ const editOk = (hash) => {
 const useCarouselShow = (filename) => {
   markerFileName.value = filename
   fakeHistory()
-  setTimeout(() => {
+  nextTick(() => {
     showCarousel.value = true
-  }, 200)
+  })
 }
 
 const useCarouselCancel = (hash) => {
   const [, id] = hash.match(reFilename)
-  busy.value = true
   nextTick(() => {
     const el = document.getElementById(id)
     if (!el) return
     const target = getScrollTarget(el)
     setVerticalScrollPosition(target, el.offsetTop, 400)
     removeHash()
-    busy.value = false
   })
 }
 </script>
