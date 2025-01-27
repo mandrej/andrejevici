@@ -82,9 +82,9 @@ const editOk = (hash) => {
 const useCarouselShow = (filename) => {
   markerFileName.value = filename
   fakeHistory()
-  nextTick(() => {
+  setTimeout(() => {
     showCarousel.value = true
-  })
+  }, 200)
 }
 
 const useCarouselCancel = (hash) => {
