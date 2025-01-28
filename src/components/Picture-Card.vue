@@ -1,24 +1,15 @@
 <template>
-  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)">
+  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" class="bg-grey-3" flat>
     <q-card-section horizontal>
-      <q-btn
-        flat
-        round
-        size="50px"
-        icon="camera"
-        color="white"
-        class="absolute-center"
-        style="opacity: 0.2; z-index: 2000"
+      <div
+        class="col cursor-pointer"
+        :style="thumbStyle(rec)"
         @click="emit('carousel-show', rec.filename)"
-      />
-      <q-img class="col" style="height: 240px" loading="lazy" :src="rec.thumb" no-spinner>
-        <template #error>
-          <img :src="fileBroken" class="center" />
-        </template>
-        <div class="absolute-bottom text-subtitle2 ellipsis">
+      >
+        <div class="absolute-bottom headline q-pa-md ellipsis">
           {{ rec.headline }}
         </div>
-      </q-img>
+      </div>
       <q-card-actions
         v-if="canManage && editMode"
         class="justify-around bg-grey-10 col"
@@ -67,14 +58,11 @@
     </q-card-section>
   </q-card>
 
-  <q-card v-else v-bind="cardAttributes(rec.filename)">
+  <q-card v-else v-bind="cardAttributes(rec.filename)" class="bg-grey-3" flat>
     <q-img class="cursor-pointer" loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
         <img :src="fileBroken" />
       </template>
-      <q-badge floating class="text-black" color="warning">
-        {{ formatBytes(rec.size) }}
-      </q-badge>
     </q-img>
     <q-card-actions v-if="canManage" class="justify-between">
       <q-btn flat round icon="delete" @click="emit('delete-record', rec)" />
@@ -84,7 +72,7 @@
 </template>
 
 <script setup>
-import { fileBroken, formatDatum, formatBytes, U, reFilename } from '../helpers'
+import { fileBroken, formatDatum, U, reFilename } from '../helpers'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'stores/app'
 
@@ -121,6 +109,20 @@ const cardAttributes = (filename) => {
   return attr
 }
 
+const thumbStyle = (rec) => {
+  const common = {
+    height: '240px',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  }
+  if (rec.thumb) {
+    return { ...common, backgroundImage: `url(${rec.thumb})` }
+  } else {
+    return { ...common, backgroundImage: `url(${fileBroken})`, backgroundSize: '30%' }
+  }
+}
+
 const openMaps = (loc) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
@@ -141,5 +143,9 @@ const openMaps = (loc) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.headline {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>

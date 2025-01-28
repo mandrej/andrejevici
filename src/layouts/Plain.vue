@@ -2,7 +2,11 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page v-if="lastRecord.href" class="row">
-        <q-responsive :ratio="1" class="col-xs-12 col-md-6 shadow-12" :style="imageStyle">
+        <q-responsive
+          :ratio="1"
+          class="col-xs-12 col-md-6 shadow-12"
+          :style="imageStyle(lastRecord)"
+        >
           <router-link
             :to="lastRecord.href"
             style="display: block"
@@ -92,11 +96,11 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
-import { version } from '../helpers'
+import { version, fileBroken } from '../helpers'
 import HistoryButton from '../components/History-Button.vue'
 
 const app = useAppStore()
@@ -108,18 +112,17 @@ onMounted(() => {
   app.getLast()
 })
 
-const common = 'background-repeat: no-repeat; background-position: center;'
-const imageStyle = computed(() => {
-  return (
-    'background-image: url(' +
-    lastRecord.value.url +
-    '), url(' +
-    lastRecord.value.thumb +
-    ');' +
-    common +
-    'background-size: cover;' +
-    'transition: background-image 0.2s ease-in-out;'
-  )
-})
-// const brokenStyle = "background-image: url(" + fileBroken + ");" + common;
+const common = {
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  transition: 'background-image 0.2s ease-in-out',
+}
+const imageStyle = (rec) => {
+  if (rec.thumb) {
+    return { ...common, backgroundImage: `url(${rec.url}), url(${rec.thumb})` }
+  } else {
+    return { ...common, backgroundImage: `url(${fileBroken})`, backgroundSize: '30%' }
+  }
+}
 </script>
