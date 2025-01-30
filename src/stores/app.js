@@ -110,14 +110,14 @@ export const useAppStore = defineStore('app', {
       notify({ message: `Bucket size calculated` })
     },
     async fetchRecords(reset = false, invoked = '') {
-      let max = CONFIG.limit
-      let serachTags = null,
-        serachText = null
-
       if (this.busy) {
         if (process.env.DEV) console.log('SKIPPED FOR ' + invoked)
         return
       }
+      let max = CONFIG.limit
+      let serachTags = null,
+        serachText = null
+
       const filters = Object.entries(this.find).map(([key, val]) => {
         if (key === 'tags') {
           serachTags = val

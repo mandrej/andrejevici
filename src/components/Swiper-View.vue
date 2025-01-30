@@ -55,7 +55,7 @@
 <script setup>
 import { useQuasar, copyToClipboard } from 'quasar'
 import { storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from 'stores/user'
 import { useRoute } from 'vue-router'
@@ -160,12 +160,7 @@ const onCancel = () => {
   emit('carousel-cancel', hash.value)
 }
 
-watch(
-  () => $q.fullscreen.isActive,
-  (val) => {
-    full.value = val
-  },
-)
+watchEffect((full.value = $q.fullscreen.isActive))
 </script>
 
 <style scoped>

@@ -21,28 +21,33 @@
       <div>{{ error }}</div>
     </q-banner>
 
-    <q-scroll-observer @scroll="scrollHandler" axis="vertical" :debounce="500" />
-
     <div class="q-pa-md">
       <div v-for="(list, index) in groupObjects" :key="index" class="q-mb-md">
-        <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-          <div
-            v-for="item in list"
-            :key="item.filename"
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
-          >
-            <Picture-Card
-              :rec="item"
-              :canManage="isAuthorOrAdmin(item)"
-              :canMergeTags="tagsToApplyExist()"
-              @carousel-show="fireAgain"
-              @edit-record="emit('edit-record', item)"
-              @merge-tags="mergeTags(item)"
-              @confirm-delete="emit('confirm-delete', item)"
-              @delete-record="app.deleteRecord"
-            />
-          </div>
-        </transition-group>
+        <q-infinite-scroll @load="onLoad" :offset="250">
+          <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+            <div
+              v-for="item in list"
+              :key="item.filename"
+              class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+            >
+              <Picture-Card
+                :rec="item"
+                :canManage="isAuthorOrAdmin(item)"
+                :canMergeTags="tagsToApplyExist()"
+                @carousel-show="fireAgain"
+                @edit-record="emit('edit-record', item)"
+                @merge-tags="mergeTags(item)"
+                @confirm-delete="emit('confirm-delete', item)"
+                @delete-record="app.deleteRecord"
+              />
+            </div>
+          </transition-group>
+          <!-- <template v-slot:loading>
+            <div class="row justify-center q-my-md">
+              <q-spinner-dots color="primary" size="40px" />
+            </div>
+          </template> -->
+        </q-infinite-scroll>
       </div>
     </div>
 
@@ -54,7 +59,6 @@
 
 <script setup>
 import { computed } from 'vue'
-import { throttle } from 'quasar'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
@@ -90,13 +94,12 @@ const groupObjects = computed(() => {
   return groups
 })
 
-const scrollHandler = throttle((obj) => {
-  // trottle until busy: true
-  const scrollHeight = document.documentElement.scrollHeight
-  if (scrollHeight - obj.position.top < 2000 && next) {
+const onLoad = (index, done) => {
+  if (next.value) {
     app.fetchRecords(false, 'scroll')
   }
-}, 200)
+  done()
+}
 
 const isAuthorOrAdmin = (rec) => {
   return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
