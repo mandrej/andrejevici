@@ -23,7 +23,7 @@
 
     <div class="q-pa-md">
       <div v-for="(list, index) in groupObjects" :key="index" class="q-mb-md">
-        <q-infinite-scroll @load="onLoad" :offset="250">
+        <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
           <transition-group tag="div" class="row q-col-gutter-md" name="fade">
             <div
               v-for="item in list"
@@ -58,6 +58,7 @@
 </template>
 
 <script setup>
+import { throttle } from 'quasar'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -94,12 +95,12 @@ const groupObjects = computed(() => {
   return groups
 })
 
-const onLoad = (index, done) => {
+const onLoad = throttle((index, done) => {
   if (next.value) {
     app.fetchRecords(false, 'scroll')
   }
   done()
-}
+}, 500)
 
 const isAuthorOrAdmin = (rec) => {
   return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
