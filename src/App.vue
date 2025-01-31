@@ -12,7 +12,7 @@ import notify from './helpers/notify'
 
 const app = useAppStore()
 const auth = useUserStore()
-const { busy, markerFileName, error, showEdit, showConfirm } = storeToRefs(app)
+const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 
 messageListener()
@@ -42,7 +42,6 @@ onMounted(() => {
   app.bucketRead()
   // RESET
   busy.value = false
-  markerFileName.value = null
   error.value = null
   showEdit.value = false
   showConfirm.value = false

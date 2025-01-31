@@ -76,13 +76,16 @@ import notify from '../helpers/notify'
 import 'swiper/scss'
 import 'swiper/scss/zoom'
 
+const props = defineProps({
+  index: Number,
+})
 const emit = defineEmits(['confirm-delete', 'carousel-cancel'])
 
 const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
 const route = useRoute()
-const { objects, showCarousel, markerFileName } = storeToRefs(app)
+const { objects, showCarousel } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const hash = ref(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
@@ -94,17 +97,8 @@ let swiper = null
 const onSwiper = (e) => {
   swiper = e.detail[0] // instance
   Object.assign(swiper, { modules: [Keyboard, Zoom] })
-  const index = objects.value.findIndex((x) => x.filename === markerFileName.value)
-  switch (index) {
-    case -1:
-      notify({ type: 'warning', message: 'Marker not found' })
-      break
-    case 0:
-      onSlideChange()
-      break
-    default:
-      swiper.slideTo(index, 0)
-  }
+  swiper.slideTo(props.index, 0)
+  onSlideChange()
 }
 const onSlideChange = () => {
   let url = route.fullPath

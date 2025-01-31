@@ -51,7 +51,6 @@ export const useAppStore = defineStore('app', {
     objects: [],
     next: null,
     currentEdit: {},
-    markerFileName: null,
     lastRecord: {},
     sinceYear: '',
 

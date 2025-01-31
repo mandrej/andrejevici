@@ -3,6 +3,7 @@
   <Confirm-Delete v-if="showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
   <Swiper-View
     v-if="showCarousel"
+    :index="index"
     @confirm-delete="confirmShow"
     @carousel-cancel="carouselCancel"
   />
@@ -67,7 +68,7 @@
 </template>
 
 <script setup>
-import { scroll, throttle } from 'quasar'
+import { scroll, debounce, throttle } from 'quasar'
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -75,6 +76,7 @@ import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
 import { CONFIG, U, fakeHistory, reFilename, removeHash } from '../helpers'
+import notify from '../helpers/notify'
 
 import PictureCard from '../components/Picture-Card.vue'
 import SwiperView from '../components/Swiper-View.vue'
@@ -85,18 +87,10 @@ const app = useAppStore()
 const auth = useUserStore()
 const meta = useValuesStore()
 const route = useRoute()
+const index = ref(-1)
 
-const {
-  objects,
-  error,
-  next,
-  showCarousel,
-  markerFileName,
-  showConfirm,
-  editMode,
-  showEdit,
-  currentEdit,
-} = storeToRefs(app)
+const { objects, error, next, showCarousel, showConfirm, editMode, showEdit, currentEdit } =
+  storeToRefs(app)
 const select2delete = ref({})
 const { tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
@@ -105,10 +99,23 @@ const { getScrollTarget, setVerticalScrollPosition } = scroll
 onMounted(() => {
   const hash = route.hash
   if (hash) {
-    markerFileName.value = hash.substring(2)
-    showCarousel.value = true
+    const marker = hash.substring(2)
+    debounce(() => {
+      findIndex(marker)
+    }, 1000)()
   }
 })
+
+const findIndex = (filename) => {
+  index.value = objects.value.findIndex((x) => x.filename === filename)
+  switch (index.value) {
+    case -1:
+      notify({ type: 'warning', message: 'Marker not found' })
+      break
+    default:
+      showCarousel.value = true
+  }
+}
 
 const groupObjects = computed(() => {
   const groups = []
@@ -164,15 +171,14 @@ const editOk = (hash) => {
 }
 
 const carouselShow = (filename) => {
-  markerFileName.value = filename
   fakeHistory()
   nextTick(() => {
-    showCarousel.value = true
+    findIndex(filename)
   })
 }
 const carouselCancel = (hash) => {
   showCarousel.value = false
-  markerFileName.value = null
+  index.value = -1
   const [, id] = hash.match(reFilename)
   nextTick(() => {
     const el = document.getElementById(id)
