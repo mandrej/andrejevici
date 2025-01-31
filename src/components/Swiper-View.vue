@@ -1,55 +1,64 @@
 <template>
-  <swiper-container
-    class="swiper"
-    :keyboard="{
-      enabled: true,
-    }"
-    :grab-cursor="true"
-    :zoom="{
-      maxRatio: 2,
-    }"
-    :lazy="true"
-    @swiperinit="onSwiper"
-    @swiperslidechange="onSlideChange"
-  >
-    <swiper-slide v-for="obj in objects" :key="obj.filename" :data-hash="U + obj.filename">
-      <div
-        v-show="!full"
-        class="absolute-top row no-wrap justify-between"
-        style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
+  <q-dialog v-model="showCarousel" :maximized="true" persistent>
+    <q-card>
+      <swiper-container
+        :keyboard="{
+          enabled: true,
+        }"
+        :grab-cursor="true"
+        :zoom="{
+          maxRatio: 2,
+        }"
+        :lazy="true"
+        @swiperinit="onSwiper"
+        @swiperslidechange="onSlideChange"
       >
-        <q-btn
-          v-if="user && user.isAdmin"
-          flat
-          round
-          class="text-white q-pa-sm"
-          icon="delete"
-          @click="emit('confirm-delete', obj)"
-        />
-        <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
+        <swiper-slide v-for="obj in objects" :key="obj.filename" :data-hash="U + obj.filename">
+          <div
+            v-show="!full"
+            class="absolute-top row no-wrap justify-between"
+            style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
+          >
+            <q-btn
+              v-if="user && user.isAdmin"
+              flat
+              round
+              class="text-white q-pa-sm"
+              icon="delete"
+              @click="emit('confirm-delete', obj)"
+            />
+            <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
 
-        <q-btn flat round class="text-white q-pa-sm" icon="close" @click="onCancel" />
-      </div>
-      <div class="swiper-zoom-container">
-        <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
-        <div class="swiper-lazy-preloader" />
-      </div>
-      <q-btn
-        flat
-        round
-        class="absolute-bottom-left text-white q-pa-sm"
-        @click="onShare(obj.filename)"
-        icon="share"
-      />
-      <q-btn
-        flat
-        round
-        class="absolute-bottom-right text-white q-pa-sm"
-        @click="$q.fullscreen.toggle()"
-        :icon="full ? 'fullscreen_exit' : 'fullscreen'"
-      />
-    </swiper-slide>
-  </swiper-container>
+            <q-btn
+              flat
+              round
+              class="text-white q-pa-sm"
+              icon="close"
+              @click="onCancel(U + obj.filename)"
+            />
+          </div>
+          <div class="swiper-zoom-container">
+            <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
+            <div class="swiper-lazy-preloader" />
+          </div>
+          <q-btn
+            flat
+            round
+            class="absolute-bottom-left text-white q-pa-sm"
+            @click="onShare(obj.filename)"
+            icon="share"
+          />
+          <q-btn
+            flat
+            round
+            class="absolute-bottom-right text-white q-pa-sm"
+            @click="$q.fullscreen.toggle()"
+            :icon="full ? 'fullscreen_exit' : 'fullscreen'"
+          />
+        </swiper-slide>
+      </swiper-container>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -67,16 +76,13 @@ import notify from '../helpers/notify'
 import 'swiper/scss'
 import 'swiper/scss/zoom'
 
-const props = defineProps({
-  objects: Array,
-})
-const emit = defineEmits(['carousel-cancel', 'confirm-delete'])
+const emit = defineEmits(['confirm-delete', 'carousel-cancel'])
 
 const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
 const route = useRoute()
-const { showCarousel, markerFileName } = storeToRefs(app)
+const { objects, showCarousel, markerFileName } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const hash = ref(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
@@ -88,15 +94,16 @@ let swiper = null
 const onSwiper = (e) => {
   swiper = e.detail[0] // instance
   Object.assign(swiper, { modules: [Keyboard, Zoom] })
-  position(markerFileName.value)
-}
-
-const position = (marker) => {
-  const index = props.objects.findIndex((x) => x.filename === marker)
-  if (index === 0) {
-    onSlideChange()
-  } else if (index > 0) {
-    swiper.slideTo(index, 0)
+  const index = objects.value.findIndex((x) => x.filename === markerFileName.value)
+  switch (index) {
+    case -1:
+      notify({ type: 'warning', message: 'Marker not found' })
+      break
+    case 0:
+      onSlideChange()
+      break
+    default:
+      swiper.slideTo(index, 0)
   }
 }
 const onSlideChange = () => {
@@ -113,6 +120,7 @@ const onSlideChange = () => {
     window.history.replaceState(history.state, null, url)
   }
 }
+
 const onLoad = (e) => {
   // calculate image dimension
   const dim1 = [e.target.width, e.target.height]
@@ -155,12 +163,13 @@ window.onpopstate = function () {
   showCarousel.value = false
   emit('carousel-cancel', hash.value)
 }
-const onCancel = () => {
+const onCancel = (hsh) => {
   showCarousel.value = false
+  if (!hash.value) hash.value = hsh
   emit('carousel-cancel', hash.value)
 }
 
-watchEffect((full.value = $q.fullscreen.isActive))
+watchEffect(() => (full.value = $q.fullscreen.isActive))
 </script>
 
 <style scoped>

@@ -5,8 +5,8 @@
   <component
     :is="currentView"
     :objects="objects"
-    @carousel-show="useCarouselShow"
-    @carousel-cancel="useCarouselCancel"
+    @carousel-show="carouselShow"
+    @carousel-cancel="carouselCancel"
     @edit-record="editRecord"
     @confirm-delete="confirmShow"
     @edit-ok="editOk"
@@ -73,7 +73,7 @@ const editOk = (hash) => {
   }, 2000)
 }
 
-const useCarouselShow = (filename) => {
+const carouselShow = (filename) => {
   markerFileName.value = filename
   fakeHistory()
   nextTick(() => {
@@ -81,7 +81,7 @@ const useCarouselShow = (filename) => {
   })
 }
 
-const useCarouselCancel = (hash) => {
+const carouselCancel = (hash) => {
   const [, id] = hash.match(reFilename)
   nextTick(() => {
     const el = document.getElementById(id)
