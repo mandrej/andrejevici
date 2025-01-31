@@ -22,7 +22,7 @@ import { useRoute } from 'vue-router'
 import { fakeHistory, reFilename, removeHash } from '../helpers'
 
 import SwiperView from '../components/Swiper-View.vue'
-import ListView from '../components/List-View.vue'
+import ListView from './List-Page.vue'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 const ConfirmDelete = defineAsyncComponent(() => import('../components/Confirm-Delete.vue'))

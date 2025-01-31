@@ -77,7 +77,7 @@ import { useRoute } from 'vue-router'
 import { CONFIG, U, fakeHistory, reFilename, removeHash } from '../helpers'
 
 import PictureCard from '../components/Picture-Card.vue'
-import SwiperView from './Swiper-View.vue'
+import SwiperView from '../components/Swiper-View.vue'
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 const ConfirmDelete = defineAsyncComponent(() => import('../components/Confirm-Delete.vue'))
 

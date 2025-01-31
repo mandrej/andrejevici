@@ -16,7 +16,7 @@ const routes = [
         path: '',
         name: 'list',
         components: {
-          default: () => import('../components/List-View.vue'),
+          default: () => import('../pages/List-Page.vue'),
           sidebar: () => import('../components/Find.vue'),
         },
       },
