@@ -10,24 +10,20 @@
 
   <q-page>
     <q-banner
-      v-if="error && error === 'empty'"
+      v-if="error"
       class="fixed-center text-center bg-warning q-pa-md"
       style="z-index: 100"
       rounded
     >
       <q-icon name="error_outline" size="4em" />
-      <div class="text-h6">No data found</div>
-      <div>for current filter/ search</div>
-    </q-banner>
-    <q-banner
-      v-else-if="error && error !== 'empty'"
-      class="fixed-center text-center bg-warning q-pa-md"
-      style="z-index: 100"
-      rounded
-    >
-      <q-icon name="error_outline" size="4em" />
-      <div class="text-h6">Something went wrong ...</div>
-      <div>{{ error }}</div>
+      <template v-if="error === 'empty'">
+        <div class="text-h6">No data found</div>
+        <div>for current filter/ search</div>
+      </template>
+      <template v-else>
+        <div class="text-h6">Something went wrong ...</div>
+        <div>{{ error }}</div>
+      </template>
     </q-banner>
 
     <div class="q-pa-md q-mb-md">
