@@ -102,7 +102,7 @@ onMounted(() => {
     const marker = hash.substring(2)
     debounce(() => {
       findIndex(marker)
-    }, 1000)()
+    }, 2000)()
   }
 })
 
@@ -110,7 +110,7 @@ const findIndex = (filename) => {
   index.value = objects.value.findIndex((x) => x.filename === filename)
   switch (index.value) {
     case -1:
-      notify({ type: 'warning', message: 'Marker not found' })
+      notify({ type: 'warning', message: 'Photo not found' })
       break
     default:
       showCarousel.value = true
