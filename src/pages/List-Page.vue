@@ -30,35 +30,33 @@
       <div>{{ error }}</div>
     </q-banner>
 
-    <div class="q-pa-md">
-      <div v-for="(list, index) in groupObjects" :key="index" class="q-mb-md">
-        <q-infinite-scroll @load="onLoad" :offset="250">
-          <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-            <div
-              v-for="item in list"
-              :key="item.filename"
-              class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
-            >
-              <Picture-Card
-                :rec="item"
-                :canManage="isAuthorOrAdmin(item)"
-                :canMergeTags="tagsToApplyExist()"
-                @carousel-show="carouselShow(item.filename)"
-                @carouselCancel="carouselCancel"
-                @edit-record="editRecord"
-                @merge-tags="mergeTags(item)"
-                @confirm-delete="confirmShow(item)"
-                @delete-record="app.deleteRecord"
-              />
-            </div>
-          </transition-group>
-          <!-- <template v-slot:loading>
+    <div class="q-pa-md q-mb-md">
+      <q-infinite-scroll @load="onLoad" :offset="250">
+        <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+          <div
+            v-for="item in objects"
+            :key="item.filename"
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+          >
+            <Picture-Card
+              :rec="item"
+              :canManage="isAuthorOrAdmin(item)"
+              :canMergeTags="tagsToApplyExist()"
+              @carousel-show="carouselShow(item.filename)"
+              @carouselCancel="carouselCancel"
+              @edit-record="editRecord"
+              @merge-tags="mergeTags(item)"
+              @confirm-delete="confirmShow(item)"
+              @delete-record="app.deleteRecord"
+            />
+          </div>
+        </transition-group>
+        <!-- <template v-slot:loading>
             <div class="row justify-center q-my-md">
               <q-spinner-dots color="primary" size="40px" />
             </div>
           </template> -->
-        </q-infinite-scroll>
-      </div>
+      </q-infinite-scroll>
     </div>
 
     <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
@@ -69,13 +67,13 @@
 
 <script setup>
 import { scroll, debounce, throttle } from 'quasar'
-import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
+import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
-import { CONFIG, U, fakeHistory, reFilename, removeHash } from '../helpers'
+import { U, fakeHistory, reFilename, removeHash } from '../helpers'
 import notify from '../helpers/notify'
 
 import PictureCard from '../components/Picture-Card.vue'
@@ -116,14 +114,6 @@ const findIndex = (filename) => {
       showCarousel.value = true
   }
 }
-
-const groupObjects = computed(() => {
-  const groups = []
-  for (let i = 0; i < objects.value.length; i += CONFIG.group) {
-    groups.push(objects.value.slice(i, i + CONFIG.group))
-  }
-  return groups
-})
 
 const onLoad = throttle((index, done) => {
   if (next.value) {
