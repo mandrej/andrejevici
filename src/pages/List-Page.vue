@@ -151,9 +151,14 @@ const confirmShow = (rec) => {
   fakeHistory()
   showConfirm.value = true
 }
-const confirmOk = (rec) => {
+const confirmOk = async (rec) => {
   showConfirm.value = false
-  app.deleteRecord(rec)
+  await app.deleteRecord(rec)
+  if (objects.value.length === 0 && showCarousel.value) {
+    showCarousel.value = false
+    error.value = 'empty'
+    removeHash()
+  }
 }
 
 const editRecord = (rec) => {
