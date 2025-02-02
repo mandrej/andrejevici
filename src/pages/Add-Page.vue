@@ -53,16 +53,31 @@
       </div>
     </q-form>
 
-    <q-input v-model="headlineToApply" label="Headline to apply for next publish" clearable />
-    <Auto-Complete
-      label="Tags to apply / or to merge with existing"
-      v-model="tagsToApply"
-      :options="tagsValues"
-      canadd
-      multiple
-      hint="You can add / remove tag later"
-      @new-value="addNewTag"
-    />
+    <div class="row align-center items-end q-mt-md">
+      <div class="col-xs-12 col-sm-8 col-md-8">
+        <q-input v-model="headlineToApply" label="Headline to apply for next publish" clearable />
+      </div>
+      <div class="col-xs-12 col-sm-8 col-md-8">
+        <Auto-Complete
+          label="Tags to apply / or to merge with existing"
+          v-model="tagsToApply"
+          :options="tagsValues"
+          canadd
+          multiple
+          hint="You can add / remove tag later"
+          @new-value="addNewTag"
+        />
+      </div>
+      <div class="col-xs-12 col-sm-4 col-md-4 text-right">
+        <q-btn
+          label="Publish all"
+          @click="publishAll"
+          color="primary"
+          :disable="uploaded.length === 0"
+          style="width: 200px"
+        ></q-btn>
+      </div>
+    </div>
 
     <div class="q-mt-md">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
@@ -190,6 +205,11 @@ const onSubmit = async (evt) => {
   morphModel.value = 'upload'
 }
 
+/**
+ * Uploads a file to the server.
+ *
+ * @param {File} file - The file to be uploaded.
+ */
 const uploadTask = (file) => {
   return new Promise((resolve, reject) => {
     checkExists(file.name).then((filename) => {
@@ -244,12 +264,8 @@ const addNewTag = (inputValue, done) => {
   meta.addNewField(inputValue, 'tags')
   done(inputValue)
 }
-const editRecord = async (rec) => {
-  // /**
-  //  * PUBLISH RECORD
-  //  * Add user email and tags: [] to new rec; read exif
-  //  * See Edit-Record getExif
-  //  */
+
+const addProperies = async (rec) => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
@@ -262,9 +278,30 @@ const editRecord = async (rec) => {
   }
   rec.tags = tags
   rec.email = user.value.email
-
+  return rec
+}
+/**
+ * PUBLISH RECORD
+ * Add user email and tags: [] to new rec; read exif
+ * See Edit-Record getExif
+ */
+const editRecord = async (rec) => {
+  const newRec = await addProperies(rec)
   fakeHistory()
   showEdit.value = true
-  currentEdit.value = rec
+  currentEdit.value = newRec
+}
+
+/**
+ * PUBLISH ALL RECORDS
+ * Add user email and tags: [] to new rec; read exif
+ * See Edit-Record getExif
+ */
+const publishAll = async () => {
+  for (let rec of uploaded.value) {
+    const newRec = await addProperies(rec)
+    app.saveRecord(newRec)
+    uploaded.value = uploaded.value.filter((item) => item.filename !== rec.filename)
+  }
 }
 </script>
