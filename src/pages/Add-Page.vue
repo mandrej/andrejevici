@@ -269,8 +269,13 @@ const addProperies = async (rec) => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
+  if (headlineToApply.value && headlineToApply.value.trim() === '') {
+    headlineToApply.value = CONFIG.noTitle
+  }
   if (headlineToApply.value) {
-    rec.headline = headlineToApply.value
+    rec.headline = headlineToApply.value.trim()
+  } else {
+    rec.headline = CONFIG.noTitle
   }
   // add flash tag if exif flash true
   if (rec.flash && tags.indexOf('flash') === -1) {
@@ -301,6 +306,7 @@ const publishAll = async () => {
   for (let rec of uploaded.value) {
     const newRec = await addProperies(rec)
     app.saveRecord(newRec)
+    currentEdit.value = newRec
     uploaded.value = uploaded.value.filter((item) => item.filename !== rec.filename)
   }
 }
