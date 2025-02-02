@@ -61,10 +61,10 @@
               />
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Auto-Complete
+                label="Author"
                 v-model="tmp.email"
                 :options="emailValues"
                 canadd
-                label="Author"
                 hint="Existing member can add freind's photo and email"
                 :rules="[(val) => !!val || 'Email is missing', (val) => isValidEmail(val)]"
                 @new-value="addNewEmail"
@@ -97,13 +97,13 @@
             <div class="fit row nowrap">
               <div class="col-xs-11">
                 <Auto-Complete
-                  class="col-auto"
+                  label="Tags"
                   v-model="tmp.tags"
                   :options="tagsValues"
-                  label="Tags"
                   canadd
                   multiple
                   clearable
+                  class="col-auto"
                   :hint="tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply : ''"
                   @new-value="addNewTag"
                 >
@@ -132,19 +132,19 @@
 
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
+                label="Camera Model"
                 v-model="tmp.model"
                 :options="modelValues"
                 canadd
-                label="Camera Model"
                 @new-value="addNewModel"
               />
             </div>
             <div class="col-xs-12 col-sm-6">
               <Auto-Complete
+                label="Camera Lens"
                 v-model="tmp.lens"
                 :options="lensValues"
                 canadd
-                label="Camera Lens"
                 @new-value="addNewLens"
               />
             </div>

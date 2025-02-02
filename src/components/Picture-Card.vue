@@ -1,5 +1,5 @@
 <template>
-  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" class="bg-grey-3" flat>
+  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
     <q-card-section horizontal>
       <div
         class="col cursor-pointer"
@@ -13,7 +13,7 @@
       <q-card-actions
         v-if="canManage && editMode"
         class="justify-around bg-grey-10 col"
-        style="max-width: 58px"
+        style="max-width: 58px; padding-bottom: 53px"
         vertical
       >
         <q-btn flat round icon="delete" @click="emit('confirm-delete', rec)" />
@@ -58,8 +58,8 @@
     </q-card-section>
   </q-card>
 
-  <q-card v-else v-bind="cardAttributes(rec.filename)" class="bg-grey-3" flat>
-    <q-img class="cursor-pointer" loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
+  <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
+    <q-img loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
         <img :src="fileBroken" />
       </template>
@@ -98,12 +98,12 @@ const cardAttributes = (filename) => {
     const [, name, ext] = filename.match(reFilename)
     attr = {
       id: U + name,
-      class: ext.substring(1),
+      class: ext.substring(1) + ' bg-grey-3',
     }
   } catch {
     attr = {
       id: U + 'x',
-      class: 'jpg',
+      class: 'jpg bg-grey-3',
     }
   }
   return attr

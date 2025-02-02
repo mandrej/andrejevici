@@ -1,20 +1,19 @@
 <template>
   <form class="q-pa-md q-gutter-md" autocomplete="off">
     <q-input
+      label="by title"
       v-model="tmp.text"
       :disable="busy"
-      label="by title"
       clearable
       @blur="submit"
       :dense="$q.screen.xs"
       dark
     />
     <Auto-Complete
+      label="by tags"
       v-model="tmp.tags"
       :options="tagsValues"
-      label="by tags"
       :disable="busy"
-      behavior="menu"
       :dense="$q.screen.xs"
       dark
       multiple
@@ -26,69 +25,63 @@
       "
     />
     <Auto-Complete
-      v-model="tmp.year"
-      class="col"
-      :options="yearValues"
       label="by year"
+      v-model="tmp.year"
+      :options="yearValues"
       :disable="busy"
-      behavior="menu"
       :dense="$q.screen.xs"
       dark
+      class="col"
       @update:model-value="submit"
     />
     <div class="row">
       <Auto-Complete
-        v-model="tmp.month"
-        class="col"
-        :options="optionsMonth"
-        autocomplete="label"
         label="by month"
+        v-model="tmp.month"
+        :options="optionsMonth"
         :disable="busy"
-        behavior="menu"
+        autocomplete="label"
         :dense="$q.screen.xs"
         dark
+        class="col"
         @update:model-value="submit"
       />
       <div class="col-1" />
       <Auto-Complete
-        v-model="tmp.day"
-        class="col"
-        :options="optionsDay"
-        autocomplete="label"
         label="by day"
+        v-model="tmp.day"
+        :options="optionsDay"
         :disable="busy"
-        behavior="menu"
+        autocomplete="label"
         :dense="$q.screen.xs"
         dark
+        class="col"
         @update:model-value="submit"
       />
     </div>
     <Auto-Complete
+      label="by model"
       v-model="tmp.model"
       :options="modelValues"
-      label="by model"
       :disable="busy"
-      behavior="menu"
       :dense="$q.screen.xs"
       dark
       @update:model-value="submit"
     />
     <Auto-Complete
+      label="by lens"
       v-model="tmp.lens"
       :options="lensValues"
-      label="by lens"
       :disable="busy"
-      behavior="menu"
       :dense="$q.screen.xs"
       dark
       @update:model-value="submit"
     />
     <Auto-Complete
+      label="by author"
       v-model="tmp.nick"
       :options="nickValues"
-      label="by author"
       :disable="busy"
-      behavior="menu"
       :dense="$q.screen.xs"
       dark
       @update:model-value="submit"

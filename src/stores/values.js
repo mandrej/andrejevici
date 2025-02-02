@@ -31,6 +31,7 @@ const byCountReverse = (state, field) => {
 
 export const useValuesStore = defineStore('meta', {
   state: () => ({
+    headlineToApply: '',
     tagsToApply: [],
     values: { year: {}, tags: {}, model: {}, lens: {}, email: {} },
   }),

@@ -1,10 +1,8 @@
 <template>
   <q-select
+    :label="label"
     v-model="model"
-    :disable="disable"
     :options="options"
-    use-input
-    clearable
     :hide-selected="multiple ? false : true"
     :multiple="multiple ? true : undefined"
     :fill-input="multiple ? false : true"
@@ -13,7 +11,8 @@
     :hide-dropdown-icon="canadd ? true : undefined"
     :new-value-mode="canadd ? 'add-unique' : undefined"
     :input-debounce="debounce"
-    :label="label"
+    use-input
+    clearable
     @filter="filter"
   />
 </template>
@@ -36,7 +35,6 @@ const props = defineProps({
     type: String, // 'label'
     default: '',
   },
-  disable: { type: Boolean, default: false },
   label: { type: String, required: true },
 })
 

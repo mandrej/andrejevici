@@ -36,6 +36,7 @@
           type="button"
           color="negative"
           class="col-lg-4 col-sm-5 col-xs-6"
+          style="width: 200px"
           @click="cancelAll"
           v-morph:cancel:buttons:500="morphModel"
         />
@@ -45,18 +46,20 @@
           icon="file_upload"
           color="primary"
           class="col-lg-2 col-sm-3 col-xs-4"
+          style="width: 200px"
           v-morph:upload:buttons:500="morphModel"
           :disable="files.length === 0"
         />
       </div>
     </q-form>
 
+    <q-input v-model="headlineToApply" label="Headline to apply for next publish" clearable />
     <Auto-Complete
+      label="Tags to apply / or to merge with existing"
       v-model="tagsToApply"
       :options="tagsValues"
       canadd
       multiple
-      label="Tags to apply for next publish / or to merge with existing"
       hint="You can add / remove tag later"
       @new-value="addNewTag"
     />
@@ -101,7 +104,7 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const { showEdit, currentEdit, uploaded } = storeToRefs(app)
-const { tagsValues, tagsToApply } = storeToRefs(meta)
+const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 
 let files = ref([])
@@ -250,6 +253,9 @@ const editRecord = async (rec) => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
+  if (headlineToApply.value) {
+    rec.headline = headlineToApply.value
+  }
   // add flash tag if exif flash true
   if (rec.flash && tags.indexOf('flash') === -1) {
     tags.push('flash')

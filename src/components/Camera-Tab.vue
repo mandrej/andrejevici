@@ -4,12 +4,7 @@
 
     <q-item class="q-pt-none">
       <q-item-section top>
-        <Auto-Complete
-          v-model="existingModel"
-          :options="modelValues"
-          behavior="menu"
-          label="Rename model"
-        />
+        <Auto-Complete label="Rename model" v-model="existingModel" :options="modelValues" />
       </q-item-section>
       <q-item-section top>
         <q-input
@@ -42,12 +37,7 @@
     <q-item class="text-h6">Lens</q-item>
     <q-item class="q-pt-none">
       <q-item-section top>
-        <Auto-Complete
-          v-model="existingLens"
-          :options="lensValues"
-          behavior="menu"
-          label="Rename lens"
-        />
+        <Auto-Complete label="Rename lens" v-model="existingLens" :options="lensValues" />
       </q-item-section>
       <q-item-section top>
         <q-input

@@ -18,12 +18,7 @@
     </q-item>
     <q-item class="q-pt-none">
       <q-item-section top>
-        <Auto-Complete
-          v-model="existingTag"
-          :options="tagsValues"
-          behavior="menu"
-          label="Rename tag"
-        />
+        <Auto-Complete label="Rename tag" v-model="existingTag" :options="tagsValues" />
       </q-item-section>
       <q-item-section top>
         <q-input
