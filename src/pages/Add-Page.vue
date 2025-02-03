@@ -269,14 +269,7 @@ const addProperies = async (rec) => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
-  if (headlineToApply.value && headlineToApply.value.trim() === '') {
-    headlineToApply.value = CONFIG.noTitle
-  }
-  if (headlineToApply.value) {
-    rec.headline = headlineToApply.value.trim()
-  } else {
-    rec.headline = CONFIG.noTitle
-  }
+  rec.headline = headlineToApply.value?.trim() || CONFIG.noTitle
   // add flash tag if exif flash true
   if (rec.flash && tags.indexOf('flash') === -1) {
     tags.push('flash')

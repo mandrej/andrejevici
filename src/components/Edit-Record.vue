@@ -46,18 +46,9 @@
                 label="Headline"
                 :placeholder="CONFIG.noTitle"
                 :hint="`Image without name is called '${CONFIG.noTitle}'`"
-                @blur="
-                  tmp.headline === undefined
-                    ? (tmp.headline = CONFIG.noTitle)
-                    : (tmp.headline = tmp.headline.trim())
-                "
+                @blur="tmp.headline = tmp.headline?.trim() || CONFIG.noTitle"
                 autofocus
                 clearable
-                @clear="
-                  (val) => {
-                    tmp.headline = CONFIG.noTitle
-                  }
-                "
               />
               <q-input v-model="tmp.filename" label="Filename" readonly />
               <Auto-Complete
