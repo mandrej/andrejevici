@@ -53,7 +53,7 @@
       </div>
     </q-form>
 
-    <div class="row align-center items-end q-mt-md">
+    <div class="row items-end q-mt-md">
       <div class="col-xs-12 col-sm-8 col-md-8">
         <q-input v-model="headlineToApply" label="Headline to apply for next publish" clearable />
       </div>
@@ -75,7 +75,7 @@
           color="primary"
           :disable="uploaded.length === 0"
           style="width: 200px"
-        ></q-btn>
+        />
       </div>
     </div>
 
