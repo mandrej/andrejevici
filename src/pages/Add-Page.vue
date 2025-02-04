@@ -1,7 +1,7 @@
 <template>
   <Edit-Record v-if="showEdit" :rec="currentEdit" />
 
-  <q-page v-else class="q-pa-md">
+  <q-page class="q-pa-md">
     <div class="relative-position column q-pb-md">
       <div class="row absolute-top">
         <q-linear-progress
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <q-form @submit="onSubmit" class="q-gutter-md">
+    <q-form @submit="onSubmit">
       <q-file
         name="photos"
         v-model="files"
@@ -28,6 +28,7 @@
         hint="Drag your images above to upload, or click to browse and select. Then
           publish image on site. Accepts maximum 10 jpg (jpeg) files less then 4
           Mb in size."
+        class="q-mb-md"
         @rejected="onValidationError"
       />
       <div class="row justify-end">
@@ -35,7 +36,6 @@
           label="Cancel all"
           type="button"
           color="negative"
-          class="col-lg-4 col-sm-5 col-xs-6"
           style="width: 200px"
           @click="cancelAll"
           v-morph:cancel:buttons:500="morphModel"
@@ -45,7 +45,6 @@
           type="submit"
           icon="file_upload"
           color="primary"
-          class="col-lg-2 col-sm-3 col-xs-4"
           style="width: 200px"
           v-morph:upload:buttons:500="morphModel"
           :disable="files.length === 0"
@@ -53,13 +52,16 @@
       </div>
     </q-form>
 
-    <div class="row items-end q-mt-md">
-      <div class="col-xs-12 col-sm-8 col-md-8">
-        <q-input v-model="headlineToApply" label="Headline to apply for next publish" clearable />
-      </div>
-      <div class="col-xs-12 col-sm-8 col-md-8">
+    <div class="row">
+      <div class="column col-12 col-sm-8">
+        <q-input
+          v-model="headlineToApply"
+          label="Headline to apply for next publish"
+          :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
+          clearable
+        />
         <Auto-Complete
-          label="Tags to apply / or to merge with existing"
+          label="Tags to apply for next publish / or to merge with existing"
           v-model="tagsToApply"
           :options="tagsValues"
           canadd
@@ -68,7 +70,7 @@
           @new-value="addNewTag"
         />
       </div>
-      <div class="col-xs-12 col-sm-4 col-md-4 text-right">
+      <div class="column col-12 col-sm-4 items-end self-center">
         <q-btn
           label="Publish all"
           @click="publishAll"
