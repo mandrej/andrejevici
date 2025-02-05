@@ -1,57 +1,58 @@
 <template>
-  <q-list>
-    <q-item class="text-h6">Tags</q-item>
-
-    <q-item>
-      <q-item-section>
-        <q-input
-          ref="newTagRef"
-          v-model="newTag"
-          label="Add new tag"
-          :rules="[(val) => tagsValues.indexOf(val) === -1 || 'Tag already in use']"
-          clearable
-        />
-      </q-item-section>
-      <q-item-section side>
+  <div class="q-pa-md">
+    <div class="text-h6">Tags</div>
+    <ButtonRow>
+      <q-input
+        ref="newTagRef"
+        v-model="newTag"
+        label="Add new tag"
+        :rules="[(val) => tagsValues.indexOf(val) === -1 || 'Tag already in use']"
+        clearable
+      />
+      <template #button>
         <q-btn label="Add" @click="addTag" color="primary" />
-      </q-item-section>
-    </q-item>
-    <q-item class="q-pt-none">
-      <q-item-section top>
-        <Auto-Complete label="Rename tag" v-model="existingTag" :options="tagsValues" />
-      </q-item-section>
-      <q-item-section top>
+      </template>
+    </ButtonRow>
+    <ButtonRow>
+      <div class="row">
+        <Auto-Complete
+          label="Rename tag"
+          v-model="existingTag"
+          :options="tagsValues"
+          class="col q-mr-md"
+        />
         <q-input
           v-model="changedTag"
           label="to tag"
           clearable
           :rules="[(val) => val.indexOf('/') === -1 || 'Cannot use / here']"
+          class="col"
         />
-      </q-item-section>
-      <q-item-section side>
+      </div>
+      <template #button>
         <q-btn label="Rename" @click="rename('tags', existingTag, changedTag)" color="primary" />
-      </q-item-section>
-    </q-item>
-    <q-item>
+      </template>
+    </ButtonRow>
+    <ButtonRow>
       <q-item-section> Remove unused tags</q-item-section>
-      <q-item-section side>
+      <template #button>
         <q-btn label="Remove" @click="removeTags" color="primary" />
-      </q-item-section>
-    </q-item>
-  </q-list>
+      </template>
+    </ButtonRow>
 
-  <q-scroll-area class="gt-xs" style="height: 50vh">
-    <div class="q-pa-md text-subtitle1">
-      <router-link
-        v-for="(count, value) in tagsWithCount"
-        :key="value"
-        :title="`${value}: ${count}`"
-        :to="{ path: '/list', query: { tags: value } }"
-        class="q-pr-sm link"
-        >{{ value }},</router-link
-      >
-    </div>
-  </q-scroll-area>
+    <q-scroll-area class="gt-xs" style="height: 50vh">
+      <div class="text-subtitle1">
+        <router-link
+          v-for="(count, value) in tagsWithCount"
+          :key="value"
+          :title="`${value}: ${count}`"
+          :to="{ path: '/list', query: { tags: value } }"
+          class="q-pr-sm link"
+          >{{ value }},</router-link
+        >
+      </div>
+    </q-scroll-area>
+  </div>
 </template>
 
 <script setup>
@@ -61,6 +62,7 @@ import { useValuesStore } from '../stores/values'
 import AutoComplete from '../components/Auto-Complete.vue'
 import { rename } from '../helpers/remedy'
 import notify from '../helpers/notify'
+import ButtonRow from './Button-Row.vue'
 
 const meta = useValuesStore()
 const { tagsValues, tagsWithCount } = storeToRefs(meta)
