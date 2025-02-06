@@ -16,61 +16,63 @@
     </div>
 
     <q-form @submit="onSubmit">
-      <q-file
-        name="photos"
-        v-model="files"
-        use-chips
-        multiple
-        :accept="CONFIG.fileType"
-        :max-file-size="CONFIG.fileSize"
-        :max-files="CONFIG.fileMax"
-        label="Select images to upload"
-        hint="Drag your images above to upload, or click to browse and select. Then
+      <ButtonRow wrap>
+        <q-file
+          name="photos"
+          v-model="files"
+          use-chips
+          multiple
+          :accept="CONFIG.fileType"
+          :max-file-size="CONFIG.fileSize"
+          :max-files="CONFIG.fileMax"
+          label="Select images to upload"
+          hint="Drag your images above to upload, or click to browse and select. Then
           publish image on site. Accepts maximum 10 jpg (jpeg) files less then 4
           Mb in size."
-        class="q-mb-md"
-        @rejected="onValidationError"
-      />
-      <div class="row justify-end">
-        <q-btn
-          label="Cancel all"
-          type="button"
-          color="negative"
-          style="width: 200px"
-          @click="cancelAll"
-          v-morph:cancel:buttons:500="morphModel"
+          class="q-mb-md"
+          @rejected="onValidationError"
         />
-        <q-btn
-          label="Upload"
-          type="submit"
-          icon="file_upload"
-          color="primary"
-          style="width: 200px"
-          v-morph:upload:buttons:500="morphModel"
-          :disable="files.length === 0"
-        />
-      </div>
+        <template #button>
+          <div class="row justify-end">
+            <q-btn
+              label="Cancel all"
+              type="button"
+              color="negative"
+              style="width: 200px"
+              @click="cancelAll"
+              v-morph:cancel:buttons:500="morphModel"
+            />
+            <q-btn
+              label="Upload"
+              type="submit"
+              icon="file_upload"
+              color="primary"
+              style="width: 200px"
+              v-morph:upload:buttons:500="morphModel"
+              :disable="files.length === 0"
+            />
+          </div>
+        </template>
+      </ButtonRow>
     </q-form>
 
-    <div class="row">
-      <div class="column col-12 col-sm-8">
-        <q-input
-          v-model="headlineToApply"
-          label="Headline to apply for next publish"
-          :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-          clearable
-        />
-        <Auto-Complete
-          label="Tags to apply for next publish / or to merge with existing"
-          v-model="tagsToApply"
-          :options="tagsValues"
-          canadd
-          multiple
-          hint="You can add / remove tag later"
-          @new-value="addNewTag"
-        />
-      </div>
-      <div class="column col-12 col-sm-4 items-end self-center">
+    <ButtonRow wrap>
+      <q-input
+        v-model="headlineToApply"
+        label="Headline to apply for next publish"
+        :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
+        clearable
+      />
+      <Auto-Complete
+        label="Tags to apply for next publish / or to merge with existing"
+        v-model="tagsToApply"
+        :options="tagsValues"
+        canadd
+        multiple
+        hint="You can add / remove tag later"
+        @new-value="addNewTag"
+      />
+      <template #button>
         <q-btn
           label="Publish all"
           @click="publishAll"
@@ -78,8 +80,8 @@
           :disable="uploaded.length === 0"
           style="width: 200px"
         />
-      </div>
-    </div>
+      </template>
+    </ButtonRow>
 
     <div class="q-mt-md">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
@@ -114,6 +116,7 @@ import notify from '../helpers/notify'
 import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
+import ButtonRow from 'components/Button-Row.vue'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 
