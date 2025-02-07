@@ -102,8 +102,20 @@ export const useValuesStore = defineStore('meta', {
         actions: [{ icon: 'close' }],
         group: 'build',
       })
+      const batch = writeBatch(db)
+      let querySnapshot = await getDocs(query(countersCol))
+      querySnapshot.forEach((doc) => {
+        batch.delete(doc.ref)
+      })
+      await batch.commit()
+      notify({
+        message: `Delete old counters`,
+        actions: [{ icon: 'close' }],
+        group: 'build',
+      })
+
       const q = query(photosCol, orderBy('date', 'desc'))
-      const querySnapshot = await getDocs(q)
+      querySnapshot = await getDocs(q)
       const val = { year: {}, tags: {}, model: {}, lens: {}, email: {} }
       querySnapshot.forEach((d) => {
         const obj = d.data()
@@ -140,8 +152,8 @@ export const useValuesStore = defineStore('meta', {
             },
             { merge: true },
           )
-          // renew old counters
-          this.values[field] = { ...this.values[field], ...val[field] }
+          delete this.values[field] // old counters
+          this.values[field] = { ...val[field] } // new counters
         }
         notify({
           message: `Values for ${field} updated`,
