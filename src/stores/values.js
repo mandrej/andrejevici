@@ -99,70 +99,59 @@ export const useValuesStore = defineStore('meta', {
     async countersBuild() {
       notify({
         message: `Please wait`,
-        actions: [{ icon: 'close' }],
         group: 'build',
       })
-      const batch = writeBatch(db)
-      let querySnapshot = await getDocs(query(countersCol))
-      querySnapshot.forEach((doc) => {
-        batch.delete(doc.ref)
-      })
-      await batch.commit()
+      const countersToDelete = await getDocs(query(countersCol))
+      const deleteBatch = writeBatch(db)
+      countersToDelete.docs.forEach((doc) => deleteBatch.delete(doc.ref))
+      await deleteBatch.commit()
       notify({
         message: `Delete old counters`,
-        actions: [{ icon: 'close' }],
         group: 'build',
       })
 
-      const q = query(photosCol, orderBy('date', 'desc'))
-      querySnapshot = await getDocs(q)
-      const val = { year: {}, tags: {}, model: {}, lens: {}, email: {} }
-      querySnapshot.forEach((d) => {
-        const obj = d.data()
+      const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
+      const newValues = { year: {}, tags: {}, model: {}, lens: {}, email: {} }
+      photoSnapshot.docs.forEach((doc) => {
+        const obj = doc.data()
         for (const field of CONFIG.photo_filter) {
           if (field === 'tags') {
             for (const tag of obj[field]) {
-              if (val[field][tag]) {
-                val[field][tag]++
-              } else {
-                val[field][tag] = 1
-              }
+              newValues[field][tag] = (newValues[field][tag] ?? 0) + 1
             }
           } else if (obj[field]) {
-            if (val[field][obj[field]]) {
-              val[field][obj[field]]++
-            } else {
-              val[field][obj[field]] = 1
-            }
+            newValues[field][obj[field]] = (newValues[field][obj[field]] ?? 0) + 1
           }
         }
       })
       // write to database
-      let id, counterRef
+      const setBatch = writeBatch(db)
       for (const field of CONFIG.photo_filter) {
-        for (const [key, count] of Object.entries(val[field])) {
-          id = counterId(field, key)
-          counterRef = doc(db, 'Counter', id)
-          await setDoc(
-            counterRef,
-            {
-              count: count,
-              field: field,
-              value: key,
-            },
-            { merge: true },
-          )
-          delete this.values[field] // old counters
-          this.values[field] = { ...val[field] } // new counters
+        for (const [key, count] of Object.entries(newValues[field])) {
+          const id = counterId(field, key)
+          const counterRef = doc(db, 'Counter', id)
+          setBatch.set(counterRef, {
+            count: count,
+            field: field,
+            value: key,
+          })
         }
+        // write to store
+        delete this.values[field] // delete old counter
+        this.values[field] = { ...newValues[field] } // new counter
         notify({
           message: `Values for ${field} updated`,
+          actions: [{ icon: 'close' }],
+          timeout: 0,
           group: 'build',
         })
       }
+      await setBatch.commit()
+
       notify({
         message: `All done`,
         actions: [{ icon: 'close' }],
+        timeout: 0,
         group: 'build',
       })
     },

@@ -2,7 +2,8 @@
   <Edit-Record v-if="showEdit" :rec="currentEdit" />
 
   <q-page class="q-pa-md">
-    <div class="relative-position column q-pb-md">
+    <div class="text-h6">Upload / publish images</div>
+    <div class="relative-position column">
       <div class="row absolute-top">
         <q-linear-progress
           v-for="(value, name) in progressInfo"
