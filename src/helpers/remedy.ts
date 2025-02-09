@@ -8,7 +8,9 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import { emailNick } from '.'
-import router from '../router'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 import notify from './notify'
 import type { UploadedItem } from '../components/models'
 

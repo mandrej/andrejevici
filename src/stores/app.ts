@@ -25,6 +25,16 @@ import {
 } from '../helpers'
 import notify from '../helpers/notify'
 import { useValuesStore } from './values'
+import type {
+  QuerySnapshot,
+  DocumentSnapshot,
+  DocumentData,
+  Query,
+  QueryConstraint,
+  QueryFieldFilterConstraint,
+  QueryDocumentSnapshot,
+} from '@firebase/firestore'
+import type { Find, Bucket, UploadedItem, StoredItem, LastRecord } from '../components/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')
@@ -35,27 +45,28 @@ const photosCol = collection(db, 'Photo')
  * @param {Object} snapshot - The snapshot containing the documents.
  * @return {Object|null} The data from the first document, or null if the snapshot is empty.
  */
-const getRec = (snapshot) => (snapshot.docs.length ? snapshot.docs[0]?.data() : null)
+const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
+  snapshot.docs.length ? snapshot.docs[0]?.data() : null
 
-const includeSub = (arr, target) => target.every((v) => arr.includes(v))
+const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 
 export const useAppStore = defineStore('app', {
   state: () => ({
     bucket: {
       size: 0,
       count: 0,
-    },
+    } as Bucket,
 
-    find: {},
-    uploaded: [],
-    objects: [],
-    next: null,
-    currentEdit: {},
-    lastRecord: {},
+    find: {} as Find | null,
+    uploaded: [] as UploadedItem[],
+    objects: [] as StoredItem[],
+    next: null as string | null,
+    currentEdit: {} as StoredItem,
+    lastRecord: {} as StoredItem | null,
     sinceYear: '',
 
     busy: false,
-    error: null,
+    error: null as string | null,
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
@@ -77,7 +88,7 @@ export const useAppStore = defineStore('app', {
         this.bucket = docSnap.data()
       }
     },
-    async bucketDiff(num) {
+    async bucketDiff(num: number): Promise<Bucket> {
       if (num > 0) {
         this.bucket.size += num
         this.bucket.count++
@@ -90,8 +101,9 @@ export const useAppStore = defineStore('app', {
         this.bucket.count = 0
       }
       await setDoc(bucketRef, this.bucket, { merge: true })
+      return this.bucket
     },
-    async bucketBuild() {
+    async bucketBuild(): Promise<Bucket> {
       const res = {
         count: 0,
         size: 0,
@@ -117,22 +129,24 @@ export const useAppStore = defineStore('app', {
       let serachTags = null,
         serachText = null
 
-      const filters = Object.entries(this.find).map(([key, val]) => {
-        if (key === 'tags') {
-          serachTags = val
-          max *= serachTags.length
-          return where(key, 'array-contains-any', val)
-        } else if (key === 'text') {
-          const slug = textSlug(val)
-          const arr = sliceSlug(slug)
-          serachText = arr
-          max *= arr.length
-          return where(key, 'array-contains-any', arr)
-        } else {
-          return where(key, '==', val)
-        }
-      })
-      const constraints = [...filters, orderBy('date', 'desc')]
+      const filters: QueryFieldFilterConstraint[] = Object.entries(this.find as Find).map(
+        ([key, val]) => {
+          if (key === 'tags') {
+            serachTags = val as string[]
+            max *= serachTags.length
+            return where(key, 'array-contains-any', val)
+          } else if (key === 'text') {
+            const slug = textSlug(val as string)
+            const arr = sliceSlug(slug)
+            serachText = arr
+            max *= arr.length
+            return where(key, 'array-contains-any', arr)
+          } else {
+            return where(key, '==', val)
+          }
+        },
+      )
+      const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
       if (reset) this.next = null
       if (this.next) {
         const cursor = await getDoc(doc(db, 'Photo', this.next))
@@ -143,10 +157,10 @@ export const useAppStore = defineStore('app', {
 
       this.busy = true
       try {
-        const querySnapshot = await getDocs(q)
+        const querySnapshot: QuerySnapshot = await getDocs(q)
         if (reset) this.objects.length = 0
-        querySnapshot.forEach((d) => {
-          this.objects.push(d.data())
+        querySnapshot.forEach((d: QueryDocumentSnapshot) => {
+          this.objects.push(d.data() as StoredItem)
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
         if (next && next.id) {
@@ -155,18 +169,26 @@ export const useAppStore = defineStore('app', {
           this.next = null
         }
       } catch (err) {
-        this.error = err.message
+        this.error = (err as Error).message
         this.busy = false
-        return
+        return {
+          objects: [] as StoredItem[],
+          error: (err as Error).message,
+          next: null,
+        }
       }
 
       // filter by tags
       if (serachTags) {
-        this.objects = this.objects.filter((d) => includeSub(d.tags, serachTags))
+        this.objects = this.objects.filter((d) =>
+          includeSub(d.tags as string[], serachTags as string[]),
+        )
       }
       // filter by text
       if (serachText) {
-        this.objects = this.objects.filter((d) => includeSub(d.text, serachText))
+        this.objects = this.objects.filter((d) =>
+          includeSub(d.text as string[], serachText as string[]),
+        )
       }
 
       this.error = this.objects.length === 0 ? 'empty' : null
@@ -179,7 +201,7 @@ export const useAppStore = defineStore('app', {
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
-        meta.decreaseValues(oldDoc.data())
+        meta.decreaseValues(oldDoc.data() as StoredItem)
         await setDoc(docRef, obj, { merge: true })
 
         changedByProperty(this.objects, 'filename', obj)
@@ -212,7 +234,7 @@ export const useAppStore = defineStore('app', {
       if (obj.thumb) {
         const docRef = doc(db, 'Photo', obj.filename)
         const docSnap = await getDoc(docRef)
-        const data = docSnap.data()
+        const data = docSnap.data() as StoredItem
         const stoRef = storageRef(storage, obj.filename)
         const thumbRef = storageRef(storage, thumbName(obj.filename))
         await deleteDoc(docRef)
@@ -242,13 +264,13 @@ export const useAppStore = defineStore('app', {
         })
       }
     },
-    async getLast() {
+    async getLast(): Promise<LastRecord | null> {
       let q, querySnapshot, rec
       const constraints = [orderBy('date', 'desc'), limit(1)]
       q = query(photosCol, ...constraints)
       querySnapshot = await getDocs(q)
       if (!querySnapshot.empty) {
-        rec = getRec(querySnapshot)
+        rec = getRec(querySnapshot) as LastRecord
         const obj = { year: rec.year, month: rec.month }
         rec.href = '/list?' + new URLSearchParams(obj).toString()
       } else {

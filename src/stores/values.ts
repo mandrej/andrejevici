@@ -15,18 +15,33 @@ import {
 } from 'firebase/firestore'
 import notify from '../helpers/notify'
 import { CONFIG, emailNick } from '../helpers'
+import type { DocumentReference } from 'firebase/firestore'
+import type { StoredItem } from '../components/models'
+interface ValuesState {
+  tagsToApply: string[]
+  values: {
+    year: { [key: string]: number }
+    tags: { [key: string]: number }
+    model: { [key: string]: number }
+    lens: { [key: string]: number }
+    email: { [key: string]: number }
+  }
+}
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')
 
-const counterId = (field, value) => {
+const counterId = (field: string, value: string): string => {
   return ['Photo', field, value].join('||')
 }
 
-const byCountReverse = (state, field) => {
+const byCountReverse = <T extends keyof ValuesState['values']>(
+  state: ValuesState,
+  field: T,
+): { [key: string]: number } => {
   return Object.entries(state.values[field])
     .sort(([, a], [, b]) => b - a)
-    .reduce((r, [k, v]) => ({ ...r, [k]: v }), {})
+    .reduce((r, [k, v]) => ({ ...r, [k]: v }), {}) as { [key: string]: number }
 }
 
 export const useValuesStore = defineStore('meta', {
@@ -37,123 +52,129 @@ export const useValuesStore = defineStore('meta', {
   }),
   getters: {
     // values getters
-    tagsValues: (state) => {
+    tagsValues: (state: ValuesState) => {
       return Object.keys(state.values.tags).sort()
     },
-    modelValues: (state) => {
+    modelValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'model'))
     },
-    lensValues: (state) => {
+    lensValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'lens'))
     },
-    emailValues: (state) => {
+    emailValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'email'))
     },
-    nickValues: (state) => {
-      const ret = []
+    nickValues: (state: ValuesState) => {
+      const ret: string[] = []
       const emails = byCountReverse(state, 'email')
       Object.keys(emails).forEach((key) => {
         ret.push(emailNick(key))
       })
       return ret
     },
-    yearValues: (state) => {
+    yearValues: (state: ValuesState) => {
       return Object.keys(state.values.year).reverse()
     },
     // withCount
-    yearWithCount: (state) => {
-      const ret = []
+    yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> => {
+      const ret: Array<{ value: string; count: number }> = []
       for (const year of Object.keys(state.values.year).reverse()) {
         ret.push({ value: year, count: state.values.year[year] })
       }
       return ret
     },
-    nickWithCount: (state) => {
+    nickWithCount: (state: ValuesState): { [key: string]: number } => {
       const emails = byCountReverse(state, 'email')
       return Object.keys(emails)
-        .filter((key) => emails[key] > 0)
-        .reduce((obj, key) => {
-          obj[emailNick(key)] = emails[key]
-          return obj
-        }, {})
+        .filter((key): key is string => emails[key]! > 0)
+        .reduce(
+          (obj, key): { [key: string]: number } => {
+            obj[emailNick(key)] = emails[key]!
+            return obj
+          },
+          {} as { [key: string]: number },
+        )
     },
-    tagsWithCount: (state) => {
+    tagsWithCount: (state: ValuesState): { [key: string]: number } => {
       return Object.keys(state.values.tags)
         .sort()
-        .filter((key) => state.values.tags[key] > 0)
-        .reduce((obj, key) => {
-          obj[key] = state.values.tags[key]
-          return obj
-        }, {})
+        .filter((key): key is string => state.values.tags[key]! > 0)
+        .reduce(
+          (obj, key): { [key: string]: number } => {
+            const count = state.values.tags[key]
+            if (count !== undefined) {
+              obj[key] = count
+            }
+            return obj
+          },
+          {} as { [key: string]: number },
+        )
     },
   },
   actions: {
-    async fieldCount(field) {
+    async fieldCount(field: 'year' | 'tags' | 'model' | 'lens' | 'email'): Promise<void> {
       const q = query(countersCol, where('field', '==', field))
       const querySnapshot = await getDocs(q)
       querySnapshot.forEach((d) => {
-        const obj = d.data()
+        const obj = d.data() as {
+          count: number
+          field: 'year' | 'tags' | 'model' | 'lens' | 'email'
+          value: string
+        }
         this.values[field][obj.value] = obj.count
       })
     },
-    async countersBuild() {
-      notify({
-        message: `Please wait`,
-        group: 'build',
-      })
+    async countersBuild(): Promise<void> {
+      notify({ message: `Please wait`, group: 'build' })
+
+      // Delete old counters
       const countersToDelete = await getDocs(query(countersCol))
       const deleteBatch = writeBatch(db)
-      countersToDelete.docs.forEach((doc) => deleteBatch.delete(doc.ref))
+      countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
-      notify({
-        message: `Delete old counters`,
-        group: 'build',
-      })
+      notify({ message: `Deleted old counters`, group: 'build' })
 
+      // Build new counters
       const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
-      const newValues = { year: {}, tags: {}, model: {}, lens: {}, email: {} }
-      photoSnapshot.docs.forEach((doc) => {
+      const newValues: ValuesState['values'] = {
+        year: {},
+        tags: {},
+        model: {},
+        lens: {},
+        email: {},
+      }
+
+      photoSnapshot.forEach((doc) => {
         const obj = doc.data()
-        for (const field of CONFIG.photo_filter) {
+        CONFIG.photo_filter.forEach((field) => {
           if (field === 'tags') {
-            for (const tag of obj[field]) {
+            obj[field].forEach((tag: string) => {
               newValues[field][tag] = (newValues[field][tag] ?? 0) + 1
-            }
+            })
           } else if (obj[field]) {
             newValues[field][obj[field]] = (newValues[field][obj[field]] ?? 0) + 1
           }
-        }
+        })
       })
-      // write to database
+
+      // Write new counters to database and store
       const setBatch = writeBatch(db)
-      for (const field of CONFIG.photo_filter) {
-        for (const [key, count] of Object.entries(newValues[field])) {
-          const id = counterId(field, key)
-          const counterRef = doc(db, 'Counter', id)
-          setBatch.set(counterRef, {
-            count: count,
-            field: field,
-            value: key,
-          })
-        }
-        // write to store
-        delete this.values[field] // delete old counter
-        this.values[field] = { ...newValues[field] } // new counter
+      CONFIG.photo_filter.forEach((field) => {
+        Object.entries(newValues[field]).forEach(([key, count]) => {
+          const counterRef = doc(db, 'Counter', counterId(field, key))
+          setBatch.set(counterRef, { count, field, value: key })
+        })
+        this.values[field] = { ...newValues[field] }
         notify({
           message: `Values for ${field} updated`,
           actions: [{ icon: 'close' }],
           timeout: 0,
           group: 'build',
         })
-      }
+      })
       await setBatch.commit()
 
-      notify({
-        message: `All done`,
-        actions: [{ icon: 'close' }],
-        timeout: 0,
-        group: 'build',
-      })
+      notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
     async increase(id, field, val) {
       let find = this.values[field][val]
@@ -240,7 +261,7 @@ export const useValuesStore = defineStore('meta', {
       // delete from store
       let id, counterRef
       for (const [value, count] of Object.entries(this.values.tags)) {
-        if (count <= 0) {
+        if (typeof count === 'number' && count <= 0) {
           try {
             id = counterId('tags', value)
             counterRef = doc(db, 'Counter', id)
