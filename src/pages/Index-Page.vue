@@ -11,20 +11,20 @@
   </div>
 </template>
 
-<script setup>
-import { onMounted } from "vue";
-import { isEmpty } from "lodash";
-import { useValuesStore } from "../stores/values";
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { isEmpty } from 'lodash'
+import { useValuesStore } from '../stores/values'
 
-const meta = useValuesStore();
+const meta = useValuesStore()
 
 onMounted(() => {
   if (isEmpty(meta.values.email)) {
-    meta.fieldCount("email");
-    meta.fieldCount("year");
-    meta.fieldCount("tags");
-    meta.fieldCount("model");
-    meta.fieldCount("lens");
+    meta.fieldCount('email')
+    meta.fieldCount('year')
+    meta.fieldCount('tags')
+    meta.fieldCount('model')
+    meta.fieldCount('lens')
   }
-});
+})
 </script>

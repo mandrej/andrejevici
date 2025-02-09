@@ -103,7 +103,7 @@
   </q-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import uuid4 from 'uuid4'
 import { defineAsyncComponent, reactive, ref } from 'vue'
 import { storage } from '../boot/fire'

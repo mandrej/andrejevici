@@ -8,6 +8,9 @@ import {
 } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import routes from './routes'
+import type { RouteLocationNormalized } from 'vue-router'
+import type { userType } from '../components/models'
+import CONFIG from 'app/config'
 
 /*
  * If not building with SSR mode, you can
@@ -32,9 +35,9 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     routes,
   })
 
-  router.beforeEach((to) => {
+  router.beforeEach((to: RouteLocationNormalized) => {
     const auth = useUserStore()
-    const user = auth.user || null
+    const user = (auth.user as userType) || null
 
     if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
       return { name: '401', replace: true }
@@ -43,10 +46,10 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     }
   })
 
-  router.afterEach((to) => {
+  router.afterEach((to: RouteLocationNormalized) => {
     // Use next tick to handle router history correctly
     nextTick(() => {
-      document.title = to.meta.title
+      document.title = (to.meta.title as string) || CONFIG.title
     })
   })
 

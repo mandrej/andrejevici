@@ -61,7 +61,7 @@
   </q-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { scroll, debounce, throttle } from 'quasar'
 import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'

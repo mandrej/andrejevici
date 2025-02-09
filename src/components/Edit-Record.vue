@@ -166,7 +166,7 @@
   </q-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive } from 'vue'
 import { CONFIG, fileBroken, formatBytes, U, emailNick, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'

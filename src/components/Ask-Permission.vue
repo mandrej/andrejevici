@@ -15,7 +15,7 @@
   </q-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { CONFIG } from '../helpers'
 import notify from '../helpers/notify'

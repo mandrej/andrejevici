@@ -4,25 +4,23 @@
       <div class="text-h3">{{ props.code }}</div>
       {{ text }}
       <template v-slot:action>
-        <q-btn class="full-width" flat color="white" size="lg" to="/"
-          >Go Home</q-btn
-        >
+        <q-btn class="full-width" flat color="white" size="lg" to="/">Go Home</q-btn>
       </template>
     </q-banner>
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { ref } from 'vue'
 const props = defineProps({
   code: {
     type: Number,
     default: 404,
   },
-});
+})
 const errors = {
-  404: "Oops. Nothing here...",
-  401: "Insufficient credentials...",
-};
-const text = ref(errors[props.code]);
+  404: 'Oops. Nothing here...',
+  401: 'Insufficient credentials...',
+}
+const text = ref(errors[props.code])
 </script>

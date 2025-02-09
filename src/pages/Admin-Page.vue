@@ -56,7 +56,7 @@
   </q-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'

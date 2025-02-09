@@ -70,7 +70,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { rename } from '../helpers/remedy'
 import { storeToRefs } from 'pinia'

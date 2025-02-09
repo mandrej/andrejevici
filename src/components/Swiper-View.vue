@@ -61,12 +61,12 @@
   </q-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useQuasar, copyToClipboard } from 'quasar'
 import { storeToRefs } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import { useAppStore } from '../stores/app'
-import { useUserStore } from 'stores/user'
+import { useUserStore } from 'src/stores/user'
 import { useRoute } from 'vue-router'
 import { fileBroken, U } from '../helpers'
 import { register } from 'swiper/element/bundle'

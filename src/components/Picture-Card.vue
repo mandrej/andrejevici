@@ -71,7 +71,7 @@
   </q-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'stores/app'

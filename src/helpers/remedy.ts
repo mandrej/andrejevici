@@ -2,7 +2,7 @@ import { db, storage } from '../boot/fire'
 import { doc, collection, query, orderBy, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { has } from 'lodash'
-import { textSlug, sliceSlug } from '../helpers'
+import { textSlug, sliceSlug } from '.'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
@@ -10,6 +10,7 @@ import { useUserStore } from '../stores/user'
 import { emailNick } from '.'
 import router from '../router'
 import notify from './notify'
+import type { UploadedItem } from '../components/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -106,7 +107,7 @@ export const mismatch = async () => {
     if (promises.length > 0) {
       Promise.all(promises).then((results) => {
         results.forEach((it) => {
-          uploaded.values.push(it)
+          uploaded.value.push(it)
         })
       })
       notify({
