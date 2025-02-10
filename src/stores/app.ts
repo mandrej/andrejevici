@@ -119,75 +119,61 @@ export const useAppStore = defineStore('app', {
       this.bucket = { ...res }
       await setDoc(bucketRef, this.bucket, { merge: true })
       notify({ message: `Bucket size calculated` })
+      return this.bucket
     },
     async fetchRecords(reset = false, invoked = '') {
       if (this.busy) {
         if (process.env.DEV) console.log('SKIPPED FOR ' + invoked)
         return
       }
-      let max = CONFIG.limit
-      let serachTags = null,
-        serachText = null
 
-      const filters: QueryFieldFilterConstraint[] = Object.entries(this.find as Find).map(
+      const max =
+        CONFIG.limit *
+        (this.find?.tags?.length || 1) *
+        (this.find?.text ? sliceSlug(textSlug(this.find.text)).length : 1)
+      const filters: QueryFieldFilterConstraint[] = Object.entries(this.find || {}).map(
         ([key, val]) => {
           if (key === 'tags') {
-            serachTags = val as string[]
-            max *= serachTags.length
             return where(key, 'array-contains-any', val)
           } else if (key === 'text') {
-            const slug = textSlug(val as string)
-            const arr = sliceSlug(slug)
-            serachText = arr
-            max *= arr.length
-            return where(key, 'array-contains-any', arr)
+            return where(key, 'array-contains-any', sliceSlug(textSlug(val as string)))
           } else {
             return where(key, '==', val)
           }
         },
       )
+
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
       if (reset) this.next = null
       if (this.next) {
-        const cursor = await getDoc(doc(db, 'Photo', this.next))
+        const cursor: DocumentSnapshot = await getDoc(doc(db, 'Photo', this.next))
         constraints.push(startAfter(cursor))
       }
       constraints.push(limit(max))
-      const q = query(photosCol, ...constraints)
 
       this.busy = true
       try {
-        const querySnapshot: QuerySnapshot = await getDocs(q)
+        const querySnapshot: QuerySnapshot = await getDocs(query(photosCol, ...constraints))
         if (reset) this.objects.length = 0
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
           this.objects.push(d.data() as StoredItem)
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
-        if (next && next.id) {
-          next.id === this.next ? (this.next = null) : (this.next = next.id)
-        } else {
-          this.next = null
-        }
+        this.next = next && next.id !== this.next ? next.id : null
       } catch (err) {
         this.error = (err as Error).message
         this.busy = false
-        return {
-          objects: [] as StoredItem[],
-          error: (err as Error).message,
-          next: null,
-        }
+        return { objects: [] as StoredItem[], error: (err as Error).message, next: null }
       }
 
-      // filter by tags
-      if (serachTags) {
+      if (this.find?.tags) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.tags as string[], serachTags as string[]),
+          includeSub(d.tags as string[], this.find.tags as string[]),
         )
       }
-      // filter by text
-      if (serachText) {
+      if (this.find?.text) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.text as string[], serachText as string[]),
+          includeSub(d.text as string[], sliceSlug(textSlug(this.find.text))),
         )
       }
 

@@ -177,30 +177,21 @@ export const useValuesStore = defineStore('meta', {
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
     async increase(id, field, val) {
-      let find = this.values[field][val]
-      if (find) {
-        find++
-      } else {
-        this.values[field][val] = 1
-      }
+      const find = this.values[field][val] ?? 0
+      this.values[field][val] = find + 1
 
       const counterRef = doc(db, 'Counter', id)
       const oldDoc = await getDoc(counterRef)
       if (oldDoc.exists()) {
-        const old = oldDoc.data()
         await updateDoc(counterRef, {
-          count: old.count + 1,
+          count: oldDoc.data().count + 1,
         })
       } else {
-        await setDoc(
-          counterRef,
-          {
-            count: 1,
-            field: field,
-            value: val,
-          },
-          { merge: true },
-        )
+        await setDoc(counterRef, {
+          count: 1,
+          field,
+          value: val,
+        })
       }
       if (process.env.DEV) console.log('increase ' + id, this.values[field][val])
     },
@@ -220,10 +211,10 @@ export const useValuesStore = defineStore('meta', {
       }
     },
     async decrease(id, field, val) {
-      let find = this.values[field][val]
-      if (find) {
-        find--
-        if (find <= 0) {
+      const find = this.values[field][val]
+      if (find !== undefined) {
+        this.values[field][val] = find - 1
+        if (this.values[field][val] <= 0) {
           delete this.values[field][val]
         }
       }

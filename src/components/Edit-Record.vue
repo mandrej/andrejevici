@@ -204,7 +204,7 @@ const getExif = async () => {
     tags.push('flash')
   }
   tmp.tags = tags
-  tmp.email = user.email
+  // TODO check tmp.email
 }
 const isValidEmail = (val) => {
   const emailPattern =
