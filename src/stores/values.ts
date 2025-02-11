@@ -195,7 +195,7 @@ export const useValuesStore = defineStore('meta', {
       }
       if (process.env.DEV) console.log('increase ' + id, this.values[field][val])
     },
-    async increaseValues(newData) {
+    async increaseValues(newData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
         if (newData[field] && newData.date) {
           if (field === 'tags') {
@@ -233,7 +233,7 @@ export const useValuesStore = defineStore('meta', {
         if (process.env.DEV) console.log('decrease ' + id, this.values[field][val])
       }
     },
-    async decreaseValues(oldData) {
+    async decreaseValues(oldData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
         if (oldData[field]) {
           if (field === 'tags') {
@@ -250,7 +250,7 @@ export const useValuesStore = defineStore('meta', {
     },
     async removeUnusedTags() {
       // delete from store
-      let id, counterRef
+      let id, counterRef: DocumentReference
       for (const [value, count] of Object.entries(this.values.tags)) {
         if (typeof count === 'number' && count <= 0) {
           try {

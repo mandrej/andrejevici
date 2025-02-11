@@ -1,5 +1,4 @@
 import exifReader from 'exifreader'
-import { has } from 'lodash'
 import { formatDatum } from './index'
 import type { ExifResult } from '../components/models'
 
@@ -27,7 +26,7 @@ const readExif = async (url: string): Promise<ExifResult | null> => {
 
   const exif = tags.exif
 
-  if (exif && has(exif, 'Make') && has(exif, 'Model')) {
+  if (exif && 'Make' in exif && 'Model' in exif) {
     const make = exif.Make.description.replace('/', '')
     const model = exif.Model.description.replace('/', '')
     const makeArr = make.split(' ')
@@ -35,12 +34,12 @@ const readExif = async (url: string): Promise<ExifResult | null> => {
     result.model = makeArr.some((it) => modelArr.includes(it)) ? model : `${make} ${model}`
   }
 
-  if (exif && has(exif, 'LensModel')) {
+  if (exif && 'LensModel' in exif) {
     const lens = exif.LensModel.description.replace('/', '')
     result.lens = LENSES[lens] || lens
   }
 
-  if (exif && has(exif, 'DateTimeOriginal')) {
+  if (exif && 'DateTimeOriginal' in exif) {
     const rex = /(\d{4}):(\d{2}):(\d{2})/i
     const date = exif.DateTimeOriginal.description.replace(rex, '$1-$2-$3')
     if (process.env.DEV) console.log('EXIF DATE ' + date)
@@ -51,21 +50,20 @@ const readExif = async (url: string): Promise<ExifResult | null> => {
     result.day = datum.getDate()
   }
 
-  if (exif && has(exif, 'ApertureValue'))
-    result.aperture = parseFloat(exif.ApertureValue.description)
-  if (exif && has(exif, 'ExposureTime')) {
+  if (exif && 'ApertureValue' in exif) result.aperture = parseFloat(exif.ApertureValue.description)
+  if (exif && 'ExposureTime' in exif) {
     const shutter = exif.ExposureTime.value[0] / exif.ExposureTime.value[1]
     result.shutter = shutter <= 0.1 ? `1/${Math.round(1 / shutter)}` : `${shutter}`
   }
-  if (exif && has(exif, 'FocalLength')) result.focal_length = parseInt(exif.FocalLength.description)
-  if (exif && has(exif, 'ISOSpeedRatings')) result.iso = parseInt(exif.ISOSpeedRatings.description)
-  if (exif && has(exif, 'Flash')) result.flash = !exif.Flash.description.startsWith('Flash did not')
+  if (exif && 'FocalLength' in exif) result.focal_length = parseInt(exif.FocalLength.description)
+  if (exif && 'ISOSpeedRatings' in exif) result.iso = parseInt(exif.ISOSpeedRatings.description)
+  if (exif && 'Flash' in exif) result.flash = !exif.Flash.description.startsWith('Flash did not')
 
-  if (tags.file && has(tags.file, 'Image Height') && has(tags.file, 'Image Width')) {
+  if (tags.file && 'Image Height' in tags.file && 'Image Width' in tags.file) {
     result.dim = [tags.file['Image Width'].value, tags.file['Image Height'].value]
   }
 
-  if (tags.gps && has(tags.gps, 'Latitude') && has(tags.gps, 'Longitude')) {
+  if (tags.gps && 'Latitude' in tags.gps && 'Longitude' in tags.gps) {
     result.loc = `${tags.gps.Latitude.toFixed(6)}, ${tags.gps.Longitude.toFixed(6)}`
   }
   return result

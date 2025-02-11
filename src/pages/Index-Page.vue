@@ -13,13 +13,12 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { isEmpty } from 'lodash'
 import { useValuesStore } from '../stores/values'
 
 const meta = useValuesStore()
 
 onMounted(() => {
-  if (isEmpty(meta.values.email)) {
+  if (Object.keys(meta.values.email).length === 0) {
     meta.fieldCount('email')
     meta.fieldCount('year')
     meta.fieldCount('tags')

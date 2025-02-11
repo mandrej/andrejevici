@@ -29,7 +29,6 @@ import type {
   QuerySnapshot,
   DocumentSnapshot,
   DocumentData,
-  Query,
   QueryConstraint,
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,

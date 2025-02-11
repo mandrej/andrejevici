@@ -1,6 +1,7 @@
 import { CONFIG } from '../helpers'
+import type { RouteRecordRaw } from 'vue-router'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('../layouts/Plain.vue'),

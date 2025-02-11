@@ -12,7 +12,6 @@ import {
   query,
   where,
   writeBatch,
-  deleteField,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { useRouter } from 'vue-router'
@@ -93,7 +92,7 @@ export const useUserStore = defineStore('auth', {
         })
       } else {
         return signInWithPopup(getAuth(), provider)
-          .then((result) => {
+          .then((result: UserCredential) => {
             if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
           })
           .catch((err: AuthError) => {

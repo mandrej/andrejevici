@@ -1,7 +1,7 @@
 <template>
   <router-view />
 </template>
-<script setup lang="ts">
+<script lang="ts" setup>
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
@@ -15,8 +15,15 @@ const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 
+interface Message {
+  data: {
+    body: string
+  }
+  messageId: string
+}
+
 messageListener()
-  .then((payload) => {
+  .then((payload: Message) => {
     console.log(payload)
     const params = {
       type: 'external',

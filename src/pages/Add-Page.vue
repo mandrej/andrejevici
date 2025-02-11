@@ -118,6 +118,8 @@ import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
 import ButtonRow from 'components/Button-Row.vue'
+import type { StoredItem } from 'src/components/models'
+import type { UploadTaskSnapshot } from 'firebase/storage'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 
@@ -128,58 +130,66 @@ const { showEdit, currentEdit, uploaded } = storeToRefs(app)
 const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 
-let files = ref([])
-let progressInfo = reactive({})
-let task = {}
+interface Info {
+  [key: string]: number
+}
+interface Task {
+  [key: string]: ReturnType<typeof uploadBytesResumable>
+}
+interface ValidationErrors {
+  file: File
+  failedPropValidation: string
+}
+
+const files = ref([])
+const progressInfo: Info = reactive({})
+const task: Task = {}
 const morphModel = ref('upload')
 
-const alter = (filename) => {
-  const id = uuid4()
-  const [, name, ext] = filename.match(reFilename)
+const alter = (filename: string): string => {
+  const id: string = uuid4()
+  const [, name, ext] = filename.match(reFilename) as RegExpMatchArray
   return name + '_' + id.substring(id.length - 12) + ext
 }
 
-const checkExists = (originalFilename) => {
+const checkExists = async (originalFilename: string): Promise<string> => {
   const reClean = new RegExp(/[.\s\\){}[\]]+/g)
-  const [, name, ext] = originalFilename.match(reFilename)
+  const [, name, ext] = originalFilename.match(reFilename) as RegExpMatchArray
   let filename = name.replace(/[(]+/g, '_').replace(reClean, '') + ext
 
-  return new Promise((resolve, reject) => {
-    getDownloadURL(storageRef(storage, filename))
-      .then(() => {
-        // exist rename
-        filename = alter(filename)
-        resolve(filename)
+  try {
+    await getDownloadURL(storageRef(storage, filename))
+    // exist rename
+    filename = alter(filename)
+  } catch (error) {
+    if ((error as { code: string }).code === 'storage/object-not-found') {
+      // does not exist
+    } else {
+      notify({
+        type: 'external',
+        html: true,
+        message: `${originalFilename}<br/>${error}`,
+        actions: [{ icon: 'close' }],
+        timeout: 0,
       })
-      .catch((error) => {
-        if (error.code === 'storage/object-not-found') {
-          // does not exist
-          resolve(filename)
-        } else {
-          notify({
-            type: 'external',
-            html: true,
-            message: `${originalFilename}<br/>${error}`,
-            actions: [{ icon: 'close' }],
-            timeout: 0,
-          })
-          reject(filename)
-        }
-      })
-  })
+      throw error
+    }
+  }
+  return filename
 }
 
-const cancelAll = () => {
-  Object.keys(progressInfo).forEach((it) => {
-    task[it].cancel()
+const cancelAll = (): void => {
+  Object.keys(progressInfo).forEach((key: string) => {
+    task[key].cancel()
   })
   morphModel.value = 'upload'
 }
-const onSubmit = async (evt) => {
-  const promises = []
-  const formData = new FormData(evt.target)
+const onSubmit = async (evt: Event): Promise<void> => {
+  const promises: Promise<unknown>[] = []
+  const formData = new FormData(evt.target as HTMLFormElement)
 
-  for (const [, file] of formData.entries()) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for (const [name, file] of formData.entries()) {
     // name = 'photos'
     if (file instanceof File) {
       promises.push(uploadTask(file))
@@ -204,8 +214,8 @@ const onSubmit = async (evt) => {
         type: 'positive',
         message: `Uploaded ${it.value}.`,
       })
-      delete task[it.value]
-      delete progressInfo[it.value]
+      delete task[it.value as string]
+      delete progressInfo[it.value as string]
     }
   })
   morphModel.value = 'upload'
@@ -216,7 +226,7 @@ const onSubmit = async (evt) => {
  *
  * @param {File} file - The file to be uploaded.
  */
-const uploadTask = (file) => {
+const uploadTask = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     checkExists(file.name).then((filename) => {
       progressInfo[file.name] = 0
@@ -227,7 +237,7 @@ const uploadTask = (file) => {
       })
       task[file.name].on(
         'state_changed',
-        (snapshot) => {
+        (snapshot: UploadTaskSnapshot) => {
           progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
         },
         () => {
@@ -255,7 +265,7 @@ const uploadTask = (file) => {
   })
 }
 
-const onValidationError = (rejectedEntries) => {
+const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   rejectedEntries.forEach((it) => {
     notify({
       type: 'warning',
@@ -266,12 +276,12 @@ const onValidationError = (rejectedEntries) => {
   })
 }
 
-const addNewTag = (inputValue, done) => {
+const addNewTag = (inputValue: string, done: (result: string) => void): void => {
   meta.addNewField(inputValue, 'tags')
   done(inputValue)
 }
 
-const addProperies = async (rec) => {
+const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
@@ -289,8 +299,8 @@ const addProperies = async (rec) => {
  * Add user email and tags: [] to new rec; read exif
  * See Edit-Record getExif
  */
-const editRecord = async (rec) => {
-  const newRec = await addProperies(rec)
+const editRecord = async (rec: StoredItem) => {
+  const newRec: StoredItem = await addProperies(rec)
   fakeHistory()
   showEdit.value = true
   currentEdit.value = newRec
@@ -302,8 +312,8 @@ const editRecord = async (rec) => {
  * See Edit-Record getExif
  */
 const publishAll = async () => {
-  for (let rec of uploaded.value) {
-    const newRec = await addProperies(rec)
+  for (const rec of uploaded.value) {
+    const newRec: StoredItem = await addProperies(rec)
     app.saveRecord(newRec)
     currentEdit.value = newRec
     uploaded.value = uploaded.value.filter((item) => item.filename !== rec.filename)

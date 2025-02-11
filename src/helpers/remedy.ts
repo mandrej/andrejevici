@@ -1,7 +1,6 @@
 import { db, storage } from '../boot/fire'
 import { doc, collection, query, orderBy, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import { has } from 'lodash'
 import { textSlug, sliceSlug } from '.'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -28,7 +27,7 @@ export const fix = async () => {
 
   querySnapshot.forEach(async (it) => {
     const rec = it.data()
-    if (!has(rec, 'text')) {
+    if (!('text' in rec)) {
       const docRef = doc(db, 'Photo', rec.filename)
       const slug = textSlug(rec.headline)
       rec.text = sliceSlug(slug)
