@@ -21,6 +21,9 @@ const { find } = storeToRefs(app)
 
 const previousCollection = () => {
   app.fetchRecords(true, 'refresh')
-  router.push({ path: '/list', query: find.value })
+  router.push({
+    path: '/list',
+    query: find.value as Record<string, string | number | string[]>,
+  })
 }
 </script>

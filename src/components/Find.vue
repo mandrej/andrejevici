@@ -97,6 +97,8 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
+import type { Ref } from 'vue'
+import type { Find } from './models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -104,23 +106,23 @@ const route = useRoute()
 const router = useRouter()
 const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
-const tmp = ref({ ...find.value })
+const tmp = ref({ ...(find.value as Find) })
 
-const queryDispatch = (query, invoked = '') => {
+const queryDispatch = (query: Find, invoked = '') => {
   tmp.value = { ...query }
   // delete keys without values
   Object.keys(query).forEach((key) => {
-    if (tmp.value[key] == null) {
-      delete tmp.value[key]
+    if (tmp.value[key as keyof Find] == null) {
+      delete tmp.value[key as keyof Find]
     }
   })
   // adopt to match types
   Object.keys(tmp.value).forEach((key) => {
     if (['year', 'month', 'day'].includes(key)) {
-      tmp.value[key] = +query[key]
+      tmp.value[key as 'year' | 'month' | 'day'] = +(query[key as keyof Find] as number)
     } else if (key === 'tags') {
-      if (typeof tmp.value[key] === 'string') {
-        tmp.value[key] = [query[key]]
+      if (typeof query[key as keyof Find] === 'string') {
+        tmp.value[key as 'tags'] = [query[key as keyof Find] as string]
       }
     }
   })
@@ -129,7 +131,11 @@ const queryDispatch = (query, invoked = '') => {
   app.fetchRecords(true, invoked) // new filter with reset
   // this dispatch route change
   if (Object.keys(tmp.value).length) {
-    router.push({ path: '/list', query: tmp.value, hash: route.hash })
+    router.push({
+      path: '/list',
+      query: tmp.value as Record<string, string | number | string[]>,
+      hash: route.hash,
+    })
   } else {
     router.push({ path: '/' })
   }

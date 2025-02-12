@@ -43,9 +43,9 @@
             },
           }"
           class="text-black undreline"
-          >{{ formatDatum(rec.date, 'DD.MM.YYYY') }}</router-link
+          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY') : '' }}</router-link
         >
-        {{ rec.date.substring(11) }}
+        {{ rec.date ? rec.date.substring(11) : '' }}
       </span>
       <q-icon
         v-if="rec.loc"
@@ -75,7 +75,13 @@
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'stores/app'
+import type { StoredItem } from './models'
 
+defineProps<{
+  rec: StoredItem
+  canManage: boolean
+  canMergeTags?: boolean
+}>()
 const emit = defineEmits([
   'carousel-show',
   'confirm-delete',
@@ -83,22 +89,25 @@ const emit = defineEmits([
   'merge-tags',
   'delete-record',
 ])
-defineProps({
-  rec: Object,
-  canManage: Boolean,
-  canMergeTags: Boolean,
-})
 
 const app = useAppStore()
 const { editMode } = storeToRefs(app)
 
-const cardAttributes = (filename) => {
+const cardAttributes = (filename: string) => {
   let attr
   try {
-    const [, name, ext] = filename.match(reFilename)
-    attr = {
-      id: U + name,
-      class: ext.substring(1) + ' bg-grey-3',
+    const match = filename.match(reFilename)
+    if (match) {
+      const [, name, ext] = match
+      attr = {
+        id: U + name,
+        class: ext!.substring(1) + ' bg-grey-3',
+      }
+    } else {
+      attr = {
+        id: U + 'x',
+        class: 'jpg bg-grey-3',
+      }
     }
   } catch {
     attr = {
@@ -109,7 +118,7 @@ const cardAttributes = (filename) => {
   return attr
 }
 
-const thumbStyle = (rec) => {
+const thumbStyle = (rec: StoredItem) => {
   const common = {
     height: '240px',
     backgroundSize: 'cover',
@@ -123,7 +132,7 @@ const thumbStyle = (rec) => {
   }
 }
 
-const openMaps = (loc) => {
+const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
 }

@@ -72,13 +72,15 @@ import { fileBroken, U } from '../helpers'
 import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
 import notify from '../helpers/notify'
+import type { Swiper } from 'swiper/types'
+import type { StoredItem } from './models'
 
 import 'swiper/scss'
 import 'swiper/scss/zoom'
 
-const props = defineProps({
-  index: Number,
-})
+const props = defineProps<{
+  index: number
+}>()
 const emit = defineEmits(['confirm-delete', 'carousel-cancel'])
 
 const $q = useQuasar()
@@ -87,48 +89,54 @@ const auth = useUserStore()
 const route = useRoute()
 const { objects, showCarousel } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const hash = ref(null)
+const hash = ref<string | null>(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
 const full = ref(false)
 
 register()
-let swiper = null
+let swiper: Swiper | null = null
 
-const onSwiper = (e) => {
-  swiper = e.detail[0] // instance
-  Object.assign(swiper, { modules: [Keyboard, Zoom] })
-  swiper.slideTo(props.index, 0)
-  onSlideChange()
+const onSwiper = (e: { detail: Swiper[] }): void => {
+  swiper = e.detail[0] ?? null // instance
+  if (swiper) {
+    Object.assign(swiper, { modules: [Keyboard, Zoom] })
+    swiper.slideTo(props.index, 0)
+    onSlideChange()
+  }
 }
 const onSlideChange = () => {
   let url = route.fullPath
-  const slide = swiper.slides[swiper.activeIndex]
+  const slide = swiper!.slides[swiper!.activeIndex]
   if (slide) {
-    hash.value = slide.dataset.hash
+    hash.value = slide.dataset.hash || null
     const sufix = '#' + hash.value
     if (urlHash.test(url)) {
       url = url.replace(urlHash, sufix)
     } else {
       url += sufix
     }
-    window.history.replaceState(history.state, null, url)
+    window.history.replaceState(history.state, '', url)
   }
 }
 
-const onLoad = (e) => {
+const onLoad = (e: Event): void => {
+  const target = e.target as HTMLImageElement
   // calculate image dimension
-  const dim1 = [e.target.width, e.target.height]
-  const dim0 = [e.target.naturalWidth, e.target.naturalHeight]
+  const dim1: [number, number] = [target.width, target.height]
+  const dim0: [number, number] = [target.naturalWidth, target.naturalHeight]
   const wRatio = dim0[0] / dim1[0]
   const hRatio = dim0[1] / dim1[1]
 
-  const container = e.target.closest('.swiper-zoom-container')
-  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1)
+  const container = target.closest('.swiper-zoom-container') as HTMLElement
+  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1).toString()
 }
-const onError = (e) => {
-  e.target.src = fileBroken
+const onError = (e: Event) => {
+  const target = e.target as HTMLImageElement | null
+  if (target) {
+    target.src = fileBroken
+  }
 }
-const caption = (rec) => {
+const caption = (rec: StoredItem) => {
   let tmp = ''
   const { headline, aperture, shutter, iso, model, lens } = rec
   tmp += headline + '<br/>'
@@ -142,7 +150,7 @@ const caption = (rec) => {
   return tmp
 }
 
-const onShare = (filename) => {
+const onShare = (filename: string) => {
   const url = window.location.href + '#' + U + filename
   copyToClipboard(url)
     .then(() => {
@@ -157,7 +165,7 @@ window.onpopstate = function () {
   showCarousel.value = false
   emit('carousel-cancel', hash.value)
 }
-const onCancel = (hsh) => {
+const onCancel = (hsh: string) => {
   showCarousel.value = false
   if (!hash.value) hash.value = hsh
   emit('carousel-cancel', hash.value)

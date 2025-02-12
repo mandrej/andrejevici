@@ -63,12 +63,13 @@ import AutoComplete from '../components/Auto-Complete.vue'
 import { rename } from '../helpers/remedy'
 import notify from '../helpers/notify'
 import ButtonRow from './Button-Row.vue'
+import type { QInput } from 'quasar'
 
 const meta = useValuesStore()
 const { tagsValues, tagsWithCount } = storeToRefs(meta)
 
 const values = computed(() => meta.values)
-const newTagRef = ref(null),
+const newTagRef = ref<InstanceType<typeof QInput> | null>(null),
   newTag = ref(''),
   existingTag = ref(''),
   changedTag = ref('')
@@ -78,7 +79,9 @@ const addTag = () => {
     values.value.tags[newTag.value] = 0
     newTag.value = ''
   }
-  newTagRef.value.resetValidation()
+  if (newTagRef.value) {
+    newTagRef.value.resetValidation()
+  }
 }
 const removeTags = () => {
   meta.removeUnusedTags()
