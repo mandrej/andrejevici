@@ -11,7 +11,7 @@
         <div>
           <q-btn color="primary" type="submit" label="Save" @click="onSubmit" />
           <q-btn
-            v-if="user.isAdmin"
+            v-if="user!.isAdmin"
             class="q-ml-sm gt-sm"
             flat
             label="Read Exif"
@@ -57,7 +57,10 @@
                 :options="emailValues"
                 canadd
                 hint="Existing member can add freind's photo and email"
-                :rules="[(val) => !!val || 'Email is missing', (val) => isValidEmail(val)]"
+                :rules="[
+                  (val: string) => !!val || 'Email is missing',
+                  (val: string) => isValidEmail(val),
+                ]"
                 @new-value="addNewEmail"
               />
               <q-input v-model="tmp.date" label="Date taken">
@@ -106,14 +109,14 @@
                   name="content_copy"
                   size="24px"
                   color="grey"
-                  @click.stop.prevent="copyTags(tmp.tags)"
+                  @click.stop.prevent="copyTags(tmp.tags || [])"
                 />
                 <q-icon
                   class="q-pl-sm q-pb-md cursor-pointer"
                   name="content_paste"
                   size="24px"
                   color="grey"
-                  @click.stop.prevent="mergeTags(tmp.tags)"
+                  @click.stop.prevent="mergeTags(tmp.tags || [])"
                 />
               </div>
             </div>
@@ -175,6 +178,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import AutoComplete from './Auto-Complete.vue'
+import type { StoredItem } from './models'
 
 const emit = defineEmits(['edit-ok'])
 const props = defineProps({
@@ -184,7 +188,7 @@ const props = defineProps({
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
-const tmp = reactive({ ...props.rec })
+const tmp = reactive({ ...props.rec }) as StoredItem
 const { showEdit, find } = storeToRefs(app)
 const { emailValues, tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
@@ -195,43 +199,43 @@ const getExif = async () => {
    * See Add edit
    */
   const exif = await readExif(tmp.url)
-  const tags = tmp.tags || []
-  Object.keys(exif).forEach((k) => {
-    tmp[k] = exif[k]
-  })
-  // add flash tag if exif flash true
-  if (tmp.flash && tags.indexOf('flash') === -1) {
-    tags.push('flash')
+  if (exif) {
+    const tags = tmp.tags || []
+    Object.assign(tmp, exif)
+    // add flash tag if exif flash true
+    if (tmp.flash && tags.indexOf('flash') === -1) {
+      tags.push('flash')
+    }
+    tmp.tags = tags
   }
-  tmp.tags = tags
 }
-const isValidEmail = (val) => {
+const isValidEmail = (val: string) => {
   const emailPattern =
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
   return emailPattern.test(val) || 'Invalid email'
 }
 
 // new values
-const addNewEmail = (inputValue, done) => {
+const addNewEmail = (inputValue: string, done: (value: string) => void) => {
   meta.addNewField(inputValue, 'email')
   done(inputValue)
 }
-const addNewTag = (inputValue, done) => {
+const addNewTag = (inputValue: string, done: (value: string) => void) => {
   meta.addNewField(inputValue, 'tags')
   done(inputValue)
 }
-const addNewModel = (inputValue, done) => {
+const addNewModel = (inputValue: string, done: (value: string) => void) => {
   meta.addNewField(inputValue, 'model')
   done(inputValue)
 }
-const addNewLens = (inputValue, done) => {
+const addNewLens = (inputValue: string, done: (value: string) => void) => {
   meta.addNewField(inputValue, 'lens')
   done(inputValue)
 }
-const copyTags = (source) => {
+const copyTags = (source: string[]) => {
   tagsToApply.value = source
 }
-const mergeTags = (source) => {
+const mergeTags = (source: string[]) => {
   if (Array.isArray(source)) {
     tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort()
   } else {
@@ -246,7 +250,7 @@ const onCancel = () => {
   showEdit.value = false
 }
 const onSubmit = () => {
-  const datum = new Date(Date.parse(tmp.date))
+  const datum = new Date(Date.parse(tmp.date || ''))
   tmp.year = datum.getFullYear()
   tmp.month = datum.getMonth() + 1
   tmp.day = datum.getDate()

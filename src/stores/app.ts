@@ -84,7 +84,9 @@ export const useAppStore = defineStore('app', {
     async bucketRead() {
       const docSnap = await getDoc(bucketRef)
       if (docSnap.exists()) {
-        this.bucket = docSnap.data()
+        this.bucket = docSnap.data() as Bucket
+      } else {
+        console.error('Failed to read bucket data')
       }
     },
     async bucketDiff(num: number): Promise<Bucket> {
@@ -167,12 +169,12 @@ export const useAppStore = defineStore('app', {
 
       if (this.find?.tags) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.tags as string[], this.find.tags as string[]),
+          includeSub(d.tags as string[], this.find?.tags as string[]),
         )
       }
       if (this.find?.text) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.text as string[], sliceSlug(textSlug(this.find.text))),
+          includeSub(d.text as string[], sliceSlug(textSlug(this.find?.text))),
         )
       }
 
@@ -181,7 +183,7 @@ export const useAppStore = defineStore('app', {
       if (process.env.DEV)
         console.log('FETCHED FOR ' + invoked + ' ' + JSON.stringify(this.find, null, 2))
     },
-    async saveRecord(obj) {
+    async saveRecord(obj: StoredItem) {
       const docRef = doc(db, 'Photo', obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
@@ -211,7 +213,7 @@ export const useAppStore = defineStore('app', {
         meta.increaseValues(obj)
       }
     },
-    async deleteRecord(obj) {
+    async deleteRecord(obj: StoredItem) {
       notify({
         group: `${obj.filename}`,
         message: `Please wait`,
@@ -250,34 +252,23 @@ export const useAppStore = defineStore('app', {
       }
     },
     async getLast(): Promise<LastRecord | null> {
-      let q, querySnapshot, rec
-      const constraints = [orderBy('date', 'desc'), limit(1)]
-      q = query(photosCol, ...constraints)
-      querySnapshot = await getDocs(q)
-      if (!querySnapshot.empty) {
-        rec = getRec(querySnapshot) as LastRecord
-        const obj = { year: rec.year, month: rec.month }
-        rec.href = '/list?' + new URLSearchParams(obj).toString()
-      } else {
+      try {
+        const constraints = [orderBy('date', 'desc'), limit(1)]
+        const q = query(photosCol, ...constraints)
+        const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q)
+        const lastRecord = getRec(querySnapshot) as LastRecord
+        if (lastRecord) {
+          // Set the href property to the URL of the last month it was taken
+          lastRecord.href =
+            '/list?' +
+            new URLSearchParams({ year: '' + lastRecord.year, month: '' + lastRecord.month })
+        }
+        this.lastRecord = lastRecord
+        return lastRecord as LastRecord
+      } catch (error) {
+        console.error('Failed to get last record:', error)
         return null
       }
-
-      // if (auth.user && auth.user.isAuthorized) {
-      //   q = query(
-      //     photosCol,
-      //     where("email", "==", auth.user.email),
-      //     ...constraints
-      //   );
-      //   querySnapshot = await getDocs(q);
-      //   if (!querySnapshot.empty) {
-      //     rec = getRec(querySnapshot);
-      //     const diff = Date.parse(rec.date) - +new Date();
-      //     if (diff < CONFIG.activeUser) {
-      //       rec.href = "/list?nick=" + emailNick(rec.email);
-      //     }
-      //   }
-      // }
-      this.lastRecord = rec
     },
     async getSince() {
       const q = query(photosCol, orderBy('date', 'asc'), limit(1))

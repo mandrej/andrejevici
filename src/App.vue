@@ -7,8 +7,8 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
 import { useUserStore } from './stores/user'
 import { messageListener } from './boot/fire'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import notify from './helpers/notify'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 const app = useAppStore()
 const auth = useUserStore()

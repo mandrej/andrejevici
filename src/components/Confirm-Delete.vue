@@ -6,12 +6,12 @@
     persistent
   >
     <q-card class="q-dialog-plugin">
-      <template v-if="rec.filename">
+      <template v-if="rec!.filename">
         <q-toolbar class="bg-grey-2 text-black row justify-between" bordered>
           <q-toolbar-title>Confirm Delete</q-toolbar-title>
         </q-toolbar>
         <q-card-section
-          >Would you like to delete {{ formatBytes(rec.size) }} image named "{{ rec.headline }}"?
+          >Would you like to delete {{ formatBytes(rec!.size) }} image named "{{ rec!.headline }}"?
         </q-card-section>
         <q-card-actions class="row justify-between q-pa-md q-col-gutter-md">
           <div class="col">

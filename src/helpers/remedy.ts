@@ -11,7 +11,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 import notify from './notify'
-import type { UploadedItem } from '../components/models'
+import type { UploadedItem, ValuesState } from '../components/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -46,7 +46,7 @@ export const fix = async () => {
   }
 }
 
-const getStorageData = (filename) => {
+const getStorageData = (filename: string) => {
   return new Promise((resolve, reject) => {
     const fetchData = async () => {
       try {
@@ -58,8 +58,8 @@ const getStorageData = (filename) => {
             url: downloadURL,
             filename: filename,
             size: metadata.size || 0,
-            email: user.value.email,
-            nick: emailNick(user.value.email),
+            email: user.value?.email ?? '',
+            nick: emailNick(user.value?.email ?? ''),
           })
         } else {
           reject()
@@ -79,42 +79,39 @@ export const mismatch = async () => {
     actions: [{ icon: 'close' }],
     group: 'mismatch',
   })
-  const bucketNames = []
-  const storageNames = []
+
+  const bucketNames: string[] = []
+  const storageNames: string[] = []
   const uploadedFilenames = uploaded.value.length ? uploaded.value.map((it) => it.filename) : []
   const refs = await listAll(storageRef(storage, ''))
-  for (let r of refs.items) {
-    bucketNames.push(r.name)
-  }
+
+  refs.items.forEach((r) => bucketNames.push(r.name))
+
   const q = query(photosCol)
   const snapshot = await getDocs(q)
-  snapshot.forEach((doc) => {
-    storageNames.push(doc.id)
-  })
+  snapshot.forEach((doc) => storageNames.push(doc.id))
 
   bucketNames.sort()
   storageNames.sort()
 
-  let missing
-  let promises = []
+  const missing =
+    bucketNames.length >= storageNames.length
+      ? bucketNames.filter((x) => !storageNames.includes(x))
+      : storageNames.filter((x) => !bucketNames.includes(x))
+
   if (bucketNames.length >= storageNames.length) {
-    // uploaded to bucket but no record in firestore
-    missing = bucketNames.filter((x) => storageNames.indexOf(x) === -1)
-    for (let name of missing) {
-      if (uploadedFilenames.indexOf(name) === -1) {
-        promises.push(getStorageData(name))
-      }
-    }
+    const promises = missing
+      .filter((name) => !uploadedFilenames.includes(name))
+      .map((name) => getStorageData(name))
+
     if (promises.length > 0) {
-      Promise.all(promises).then((results) => {
-        results.forEach((it) => {
-          uploaded.value.push(it)
-        })
-      })
+      const results = await Promise.all(promises)
+      results.forEach((it) => uploaded.value.push(it as UploadedItem))
+
       notify({
         type: 'negative',
         message: `${promises.length} files uploaded to bucket, but doesn't have record in firestore.<br>
-        Resolve mismathed files either by publish or delete.`,
+        Resolve mismatched files either by publish or delete.`,
         actions: [
           {
             label: 'Resolve',
@@ -129,15 +126,10 @@ export const mismatch = async () => {
         group: 'mismatch',
       })
     } else {
-      notify({ message: `All good. Nothing to reslove`, group: 'mismatch' })
+      notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
     }
   } else {
-    // records with no image reference
-    missing = storageNames.filter((x) => bucketNames.indexOf(x) === -1)
-    for (let name of missing) {
-      const docRef = doc(db, 'Photo', name)
-      await deleteDoc(docRef)
-    }
+    await Promise.all(missing.map((name) => deleteDoc(doc(db, 'Photo', name))))
     notify({
       message: `${missing.length} records deleted from firestore that doesn't have image reference`,
       type: 'negative',
@@ -146,7 +138,11 @@ export const mismatch = async () => {
   }
 }
 
-export const rename = async (field, existing, changed) => {
+export const rename = async (
+  field: keyof ValuesState['values'],
+  existing: string,
+  changed: string,
+) => {
   if (existing !== '' && changed !== '') {
     if (
       (field === 'tags' && existing === 'flash') ||
@@ -156,7 +152,9 @@ export const rename = async (field, existing, changed) => {
         type: 'warning',
         message: `Cannot change "${existing}"`,
       })
-    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
+    } else if (
+      Object.keys(meta.values[field as keyof typeof meta.values]).indexOf(changed) !== -1
+    ) {
       notify({
         type: 'warning',
         message: `"${changed}" already exists"`,

@@ -7,38 +7,39 @@ const { humanStorageSize } = format
 const { formatDate } = date
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-// eslint-disable-next-line no-unused-vars
-const formatBytes = (bytes, decimals = 2) => {
+
+const formatBytes = (bytes: number): string => {
   return humanStorageSize(bytes)
 }
-const formatDatum = (str, format = CONFIG.dateFormat) => {
+const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFormat): string => {
   const date = new Date(str)
   return formatDate(date, format)
 }
-const emailNick = (email) => {
-  return email.match(/[^.@]+/)[0]
+const emailNick = (email: string): string => {
+  const match = email.match(/[^.@]+/)
+  return match ? match[0] : ''
 }
 const fakeHistory = () => {
-  window.history.pushState(history.state, null, history.state.current)
+  window.history.pushState(history.state, '', history.state.current)
 }
 const removeHash = () => {
-  window.history.replaceState(history.state, null, history.state.current.replace(/#(.*)?/, ''))
+  window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
 }
 const version = computed(() => {
-  const ver = process.env.ANDREJEVICI_VERSION.match(/.{1,4}/g).join('.')
+  const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
-const removeByProperty = (arr, property, value) => {
-  const idx = arr.findIndex((it) => it[property] === value)
+const removeByProperty = <T>(arr: T[], property: keyof T, value: string): void => {
+  const idx = arr.findIndex((it: T) => it[property] === value)
   if (idx > -1) arr.splice(idx, 1)
 }
-const changedByProperty = (arr, property, obj, op = 1) => {
-  const idx = arr.findIndex((it) => it[property] === obj[property])
+const changedByProperty = <T>(arr: T[], property: keyof T, obj: T, op = 1): void => {
+  const idx = arr.findIndex((it: T) => it[property] === obj[property])
   if (idx >= 0) {
     arr.splice(idx, op, obj)
   }
 }
-const textSlug = (text) => {
+const textSlug = (text: string): string => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
   return slugify(text, {
     replace: [
@@ -52,10 +53,10 @@ const textSlug = (text) => {
     ],
   })
 }
-const sliceSlug = (slug) => {
+const sliceSlug = (slug: string): string[] => {
   const text = []
   for (const word of slug.split('-')) {
-    for (var j = 3; j < word.length + 1; j++) {
+    for (let j = 3; j < word.length + 1; j++) {
       const part = word.slice(0, j)
       if (part.length > 8) break
       text.push(part)
@@ -67,11 +68,13 @@ const sliceSlug = (slug) => {
 export const U = '_'
 export const fileBroken = CONFIG.fileBroken
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
-export const thumbName = (filename) => {
-  const [, name] = filename.match(reFilename)
+export const thumbName = (filename: string) => {
+  const match = filename.match(reFilename)
+  if (!match) return ''
+  const [, name] = match
   return [CONFIG.thumbnails, name + '_400x400.jpeg'].join('/')
 }
-export const thumbUrl = (filename) => {
+export const thumbUrl = (filename: string) => {
   return [
     'https://storage.googleapis.com',
     CONFIG.firebase.storageBucket,

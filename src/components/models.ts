@@ -61,3 +61,14 @@ export interface userType {
   askPush?: boolean
   allowPush?: boolean
 }
+export interface ValuesState {
+  headlineToApply: string
+  tagsToApply: string[]
+  values: {
+    year: { [key: string]: number }
+    tags: { [key: string]: number }
+    model: { [key: string]: number }
+    lens: { [key: string]: number }
+    email: { [key: string]: number }
+  }
+}

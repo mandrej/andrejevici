@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref } from 'vue'
 
 const props = defineProps({
@@ -43,7 +44,7 @@ const options = ref(props.options)
 const field = ref(props.autocomplete) // label
 const debounce = 300
 
-const filter = (val, update) => {
+const filter = (val: string, update: (callback: () => void) => void) => {
   if (val === '') {
     update(() => {
       options.value = props.options
@@ -53,9 +54,11 @@ const filter = (val, update) => {
   update(() => {
     const needle = val.toLowerCase()
     if (field.value) {
-      options.value = props.options.filter((v) => v[field.value].toLowerCase().indexOf(needle) > -1)
+      options.value = props.options.filter(
+        (v: any) => v[field.value].toLowerCase().indexOf(needle) > -1,
+      )
     } else {
-      options.value = props.options.filter((v) => v.toLowerCase().indexOf(needle) > -1)
+      options.value = props.options.filter((v: any) => v.toLowerCase().indexOf(needle) > -1)
     }
   })
 }

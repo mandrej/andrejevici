@@ -16,23 +16,13 @@ import {
 import notify from '../helpers/notify'
 import { CONFIG, emailNick } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
-import type { StoredItem } from '../components/models'
-interface ValuesState {
-  tagsToApply: string[]
-  values: {
-    year: { [key: string]: number }
-    tags: { [key: string]: number }
-    model: { [key: string]: number }
-    lens: { [key: string]: number }
-    email: { [key: string]: number }
-  }
-}
+import type { StoredItem, ValuesState } from '../components/models'
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')
 
 const counterId = (field: string, value: string): string => {
-  return ['Photo', field, value].join('||')
+  return `Photo||${field}||${value}`
 }
 
 const byCountReverse = <T extends keyof ValuesState['values']>(
@@ -45,7 +35,7 @@ const byCountReverse = <T extends keyof ValuesState['values']>(
 }
 
 export const useValuesStore = defineStore('meta', {
-  state: () => ({
+  state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
     tagsToApply: [],
     values: { year: {}, tags: {}, model: {}, lens: {}, email: {} },
@@ -79,7 +69,7 @@ export const useValuesStore = defineStore('meta', {
     yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> => {
       const ret: Array<{ value: string; count: number }> = []
       for (const year of Object.keys(state.values.year).reverse()) {
-        ret.push({ value: year, count: state.values.year[year] })
+        ret.push({ value: year, count: state.values.year[year] || 0 })
       }
       return ret
     },
@@ -152,7 +142,8 @@ export const useValuesStore = defineStore('meta', {
               newValues[field][tag] = (newValues[field][tag] ?? 0) + 1
             })
           } else if (obj[field]) {
-            newValues[field][obj[field]] = (newValues[field][obj[field]] ?? 0) + 1
+            newValues[field as keyof ValuesState['values']][obj[field]] =
+              (newValues[field as keyof ValuesState['values']][obj[field]] ?? 0) + 1
           }
         })
       })
@@ -160,11 +151,13 @@ export const useValuesStore = defineStore('meta', {
       // Write new counters to database and store
       const setBatch = writeBatch(db)
       CONFIG.photo_filter.forEach((field) => {
-        Object.entries(newValues[field]).forEach(([key, count]) => {
+        Object.entries(newValues[field as keyof ValuesState['values']]).forEach(([key, count]) => {
           const counterRef = doc(db, 'Counter', counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
-        this.values[field] = { ...newValues[field] }
+        this.values[field as keyof ValuesState['values']] = {
+          ...newValues[field as keyof ValuesState['values']],
+        }
         notify({
           message: `Values for ${field} updated`,
           actions: [{ icon: 'close' }],
@@ -176,7 +169,7 @@ export const useValuesStore = defineStore('meta', {
 
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
-    async increase(id, field, val) {
+    async increase(id: string, field: keyof ValuesState['values'], val: string) {
       const find = this.values[field][val] ?? 0
       this.values[field][val] = find + 1
 
@@ -197,20 +190,24 @@ export const useValuesStore = defineStore('meta', {
     },
     async increaseValues(newData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        if (newData[field] && newData.date) {
+        if (newData[field as keyof StoredItem] && newData.date) {
           if (field === 'tags') {
-            for (const tag of newData[field]) {
+            for (const tag of newData[field] || []) {
               const id = counterId(field, tag)
               this.increase(id, field, tag)
             }
           } else {
-            const id = counterId(field, newData[field])
-            this.increase(id, field, '' + newData[field])
+            const id = counterId(field, newData[field as keyof StoredItem] as string)
+            this.increase(
+              id,
+              field as keyof ValuesState['values'],
+              newData[field as keyof StoredItem] as string,
+            )
           }
         }
       }
     },
-    async decrease(id, field, val) {
+    async decrease(id: string, field: keyof ValuesState['values'], val: string) {
       const find = this.values[field][val]
       if (find !== undefined) {
         this.values[field][val] = find - 1
@@ -235,15 +232,19 @@ export const useValuesStore = defineStore('meta', {
     },
     async decreaseValues(oldData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        if (oldData[field]) {
+        if (oldData[field as keyof StoredItem]) {
           if (field === 'tags') {
-            for (const tag of oldData[field]) {
+            for (const tag of oldData[field] || []) {
               const id = counterId(field, tag)
               this.decrease(id, field, tag)
             }
           } else {
-            const id = counterId(field, oldData[field])
-            this.decrease(id, field, '' + oldData[field])
+            const id = counterId(field, oldData[field as keyof StoredItem] as string)
+            this.decrease(
+              id,
+              field as keyof ValuesState['values'],
+              oldData[field as keyof StoredItem] as string,
+            )
           }
         }
       }
@@ -278,7 +279,7 @@ export const useValuesStore = defineStore('meta', {
         }
       })
     },
-    async renameValue(field, oldValue, newValue) {
+    async renameValue(field: keyof ValuesState['values'], oldValue: string, newValue: string) {
       // Prepare batch for photo updates
       const batch = writeBatch(db)
       const filter =
@@ -309,22 +310,24 @@ export const useValuesStore = defineStore('meta', {
       const counter = await getDoc(oldRef)
       const obj = counter.data()
 
-      await setDoc(
-        newRef,
-        {
-          count: obj.count,
-          field: field,
-          value: newValue,
-        },
-        { merge: true },
-      )
-      await deleteDoc(oldRef)
+      if (obj) {
+        await setDoc(
+          newRef,
+          {
+            count: obj.count,
+            field: field,
+            value: newValue,
+          },
+          { merge: true },
+        )
+        await deleteDoc(oldRef)
 
-      // Update store
-      this.values[field][newValue] = obj.count
-      delete this.values[field][oldValue]
+        // Update store
+        this.values[field][newValue] = obj.count
+        delete this.values[field][oldValue]
+      }
     },
-    addNewField(val, field) {
+    addNewField(val: string, field: keyof ValuesState['values']) {
       this.values[field][val] = 1
     },
   },

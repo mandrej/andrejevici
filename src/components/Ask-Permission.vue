@@ -34,11 +34,13 @@ defineProps({
 const { user, token } = storeToRefs(auth)
 
 const disableNotification = async () => {
-  user.value.allowPush = false
-  user.value.askPush = false
-  token.value = null
-  auth.removeDevice()
-  await auth.updateUser()
+  if (user.value) {
+    user.value.allowPush = false
+    user.value.askPush = false
+    token.value = null
+    auth.removeDevice()
+    await auth.updateUser()
+  }
 }
 // const askLater = async () => {
 //   open.value = false;
@@ -54,15 +56,18 @@ const enableNotifications = () => {
       })
       if (tok) {
         token.value = tok
-        await auth.updateDevice()
-
-        user.value.allowPush = true
-        user.value.askPush = false
-        await auth.updateUser()
+        if (user.value) {
+          await auth.updateDevice(tok)
+          user.value.allowPush = true
+          user.value.askPush = false
+          await auth.updateUser()
+        }
       } else {
-        user.value.allowPush = true
-        user.value.askPush = true
-        await auth.updateUser()
+        if (user.value) {
+          user.value.allowPush = true
+          user.value.askPush = true
+          await auth.updateUser()
+        }
 
         notify({
           type: 'negative',

@@ -1,7 +1,8 @@
 import { QInput, QSelect } from 'quasar'
+import type { defineComponent } from 'vue'
 
-const setDefault = (component, key, value) => {
-  const prop = component.props[key]
+const setDefault = (component: ReturnType<typeof defineComponent>, key: string, value: unknown) => {
+  const prop = component.props?.[key]
   switch (typeof prop) {
     case 'object':
       prop.default = value

@@ -83,7 +83,7 @@ export const useUserStore = defineStore('auth', {
     },
     signIn(): Promise<void> {
       if (this.user && this.user.uid) {
-        auth.signOut().then(() => {
+        return auth.signOut().then(() => {
           this.user = null
           // const routeName = router.currentRoute.value.name
           // if (routeName === 'add' || routeName === 'admin') {
@@ -101,8 +101,10 @@ export const useUserStore = defineStore('auth', {
       }
     },
     async updateUser(): Promise<void> {
-      const docRef = doc(db, 'User', this.user.uid)
-      await updateDoc(docRef, this.user)
+      const docRef = doc(db, 'User', this.user!.uid)
+      if (this.user) {
+        await updateDoc(docRef, this.user)
+      }
     },
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
@@ -113,7 +115,7 @@ export const useUserStore = defineStore('auth', {
       await setDoc(docRef, data, { merge: true })
     },
     removeDevice(): Promise<void> {
-      const q = query(deviceCol, where('email', '==', this.user.email))
+      const q = query(deviceCol, where('email', '==', this.user?.email || ''))
       return new Promise((resolve, reject) => {
         this.deleteQueryBatch(db, q, resolve).catch(reject)
       })
