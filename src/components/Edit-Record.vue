@@ -256,7 +256,7 @@ const onSubmit = () => {
   tmp.day = datum.getDate()
   tmp.tags = tmp.tags ? tmp.tags : []
   tmp.nick = emailNick(tmp.email)
-  tmp.headline = tmp.headline.trim() === '' ? CONFIG.noTitle : tmp.headline.trim()
+  tmp.headline = tmp.headline!.trim() === '' ? CONFIG.noTitle : tmp.headline!.trim()
   const slug = textSlug(tmp.headline)
   tmp.text = sliceSlug(slug)
   // set find on new added image

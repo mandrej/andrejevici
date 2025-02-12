@@ -61,7 +61,7 @@ const drawer = ref(false)
 const { busy, editMode, adminTab } = storeToRefs(app)
 const { user, showConsent } = storeToRefs(auth)
 
-const changeMode = (mode) => {
+const changeMode = (mode: boolean) => {
   mode = !mode
   editMode.value = mode
 }

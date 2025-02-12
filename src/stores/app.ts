@@ -33,7 +33,7 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type { Find, Bucket, UploadedItem, StoredItem, LastRecord } from '../components/models'
+import type { Find, Bucket, StoredItem, LastRecord } from '../components/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')
@@ -57,7 +57,7 @@ export const useAppStore = defineStore('app', {
     } as Bucket,
 
     find: {} as Find | null,
-    uploaded: [] as UploadedItem[],
+    uploaded: [] as StoredItem[],
     objects: [] as StoredItem[],
     next: null as string | null,
     currentEdit: {} as StoredItem,
@@ -174,7 +174,7 @@ export const useAppStore = defineStore('app', {
       }
       if (this.find?.text) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.text as string[], sliceSlug(textSlug(this.find?.text))),
+          includeSub(d.text as string[], sliceSlug(textSlug(this.find?.text || ''))),
         )
       }
 

@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <q-page-container>
-      <q-page v-if="lastRecord.href" class="row">
+      <q-page v-if="lastRecord && lastRecord.href" class="row">
         <q-responsive
           :ratio="1"
           class="col-xs-12 col-md-6 shadow-12"
@@ -96,21 +96,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { version, fileBroken } from '../helpers'
 import HistoryButton from '../components/History-Button.vue'
+import type { LastRecord } from 'src/components/models'
 
 const app = useAppStore()
 const auth = useUserStore()
-const { bucket, sinceYear, lastRecord, find } = storeToRefs(app)
+const { bucket, sinceYear, find } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-
-onMounted(() => {
-  app.getLast()
-})
+const lastRecord = computed(() => app.lastRecord as LastRecord)
 
 const common = {
   backgroundSize: 'cover',
@@ -118,7 +116,7 @@ const common = {
   backgroundRepeat: 'no-repeat',
   transition: 'background-image 0.2s ease-in-out',
 }
-const imageStyle = (rec) => {
+const imageStyle = (rec: LastRecord) => {
   if (rec.thumb) {
     return { ...common, backgroundImage: `url(${rec.url}), url(${rec.thumb})` }
   } else {

@@ -18,7 +18,7 @@ const props = defineProps({
     default: 404,
   },
 })
-const errors = {
+const errors: { [key: number]: string } = {
   404: 'Oops. Nothing here...',
   401: 'Insufficient credentials...',
 }

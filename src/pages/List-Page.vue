@@ -71,6 +71,7 @@ import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
 import { U, fakeHistory, reFilename, removeHash } from '../helpers'
 import notify from '../helpers/notify'
+import type { StoredItem } from 'src/components/models'
 
 import PictureCard from '../components/Picture-Card.vue'
 import SwiperView from '../components/Swiper-View.vue'
@@ -100,7 +101,7 @@ onMounted(() => {
   }
 })
 
-const findIndex = (filename) => {
+const findIndex = (filename: string) => {
   index.value = objects.value.findIndex((x) => x.filename === filename)
   switch (index.value) {
     case -1:
@@ -118,26 +119,28 @@ const onLoad = throttle((index, done) => {
   done()
 }, 1000)
 
-const isAuthorOrAdmin = (rec) => {
+const isAuthorOrAdmin = (rec: StoredItem) => {
   return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
 }
 
-const tagsToApplyExist = () => {
-  return tagsToApply.value && tagsToApply.value.length > 0 && user.value && user.value.isAdmin
+const tagsToApplyExist = (): boolean => {
+  return Boolean(
+    tagsToApply.value && tagsToApply.value.length > 0 && user.value && user.value.isAdmin,
+  )
 }
 
-const mergeTags = (rec) => {
-  rec.tags = Array.from(new Set([...tagsToApply.value, ...rec.tags])).sort()
+const mergeTags = (rec: StoredItem) => {
+  rec.tags = Array.from(new Set([...(tagsToApply.value ?? []), ...(rec.tags ?? [])])).sort()
   app.saveRecord(rec)
   editOk(U + rec.filename)
 }
 
-const confirmShow = (rec) => {
+const confirmShow = (rec: StoredItem) => {
   select2delete.value = rec
   fakeHistory()
   showConfirm.value = true
 }
-const confirmOk = async (rec) => {
+const confirmOk = async (rec: StoredItem) => {
   showConfirm.value = false
   await app.deleteRecord(rec)
   if (objects.value.length === 0 && showCarousel.value) {
@@ -147,12 +150,12 @@ const confirmOk = async (rec) => {
   }
 }
 
-const editRecord = (rec) => {
+const editRecord = (rec: StoredItem) => {
   currentEdit.value = rec
   fakeHistory()
   showEdit.value = true
 }
-const editOk = (hash) => {
+const editOk = (hash: string) => {
   const el = document.querySelector('#' + hash)
   if (!el) return
   el.classList.add('bounce')
@@ -161,19 +164,27 @@ const editOk = (hash) => {
   }, 2000)
 }
 
-const carouselShow = (filename) => {
+const carouselShow = (filename: string) => {
   fakeHistory()
   nextTick(() => {
     findIndex(filename)
   })
 }
-const carouselCancel = (hash) => {
+const carouselCancel = (hash: string) => {
   showCarousel.value = false
   index.value = -1
-  const [, id] = hash.match(reFilename)
+  const match = hash.match(reFilename)
+  const [, id] = match ? match : []
   nextTick(() => {
+    if (!id) {
+      removeHash()
+      return
+    }
     const el = document.getElementById(id)
-    if (!el) return
+    if (!el) {
+      removeHash()
+      return
+    }
     const target = getScrollTarget(el)
     setVerticalScrollPosition(target, el.offsetTop, 400)
     removeHash()

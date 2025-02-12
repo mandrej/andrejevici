@@ -105,7 +105,7 @@
 
 <script setup lang="ts">
 import uuid4 from 'uuid4'
-import { defineAsyncComponent, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, reactive, ref } from 'vue'
 import { storage } from '../boot/fire'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
@@ -118,15 +118,16 @@ import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
 import ButtonRow from 'components/Button-Row.vue'
-import type { StoredItem } from 'src/components/models'
 import type { UploadTaskSnapshot } from 'firebase/storage'
+import type { StoredItem } from 'src/components/models'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
-const { showEdit, currentEdit, uploaded } = storeToRefs(app)
+const uploaded = computed(() => app.uploaded)
+const { showEdit, currentEdit } = storeToRefs(app)
 const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 
@@ -155,6 +156,9 @@ const alter = (filename: string): string => {
 const checkExists = async (originalFilename: string): Promise<string> => {
   const reClean = new RegExp(/[.\s\\){}[\]]+/g)
   const [, name, ext] = originalFilename.match(reFilename) as RegExpMatchArray
+  if (!name) {
+    throw new Error('Filename is not valid')
+  }
   let filename = name.replace(/[(]+/g, '_').replace(reClean, '') + ext
 
   try {
@@ -180,7 +184,9 @@ const checkExists = async (originalFilename: string): Promise<string> => {
 
 const cancelAll = (): void => {
   Object.keys(progressInfo).forEach((key: string) => {
-    task[key].cancel()
+    if (task[key]) {
+      task[key].cancel()
+    }
   })
   morphModel.value = 'upload'
 }
@@ -227,41 +233,46 @@ const onSubmit = async (evt: Event): Promise<void> => {
  * @param {File} file - The file to be uploaded.
  */
 const uploadTask = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    checkExists(file.name).then((filename) => {
-      progressInfo[file.name] = 0
-      const _ref = storageRef(storage, filename)
-      task[file.name] = uploadBytesResumable(_ref, file, {
-        contentType: file.type,
-        cacheControl: 'public, max-age=604800',
+  return new Promise<string>((resolve, reject) => {
+    checkExists(file.name)
+      .then((filename) => {
+        progressInfo[file.name] = 0
+        const _ref = storageRef(storage, filename)
+        task[file.name] = uploadBytesResumable(_ref, file, {
+          contentType: file.type,
+          cacheControl: 'public, max-age=604800',
+        })
+        task[file.name]?.on(
+          'state_changed',
+          (snapshot: UploadTaskSnapshot) => {
+            progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
+          },
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          (error: Error) => {
+            progressInfo[file.name] = 0
+            reject(file.name)
+          },
+          () => {
+            getDownloadURL(task[file.name]!.snapshot.ref).then((downloadURL) => {
+              // const urlParams = new URLSearchParams(downloadURL);
+              // console.log(urlParams.get("token"));
+              const data: StoredItem = {
+                url: downloadURL,
+                filename: filename,
+                size: file.size,
+                email: user.value!.email,
+                nick: emailNick(user.value!.email),
+              }
+              uploaded.value.push(data)
+              resolve(file.name)
+              if (process.env.DEV) console.log('uploaded', file.name)
+            })
+          },
+        )
       })
-      task[file.name].on(
-        'state_changed',
-        (snapshot: UploadTaskSnapshot) => {
-          progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
-        },
-        () => {
-          progressInfo[file.name] = 0
-          reject(file.name)
-        },
-        () => {
-          getDownloadURL(task[file.name].snapshot.ref).then((downloadURL) => {
-            // const urlParams = new URLSearchParams(downloadURL);
-            // console.log(urlParams.get("token"));
-            const data = {
-              url: downloadURL,
-              filename: filename,
-              size: file.size,
-              email: user.value.email,
-              nick: emailNick(user.value.email),
-            }
-            uploaded.value.push(data)
-            resolve(file.name)
-            if (process.env.DEV) console.log('uploaded', file.name)
-          })
-        },
-      )
-    })
+      .catch((error: Error) => {
+        reject(error)
+      })
   })
 }
 
@@ -291,7 +302,7 @@ const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
     tags.push('flash')
   }
   rec.tags = tags
-  rec.email = user.value.email
+  rec.email = user.value!.email
   return rec
 }
 /**
@@ -316,7 +327,7 @@ const publishAll = async () => {
     const newRec: StoredItem = await addProperies(rec)
     app.saveRecord(newRec)
     currentEdit.value = newRec
-    uploaded.value = uploaded.value.filter((item) => item.filename !== rec.filename)
+    app.uploaded = app.uploaded.filter((item) => item.filename !== rec.filename)
   }
 }
 </script>

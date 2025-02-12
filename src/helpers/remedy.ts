@@ -11,7 +11,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 import notify from './notify'
-import type { UploadedItem, ValuesState } from '../components/models'
+import type { StoredItem, ValuesState } from '../components/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -106,7 +106,7 @@ export const mismatch = async () => {
 
     if (promises.length > 0) {
       const results = await Promise.all(promises)
-      results.forEach((it) => uploaded.value.push(it as UploadedItem))
+      results.forEach((it) => uploaded.value.push(it as StoredItem))
 
       notify({
         type: 'negative',

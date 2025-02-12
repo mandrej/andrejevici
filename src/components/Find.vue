@@ -97,7 +97,6 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
-import type { Ref } from 'vue'
 import type { Find } from './models'
 
 const app = useAppStore()

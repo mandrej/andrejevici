@@ -14,20 +14,13 @@ export interface Bucket {
   size: number
   count: number
 }
-export interface UploadedItem {
-  readonly filename: string
-  readonly url: string
-  size: number
-  email: string
-  nick: string
-}
 export interface ExifResult {
   date?: string
   day?: number
   month?: number
   year?: number
 
-  model: string
+  model?: string
   lens?: string
   focal_length?: number
   aperture?: number
@@ -37,11 +30,16 @@ export interface ExifResult {
   dim?: [number, number]
   loc?: string
 }
-export interface StoredItem extends ExifResult, UploadedItem {
-  headline: string
+export interface StoredItem extends ExifResult {
+  readonly filename: string
+  readonly url: string
+  size: number
+  email: string
+  nick: string
+  headline?: string
   tags?: string[]
   text?: string[]
-  thumb: string
+  thumb?: string
 }
 export interface LastRecord extends StoredItem {
   href: string

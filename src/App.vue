@@ -2,6 +2,7 @@
   <router-view />
 </template>
 <script lang="ts" setup>
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
@@ -15,15 +16,8 @@ const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 
-interface Message {
-  data: {
-    body: string
-  }
-  messageId: string
-}
-
 messageListener()
-  .then((payload: Message) => {
+  .then((payload: any) => {
     console.log(payload)
     const params = {
       type: 'external',
@@ -47,6 +41,7 @@ onAuthStateChanged(getAuth(), (usr) => {
 onMounted(() => {
   app.getSince()
   app.bucketRead()
+  app.getLast()
   // RESET
   busy.value = false
   error.value = null
