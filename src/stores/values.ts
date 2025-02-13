@@ -17,6 +17,7 @@ import notify from '../helpers/notify'
 import { CONFIG, emailNick } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
 import type { StoredItem, ValuesState } from '../components/models'
+import { deepDiffMapper } from '../helpers/diff'
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')
@@ -155,6 +156,12 @@ export const useValuesStore = defineStore('meta', {
           const counterRef = doc(db, 'Counter', counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
+        console.log(
+          deepDiffMapper.map(
+            this.values[field as keyof ValuesState['values']],
+            newValues[field as keyof ValuesState['values']],
+          ),
+        )
         this.values[field as keyof ValuesState['values']] = {
           ...newValues[field as keyof ValuesState['values']],
         }

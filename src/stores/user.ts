@@ -14,7 +14,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
-import { useRouter } from 'vue-router'
+import router from '../router'
 import type { User, UserCredential, AuthError } from 'firebase/auth'
 import type { userType } from '../components/models'
 import type { Firestore, Query } from '@firebase/firestore'
@@ -22,7 +22,6 @@ import type { Firestore, Query } from '@firebase/firestore'
 const provider = new GoogleAuthProvider()
 // provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
 const deviceCol = collection(db, 'Device')
-const router = useRouter()
 
 // const timeStamp2Date = (ts) => {
 //   const timeStamp = ts.seconds * 1000 + ts.nanoseconds / 1e6;

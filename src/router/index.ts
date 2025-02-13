@@ -1,11 +1,5 @@
 import { nextTick } from 'vue'
-import { defineRouter } from '#q-app/wrappers'
-import {
-  createRouter,
-  createMemoryHistory,
-  createWebHistory,
-  createWebHashHistory,
-} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
@@ -20,38 +14,27 @@ import CONFIG from 'app/config'
  * async/await or return a Promise which resolves
  * with the Router instance.
  */
-
-export default defineRouter(function (/* { store, ssrContext } */) {
-  const createHistory = process.env.SERVER
-    ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === 'history'
-      ? createWebHistory
-      : createWebHashHistory
-
-  // Leave this as is and make changes in quasar.conf.js instead!
-  const history = createHistory(process.env.VUE_ROUTER_BASE)
-  const router = createRouter({
-    history,
-    routes,
-  })
-
-  router.beforeEach((to: RouteLocationNormalized) => {
-    const auth = useUserStore()
-    const user = (auth.user as userType) || null
-
-    if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
-      return { name: '401', replace: true }
-    } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
-      return { name: '401', replace: true }
-    }
-  })
-
-  router.afterEach((to: RouteLocationNormalized) => {
-    // Use next tick to handle router history correctly
-    nextTick(() => {
-      document.title = (to.meta.title as string) || CONFIG.title
-    })
-  })
-
-  return router
+const router = createRouter({
+  scrollBehavior: () => ({ left: 0, top: 0 }),
+  routes,
+  history: createWebHistory(process.env.VUE_ROUTER_BASE),
 })
+
+router.beforeEach((to: RouteLocationNormalized) => {
+  const auth = useUserStore()
+  const user = (auth.user as userType) || null
+
+  if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
+    return { name: '401', replace: true }
+  } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
+    return { name: '401', replace: true }
+  }
+})
+router.afterEach((to: RouteLocationNormalized) => {
+  // Use next tick to handle router history correctly
+  nextTick(() => {
+    document.title = (to.meta.title as string) || CONFIG.title
+  })
+})
+
+export default router
