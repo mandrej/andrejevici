@@ -1,9 +1,7 @@
-export interface NumericFind {
+export interface Find {
   year?: number
   month?: number
   day?: number
-}
-export interface Find extends NumericFind {
   text?: string
   tags?: string[]
   model?: string
@@ -49,7 +47,7 @@ export interface CounterRecord {
   field: 'year' | 'tags' | 'model' | 'lens' | 'email'
   value: string
 }
-export interface userType {
+export interface myUser {
   readonly uid: string
   name: string
   email: string

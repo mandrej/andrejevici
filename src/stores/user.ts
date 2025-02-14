@@ -16,7 +16,7 @@ import {
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User, UserCredential, AuthError } from 'firebase/auth'
-import type { userType } from '../components/models'
+import type { myUser } from '../components/models'
 import type { Firestore, Query } from '@firebase/firestore'
 
 const provider = new GoogleAuthProvider()
@@ -37,7 +37,7 @@ const adminMember = (email: string): string | undefined => {
 
 export const useUserStore = defineStore('auth', {
   state(): {
-    user: userType | null
+    user: myUser | null
     token: string | null
   } {
     return {
@@ -46,7 +46,7 @@ export const useUserStore = defineStore('auth', {
     }
   },
   getters: {
-    showConsent: (state: { user: userType | null; token: string | null }): boolean => {
+    showConsent: (state: { user: myUser | null; token: string | null }): boolean => {
       return Boolean(
         'Notification' in window && state.user && state.user.allowPush && state.user.askPush,
       )
@@ -67,7 +67,7 @@ export const useUserStore = defineStore('auth', {
       const docSnap = await getDoc(docRef)
 
       if (docSnap.exists()) {
-        const data = docSnap.data() as userType
+        const data = docSnap.data() as myUser
         if (!data.allowPush) {
           this.user.allowPush = true
         } else {
