@@ -27,7 +27,7 @@
     </q-banner>
 
     <div class="q-pa-md q-mb-md">
-      <q-infinite-scroll @load="onLoad" :offset="250">
+      <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
         <transition-group tag="div" class="row q-col-gutter-md" name="fade">
           <div
             v-for="item in objects"
@@ -46,12 +46,12 @@
               @delete-record="app.deleteRecord"
             />
           </div>
-        </transition-group>
-        <!-- <template v-slot:loading>
+          <template v-slot:loading>
             <div class="row justify-center q-my-md">
-              <q-spinner-dots color="primary" size="40px" />
+              <q-spinner-dots color="dark" size="40px" />
             </div>
-          </template> -->
+          </template>
+        </transition-group>
       </q-infinite-scroll>
     </div>
 
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { scroll, debounce, throttle } from 'quasar'
+import { scroll, debounce } from 'quasar'
 import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -111,13 +111,13 @@ const findIndex = (filename: string) => {
       showCarousel.value = true
   }
 }
-
-const onLoad = throttle((index, done) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const onLoad = (index = 0, done: () => void) => {
   if (next.value) {
     app.fetchRecords(false, 'scroll')
   }
   done()
-}, 1000)
+}
 
 const isAuthorOrAdmin = (rec: StoredItem) => {
   return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
