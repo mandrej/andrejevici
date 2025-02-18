@@ -105,8 +105,7 @@ const route = useRoute()
 const router = useRouter()
 const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
-const tmp = { ...(find.value as Find) }
-
+let tmp = { ...(find.value as Find) }
 /**
  * Dispatches a query to find data.
  *
@@ -135,7 +134,7 @@ const queryDispatch = async (query: Find, invoked = '') => {
     }
   })
 
-  find.value = sanitizedQuery
+  tmp = find.value = sanitizedQuery
   await app.fetchRecords(true, invoked) // new filter with reset
 
   // this dispatch route change
