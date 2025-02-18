@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/app'
@@ -105,7 +105,7 @@ const route = useRoute()
 const router = useRouter()
 const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
-const tmp = ref({ ...(find.value as Find) })
+const tmp = { ...(find.value as Find) }
 
 /**
  * Dispatches a query to find data.
@@ -159,7 +159,7 @@ watch(
 )
 
 const submit = () => {
-  queryDispatch(tmp.value, 'submit')
+  queryDispatch(tmp, 'submit')
 }
 
 const optionsMonth = computed(() => {
