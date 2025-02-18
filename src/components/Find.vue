@@ -4,10 +4,10 @@
       label="by title"
       v-model="tmp.text"
       :disable="busy"
-      clearable
-      @blur="submit"
-      :dense="$q.screen.xs"
       dark
+      clearable
+      @update:model-value="submit"
+      :dense="$q.screen.xs"
     />
     <Auto-Complete
       label="by tags"
@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/app'
@@ -105,7 +105,8 @@ const route = useRoute()
 const router = useRouter()
 const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
-let tmp = { ...(find.value as Find) }
+const tmp = ref({ ...(find.value as Find) })
+
 /**
  * Dispatches a query to find data.
  *
@@ -118,7 +119,7 @@ const queryDispatch = async (query: Find, invoked = '') => {
 
   // delete keys without values
   Object.keys(sanitizedQuery).forEach((key) => {
-    if (sanitizedQuery[key as keyof Find] == null) {
+    if (sanitizedQuery[key as keyof Find] === null || sanitizedQuery[key as keyof Find] === '') {
       delete sanitizedQuery[key as keyof Find]
     }
   })
@@ -134,7 +135,7 @@ const queryDispatch = async (query: Find, invoked = '') => {
     }
   })
 
-  tmp = find.value = sanitizedQuery
+  tmp.value = find.value = sanitizedQuery
   await app.fetchRecords(true, invoked) // new filter with reset
 
   // this dispatch route change
@@ -158,7 +159,7 @@ watch(
 )
 
 const submit = () => {
-  queryDispatch(tmp, 'submit')
+  queryDispatch(tmp.value, 'submit')
 }
 
 const optionsMonth = computed(() => {
