@@ -39,6 +39,7 @@ onAuthStateChanged(getAuth(), (usr) => {
 })
 
 onMounted(() => {
+  app.getLast()
   app.getSince()
   app.bucketRead()
   // RESET

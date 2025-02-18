@@ -177,8 +177,7 @@ export const useValuesStore = defineStore('meta', {
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
     async increase(id: string, field: keyof ValuesState['values'], val: string) {
-      const find = this.values[field][val] ?? 0
-      this.values[field][val] = find + 1
+      this.values[field][val] = (this.values[field][val] ?? 0) + 1
 
       const counterRef = doc(db, 'Counter', id)
       const oldDoc = await getDoc(counterRef)
@@ -197,27 +196,24 @@ export const useValuesStore = defineStore('meta', {
     },
     async increaseValues(newData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        if (newData[field as keyof StoredItem] && newData.date) {
+        const fieldValue = newData[field as keyof StoredItem]
+        if (fieldValue && newData.date) {
           if (field === 'tags') {
-            for (const tag of newData[field] || []) {
+            for (const tag of fieldValue as string) {
               const id = counterId(field, tag)
-              this.increase(id, field, tag)
+              await this.increase(id, field, tag)
             }
           } else {
-            const id = counterId(field, newData[field as keyof StoredItem] as string)
-            this.increase(
-              id,
-              field as keyof ValuesState['values'],
-              newData[field as keyof StoredItem] as string,
-            )
+            const id = counterId(field, fieldValue as string)
+            await this.increase(id, field as keyof ValuesState['values'], fieldValue as string)
           }
         }
       }
     },
     async decrease(id: string, field: keyof ValuesState['values'], val: string) {
-      const find = this.values[field][val]
-      if (find !== undefined) {
-        this.values[field][val] = find - 1
+      const currentCount = this.values[field][val]
+      if (currentCount !== undefined) {
+        this.values[field][val] = currentCount - 1
         if (this.values[field][val] <= 0) {
           delete this.values[field][val]
         }
@@ -226,12 +222,12 @@ export const useValuesStore = defineStore('meta', {
       const counterRef = doc(db, 'Counter', id)
       const oldDoc = await getDoc(counterRef)
       if (oldDoc.exists()) {
-        const old = oldDoc.data()
-        if (old.count - 1 <= 0) {
+        const oldCount = oldDoc.data().count
+        if (oldCount - 1 <= 0) {
           await deleteDoc(counterRef)
         } else {
           await updateDoc(counterRef, {
-            count: old.count - 1,
+            count: oldCount - 1,
           })
         }
         if (process.env.DEV) console.log('decrease ' + id, this.values[field][val])
@@ -239,19 +235,16 @@ export const useValuesStore = defineStore('meta', {
     },
     async decreaseValues(oldData: StoredItem): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        if (oldData[field as keyof StoredItem]) {
+        const fieldValue = oldData[field as keyof StoredItem]
+        if (fieldValue) {
           if (field === 'tags') {
-            for (const tag of oldData[field] || []) {
+            for (const tag of fieldValue as string[]) {
               const id = counterId(field, tag)
-              this.decrease(id, field, tag)
+              await this.decrease(id, field, tag)
             }
           } else {
-            const id = counterId(field, oldData[field as keyof StoredItem] as string)
-            this.decrease(
-              id,
-              field as keyof ValuesState['values'],
-              oldData[field as keyof StoredItem] as string,
-            )
+            const id = counterId(field, fieldValue as string)
+            await this.decrease(id, field as keyof ValuesState['values'], fieldValue as string)
           }
         }
       }

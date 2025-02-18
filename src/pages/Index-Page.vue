@@ -13,14 +13,11 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 
-const app = useAppStore()
 const meta = useValuesStore()
 
 onMounted(() => {
-  app.getLast()
   if (Object.keys(meta.values.email).length === 0) {
     meta.fieldCount('email')
     meta.fieldCount('year')

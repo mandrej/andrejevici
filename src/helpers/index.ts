@@ -29,12 +29,12 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
-const removeByProperty = <T>(arr: T[], property: keyof T, value: string): void => {
-  const idx = arr.findIndex((it: T) => it[property] === value)
+const removeByFilename = <T extends { filename: string }>(arr: T[], value: string): void => {
+  const idx = arr.findIndex((it) => it.filename === value)
   if (idx > -1) arr.splice(idx, 1)
 }
-const changedByProperty = <T>(arr: T[], property: keyof T, obj: T, op = 1): void => {
-  const idx = arr.findIndex((it: T) => it[property] === obj[property])
+const changeByFilename = <T extends { filename: string }>(arr: T[], obj: T, op = 1): void => {
+  const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx >= 0) {
     arr.splice(idx, op, obj)
   }
@@ -90,8 +90,8 @@ export {
   fakeHistory,
   removeHash,
   version,
-  removeByProperty,
-  changedByProperty,
+  removeByFilename,
+  changeByFilename,
   textSlug,
   sliceSlug,
 }

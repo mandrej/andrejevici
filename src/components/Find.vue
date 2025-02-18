@@ -107,32 +107,42 @@ const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
 const tmp = ref({ ...(find.value as Find) })
 
-const queryDispatch = (query: Find, invoked = '') => {
-  tmp.value = { ...query }
+/**
+ * Dispatches a query to find data.
+ *
+ * @param {Find} query - The query object containing search parameters.
+ * @param {string} [invoked=''] - An optional string indicating the source of the invocation.
+ * @returns {Promise<void>} - A promise that resolves when the query is dispatched.
+ */
+const queryDispatch = async (query: Find, invoked = '') => {
+  const sanitizedQuery = { ...query }
+
   // delete keys without values
-  Object.keys(query).forEach((key) => {
-    if (tmp.value[key as keyof Find] == null) {
-      delete tmp.value[key as keyof Find]
-    }
-  })
-  // adopt to match types
-  Object.keys(tmp.value).forEach((key) => {
-    if (['year', 'month', 'day'].includes(key)) {
-      tmp.value[key as 'year' | 'month' | 'day'] = +(query[key as keyof Find] as number)
-    } else if (key === 'tags') {
-      if (typeof query[key as keyof Find] === 'string') {
-        tmp.value[key as 'tags'] = [query[key as keyof Find] as string]
-      }
+  Object.keys(sanitizedQuery).forEach((key) => {
+    if (sanitizedQuery[key as keyof Find] == null) {
+      delete sanitizedQuery[key as keyof Find]
     }
   })
 
-  find.value = tmp.value
-  app.fetchRecords(true, invoked) // new filter with reset
+  // adopt to match types
+  Object.keys(sanitizedQuery).forEach((key) => {
+    if (['year', 'month', 'day'].includes(key)) {
+      sanitizedQuery[key as 'year' | 'month' | 'day'] = +(sanitizedQuery[
+        key as keyof Find
+      ] as number)
+    } else if (key === 'tags' && typeof sanitizedQuery[key as keyof Find] === 'string') {
+      sanitizedQuery[key as 'tags'] = [sanitizedQuery[key as keyof Find] as string]
+    }
+  })
+
+  find.value = sanitizedQuery
+  await app.fetchRecords(true, invoked) // new filter with reset
+
   // this dispatch route change
-  if (Object.keys(tmp.value).length) {
+  if (Object.keys(sanitizedQuery).length) {
     router.push({
       path: '/list',
-      query: tmp.value as Record<string, string | number | string[]>,
+      query: sanitizedQuery as Record<string, string | number | string[]>,
       hash: route.hash,
     })
   } else {

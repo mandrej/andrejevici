@@ -18,8 +18,8 @@ import {
   CONFIG,
   thumbName,
   thumbUrl,
-  removeByProperty,
-  changedByProperty,
+  removeByFilename,
+  changeByFilename,
   textSlug,
   sliceSlug,
 } from '../helpers'
@@ -191,7 +191,7 @@ export const useAppStore = defineStore('app', {
         meta.decreaseValues(oldDoc.data() as StoredItem)
         await setDoc(docRef, obj, { merge: true })
 
-        changedByProperty(this.objects, 'filename', obj)
+        changeByFilename(this.objects, obj)
         notify({ message: `${obj.filename} updated` })
         meta.increaseValues(obj)
       } else {
@@ -204,10 +204,10 @@ export const useAppStore = defineStore('app', {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true })
-        changedByProperty(this.objects, 'filename', obj, 0)
+        changeByFilename(this.objects, obj, 0)
         notify({ message: `${obj.filename} published` })
         // delete uploaded
-        removeByProperty(this.uploaded, 'filename', obj.filename)
+        removeByFilename(this.uploaded, obj.filename)
 
         this.bucketDiff(obj.size)
         meta.increaseValues(obj)
@@ -228,7 +228,7 @@ export const useAppStore = defineStore('app', {
         await deleteObject(stoRef)
         await deleteObject(thumbRef)
 
-        removeByProperty(this.objects, 'filename', obj.filename)
+        removeByFilename(this.objects, obj.filename)
         const meta = useValuesStore()
         this.bucketDiff(-data.size)
         meta.decreaseValues(data)
@@ -243,7 +243,7 @@ export const useAppStore = defineStore('app', {
           await deleteObject(stoRef)
           await deleteObject(thumbRef)
         } finally {
-          removeByProperty(this.uploaded, 'filename', obj.filename)
+          removeByFilename(this.uploaded, obj.filename)
         }
         notify({
           group: `${obj.filename}`,
