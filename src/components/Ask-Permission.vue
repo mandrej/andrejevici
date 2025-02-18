@@ -2,8 +2,9 @@
   <q-dialog v-model="open" transition-show="slide-down" transition-hide="slide-up" persistent>
     <q-card>
       <q-card-section class="row items-center">
-        <q-icon name="img:icons/favicon-96x96.png" size="56px" />
+        <q-icon name="camera" size="56px" color="primary" />
         <span class="q-ml-md">Would you like to enable notifications?</span>
+        <q-linear-progress v-if="wait" indeterminate color="warning" class="q-mt-sm" />
       </q-card-section>
 
       <q-card-actions align="right">
@@ -26,6 +27,7 @@ import { getMessaging, getToken } from 'firebase/messaging'
 const auth = useUserStore()
 const messaging = getMessaging()
 const open = ref(true)
+const wait = ref(false)
 
 defineProps({
   model: Boolean,
@@ -50,6 +52,7 @@ const disableNotification = async () => {
 const enableNotifications = () => {
   Notification.requestPermission().then(async (permission) => {
     if (permission === 'granted') {
+      wait.value = true
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
       const tok = await getToken(messaging, {
         vapidKey: CONFIG.firebase.vapidKey,
@@ -68,13 +71,13 @@ const enableNotifications = () => {
           user.value.askPush = true
           await auth.updateUser()
         }
-
         notify({
           type: 'negative',
           multiLine: true,
           message: `Unable to retrieve token`,
         })
       }
+      wait.value = false
     }
   })
 }

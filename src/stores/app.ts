@@ -253,26 +253,21 @@ export const useAppStore = defineStore('app', {
     },
     async getLast(): Promise<LastRecord | null> {
       try {
-        const constraints = [orderBy('date', 'desc'), limit(1)]
-        const q = query(photosCol, ...constraints)
-        const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q)
-        const lastRecord = getRec(querySnapshot) as LastRecord
-        if (lastRecord) {
+        const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'desc'), limit(1)))
+        const rec = getRec(querySnapshot) as LastRecord
+        if (rec) {
           // Set the href property to the URL of the last month it was taken
-          lastRecord.href =
-            '/list?' +
-            new URLSearchParams({ year: '' + lastRecord.year, month: '' + lastRecord.month })
+          rec.href = '/list?' + new URLSearchParams({ year: '' + rec.year, month: '' + rec.month })
         }
-        this.lastRecord = lastRecord
-        return lastRecord as LastRecord
+        this.lastRecord = rec
+        return rec as LastRecord
       } catch (error) {
         console.error('Failed to get last record:', error)
         return null
       }
     },
     async getSince() {
-      const q = query(photosCol, orderBy('date', 'asc'), limit(1))
-      const querySnapshot = await getDocs(q)
+      const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'asc'), limit(1)))
       if (querySnapshot.empty) return null
       querySnapshot.forEach((d) => {
         const obj = d.data()
