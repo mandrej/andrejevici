@@ -76,7 +76,7 @@
     "singleProjectMode": true
   },
   "extensions": {
-    "storage-resize-images-b01i": "firebase/storage-resize-images@0.2.3"
+    "storage-resize-images-b01i": "firebase/storage-resize-images@0.2.6"
   },
   "functions": {
     "source": "functions"
