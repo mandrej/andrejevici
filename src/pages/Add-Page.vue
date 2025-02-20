@@ -75,8 +75,8 @@
       />
       <template #button>
         <q-btn
-          label="Publish all"
-          @click="publishAll"
+          :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
+          @click="publishSelected"
           color="primary"
           :disable="uploaded.length === 0"
           style="width: 200px"
@@ -95,6 +95,7 @@
             ><template #action>
               <q-card-actions class="justify-between">
                 <q-btn flat round icon="delete" @click="app.deleteRecord(rec)" />
+                <q-checkbox v-model="selection" :val="rec.filename" />
                 <q-btn flat round icon="publish" @click="editRecord(rec)" />
               </q-card-actions>
             </template>
@@ -132,6 +133,7 @@ const uploaded = computed(() => app.uploaded)
 const { showEdit, currentEdit } = storeToRefs(app)
 const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
+const selection = ref<string[]>([])
 
 interface Info {
   [key: string]: number
@@ -324,22 +326,18 @@ const editRecord = async (rec: StoredItem) => {
  * Add user email and tags: [] to new rec; read exif
  * See Edit-Record getExif
  */
-const publishAll = async () => {
-  for (const rec of uploaded.value) {
+const publishSelected = async () => {
+  const selected =
+    selection.value.length === 0
+      ? app.uploaded
+      : app.uploaded.filter((item) => selection.value.includes(item.filename))
+  // console.log(selected.map((item) => item.filename))
+  for (const rec of selected) {
     const newRec: StoredItem = await addProperies(rec)
     app.saveRecord(newRec)
     currentEdit.value = newRec
     app.uploaded = app.uploaded.filter((item) => item.filename !== rec.filename)
   }
+  selection.value = []
 }
 </script>
-
-<!-- <style lang="scss" scoped>
-.q-btn,
-.q-icon {
-  color: $grey-7;
-}
-.q-btn.disabled {
-  opacity: 0.2 !important;
-}
-</style> -->
