@@ -307,7 +307,6 @@ const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
   }
   rec.tags = tags
   rec.email = user.value!.email
-  app.getLast()
   return rec
 }
 /**

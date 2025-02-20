@@ -205,6 +205,7 @@ export const useAppStore = defineStore('app', {
         // save everything
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj, 0)
+        this.getLast()
         notify({ message: `${obj.filename} published` })
         // delete uploaded
         removeByFilename(this.uploaded, obj.filename)
@@ -232,6 +233,8 @@ export const useAppStore = defineStore('app', {
         const meta = useValuesStore()
         this.bucketDiff(-data.size)
         meta.decreaseValues(data)
+        this.getLast()
+
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
