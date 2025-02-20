@@ -91,12 +91,14 @@
           :key="rec.filename"
           class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
         >
-          <Picture-Card
-            :rec="rec"
-            :canManage="true"
-            @delete-record="app.deleteRecord"
-            @edit-record="editRecord"
-          />
+          <Picture-Card :rec="rec">
+            ><template #action>
+              <q-card-actions class="justify-between">
+                <q-btn flat round icon="delete" @click="app.deleteRecord(rec)" />
+                <q-btn flat round icon="publish" @click="editRecord(rec)" />
+              </q-card-actions>
+            </template>
+          </Picture-Card>
         </div>
       </transition-group>
     </div>
@@ -331,3 +333,13 @@ const publishAll = async () => {
   }
 }
 </script>
+
+<!-- <style lang="scss" scoped>
+.q-btn,
+.q-icon {
+  color: $grey-7;
+}
+.q-btn.disabled {
+  opacity: 0.2 !important;
+}
+</style> -->

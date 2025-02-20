@@ -36,15 +36,28 @@
           >
             <Picture-Card
               :rec="item"
-              :canManage="isAuthorOrAdmin(item)"
-              :canMergeTags="tagsToApplyExist()"
               @carousel-show="carouselShow(item.filename)"
               @carouselCancel="carouselCancel"
-              @edit-record="editRecord"
-              @merge-tags="mergeTags(item)"
-              @confirm-delete="confirmShow(item)"
-              @delete-record="app.deleteRecord"
-            />
+            >
+              <template #action>
+                <q-card-actions
+                  v-if="isAuthorOrAdmin(item) && editMode"
+                  class="justify-around bg-grey-10 col"
+                  style="max-width: 58px; padding-bottom: 53px"
+                  vertical
+                >
+                  <q-btn flat round icon="delete" @click="confirmShow(item)" />
+                  <q-btn flat round icon="edit" @click="editRecord(item)" />
+                  <q-btn
+                    v-if="tagsToApplyExist"
+                    flat
+                    round
+                    icon="content_paste"
+                    @click="mergeTags(item)"
+                  />
+                </q-card-actions>
+              </template>
+            </Picture-Card>
           </div>
           <template v-slot:loading>
             <div class="row justify-center q-my-md">
@@ -191,3 +204,13 @@ const carouselCancel = (hash: string) => {
   })
 }
 </script>
+
+<style lang="scss" scoped>
+.q-btn,
+.q-icon {
+  color: $grey-7;
+}
+.q-btn.disabled {
+  opacity: 0.2 !important;
+}
+</style>

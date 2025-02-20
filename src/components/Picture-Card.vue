@@ -10,22 +10,7 @@
           {{ rec.headline }}
         </div>
       </div>
-      <q-card-actions
-        v-if="canManage && editMode"
-        class="justify-around bg-grey-10 col"
-        style="max-width: 58px; padding-bottom: 53px"
-        vertical
-      >
-        <q-btn flat round icon="delete" @click="emit('confirm-delete', rec)" />
-        <q-btn flat round icon="edit" @click="emit('edit-record', rec)" />
-        <q-btn
-          v-if="canMergeTags"
-          flat
-          round
-          icon="content_paste"
-          @click="emit('merge-tags', rec)"
-        />
-      </q-card-actions>
+      <slot name="action"></slot>
     </q-card-section>
     <q-card-section class="row justify-between">
       <span>
@@ -64,34 +49,18 @@
         <img :src="fileBroken" />
       </template>
     </q-img>
-    <q-card-actions v-if="canManage" class="justify-between">
-      <q-btn flat round icon="delete" @click="emit('delete-record', rec)" />
-      <q-btn flat round icon="publish" @click="emit('edit-record', rec)" />
-    </q-card-actions>
+    <slot name="action"></slot>
   </q-card>
 </template>
 
 <script setup lang="ts">
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'stores/app'
 import type { StoredItem } from './models'
 
 defineProps<{
   rec: StoredItem
-  canManage: boolean
-  canMergeTags?: boolean
 }>()
-const emit = defineEmits([
-  'carousel-show',
-  'confirm-delete',
-  'edit-record',
-  'merge-tags',
-  'delete-record',
-])
-
-const app = useAppStore()
-const { editMode } = storeToRefs(app)
+const emit = defineEmits(['carousel-show'])
 
 const cardAttributes = (filename: string) => {
   let attr
@@ -139,20 +108,6 @@ const openMaps = (loc: string) => {
 </script>
 
 <style lang="scss" scoped>
-.q-btn,
-.q-icon {
-  color: $grey-7;
-}
-.q-btn.disabled {
-  opacity: 0.2 !important;
-}
-.center {
-  width: 25%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
 .headline {
   color: white;
   background-color: rgba(0, 0, 0, 0.5);
