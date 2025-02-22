@@ -6,7 +6,7 @@
       :disable="busy"
       dark
       clearable
-      @update:model-value="submit"
+      @blur="submit"
       :dense="$q.screen.xs"
     />
     <Auto-Complete
@@ -108,33 +108,36 @@ const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToR
 const tmp = ref({ ...(find.value as Find) })
 
 /**
- * Dispatches a query to find data.
+ * Dispatches a query to fetch records and updates the route based on the query parameters.
  *
  * @param {Find} query - The query object containing search parameters.
- * @param {string} [invoked=''] - An optional string indicating the source of the invocation.
- * @returns {Promise<void>} - A promise that resolves when the query is dispatched.
+ * @param {string} [invoked=''] - Optional parameter to specify the invoked action.
+ * @returns {Promise<void>} - A promise that resolves when the records are fetched and the route is updated.
+ *
+ * The function performs the following steps:
+ * 1. Sanitizes the query object by removing null or empty values and converting specific keys.
+ *    - Converts 'year', 'month', and 'day' values to numbers.
+ *    - Converts 'tags' value to an array if it is a string.
+ * 2. Updates the `tmp` and `find` values with the sanitized query.
+ * 3. Fetches records with the new filter and resets the state.
+ * 4. Updates the route based on the sanitized query:
+ *    - If the sanitized query has keys, navigates to the '/list' path with the query parameters.
+ *    - Otherwise, navigates to the root path '/'.
  */
 const queryDispatch = async (query: Find, invoked = '') => {
-  const sanitizedQuery = { ...query }
-
-  // delete keys without values
-  Object.keys(sanitizedQuery).forEach((key) => {
-    if (sanitizedQuery[key as keyof Find] === null || sanitizedQuery[key as keyof Find] === '') {
-      delete sanitizedQuery[key as keyof Find]
-    }
-  })
-
-  // adopt to match types
-  Object.keys(sanitizedQuery).forEach((key) => {
-    if (['year', 'month', 'day'].includes(key)) {
-      sanitizedQuery[key as 'year' | 'month' | 'day'] = +(sanitizedQuery[
-        key as keyof Find
-      ] as number)
-    } else if (key === 'tags' && typeof sanitizedQuery[key as keyof Find] === 'string') {
-      sanitizedQuery[key as 'tags'] = [sanitizedQuery[key as keyof Find] as string]
-    }
-  })
-
+  const sanitizedQuery = Object.fromEntries(
+    Object.entries(query)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .filter(([_, value]) => value !== null && value !== '')
+      .map(([key, value]) => {
+        if (['year', 'month', 'day'].includes(key)) {
+          return [key, +value]
+        } else if (key === 'tags' && typeof value === 'string') {
+          return [key, [value]]
+        }
+        return [key, value]
+      }),
+  )
   tmp.value = find.value = sanitizedQuery
   await app.fetchRecords(true, invoked) // new filter with reset
 
