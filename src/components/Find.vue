@@ -6,9 +6,15 @@
       :disable="busy"
       dark
       clearable
-      @blur="submit"
+      :rules="[(val) => val === '' || val.length > 2 || 'Provide at least 3 characters']"
+      @clear="submit"
+      @keydown.enter.prevent="submit"
       :dense="$q.screen.xs"
-    />
+    >
+      <template #append>
+        <q-icon v-if="tmp.text" name="search" class="cursor-pointer" @click="submit" />
+      </template>
+    </q-input>
     <Auto-Complete
       label="by tags"
       v-model="tmp.tags"
@@ -98,6 +104,7 @@ import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
 import type { Find } from './models'
+import type { QInput } from 'quasar'
 
 const app = useAppStore()
 const meta = useValuesStore()
