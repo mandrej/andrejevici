@@ -257,8 +257,7 @@ const onSubmit = () => {
   tmp.tags = tmp.tags ? tmp.tags : []
   tmp.nick = emailNick(tmp.email)
   tmp.headline = tmp.headline!.trim() === '' ? CONFIG.noTitle : tmp.headline!.trim()
-  const slug = textSlug(tmp.headline)
-  tmp.text = sliceSlug(slug)
+  tmp.text = sliceSlug(textSlug(tmp.headline))
   // set find on new added image
   if (!tmp.thumb) {
     find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })

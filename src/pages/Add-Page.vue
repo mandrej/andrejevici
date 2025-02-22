@@ -115,7 +115,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory, emailNick, reFilename } from '../helpers'
+import { CONFIG, fakeHistory, emailNick, reFilename, textSlug, sliceSlug } from '../helpers'
 import notify from '../helpers/notify'
 import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
@@ -301,6 +301,7 @@ const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
   rec.headline = headlineToApply.value?.trim() || CONFIG.noTitle
+  rec.text = sliceSlug(textSlug(rec.headline))
   // add flash tag if exif flash true
   if (rec.flash && tags.indexOf('flash') === -1) {
     tags.push('flash')

@@ -213,6 +213,8 @@ export const useAppStore = defineStore('app', {
         this.bucketDiff(obj.size)
         meta.increaseValues(obj)
       }
+      this.currentEdit = obj as StoredItem
+      if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
     },
     async deleteRecord(obj: StoredItem) {
       notify({

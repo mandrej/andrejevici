@@ -28,8 +28,7 @@ export const fix = async () => {
     const rec = it.data()
     if (!('text' in rec)) {
       const docRef = doc(db, 'Photo', rec.filename)
-      const slug = textSlug(rec.headline)
-      rec.text = sliceSlug(slug)
+      rec.text = sliceSlug(textSlug(rec.headline))
       notify({
         message: `Fixed ${++num} records`,
         group: 'fix',
