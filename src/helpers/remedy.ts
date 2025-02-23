@@ -29,16 +29,17 @@ export const fix = async () => {
     if (!('text' in rec)) {
       const docRef = doc(db, 'Photo', rec.filename)
       rec.text = sliceSlug(textSlug(rec.headline))
-      notify({
-        message: `Fixed ${++num} records`,
-        group: 'fix',
-      })
       await setDoc(docRef, rec, { merge: true })
     }
   })
   if (num === 0) {
     notify({
       message: `No records to fix`,
+      group: 'fix',
+    })
+  } else {
+    notify({
+      message: `Fixed ${++num} records`,
       group: 'fix',
     })
   }
