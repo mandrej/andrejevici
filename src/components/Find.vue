@@ -103,7 +103,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
-import type { Find } from './models'
+import type { FindType } from './models'
 import type { QInput } from 'quasar'
 
 const app = useAppStore()
@@ -112,12 +112,12 @@ const route = useRoute()
 const router = useRouter()
 const { busy, find } = storeToRefs(app)
 const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
-const tmp = ref({ ...(find.value as Find) })
+const tmp = ref({ ...(find.value as FindType) })
 
 /**
  * Dispatches a query to fetch records and updates the route based on the query parameters.
  *
- * @param {Find} query - The query object containing search parameters.
+ * @param {FindType} query - The query object containing search parameters.
  * @param {string} [invoked=''] - Optional parameter to specify the invoked action.
  * @returns {Promise<void>} - A promise that resolves when the records are fetched and the route is updated.
  *
@@ -131,7 +131,7 @@ const tmp = ref({ ...(find.value as Find) })
  *    - If the sanitized query has keys, navigates to the '/list' path with the query parameters.
  *    - Otherwise, navigates to the root path '/'.
  */
-const queryDispatch = async (query: Find, invoked = '') => {
+const queryDispatch = async (query: FindType, invoked = '') => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

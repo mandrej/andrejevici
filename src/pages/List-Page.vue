@@ -84,7 +84,7 @@ import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
 import { U, fakeHistory, reFilename, removeHash } from '../helpers'
 import notify from '../helpers/notify'
-import type { StoredItem } from 'src/components/models'
+import type { PhotoType } from 'src/components/models'
 
 import PictureCard from '../components/Picture-Card.vue'
 import SwiperView from '../components/Swiper-View.vue'
@@ -132,7 +132,7 @@ const onLoad = async (index = 0, done: () => void) => {
   done()
 }
 
-const isAuthorOrAdmin = (rec: StoredItem) => {
+const isAuthorOrAdmin = (rec: PhotoType) => {
   return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
 }
 
@@ -142,18 +142,18 @@ const tagsToApplyExist = (): boolean => {
   )
 }
 
-const mergeTags = (rec: StoredItem) => {
+const mergeTags = (rec: PhotoType) => {
   rec.tags = Array.from(new Set([...(tagsToApply.value ?? []), ...(rec.tags ?? [])])).sort()
   app.saveRecord(rec)
   editOk(U + rec.filename)
 }
 
-const confirmShow = (rec: StoredItem) => {
+const confirmShow = (rec: PhotoType) => {
   select2delete.value = rec
   fakeHistory()
   showConfirm.value = true
 }
-const confirmOk = async (rec: StoredItem) => {
+const confirmOk = async (rec: PhotoType) => {
   showConfirm.value = false
   await app.deleteRecord(rec)
   if (objects.value.length === 0 && showCarousel.value) {
@@ -163,7 +163,7 @@ const confirmOk = async (rec: StoredItem) => {
   }
 }
 
-const editRecord = (rec: StoredItem) => {
+const editRecord = (rec: PhotoType) => {
   currentEdit.value = rec
   fakeHistory()
   showEdit.value = true

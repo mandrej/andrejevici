@@ -178,7 +178,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import AutoComplete from './Auto-Complete.vue'
-import type { StoredItem } from './models'
+import type { PhotoType } from './models'
 
 const emit = defineEmits(['edit-ok'])
 const props = defineProps({
@@ -188,7 +188,7 @@ const props = defineProps({
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
-const tmp = reactive({ ...props.rec }) as StoredItem
+const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit, find } = storeToRefs(app)
 const { emailValues, tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)

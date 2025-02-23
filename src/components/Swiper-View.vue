@@ -73,7 +73,7 @@ import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
 import notify from '../helpers/notify'
 import type { Swiper } from 'swiper/types'
-import type { StoredItem } from './models'
+import type { PhotoType } from './models'
 
 import 'swiper/scss'
 import 'swiper/scss/zoom'
@@ -136,7 +136,7 @@ const onError = (e: Event) => {
     target.src = fileBroken
   }
 }
-const caption = (rec: StoredItem) => {
+const caption = (rec: PhotoType) => {
   let tmp = ''
   const { headline, aperture, shutter, iso, model, lens } = rec
   tmp += headline + '<br/>'

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
-import type { myUser } from '../components/models'
+import type { MyUserType } from '../components/models'
 import CONFIG from 'app/config'
 
 /*
@@ -22,7 +22,7 @@ const router = createRouter({
 
 router.beforeEach((to: RouteLocationNormalized) => {
   const auth = useUserStore()
-  const user = (auth.user as myUser) || null
+  const user = (auth.user as MyUserType) || null
 
   if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
     return { name: '401', replace: true }

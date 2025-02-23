@@ -1,4 +1,4 @@
-export interface Find {
+export interface FindType {
   year?: number
   month?: number
   day?: number
@@ -8,11 +8,11 @@ export interface Find {
   lens?: string
   nick?: string
 }
-export interface Bucket {
+export interface BucketType {
   size: number
   count: number
 }
-export interface ExifResult {
+export interface ExifType {
   date?: string
   day?: number
   month?: number
@@ -28,7 +28,7 @@ export interface ExifResult {
   dim?: [number, number]
   loc?: string
 }
-export interface StoredItem extends ExifResult {
+export interface PhotoType extends ExifType {
   readonly filename: string
   readonly url: string
   size: number
@@ -39,7 +39,7 @@ export interface StoredItem extends ExifResult {
   text?: string[]
   thumb?: string
 }
-export interface LastRecord extends StoredItem {
+export interface LastPhoto extends PhotoType {
   href: string
 }
 export interface CounterRecord {
@@ -47,7 +47,7 @@ export interface CounterRecord {
   field: 'year' | 'tags' | 'model' | 'lens' | 'email'
   value: string
 }
-export interface myUser {
+export interface MyUserType {
   readonly uid: string
   name: string
   email: string

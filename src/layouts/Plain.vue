@@ -102,13 +102,13 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { version, fileBroken } from '../helpers'
 import HistoryButton from '../components/History-Button.vue'
-import type { LastRecord } from 'src/components/models'
+import type { LastPhoto } from 'src/components/models'
 
 const app = useAppStore()
 const auth = useUserStore()
 const { bucket, sinceYear, find } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const lastRecord = computed(() => app.lastRecord as LastRecord)
+const lastRecord = computed(() => app.lastRecord as LastPhoto)
 
 const common = {
   backgroundSize: 'cover',
@@ -116,7 +116,7 @@ const common = {
   backgroundRepeat: 'no-repeat',
   transition: 'background-image 0.2s ease-in-out',
 }
-const imageStyle = (rec: LastRecord) => {
+const imageStyle = (rec: LastPhoto) => {
   if (rec.thumb) {
     return { ...common, backgroundImage: `url(${rec.url}), url(${rec.thumb})` }
   } else {

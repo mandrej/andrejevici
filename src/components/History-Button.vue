@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { watch } from 'vue'
-import type { Find } from '../components/models'
+import type { FindType } from '../components/models'
 
 const app = useAppStore()
 const router = useRouter()
@@ -24,7 +24,7 @@ const { find, currentEdit } = storeToRefs(app)
 watch(
   currentEdit,
   (newRec) => {
-    find.value = { year: newRec.year, month: newRec.month, day: newRec.day } as Find
+    find.value = { year: newRec.year, month: newRec.month, day: newRec.day } as FindType
   },
   { deep: true },
 )

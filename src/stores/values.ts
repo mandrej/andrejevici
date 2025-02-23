@@ -16,7 +16,7 @@ import {
 import notify from '../helpers/notify'
 import { CONFIG, emailNick } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
-import type { StoredItem, ValuesState } from '../components/models'
+import type { PhotoType, ValuesState } from '../components/models'
 import { deepDiffMapper } from '../helpers/diff'
 
 const photosCol = collection(db, 'Photo')
@@ -194,9 +194,9 @@ export const useValuesStore = defineStore('meta', {
       }
       if (process.env.DEV) console.log('increase ' + id, this.values[field][val])
     },
-    async increaseValues(newData: StoredItem): Promise<void> {
+    async increaseValues(newData: PhotoType): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        const fieldValue = newData[field as keyof StoredItem]
+        const fieldValue = newData[field as keyof PhotoType]
         if (fieldValue && newData.date) {
           if (field === 'tags') {
             for (const tag of fieldValue as string) {
@@ -233,9 +233,9 @@ export const useValuesStore = defineStore('meta', {
         if (process.env.DEV) console.log('decrease ' + id, this.values[field][val])
       }
     },
-    async decreaseValues(oldData: StoredItem): Promise<void> {
+    async decreaseValues(oldData: PhotoType): Promise<void> {
       for (const field of CONFIG.photo_filter) {
-        const fieldValue = oldData[field as keyof StoredItem]
+        const fieldValue = oldData[field as keyof PhotoType]
         if (fieldValue) {
           if (field === 'tags') {
             for (const tag of fieldValue as string[]) {

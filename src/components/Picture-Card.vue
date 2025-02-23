@@ -55,10 +55,10 @@
 
 <script setup lang="ts">
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
-import type { StoredItem } from './models'
+import type { PhotoType } from './models'
 
 defineProps<{
-  rec: StoredItem
+  rec: PhotoType
 }>()
 const emit = defineEmits(['carousel-show'])
 
@@ -87,7 +87,7 @@ const cardAttributes = (filename: string) => {
   return attr
 }
 
-const thumbStyle = (rec: StoredItem) => {
+const thumbStyle = (rec: PhotoType) => {
   const common = {
     height: '240px',
     backgroundSize: 'cover',

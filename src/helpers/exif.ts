@@ -1,6 +1,6 @@
 import exifReader from 'exifreader'
 import { formatDatum } from './index'
-import type { ExifResult } from '../components/models'
+import type { ExifType } from '../components/models'
 
 interface LensSwap {
   [key: string]: string
@@ -14,8 +14,8 @@ const LENSES: LensSwap = {
   'Canon EF 50mm f1.8 STM': 'EF50mm f1.8 STM',
 }
 
-const readExif = async (url: string): Promise<ExifResult | null> => {
-  const result: ExifResult = { model: 'UNKNOWN', date: formatDatum(new Date()) }
+const readExif = async (url: string): Promise<ExifType | null> => {
+  const result: ExifType = { model: 'UNKNOWN', date: formatDatum(new Date()) }
   const tags = await exifReader.load(url, { expanded: true })
 
   if (tags.exif) delete tags.exif.MakerNote

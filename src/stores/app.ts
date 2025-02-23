@@ -33,7 +33,7 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type { Find, Bucket, StoredItem, LastRecord } from '../components/models'
+import type { FindType, BucketType, PhotoType, LastPhoto } from '../components/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')
@@ -54,14 +54,14 @@ export const useAppStore = defineStore('app', {
     bucket: {
       size: 0,
       count: 0,
-    } as Bucket,
+    } as BucketType,
 
-    find: {} as Find | null,
-    uploaded: [] as StoredItem[],
-    objects: [] as StoredItem[],
+    find: {} as FindType | null,
+    uploaded: [] as PhotoType[],
+    objects: [] as PhotoType[],
     next: null as string | null,
-    currentEdit: {} as StoredItem,
-    lastRecord: {} as StoredItem | null,
+    currentEdit: {} as PhotoType,
+    lastRecord: {} as PhotoType | null,
     sinceYear: '',
 
     busy: false,
@@ -84,12 +84,12 @@ export const useAppStore = defineStore('app', {
     async bucketRead() {
       const docSnap = await getDoc(bucketRef)
       if (docSnap.exists()) {
-        this.bucket = docSnap.data() as Bucket
+        this.bucket = docSnap.data() as BucketType
       } else {
         console.error('Failed to read bucket data')
       }
     },
-    async bucketDiff(num: number): Promise<Bucket> {
+    async bucketDiff(num: number): Promise<BucketType> {
       if (num > 0) {
         this.bucket.size += num
         this.bucket.count++
@@ -104,7 +104,7 @@ export const useAppStore = defineStore('app', {
       await setDoc(bucketRef, this.bucket, { merge: true })
       return this.bucket
     },
-    async bucketBuild(): Promise<Bucket> {
+    async bucketBuild(): Promise<BucketType> {
       const res = {
         count: 0,
         size: 0,
@@ -157,14 +157,14 @@ export const useAppStore = defineStore('app', {
         const querySnapshot: QuerySnapshot = await getDocs(query(photosCol, ...constraints))
         if (reset) this.objects.length = 0
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
-          this.objects.push(d.data() as StoredItem)
+          this.objects.push(d.data() as PhotoType)
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
         this.next = next && next.id !== this.next ? next.id : null
       } catch (err) {
         this.error = (err as Error).message
         this.busy = false
-        return { objects: [] as StoredItem[], error: (err as Error).message, next: null }
+        return { objects: [] as PhotoType[], error: (err as Error).message, next: null }
       }
 
       if (this.find?.tags) {
@@ -183,12 +183,12 @@ export const useAppStore = defineStore('app', {
       if (process.env.DEV)
         console.log('FETCHED FOR ' + invoked + ' ' + JSON.stringify(this.find, null, 2))
     },
-    async saveRecord(obj: StoredItem) {
+    async saveRecord(obj: PhotoType) {
       const docRef = doc(db, 'Photo', obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
-        meta.decreaseValues(oldDoc.data() as StoredItem)
+        meta.decreaseValues(oldDoc.data() as PhotoType)
         await setDoc(docRef, obj, { merge: true })
 
         changeByFilename(this.objects, obj)
@@ -213,10 +213,10 @@ export const useAppStore = defineStore('app', {
         this.bucketDiff(obj.size)
         meta.increaseValues(obj)
       }
-      this.currentEdit = obj as StoredItem
+      this.currentEdit = obj as PhotoType
       if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
     },
-    async deleteRecord(obj: StoredItem) {
+    async deleteRecord(obj: PhotoType) {
       notify({
         group: `${obj.filename}`,
         message: `Please wait`,
@@ -224,7 +224,7 @@ export const useAppStore = defineStore('app', {
       if (obj.thumb) {
         const docRef = doc(db, 'Photo', obj.filename)
         const docSnap = await getDoc(docRef)
-        const data = docSnap.data() as StoredItem
+        const data = docSnap.data() as PhotoType
         const stoRef = storageRef(storage, obj.filename)
         const thumbRef = storageRef(storage, thumbName(obj.filename))
         await deleteDoc(docRef)
@@ -256,16 +256,16 @@ export const useAppStore = defineStore('app', {
         })
       }
     },
-    async getLast(): Promise<LastRecord | null> {
+    async getLast(): Promise<LastPhoto | null> {
       try {
         const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'desc'), limit(1)))
-        const rec = getRec(querySnapshot) as LastRecord
+        const rec = getRec(querySnapshot) as LastPhoto
         if (rec) {
           // Set the href property to the URL of the last month it was taken
           rec.href = '/list?' + new URLSearchParams({ year: '' + rec.year, month: '' + rec.month })
         }
         this.lastRecord = rec
-        return rec as LastRecord
+        return rec as LastPhoto
       } catch (error) {
         console.error('Failed to get last record:', error)
         return null

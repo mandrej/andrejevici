@@ -122,7 +122,7 @@ import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
 import ButtonRow from 'components/Button-Row.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
-import type { StoredItem } from 'src/components/models'
+import type { PhotoType } from 'src/components/models'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 
@@ -260,7 +260,7 @@ const uploadTask = (file: File): Promise<string> => {
             getDownloadURL(task[file.name]!.snapshot.ref).then((downloadURL) => {
               // const urlParams = new URLSearchParams(downloadURL);
               // console.log(urlParams.get("token"));
-              const data: StoredItem = {
+              const data: PhotoType = {
                 url: downloadURL,
                 filename: filename,
                 size: file.size,
@@ -296,7 +296,7 @@ const addNewTag = (inputValue: string, done: (result: string) => void): void => 
   done(inputValue)
 }
 
-const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
+const addProperies = async (rec: PhotoType): Promise<PhotoType> => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
@@ -315,8 +315,8 @@ const addProperies = async (rec: StoredItem): Promise<StoredItem> => {
  * Add user email and tags: [] to new rec; read exif
  * See Edit-Record getExif
  */
-const editRecord = async (rec: StoredItem) => {
-  const newRec: StoredItem = await addProperies(rec)
+const editRecord = async (rec: PhotoType) => {
+  const newRec: PhotoType = await addProperies(rec)
   fakeHistory()
   showEdit.value = true
   currentEdit.value = newRec
@@ -334,7 +334,7 @@ const publishSelected = async () => {
       : app.uploaded.filter((item) => selection.value.includes(item.filename))
   // console.log(selected.map((item) => item.filename))
   for (const rec of selected) {
-    const newRec: StoredItem = await addProperies(rec)
+    const newRec: PhotoType = await addProperies(rec)
     app.saveRecord(newRec)
     currentEdit.value = newRec
     app.uploaded = app.uploaded.filter((item) => item.filename !== rec.filename)

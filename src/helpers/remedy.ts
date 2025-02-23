@@ -10,7 +10,7 @@ import { emailNick } from '.'
 import router from '../router'
 
 import notify from './notify'
-import type { StoredItem, ValuesState } from '../components/models'
+import type { PhotoType, ValuesState } from '../components/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -104,7 +104,7 @@ export const mismatch = async () => {
 
     if (promises.length > 0) {
       const results = await Promise.all(promises)
-      results.forEach((it) => uploaded.value.push(it as StoredItem))
+      results.forEach((it) => uploaded.value.push(it as PhotoType))
 
       notify({
         type: 'negative',
