@@ -84,7 +84,7 @@ import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
 import { U, fakeHistory, reFilename, removeHash } from '../helpers'
 import notify from '../helpers/notify'
-import type { PhotoType } from 'src/components/models'
+import type { PhotoType } from 'src/helpers/models'
 
 import PictureCard from '../components/Picture-Card.vue'
 import SwiperView from '../components/Swiper-View.vue'

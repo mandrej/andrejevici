@@ -16,7 +16,7 @@ import {
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User, UserCredential, AuthError } from 'firebase/auth'
-import type { MyUserType } from '../components/models'
+import type { MyUserType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 
 const provider = new GoogleAuthProvider()

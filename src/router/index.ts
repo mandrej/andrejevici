@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
-import type { MyUserType } from '../components/models'
+import type { MyUserType } from '../helpers/models'
 import CONFIG from 'app/config'
 
 /*

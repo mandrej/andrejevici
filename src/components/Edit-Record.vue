@@ -178,7 +178,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import AutoComplete from './Auto-Complete.vue'
-import type { PhotoType } from './models'
+import type { PhotoType } from '../helpers/models'
 
 const emit = defineEmits(['edit-ok'])
 const props = defineProps({

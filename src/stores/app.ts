@@ -33,7 +33,7 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type { FindType, BucketType, PhotoType, LastPhoto } from '../components/models'
+import type { FindType, BucketType, PhotoType, LastPhoto } from '../helpers/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')

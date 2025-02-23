@@ -102,7 +102,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { version, fileBroken } from '../helpers'
 import HistoryButton from '../components/History-Button.vue'
-import type { LastPhoto } from 'src/components/models'
+import type { LastPhoto } from 'src/helpers/models'
 
 const app = useAppStore()
 const auth = useUserStore()

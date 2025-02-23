@@ -16,7 +16,7 @@ import {
 import notify from '../helpers/notify'
 import { CONFIG, emailNick } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
-import type { PhotoType, ValuesState } from '../components/models'
+import type { PhotoType, ValuesState } from '../helpers/models'
 import { deepDiffMapper } from '../helpers/diff'
 
 const photosCol = collection(db, 'Photo')

@@ -103,8 +103,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
-import type { FindType } from './models'
-import type { QInput } from 'quasar'
+import type { FindType } from '../helpers/models'
 
 const app = useAppStore()
 const meta = useValuesStore()

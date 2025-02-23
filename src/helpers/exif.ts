@@ -1,6 +1,6 @@
 import exifReader from 'exifreader'
 import { formatDatum } from './index'
-import type { ExifType } from '../components/models'
+import type { ExifType } from './models'
 
 interface LensSwap {
   [key: string]: string

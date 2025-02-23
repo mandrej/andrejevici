@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
-import type { PhotoType } from './models'
+import type { PhotoType } from '../helpers/models'
 
 defineProps<{
   rec: PhotoType

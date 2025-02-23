@@ -10,7 +10,7 @@ import { emailNick } from '.'
 import router from '../router'
 
 import notify from './notify'
-import type { PhotoType, ValuesState } from '../components/models'
+import type { PhotoType, ValuesState } from './models'
 
 const app = useAppStore()
 const meta = useValuesStore()

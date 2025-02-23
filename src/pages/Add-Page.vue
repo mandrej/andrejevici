@@ -122,7 +122,7 @@ import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
 import ButtonRow from 'components/Button-Row.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
-import type { PhotoType } from 'src/components/models'
+import type { PhotoType } from 'src/helpers/models'
 
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 

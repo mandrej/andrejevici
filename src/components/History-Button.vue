@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { watch } from 'vue'
-import type { FindType } from '../components/models'
+import type { FindType } from '../helpers/models'
 
 const app = useAppStore()
 const router = useRouter()
