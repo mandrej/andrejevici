@@ -104,6 +104,7 @@ import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { months } from '../helpers'
 import type { FindType } from '../helpers/models'
+import type { LocationQueryRaw } from 'vue-router'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -114,23 +115,13 @@ const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToR
 const tmp = ref({ ...(find.value as FindType) })
 
 /**
- * Dispatches a query to fetch records and updates the route based on the query parameters.
+ * Fixes and sanitizes the given query object by removing null or empty string values,
+ * converting specific keys to appropriate types, and ensuring the 'tags' key is an array.
  *
- * @param {FindType} query - The query object containing search parameters.
- * @param {string} [invoked=''] - Optional parameter to specify the invoked action.
- * @returns {Promise<void>} - A promise that resolves when the records are fetched and the route is updated.
- *
- * The function performs the following steps:
- * 1. Sanitizes the query object by removing null or empty values and converting specific keys.
- *    - Converts 'year', 'month', and 'day' values to numbers.
- *    - Converts 'tags' value to an array if it is a string.
- * 2. Updates the `tmp` and `find` values with the sanitized query.
- * 3. Fetches records with the new filter and resets the state.
- * 4. Updates the route based on the sanitized query:
- *    - If the sanitized query has keys, navigates to the '/list' path with the query parameters.
- *    - Otherwise, navigates to the root path '/'.
+ * @param {FindType} query - The query object to be sanitized.
+ * @returns {FindType} - The sanitized query object.
  */
-const queryDispatch = async (query: FindType, invoked = '') => {
+const fixQuery = (query: FindType): FindType => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -144,31 +135,25 @@ const queryDispatch = async (query: FindType, invoked = '') => {
         return [key, value]
       }),
   )
-  tmp.value = find.value = sanitizedQuery
-  await app.fetchRecords(true, invoked) // new filter with reset
-
-  // this dispatch route change
-  if (Object.keys(sanitizedQuery).length) {
-    router.push({
-      path: '/list',
-      query: sanitizedQuery as Record<string, string | number | string[]>,
-      hash: route.hash,
-    })
-  } else {
-    router.push({ path: '/' })
-  }
+  return sanitizedQuery
 }
 
 watch(
   route,
   (to) => {
-    queryDispatch(to.query, 'route')
+    tmp.value = find.value = fixQuery(to.query)
+    app.fetchRecords(true)
   },
   { deep: true, immediate: true },
 )
 
 const submit = () => {
-  queryDispatch(tmp.value, 'submit')
+  tmp.value = find.value = fixQuery(tmp.value)
+  router.push({
+    path: '/list',
+    query: tmp.value as LocationQueryRaw,
+    hash: route.hash,
+  })
 }
 
 const optionsMonth = computed(() => {

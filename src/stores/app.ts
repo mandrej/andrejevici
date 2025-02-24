@@ -122,11 +122,8 @@ export const useAppStore = defineStore('app', {
       notify({ message: `Bucket size calculated` })
       return this.bucket
     },
-    async fetchRecords(reset = false, invoked = '') {
-      if (this.busy) {
-        if (process.env.DEV) console.log('SKIPPED FOR ' + invoked)
-        return
-      }
+    async fetchRecords(reset = false) {
+      if (this.busy) return
 
       const max =
         CONFIG.limit *
@@ -180,8 +177,7 @@ export const useAppStore = defineStore('app', {
 
       this.error = this.objects.length === 0 ? 'empty' : null
       this.busy = false
-      if (process.env.DEV)
-        console.log('FETCHED FOR ' + invoked + ' ' + JSON.stringify(this.find, null, 2))
+      if (process.env.DEV) console.log('FETCH ' + JSON.stringify(this.find, null, 2))
     },
     async saveRecord(obj: PhotoType) {
       const docRef = doc(db, 'Photo', obj.filename)

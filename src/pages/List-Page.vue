@@ -125,9 +125,9 @@ const findIndex = (filename: string) => {
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const onLoad = async (index = 0, done: () => void) => {
+const onLoad = (index = 0, done: () => void) => {
   if (next.value) {
-    await app.fetchRecords(false, 'scroll')
+    app.fetchRecords(false)
   }
   done()
 }
