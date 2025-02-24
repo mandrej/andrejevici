@@ -94,7 +94,7 @@ export const useAppStore = defineStore('app', {
         this.bucket.size += num
         this.bucket.count++
       } else {
-        this.bucket.size -= num
+        this.bucket.size += num
         this.bucket.count--
       }
       if (this.bucket.count <= 0) {

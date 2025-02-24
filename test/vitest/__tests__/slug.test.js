@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest'
+import { slugify } from 'transliteration'
 import { textSlug, sliceSlug } from '../../../src/helpers/index'
+
+describe('slugify', () => {
+  it('should return an empty array when given an empty string', () => {
+    expect(slugify('')).toEqual('')
+  })
+
+  it('should return slug with hyphens', () => {
+    expect(slugify('Петровац на мору')).toEqual('petrovac-na-moru')
+  })
+  it('should return slug with hyphens', () => {
+    expect(slugify('Шупаљ ђеврек')).toEqual('shupalj-djevrek')
+  })
+})
 
 describe('textSlug', () => {
   it('should return an empty array when given an empty string', () => {
