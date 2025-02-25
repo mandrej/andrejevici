@@ -144,7 +144,7 @@ watch(
     tmp.value = find.value = fixQuery(to.query)
     app.fetchRecords(true)
   },
-  { deep: true, immediate: true },
+  { immediate: true },
 )
 
 const submit = () => {
@@ -152,7 +152,6 @@ const submit = () => {
   router.push({
     path: '/list',
     query: tmp.value as LocationQueryRaw,
-    hash: route.hash,
   })
 }
 
