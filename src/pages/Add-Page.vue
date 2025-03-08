@@ -323,22 +323,41 @@ const editRecord = async (rec: PhotoType) => {
 }
 
 /**
- * PUBLISH ALL RECORDS
- * Add user email and tags: [] to new rec; read exif
- * See Edit-Record getExif
+ * Asynchronously publishes the selected items.
+ *
+ * This function performs the following steps:
+ * 1. Determines the selected items based on the current selection or defaults to all uploaded items if none are selected.
+ * 2. Iterates over the selected items, adds properties to each item, and saves the updated records.
+ * 3. Updates the current edit state with the new record.
+ * 4. Waits for all save operations to complete and handles any rejections by notifying the user.
+ * 5. Removes the published items from the uploaded list and clears the selection.
+ *
+ * @returns {Promise<void>} A promise that resolves when all operations are complete.
  */
 const publishSelected = async () => {
   const selected =
     selection.value.length === 0
       ? app.uploaded
       : app.uploaded.filter((item) => selection.value.includes(item.filename))
-  // console.log(selected.map((item) => item.filename))
+  const promises: Promise<unknown>[] = []
   for (const rec of selected) {
     const newRec: PhotoType = await addProperies(rec)
-    app.saveRecord(newRec)
-    currentEdit.value = newRec
-    app.uploaded = app.uploaded.filter((item) => item.filename !== rec.filename)
+    promises.push(app.saveRecord(newRec))
   }
+  const results = await Promise.allSettled(promises)
+  results.forEach((it) => {
+    if (it.status === 'rejected') {
+      notify({
+        type: 'negative',
+        message: `Rejected ${it.reason}.`,
+        actions: [{ icon: 'close' }],
+        timeout: 0,
+      })
+    } else {
+      currentEdit.value = it.value as PhotoType
+    }
+  })
+  app.uploaded = app.uploaded.filter((item) => !selection.value.includes(item.filename))
   selection.value = []
 }
 </script>

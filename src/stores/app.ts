@@ -210,7 +210,8 @@ export const useAppStore = defineStore('app', {
         meta.increaseValues(obj)
       }
       this.currentEdit = obj as PhotoType
-      if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
+      // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
+      return obj
     },
     async deleteRecord(obj: PhotoType) {
       notify({
