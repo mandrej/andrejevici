@@ -8,7 +8,7 @@
           :style="imageStyle(lastRecord)"
         >
           <router-link
-            :to="lastRecord.href"
+            :to="{ path: '/list' }"
             style="display: block"
             v-ripple.early="{ color: 'purple' }"
           >
