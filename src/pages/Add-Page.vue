@@ -220,10 +220,7 @@ const onSubmit = async (evt: Event): Promise<void> => {
       delete task[it.reason]
       delete progressInfo[it.reason]
     } else if (it.status === 'fulfilled') {
-      notify({
-        type: 'positive',
-        message: `Uploaded ${it.value}.`,
-      })
+      notify({ message: `Uploaded ${it.value}.` })
       delete task[it.value as string]
       delete progressInfo[it.value as string]
     }
