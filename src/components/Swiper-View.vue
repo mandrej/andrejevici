@@ -45,7 +45,7 @@
             flat
             round
             class="absolute-bottom-left text-white q-pa-sm"
-            @click="onShare(obj.filename)"
+            @click="onShare()"
             icon="share"
           />
           <q-btn
@@ -150,15 +150,16 @@ const caption = (rec: PhotoType) => {
   return tmp
 }
 
-const onShare = (filename: string) => {
-  const url = window.location.href + '#' + U + filename
-  copyToClipboard(url)
-    .then(() => {
-      notify({ message: 'URL copied to clipboard' })
-    })
-    .catch(() => {
-      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-    })
+const onShare = () => {
+  if (window.location.hash) {
+    copyToClipboard(window.location.href)
+      .then(() => {
+        notify({ message: 'URL copied to clipboard' })
+      })
+      .catch(() => {
+        notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+      })
+  }
 }
 
 window.onpopstate = function () {
