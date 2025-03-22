@@ -151,15 +151,13 @@ const caption = (rec: PhotoType) => {
 }
 
 const onShare = () => {
-  if (window.location.hash) {
-    copyToClipboard(window.location.href)
-      .then(() => {
-        notify({ message: 'URL copied to clipboard' })
-      })
-      .catch(() => {
-        notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-      })
-  }
+  copyToClipboard(window.location.href)
+    .then(() => {
+      notify({ message: 'URL copied to clipboard' })
+    })
+    .catch(() => {
+      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+    })
 }
 
 window.onpopstate = function () {
