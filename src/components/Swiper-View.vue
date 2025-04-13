@@ -27,7 +27,11 @@
               icon="delete"
               @click="emit('confirm-delete', obj)"
             />
-            <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
+            <div
+              v-show="!full"
+              v-html="caption(obj)"
+              class="col q-my-sm text-white text-center ellipsis"
+            ></div>
 
             <q-btn
               flat
