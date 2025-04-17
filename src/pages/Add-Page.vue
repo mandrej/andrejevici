@@ -28,7 +28,7 @@
           :max-files="CONFIG.fileMax"
           label="Select images to upload"
           hint="Drag your images above to upload, or click to browse and select. Then
-          publish image on site. Accepts maximum 10 jpg (jpeg) files less then 4
+          publish image on site. Accepts maximum 10 jpg, jpeg, png, or gif files less then 4
           Mb in size."
           class="q-mb-md"
           @rejected="onValidationError"
