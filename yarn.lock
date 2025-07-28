@@ -1685,14 +1685,14 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==
 
-"@quasar/app-vite@^2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-2.1.4.tgz#d643c8ecd4d97e134ed94b3955e48d526683d25b"
-  integrity sha512-UBsF+HFirXB7tMs1GHcSqB4fb7TY+mbeEHjlwDx6NiHX+LawuzktQBAx9V36QqoMV95kNgZDJrwcbMcUNd0HsA==
+"@quasar/app-vite@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@quasar/app-vite/-/app-vite-2.3.0.tgz#c6b91cb3fb18896570289dee4b1bc139dfde2c3f"
+  integrity sha512-AHMRa5cdZ/TmV9mJ0jg/fbTMaMtFDfxvOjuPHL75AH6cZHECkXZ7ndTdVM0mU3i6lYwWf8Rx5OEi/PCwAMYJng==
   dependencies:
     "@quasar/render-ssr-error" "^1.0.3"
     "@quasar/ssl-certificate" "^1.0.0"
-    "@quasar/vite-plugin" "^1.9.0"
+    "@quasar/vite-plugin" "^1.10.0"
     "@types/chrome" "^0.0.262"
     "@types/compression" "^1.7.5"
     "@types/cordova" "^11.0.3"
@@ -1728,10 +1728,10 @@
     vite "^6.1.0"
     webpack-merge "^6.0.1"
 
-"@quasar/extras@^1.16.17":
-  version "1.16.17"
-  resolved "https://registry.yarnpkg.com/@quasar/extras/-/extras-1.16.17.tgz#50741489c9cc8a403ae8c595276aa11500ad0b38"
-  integrity sha512-4aX9XU/oj1+8O2C7LQCgywmoIw7suyUEZMPFFLWI61f21mF55VOsMdLCBhjeFgL5U4EWy079mfOR6/J8thi/ag==
+"@quasar/extras@^1.17.0":
+  version "1.17.0"
+  resolved "https://registry.yarnpkg.com/@quasar/extras/-/extras-1.17.0.tgz#966c0464a069d15f929d14f51b61fc8efefcf76c"
+  integrity sha512-KqAHdSJfIDauiR1nJ8rqHWT0diqD0QradZKoVIZJAilHAvgwyPIY7MbyR2z4RIMkUIMUSqBZcbshMpEw+9A30w==
 
 "@quasar/render-ssr-error@^1.0.3":
   version "1.0.3"
@@ -1748,10 +1748,10 @@
     fs-extra "^11.1.1"
     selfsigned "^2.1.1"
 
-"@quasar/vite-plugin@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@quasar/vite-plugin/-/vite-plugin-1.9.0.tgz#c95748490ebe3b769cbd851ea60f3461743c5083"
-  integrity sha512-r1MFtI2QZJ2g20pe75Zuv4aoi0uoK8oP0yEdzLWRoOLCbhtf2+StJpUza9TydYi3KcvCl9+4HUf3OAWVKoxDmQ==
+"@quasar/vite-plugin@^1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@quasar/vite-plugin/-/vite-plugin-1.10.0.tgz#0fff31c82e4093eebc338bc0f2f541a88a6aa4a4"
+  integrity sha512-4PJoTclz4ZjAfyqe0+hlkKcFJt0e2NX3Ac3hy8ILqUPdtZ24nCo5/xEHvTxZGBQMKRPwwePbO8CVs4n9EKJEug==
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
@@ -5181,10 +5181,10 @@ qs@6.13.0:
   dependencies:
     side-channel "^1.0.6"
 
-quasar@^2.18.1:
-  version "2.18.1"
-  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.18.1.tgz#3e9c68ef1db72cbbb188f2f943ac03662e712162"
-  integrity sha512-db/P64Mzpt1uXJ0MapaG+IYJQ9hHDb5KtTCoszwC78DR7sA+Uoj7nBW2EytwYykIExEmqavOvKrdasTvqhkgEg==
+quasar@^2.18.2:
+  version "2.18.2"
+  resolved "https://registry.yarnpkg.com/quasar/-/quasar-2.18.2.tgz#3bcf2e53371ec10bffc81b319b320e620e3953b7"
+  integrity sha512-SeSAamH4vgYH9alLTdVL2o1fTTwz7VZnS2+gvIwt6qsH3ndrn/tQW64sWE78VSvrHlWINYbXESVF/cvWEuTYxg==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
