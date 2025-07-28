@@ -62,7 +62,6 @@ export const useAppStore = defineStore('app', {
     next: null as string | null,
     currentEdit: {} as PhotoType,
     lastRecord: {} as PhotoType | null,
-    sinceYear: '',
 
     busy: false,
     error: null as string | null,
@@ -267,14 +266,6 @@ export const useAppStore = defineStore('app', {
         console.error('Failed to get last record:', error)
         return null
       }
-    },
-    async getSince() {
-      const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'asc'), limit(1)))
-      if (querySnapshot.empty) return null
-      querySnapshot.forEach((d) => {
-        const obj = d.data()
-        this.sinceYear = obj.year
-      })
     },
   },
 })

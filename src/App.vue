@@ -38,10 +38,9 @@ onAuthStateChanged(getAuth(), (usr) => {
   }
 })
 
-onMounted(() => {
-  app.getLast()
-  app.getSince()
-  app.bucketRead()
+onMounted(async () => {
+  await app.getLast()
+  await app.bucketRead()
   // RESET
   busy.value = false
   error.value = null

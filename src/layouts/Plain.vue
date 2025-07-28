@@ -100,13 +100,16 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
+import { useValuesStore } from 'src/stores/values'
 import { version, fileBroken } from '../helpers'
 import HistoryButton from '../components/History-Button.vue'
 import type { LastPhoto } from 'src/helpers/models'
 
 const app = useAppStore()
 const auth = useUserStore()
-const { bucket, sinceYear, find } = storeToRefs(app)
+const meta = useValuesStore()
+const sinceYear = meta.yearValues[meta.yearValues.length - 1]
+const { bucket, find } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const lastRecord = computed(() => app.lastRecord as LastPhoto)
 
