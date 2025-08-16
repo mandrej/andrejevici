@@ -226,14 +226,6 @@ export const useAppStore = defineStore('app', {
       const docSnap = await getDoc(docRef)
       const data = docSnap.data() as PhotoType
 
-      try {
-        await deleteDoc(docRef)
-        await deleteObject(stoRef)
-        await deleteObject(thumbRef)
-      } catch (err) {
-        if (process.env.DEV) console.log('DELETE ERROR ' + err)
-      }
-
       if (obj.unbound) {
         removeByFilename(this.uploaded, obj.filename)
         notify({
@@ -241,17 +233,23 @@ export const useAppStore = defineStore('app', {
           message: `${obj.filename} deleted`,
         })
       } else {
-        removeByFilename(this.objects, obj.filename)
-
         const meta = useValuesStore()
         this.bucketDiff(-data.size)
         meta.decreaseValues(data)
         this.getLast()
 
+        removeByFilename(this.objects, obj.filename)
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
         })
+      }
+      try {
+        await deleteDoc(docRef)
+        await deleteObject(stoRef)
+        await deleteObject(thumbRef)
+      } catch (err) {
+        if (process.env.DEV) console.log('DELETE ERROR ' + err)
       }
     },
     async getLast(): Promise<LastPhoto | null> {
