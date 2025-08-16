@@ -234,6 +234,7 @@ const uploadTask = (file: File): Promise<string> => {
             size: file.size,
             email: user.value!.email,
             nick: emailNick(user.value!.email),
+            unbound: true,
           }
           uploaded.value.push(data)
           resolve(file.name)

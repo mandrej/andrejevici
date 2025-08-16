@@ -121,6 +121,7 @@ export const useAppStore = defineStore('app', {
       notify({ message: `Bucket size calculated` })
       return this.bucket
     },
+
     async fetchRecords(reset = false) {
       if (this.busy) return
 
@@ -181,7 +182,7 @@ export const useAppStore = defineStore('app', {
     async saveRecord(obj: PhotoType) {
       const docRef = doc(db, 'Photo', obj.filename)
       const meta = useValuesStore()
-      if (obj.thumb) {
+      if (!obj.unbound) {
         const oldDoc = await getDoc(docRef)
         meta.decreaseValues(oldDoc.data() as PhotoType)
         await setDoc(docRef, obj, { merge: true })
@@ -198,6 +199,7 @@ export const useAppStore = defineStore('app', {
           obj.thumb = thumbUrl(obj.filename)
         }
         // save everything
+        delete obj.unbound
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj, 0)
         this.getLast()
