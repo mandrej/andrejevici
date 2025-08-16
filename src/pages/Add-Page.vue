@@ -154,36 +154,7 @@ const morphModel = ref('upload')
 const alter = (filename: string): string => {
   const id: string = uuid4()
   const [, name, ext] = filename.match(reFilename) as RegExpMatchArray
-  return name + '_' + id.substring(id.length - 12) + ext
-}
-
-const checkExists = async (originalFilename: string): Promise<string> => {
-  const reClean = new RegExp(/[.\s\\){}[\]]+/g)
-  const [, name, ext] = originalFilename.match(reFilename) as RegExpMatchArray
-  if (!name) {
-    throw new Error('Filename is not valid')
-  }
-  let filename = name.replace(/[(]+/g, '_').replace(reClean, '') + ext
-
-  try {
-    await getDownloadURL(storageRef(storage, filename))
-    // exist rename
-    filename = alter(filename)
-  } catch (error) {
-    if ((error as { code: string }).code === 'storage/object-not-found') {
-      // does not exist
-    } else {
-      notify({
-        type: 'external',
-        html: true,
-        message: `${originalFilename}<br/>${error}`,
-        actions: [{ icon: 'close' }],
-        timeout: 0,
-      })
-      throw error
-    }
-  }
-  return filename
+  return `${id.substring(id.length - 12)}_${name}${ext}`
 }
 
 const cancelAll = (): void => {
@@ -235,45 +206,41 @@ const onSubmit = async (evt: Event): Promise<void> => {
  */
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    checkExists(file.name)
-      .then((filename) => {
+    const filename = alter(file.name)
+    const _ref = storageRef(storage, filename)
+
+    progressInfo[file.name] = 0
+    task[file.name] = uploadBytesResumable(_ref, file, {
+      contentType: file.type,
+      cacheControl: 'public, max-age=604800',
+    })
+    task[file.name]?.on(
+      'state_changed',
+      (snapshot: UploadTaskSnapshot) => {
+        progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
+      },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (error: Error) => {
         progressInfo[file.name] = 0
-        const _ref = storageRef(storage, filename)
-        task[file.name] = uploadBytesResumable(_ref, file, {
-          contentType: file.type,
-          cacheControl: 'public, max-age=604800',
+        reject(file.name)
+      },
+      () => {
+        getDownloadURL(task[file.name]!.snapshot.ref).then((downloadURL) => {
+          // const urlParams = new URLSearchParams(downloadURL);
+          // console.log(urlParams.get("token"));
+          const data: PhotoType = {
+            url: downloadURL,
+            filename: filename,
+            size: file.size,
+            email: user.value!.email,
+            nick: emailNick(user.value!.email),
+          }
+          uploaded.value.push(data)
+          resolve(file.name)
+          if (process.env.DEV) console.log('uploaded', file.name)
         })
-        task[file.name]?.on(
-          'state_changed',
-          (snapshot: UploadTaskSnapshot) => {
-            progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
-          },
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          (error: Error) => {
-            progressInfo[file.name] = 0
-            reject(file.name)
-          },
-          () => {
-            getDownloadURL(task[file.name]!.snapshot.ref).then((downloadURL) => {
-              // const urlParams = new URLSearchParams(downloadURL);
-              // console.log(urlParams.get("token"));
-              const data: PhotoType = {
-                url: downloadURL,
-                filename: filename,
-                size: file.size,
-                email: user.value!.email,
-                nick: emailNick(user.value!.email),
-              }
-              uploaded.value.push(data)
-              resolve(file.name)
-              if (process.env.DEV) console.log('uploaded', file.name)
-            })
-          },
-        )
-      })
-      .catch((error: Error) => {
-        reject(error)
-      })
+      },
+    )
   })
 }
 
