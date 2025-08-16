@@ -219,35 +219,35 @@ export const useAppStore = defineStore('app', {
         group: `${obj.filename}`,
         message: `Please wait`,
       })
-      if (obj.thumb) {
-        const docRef = doc(db, 'Photo', obj.filename)
-        const docSnap = await getDoc(docRef)
-        const data = docSnap.data() as PhotoType
-        const stoRef = storageRef(storage, obj.filename)
-        const thumbRef = storageRef(storage, thumbName(obj.filename))
+      const docRef = doc(db, 'Photo', obj.filename)
+      const stoRef = storageRef(storage, obj.filename)
+      const thumbRef = storageRef(storage, thumbName(obj.filename))
+
+      const docSnap = await getDoc(docRef)
+      const data = docSnap.data() as PhotoType
+
+      try {
         await deleteDoc(docRef)
         await deleteObject(stoRef)
         await deleteObject(thumbRef)
+      } catch (err) {
+        if (process.env.DEV) console.log('DELETE ERROR ' + err)
+      }
 
-        removeByFilename(this.objects, obj.filename)
-        const meta = useValuesStore()
-        this.bucketDiff(-data.size)
-        meta.decreaseValues(data)
-        this.getLast()
-
+      if (obj.unbound) {
+        removeByFilename(this.uploaded, obj.filename)
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,
         })
       } else {
-        const stoRef = storageRef(storage, obj.filename)
-        const thumbRef = storageRef(storage, thumbName(obj.filename))
-        try {
-          await deleteObject(stoRef)
-          await deleteObject(thumbRef)
-        } finally {
-          removeByFilename(this.uploaded, obj.filename)
-        }
+        removeByFilename(this.objects, obj.filename)
+
+        const meta = useValuesStore()
+        this.bucketDiff(-data.size)
+        meta.decreaseValues(data)
+        this.getLast()
+
         notify({
           group: `${obj.filename}`,
           message: `${obj.filename} deleted`,

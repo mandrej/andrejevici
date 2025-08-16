@@ -109,13 +109,14 @@
 <script setup lang="ts">
 import uuid4 from 'uuid4'
 import { computed, defineAsyncComponent, reactive, ref } from 'vue'
-import { storage } from '../boot/fire'
+import { db, storage } from '../boot/fire'
+import { doc, setDoc } from 'firebase/firestore'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory, emailNick, reFilename, textSlug, sliceSlug } from '../helpers'
+import { CONFIG, fakeHistory, emailNick, textSlug, sliceSlug } from '../helpers'
 import notify from '../helpers/notify'
 import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
@@ -153,8 +154,7 @@ const morphModel = ref('upload')
 
 const alter = (filename: string): string => {
   const id: string = uuid4()
-  const [, name, ext] = filename.match(reFilename) as RegExpMatchArray
-  return `${id.substring(id.length - 12)}_${name}${ext}`
+  return `${id.slice(24)}_${filename}`
 }
 
 const cancelAll = (): void => {
@@ -224,22 +224,20 @@ const uploadTask = (file: File): Promise<string> => {
         progressInfo[file.name] = 0
         reject(file.name)
       },
-      () => {
-        getDownloadURL(task[file.name]!.snapshot.ref).then((downloadURL) => {
-          // const urlParams = new URLSearchParams(downloadURL);
-          // console.log(urlParams.get("token"));
-          const data: PhotoType = {
-            url: downloadURL,
-            filename: filename,
-            size: file.size,
-            email: user.value!.email,
-            nick: emailNick(user.value!.email),
-            unbound: true,
-          }
-          uploaded.value.push(data)
-          resolve(file.name)
-          if (process.env.DEV) console.log('uploaded', file.name)
-        })
+      async () => {
+        const downloadURL = await getDownloadURL(task[file.name]!.snapshot.ref)
+        const data: PhotoType = {
+          url: downloadURL,
+          filename: filename,
+          size: file.size,
+          email: user.value!.email,
+          nick: emailNick(user.value!.email),
+          unbound: true,
+        }
+        await setDoc(doc(db, 'Photo', data.filename), data)
+        uploaded.value.push(data)
+        resolve(file.name)
+        if (process.env.DEV) console.log('uploaded', file.name)
       },
     )
   })
