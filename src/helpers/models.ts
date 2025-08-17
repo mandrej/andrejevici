@@ -38,7 +38,6 @@ export interface PhotoType extends ExifType {
   tags?: string[]
   text?: string[]
   thumb?: string
-  unbound?: boolean
 }
 export interface LastPhoto extends PhotoType {
   href: string

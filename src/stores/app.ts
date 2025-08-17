@@ -199,7 +199,6 @@ export const useAppStore = defineStore('app', {
           obj.thumb = thumbUrl(obj.filename)
         }
         // save everything
-        delete obj.unbound
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj, 0)
         this.getLast()

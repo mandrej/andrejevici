@@ -109,8 +109,7 @@
 <script setup lang="ts">
 import uuid4 from 'uuid4'
 import { computed, defineAsyncComponent, reactive, ref } from 'vue'
-import { db, storage } from '../boot/fire'
-import { doc, setDoc } from 'firebase/firestore'
+import { storage } from '../boot/fire'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -232,9 +231,7 @@ const uploadTask = (file: File): Promise<string> => {
           size: file.size,
           email: user.value!.email,
           nick: emailNick(user.value!.email),
-          unbound: true,
         }
-        await setDoc(doc(db, 'Photo', data.filename), data)
         uploaded.value.push(data)
         resolve(file.name)
         if (process.env.DEV) console.log('uploaded', file.name)
