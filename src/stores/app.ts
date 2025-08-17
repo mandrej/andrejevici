@@ -182,14 +182,14 @@ export const useAppStore = defineStore('app', {
     async saveRecord(obj: PhotoType) {
       const docRef = doc(db, 'Photo', obj.filename)
       const meta = useValuesStore()
-      if (!obj.unbound) {
+      if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
         meta.decreaseValues(oldDoc.data() as PhotoType)
         await setDoc(docRef, obj, { merge: true })
 
         changeByFilename(this.objects, obj)
-        notify({ message: `${obj.filename} updated` })
         meta.increaseValues(obj)
+        notify({ message: `${obj.filename} updated` })
       } else {
         // set thumbnail url = publish
         if (process.env.DEV) {
@@ -203,12 +203,11 @@ export const useAppStore = defineStore('app', {
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj, 0)
         this.getLast()
-        notify({ message: `${obj.filename} published` })
-        // delete uploaded
-        removeByFilename(this.uploaded, obj.filename)
-
         this.bucketDiff(obj.size)
         meta.increaseValues(obj)
+        // delete uploaded
+        removeByFilename(this.uploaded, obj.filename)
+        notify({ message: `${obj.filename} published` })
       }
       this.currentEdit = obj as PhotoType
       // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
@@ -220,36 +219,41 @@ export const useAppStore = defineStore('app', {
         message: `Please wait`,
       })
       const docRef = doc(db, 'Photo', obj.filename)
+      const docSnap = await getDoc(docRef)
+      const data = docSnap.data() as PhotoType
       const stoRef = storageRef(storage, obj.filename)
       const thumbRef = storageRef(storage, thumbName(obj.filename))
 
-      const docSnap = await getDoc(docRef)
-      const data = docSnap.data() as PhotoType
-
-      if (obj.unbound) {
-        removeByFilename(this.uploaded, obj.filename)
-        notify({
-          group: `${obj.filename}`,
-          message: `${obj.filename} deleted`,
-        })
-      } else {
-        const meta = useValuesStore()
-        this.bucketDiff(-data.size)
-        meta.decreaseValues(data)
-        this.getLast()
-
-        removeByFilename(this.objects, obj.filename)
-        notify({
-          group: `${obj.filename}`,
-          message: `${obj.filename} deleted`,
-        })
-      }
       try {
         await deleteDoc(docRef)
         await deleteObject(stoRef)
         await deleteObject(thumbRef)
       } catch (err) {
-        if (process.env.DEV) console.log('DELETE ERROR ' + err)
+        notify({
+          type: 'error',
+          group: `${obj.filename}`,
+          message: `${obj.filename} ${err}`,
+        })
+      }
+
+      if (obj.thumb) {
+        removeByFilename(this.objects, obj.filename)
+
+        const meta = useValuesStore()
+        this.bucketDiff(-data.size)
+        meta.decreaseValues(data)
+        this.getLast()
+
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        })
+      } else {
+        removeByFilename(this.uploaded, obj.filename)
+        notify({
+          group: `${obj.filename}`,
+          message: `${obj.filename} deleted`,
+        })
       }
     },
     async getLast(): Promise<LastPhoto | null> {

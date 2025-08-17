@@ -2,6 +2,7 @@ import CONFIG from '../../config'
 import { date, format } from 'quasar'
 import { slugify } from 'transliteration'
 import { computed } from 'vue'
+import type { PhotoType } from '../helpers/models'
 
 const { humanStorageSize } = format
 const { formatDate } = date
@@ -29,11 +30,11 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
-const removeByFilename = <T extends { filename: string }>(arr: T[], value: string): void => {
+const removeByFilename = (arr: PhotoType[], value: string): void => {
   const idx = arr.findIndex((it) => it.filename === value)
   if (idx > -1) arr.splice(idx, 1)
 }
-const changeByFilename = <T extends { filename: string }>(arr: T[], obj: T, op = 1): void => {
+const changeByFilename = (arr: PhotoType[], obj: PhotoType, op = 1): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx >= 0) {
     arr.splice(idx, op, obj)
