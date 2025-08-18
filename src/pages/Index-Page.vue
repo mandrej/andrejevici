@@ -17,13 +17,12 @@ import { useValuesStore } from '../stores/values'
 
 const meta = useValuesStore()
 
-onMounted(() => {
-  if (Object.keys(meta.values.email).length === 0) {
-    meta.fieldCount('email')
-    meta.fieldCount('year')
-    meta.fieldCount('tags')
-    meta.fieldCount('model')
-    meta.fieldCount('lens')
-  }
+onMounted(async () => {
+  // in App
+  // await meta.fieldCount('year')
+  // await meta.fieldCount('email')
+  await meta.fieldCount('tags')
+  await meta.fieldCount('model')
+  await meta.fieldCount('lens')
 })
 </script>

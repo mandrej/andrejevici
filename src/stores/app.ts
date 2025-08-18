@@ -88,6 +88,12 @@ export const useAppStore = defineStore('app', {
         console.error('Failed to read bucket data')
       }
     },
+    /**
+     * Updates the bucket size and count by a given number.
+     *
+     * @param {number} num - The number to update the bucket size and count by. If positive, the size is increased and the count is incremented. If negative, the size is decreased and the count is decremented.
+     * @returns {Promise<BucketType>} A promise that resolves to the updated bucket object.
+     */
     async bucketDiff(num: number): Promise<BucketType> {
       if (num > 0) {
         this.bucket.size += num
@@ -103,6 +109,11 @@ export const useAppStore = defineStore('app', {
       await setDoc(bucketRef, this.bucket, { merge: true })
       return this.bucket
     },
+    /**
+     * Builds and updates the bucket object with the count and size of all photos.
+     *
+     * @returns {Promise<BucketType>} A promise that resolves to the updated bucket object.
+     */
     async bucketBuild(): Promise<BucketType> {
       const res = {
         count: 0,
@@ -122,6 +133,12 @@ export const useAppStore = defineStore('app', {
       return this.bucket
     },
 
+    /**
+     * Fetches a list of records based on the search criteria.
+     *
+     * @param {boolean} reset - If true, resets the list of records to an empty array before fetching.
+     * @return {Promise<{ objects: PhotoType[], error: string | null, next: string | null }>} A promise that resolves to an object containing the fetched records, an error message (if any), and the ID of the next record (if any).
+     */
     async fetchRecords(reset = false) {
       if (this.busy) return
 
@@ -179,7 +196,17 @@ export const useAppStore = defineStore('app', {
       this.busy = false
       if (process.env.DEV) console.log('FETCH ' + JSON.stringify(this.find, null, 2))
     },
-    async saveRecord(obj: PhotoType) {
+
+    /**
+     * Saves a photo record to the Firestore database, and updates corresponding
+     * statistics. If the photo has a thumbnail, it updates the record and
+     * decreases the old stats. If not, it sets the thumbnail URL, updates the
+     * record, increases the stats, and deletes the uploaded file.
+     *
+     * @param {PhotoType} obj - The photo record to save.
+     * @return {Promise<PhotoType>} The saved photo record.
+     */
+    async saveRecord(obj: PhotoType): Promise<PhotoType> {
       const docRef = doc(db, 'Photo', obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
@@ -212,11 +239,17 @@ export const useAppStore = defineStore('app', {
       // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
       return obj
     },
+
+    /**
+     * Deletes a record from the Firestore database and corresponding statistics
+     * if the record has a thumbnail, or deletes the record and uploaded file
+     * if not.
+     *
+     * @param {PhotoType} obj - The record to delete.
+     * @return {Promise<void>} A promise that resolves when the deletion is
+     * complete.
+     */
     async deleteRecord(obj: PhotoType) {
-      notify({
-        group: `${obj.filename}`,
-        message: `Please wait`,
-      })
       const docRef = doc(db, 'Photo', obj.filename)
       const docSnap = await getDoc(docRef)
       const data = docSnap.data() as PhotoType
@@ -242,19 +275,21 @@ export const useAppStore = defineStore('app', {
         this.bucketDiff(-data.size)
         meta.decreaseValues(data)
         this.getLast()
-
-        notify({
-          group: `${obj.filename}`,
-          message: `${obj.filename} deleted`,
-        })
       } else {
         removeByFilename(this.uploaded, obj.filename)
-        notify({
-          group: `${obj.filename}`,
-          message: `${obj.filename} deleted`,
-        })
       }
+      notify({
+        message: `${obj.filename} deleted`,
+      })
     },
+
+    /**
+     * Retrieves the most recent photo from the Firestore database.
+     *
+     * @return {Promise<LastPhoto | null>} A promise that resolves to the last photo
+     * taken, or null if no photos are found. The href property of the returned photo
+     * is set to the URL of the last month it was taken.
+     */
     async getLast(): Promise<LastPhoto | null> {
       try {
         const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'desc'), limit(1)))

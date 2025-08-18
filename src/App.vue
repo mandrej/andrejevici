@@ -6,12 +6,14 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
+import { useValuesStore } from './stores/values'
 import { useUserStore } from './stores/user'
 import { messageListener } from './boot/fire'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 const app = useAppStore()
+const meta = useValuesStore()
 const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 const { user } = storeToRefs(auth)
@@ -40,6 +42,12 @@ onAuthStateChanged(getAuth(), (usr) => {
 
 onMounted(async () => {
   await app.getLast()
+  await meta.fieldCount('year')
+  await meta.fieldCount('email')
+  // in Index-Page
+  // await meta.fieldCount('tags')
+  // await meta.fieldCount('model')
+  // await meta.fieldCount('lens')
   await app.bucketRead()
   // RESET
   busy.value = false

@@ -44,9 +44,7 @@
               <q-input
                 v-model="tmp.headline"
                 label="Headline"
-                :placeholder="CONFIG.noTitle"
-                :hint="`Image without name is called '${CONFIG.noTitle}'`"
-                @blur="tmp.headline = tmp.headline?.trim() || CONFIG.noTitle"
+                :hint="`Image without title is called '${CONFIG.noTitle}'`"
                 autofocus
                 clearable
               />
@@ -256,7 +254,10 @@ const onSubmit = () => {
   tmp.day = datum.getDate()
   tmp.tags = tmp.tags ? tmp.tags : []
   tmp.nick = emailNick(tmp.email)
-  tmp.headline = tmp.headline!.trim() === '' ? CONFIG.noTitle : tmp.headline!.trim()
+  console.log(tmp.headline)
+
+  tmp.headline =
+    tmp.headline === undefined || tmp.headline === null ? CONFIG.noTitle : tmp.headline.trim()
   tmp.text = sliceSlug(textSlug(tmp.headline))
   // set find on new added image
   if (!tmp.thumb) {

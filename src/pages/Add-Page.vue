@@ -115,7 +115,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory, emailNick, textSlug, sliceSlug } from '../helpers'
+import { CONFIG, fakeHistory, emailNick } from '../helpers'
 import notify from '../helpers/notify'
 import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
@@ -150,11 +150,6 @@ const files = ref([])
 const progressInfo: Info = reactive({})
 const task: Task = {}
 const morphModel = ref('upload')
-
-const alter = (filename: string): string => {
-  const id: string = uuid4()
-  return `${id.slice(24)}_${filename}`
-}
 
 const cancelAll = (): void => {
   Object.keys(progressInfo).forEach((key: string) => {
@@ -198,14 +193,10 @@ const onSubmit = async (evt: Event): Promise<void> => {
   morphModel.value = 'upload'
 }
 
-/**
- * Uploads a file to the server.
- *
- * @param {File} file - The file to be uploaded.
- */
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    const filename = alter(file.name)
+    const id: string = uuid4()
+    const filename = `${id.slice(24)}_${file.name}`
     const _ref = storageRef(storage, filename)
 
     progressInfo[file.name] = 0
@@ -260,8 +251,6 @@ const addProperies = async (rec: PhotoType): Promise<PhotoType> => {
   const exif = await readExif(rec.url)
   const tags = [...(tagsToApply.value || '')]
   rec = { ...rec, ...exif }
-  rec.headline = headlineToApply.value?.trim() || CONFIG.noTitle
-  rec.text = sliceSlug(textSlug(rec.headline))
   // add flash tag if exif flash true
   if (rec.flash && tags.indexOf('flash') === -1) {
     tags.push('flash')
@@ -270,42 +259,52 @@ const addProperies = async (rec: PhotoType): Promise<PhotoType> => {
   rec.email = user.value!.email
   return rec
 }
+
 /**
- * PUBLISH RECORD
- * Add user email and tags: [] to new rec; read exif
- * See Edit-Record getExif
+ * Edit a record.
+ *
+ * @param {PhotoType} rec - The record to edit.
+ * @returns {Promise<void>} - A promise that resolves when the edit is complete.
  */
-const editRecord = async (rec: PhotoType) => {
+const editRecord = async (rec: PhotoType): Promise<void> => {
+  // Add properies to the record, such as headline, text, tags, email, and exif.
   const newRec: PhotoType = await addProperies(rec)
+
+  // Show the edit interface.
   fakeHistory()
   showEdit.value = true
+
+  // Set the current edit record to the new record.
   currentEdit.value = newRec
 }
 
 /**
- * Asynchronously publishes the selected items.
- *
- * This function performs the following steps:
- * 1. Determines the selected items based on the current selection or defaults to all uploaded items if none are selected.
- * 2. Iterates over the selected items, adds properties to each item, and saves the updated records.
- * 3. Updates the current edit state with the new record.
- * 4. Waits for all save operations to complete and handles any rejections by notifying the user.
- * 5. Removes the published items from the uploaded list and clears the selection.
- *
- * @returns {Promise<void>} A promise that resolves when all operations are complete.
+ * Publish selected records
+ * Add user email and tags: [] to new rec; read exif
+ * See Edit-Record getExif
  */
 const publishSelected = async () => {
+  // Get selected records or all uploaded records
   const selected =
     selection.value.length === 0
       ? app.uploaded
       : app.uploaded.filter((item) => selection.value.includes(item.filename))
+
+  // Create an array of promises for saving each record
   const promises: Promise<unknown>[] = []
   for (const rec of selected) {
+    // Add user email, tags: [] and read exif
     const newRec: PhotoType = await addProperies(rec)
+    // Save the record
     promises.push(app.saveRecord(newRec))
   }
+
+  // Wait for all promises to settle
   const results = await Promise.allSettled(promises)
+
+  // Process the results
   results.forEach((it) => {
+    // If promise is rejected, display error message
     if (it.status === 'rejected') {
       notify({
         type: 'negative',
@@ -314,10 +313,14 @@ const publishSelected = async () => {
         timeout: 0,
       })
     } else {
+      // If promise is fulfilled, update current edit record
       currentEdit.value = it.value as PhotoType
     }
   })
+
+  // Remove selected records from uploaded records
   app.uploaded = app.uploaded.filter((item) => !selection.value.includes(item.filename))
+  // Clear selection
   selection.value = []
 }
 </script>

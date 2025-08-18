@@ -26,6 +26,12 @@ const counterId = (field: string, value: string): string => {
   return `Photo||${field}||${value}`
 }
 
+/**
+ * Returns an object with keys sorted by their value in descending order.
+ * @param state - The state to extract the values from.
+ * @param field - The field to extract the values from.
+ * @returns An object with keys sorted by their value in descending order.
+ */
 const byCountReverse = <T extends keyof ValuesState['values']>(
   state: ValuesState,
   field: T,
@@ -103,6 +109,13 @@ export const useValuesStore = defineStore('meta', {
     },
   },
   actions: {
+    /**
+     * Retrieves the count of values for a given field from the database
+     * and updates the corresponding values in the store.
+     *
+     * @param {('year' | 'tags' | 'model' | 'lens' | 'email')} field - The field to retrieve counts for.
+     * @return {Promise<void>} A promise that resolves when the counts have been retrieved and the store has been updated.
+     */
     async fieldCount(field: 'year' | 'tags' | 'model' | 'lens' | 'email'): Promise<void> {
       const q = query(countersCol, where('field', '==', field))
       const querySnapshot = await getDocs(q)
@@ -115,6 +128,13 @@ export const useValuesStore = defineStore('meta', {
         this.values[field][obj.value] = obj.count
       })
     },
+
+    /**
+     * Builds counters for each field in CONFIG.photo_filter in the database and store.
+     * Deletes old counters and builds new ones based on the values in the Photo collection.
+     *
+     * @return {Promise<void>} A promise that resolves when the counters have been built.
+     */
     async countersBuild(): Promise<void> {
       notify({ message: `Please wait`, group: 'build' })
 
@@ -176,7 +196,14 @@ export const useValuesStore = defineStore('meta', {
 
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
-    async increase(id: string, field: keyof ValuesState['values'], val: string) {
+    /**
+     * Increases the count of a value in the store and database. If the counter does not exist in the database, it is created.
+     * @param {string} id - The id of the counter in the database.
+     * @param {keyof ValuesState['values']} field - The field of the value to increase.
+     * @param {string} val - The value to increase.
+     * @return {Promise<void>} A promise that resolves when the value has been increased.
+     */
+    async increase(id: string, field: keyof ValuesState['values'], val: string): Promise<void> {
       this.values[field][val] = (this.values[field][val] ?? 0) + 1
 
       const counterRef = doc(db, 'Counter', id)
@@ -194,6 +221,12 @@ export const useValuesStore = defineStore('meta', {
       }
       if (process.env.DEV) console.log('increase ' + id, this.values[field][val])
     },
+    /**
+     * Increases the count of each value in `newData` by 1 in the store and database.
+     * If a counter does not exist in the database, it is created.
+     * @param {PhotoType} newData - The data containing the values to increase.
+     * @return {Promise<void>} A promise that resolves when all values have been increased.
+     */
     async increaseValues(newData: PhotoType): Promise<void> {
       for (const field of CONFIG.photo_filter) {
         const fieldValue = newData[field as keyof PhotoType]
@@ -210,7 +243,14 @@ export const useValuesStore = defineStore('meta', {
         }
       }
     },
-    async decrease(id: string, field: keyof ValuesState['values'], val: string) {
+    /**
+     * Decreases the count of a value in the store and database. If the count after decrementing is 0 or less, the counter is deleted.
+     * @param {string} id - The id of the counter in the database.
+     * @param {keyof ValuesState['values']} field - The field of the value to decrease.
+     * @param {string} val - The value to decrease.
+     * @return {Promise<void>} A promise that resolves when the value has been decreased.
+     */
+    async decrease(id: string, field: keyof ValuesState['values'], val: string): Promise<void> {
       const currentCount = this.values[field][val]
       if (currentCount !== undefined) {
         this.values[field][val] = currentCount - 1
@@ -233,6 +273,12 @@ export const useValuesStore = defineStore('meta', {
         if (process.env.DEV) console.log('decrease ' + id, this.values[field][val])
       }
     },
+    /**
+     * Decreases the count of each value in `oldData` by 1 in the store and database.
+     * If a counter's count after decrementing is 0 or less, the counter is deleted.
+     * @param {PhotoType} oldData - The data containing the values to decrease.
+     * @return {Promise<void>} A promise that resolves when all values have been decreased.
+     */
     async decreaseValues(oldData: PhotoType): Promise<void> {
       for (const field of CONFIG.photo_filter) {
         const fieldValue = oldData[field as keyof PhotoType]
@@ -249,7 +295,12 @@ export const useValuesStore = defineStore('meta', {
         }
       }
     },
-    async removeUnusedTags() {
+
+    /**
+     * Removes all tags from the store and database that are not used by any photo.
+     * @return {Promise<void>} A promise that resolves when all unused tags have been removed.
+     */
+    async removeUnusedTags(): Promise<void> {
       // delete from store
       let id, counterRef: DocumentReference
       for (const [value, count] of Object.entries(this.values.tags)) {
@@ -279,7 +330,19 @@ export const useValuesStore = defineStore('meta', {
         }
       })
     },
-    async renameValue(field: keyof ValuesState['values'], oldValue: string, newValue: string) {
+    /**
+     * Renames a value in the store and database.
+     *
+     * @param {keyof ValuesState['values']} field - The field of the value to rename.
+     * @param {string} oldValue - The old value to rename.
+     * @param {string} newValue - The new value to rename to.
+     * @return {Promise<void>} A promise that resolves when the value has been renamed.
+     */
+    async renameValue(
+      field: keyof ValuesState['values'],
+      oldValue: string,
+      newValue: string,
+    ): Promise<void> {
       // Prepare batch for photo updates
       const batch = writeBatch(db)
       const filter =
@@ -327,6 +390,13 @@ export const useValuesStore = defineStore('meta', {
         delete this.values[field][oldValue]
       }
     },
+
+    /**
+     * Adds a new field to the values store.
+     *
+     * @param {string} val - The value to add to the field.
+     * @param {keyof ValuesState['values']} field - The field to add the value to.
+     */
     addNewField(val: string, field: keyof ValuesState['values']) {
       this.values[field][val] = 1
     },

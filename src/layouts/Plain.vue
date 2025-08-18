@@ -49,19 +49,16 @@
 
       <q-page v-else class="q-pa-md row justify-center">
         <div class="q-my-xl self-center">
-          <div class="text-h3 text-right text-weight-thin">
+          <h1 class="text-h3 text-right text-weight-thin">
             <p class="q-ma-none text-body2 text-right">{{ version }}</p>
             {{ $route.meta.title }}
             <p class="q-ma-none text-body2">photo album</p>
-          </div>
+          </h1>
         </div>
         <div class="row justify-center">
-          <div class="col-xs-12 col-sm-6">
-            <p>
-              There are no photos posted yet. To add some photos you need to sign-in with your
-              Google account. Only registered users can add, delete or edit photos. Unregistered
-              user can only browse photos other people add.
-            </p>
+          <div class="col-xs-12 col-sm-8">
+            <h2 class="text-h5 text-center">There are no photos posted yet</h2>
+            <p>To add some you need to sign-in with your Google account.</p>
             <p v-if="user && user.isAuthorized">
               <q-btn-group spread>
                 <q-btn
@@ -79,7 +76,9 @@
                 label="Sign in using your Google account"
               />
             </p>
-            <p>
+            <!-- <p>
+              Only registered users can add, delete or edit photos. Unregistered user can only
+              browse photos other people add.
               This application is made for my personal photographic needs. I couldn't find any
               better nor cheeper solutions to store my photos. Application provide searching based
               on tags, year, month, day, model, lens and author. Application is built using
@@ -87,7 +86,7 @@
               <a href="https://nodejs.org/">node.js</a> and
               <a href="https://quasar.dev/">Quasar</a>&nbsp;
               <a href="https://vuejs.org/">vue.js</a> framework.
-            </p>
+            </p> -->
           </div>
         </div>
       </q-page>

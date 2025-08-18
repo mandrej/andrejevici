@@ -12,6 +12,14 @@ const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const formatBytes = (bytes: number): string => {
   return humanStorageSize(bytes)
 }
+
+/**
+ * Formats a date string, number, or Date object into a specified format.
+ *
+ * @param {Date | number | string} str - The date to be formatted. Can be a Date object, a numeric timestamp, or a string representation of a date.
+ * @param {string} [format='YYYY-MM-DD'] - The format to be used for the output. Defaults to the value of `CONFIG.dateFormat`.
+ * @return {string} The formatted date.
+ */
 const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFormat): string => {
   const date = new Date(str)
   return formatDate(date, format)
@@ -20,6 +28,12 @@ const emailNick = (email: string): string => {
   const match = email.match(/[^.@]+/)
   return match ? match[0] : ''
 }
+/**
+ * Fakes a new history state by pushing the current state onto the history stack.
+ *
+ * This function is useful for testing or when you want to simulate a page refresh
+ * without actually refreshing the page.
+ */
 const fakeHistory = () => {
   window.history.pushState(history.state, '', history.state.current)
 }
@@ -30,10 +44,27 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
+
+/**
+ * Removes a PhotoType object from an array by matching the filename property.
+ *
+ * @param {PhotoType[]} arr - The array to search for the filename.
+ * @param {string} value - The filename to match and remove.
+ * @return {void} This function does not return anything.
+ */
 const removeByFilename = (arr: PhotoType[], value: string): void => {
   const idx = arr.findIndex((it) => it.filename === value)
   if (idx > -1) arr.splice(idx, 1)
 }
+/**
+ * Updates an array of PhotoType objects with a new object by matching the filename property.
+ * If the filename is found in the array, the function splices the array at that index and
+ * replaces it with the new object.
+ *
+ * @param {PhotoType[]} arr - The array to search for the filename.
+ * @param {PhotoType} obj - The new object to replace the existing object in the array.
+ * @param {number} [op=1] - The number of times to replace the existing object with the new object. Defaults to 1.
+ */
 const changeByFilename = (arr: PhotoType[], obj: PhotoType, op = 1): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx >= 0) {
