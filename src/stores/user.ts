@@ -23,11 +23,15 @@ const provider = new GoogleAuthProvider()
 // provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
 const deviceCol = collection(db, 'Device')
 
-const familyMember = (email: string): string | undefined => {
-  return CONFIG.familyMap.get(email)
+const familyMember = (email: string): boolean => {
+  return CONFIG.familyMap.get(email) != undefined
 }
-const adminMember = (email: string): string | undefined => {
-  return CONFIG.admins.find((el: string) => el === email)
+const adminMember = (email: string, uid: string): boolean => {
+  if (process.env.DEV) {
+    return CONFIG.adminMap.get(email) != undefined
+  } else {
+    return CONFIG.adminMap.get(email) === uid
+  }
 }
 
 export const useUserStore = defineStore('auth', {
@@ -59,8 +63,8 @@ export const useUserStore = defineStore('auth', {
         name: user.displayName || '',
         email: user.email || '',
         uid: user.uid,
-        isAuthorized: Boolean(familyMember(user.email || '')), // only family members
-        isAdmin: Boolean(adminMember(user.email || '')),
+        isAuthorized: Boolean(familyMember(user.email as string)), // only family members
+        isAdmin: Boolean(adminMember(user.email as string, user.uid as string)),
         signedIn: new Date(),
       }
 
