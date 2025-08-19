@@ -34,60 +34,62 @@
         <div class="col-xs-12 col-md-6 q-pa-md column justify-center">
           <div class="row no-wrap self-center">
             <div class="text-h4 text-right text-weight-thin">
-              <p class="q-ma-none text-body2 text-right">{{ version }}</p>
+              <span class="q-ma-none text-body2 text-right">{{ version }}</span
+              ><br />
               {{ $route.meta.title }}
               <p class="q-ma-none text-body2">
                 {{ bucket.count }} photos since {{ sinceYear }} and counting
               </p>
             </div>
-            <History-Button v-if="find && Object.keys(find).length" size="2.3em" />
+            <HistoryButton v-if="find && Object.keys(find).length" size="2.3em" />
           </div>
 
           <router-view />
         </div>
       </q-page>
 
-      <q-page v-else class="q-pa-md row justify-center">
-        <div class="q-my-xl self-center">
-          <h1 class="text-h3 text-right text-weight-thin">
+      <q-page v-else class="window-height window-width row justify-center items-center">
+        <div class="q-pa-md col-xs-12 col-sm-6 col-md-4 col-xl-3">
+          <div class="text-h3 text-right text-weight-thin">
             <p class="q-ma-none text-body2 text-right">{{ version }}</p>
             {{ $route.meta.title }}
             <p class="q-ma-none text-body2">photo album</p>
-          </h1>
-        </div>
-        <div class="row justify-center">
-          <div class="col-xs-12 col-sm-8">
-            <h2 class="text-h5 text-center">There are no photos posted yet</h2>
-            <p>To add some you need to sign-in with your Google account.</p>
-            <p v-if="user && user.isAuthorized">
-              <q-btn-group spread>
-                <q-btn
-                  class="bg-warning text-dark"
-                  to="/add"
-                  :label="`Add some photos ${user.name}`"
-                />
-                <q-btn class="bg-warning text-dark" @click="auth.signIn" label="Or Sign-Out" />
-              </q-btn-group>
-            </p>
-            <p class="text-center" v-else>
+          </div>
+
+          <p class="text-h6 text-center">There are no photos posted yet</p>
+          <p>To add some you need to sign-in with your Google account.</p>
+
+          <p v-if="user && user.isAuthorized">
+            <q-btn-group spread>
               <q-btn
                 class="bg-warning text-dark"
-                @click="auth.signIn"
-                label="Sign in using your Google account"
+                to="/add"
+                :label="`Add some photos ${user.name}`"
               />
-            </p>
-            <!-- <p>
-              Only registered users can add, delete or edit photos. Unregistered user can only
-              browse photos other people add.
-              This application is made for my personal photographic needs. I couldn't find any
-              better nor cheeper solutions to store my photos. Application provide searching based
-              on tags, year, month, day, model, lens and author. Application is built using
-              <a href="https://firebase.google.com/">Firebase</a> on
-              <a href="https://nodejs.org/">node.js</a> and
-              <a href="https://quasar.dev/">Quasar</a>&nbsp;
-              <a href="https://vuejs.org/">vue.js</a> framework.
-            </p> -->
-          </div>
+              <q-btn class="bg-warning text-dark" @click="auth.signIn" label="Or Sign-Out" />
+            </q-btn-group>
+          </p>
+
+          <p class="text-center" v-else>
+            <q-btn
+              class="bg-warning text-dark"
+              @click="auth.signIn"
+              label="Sign in using your Google account"
+            />
+          </p>
+
+          <p>Only registered family users can add, delete or edit photos.</p>
+
+          <!-- <p>
+            Unregistered user can only browse photos other people add. This application is made for
+            my personal photographic needs. I couldn't find any better nor cheeper solutions to
+            store my photos. Application provide searching based on tags, year, month, day, model,
+            lens and author. Application is built using
+            <a href="https://firebase.google.com/">Firebase</a> on
+            <a href="https://nodejs.org/">node.js</a> and
+            <a href="https://quasar.dev/">Quasar</a>&nbsp;
+            <a href="https://vuejs.org/">vue.js</a> framework.
+          </p> -->
         </div>
       </q-page>
     </q-page-container>

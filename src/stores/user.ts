@@ -15,7 +15,7 @@ import {
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
-import type { User, UserCredential, AuthError } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import type { MyUserType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 
@@ -94,23 +94,20 @@ export const useUserStore = defineStore('auth', {
      *
      * @return {Promise<void>} Promise that resolves when the user is signed in or signed out.
      */
-    signIn(): Promise<void> {
+    async signIn(): Promise<void> {
       if (this.user && this.user.uid) {
-        return auth.signOut().then(() => {
-          this.user = null
-          // const routeName = router.currentRoute.value.name
-          // if (routeName === 'add' || routeName === 'admin') {
-          router.push({ name: 'home' })
-          // }
-        })
+        await auth.signOut()
+        this.user = null
+        // const routeName = router.currentRoute.value.name
+        // if (routeName === 'add' || routeName === 'admin') {
+        router.push({ name: 'home' })
       } else {
-        return signInWithPopup(getAuth(), provider)
-          .then((result: UserCredential) => {
-            if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
-          })
-          .catch((err: AuthError) => {
-            console.error(err.message)
-          })
+        try {
+          const result_1 = await signInWithPopup(getAuth(), provider)
+          if (process.env.DEV) console.log(`Auth user: ${result_1.user.displayName}`)
+        } catch (err) {
+          console.error(err)
+        }
       }
     },
     /**
