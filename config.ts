@@ -19,17 +19,16 @@ const CONFIG = {
   thumbnails: 'thumbnails',
   photo_filter: ['year', 'tags', 'model', 'lens', 'email'],
   admins: ['milan.andrejevic@gmail.com', 'mihailo.genije@gmail.com'],
-  family: [
-    'milan.andrejevic@gmail.com',
-    'mihailo.genije@gmail.com',
-    'ana.devic@gmail.com',
-    'dannytaboo@gmail.com',
-    'svetlana.andrejevic@gmail.com',
-    '011.nina@gmail.com',
-    'bogdan.andrejevic16@gmail.com',
-    'zile.zikson@gmail.com',
-  ],
-  // activeUser: 30 * 24 * 60 * 60 * 1000, // submitting in last 30 days
+  familyMap: new Map<string, string>()
+    .set('milan.andrejevic@gmail.com', 'milan') // email.match(/[^.@]+/)
+    .set('mihailo.genije@gmail.com', 'mihailo')
+    .set('ana.devic@gmail.com', 'ana')
+    .set('dannytaboo@gmail.com', 'dannytaboo')
+    .set('svetlana.andrejevic@gmail.com', 'svetlana')
+    .set('011.nina@gmail.com', '011')
+    .set('bogdan.andrejevic16@gmail.com', 'bogdan')
+    .set('zile.zikson@gmail.com', 'zile'),
+
   dateFormat: 'YYYY-MM-DD HH:mm',
   cache_control: 'public, max-age=604800',
   noTitle: 'No name',

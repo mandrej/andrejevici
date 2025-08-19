@@ -86,7 +86,7 @@
     <Auto-Complete
       label="by author"
       v-model="tmp.nick"
-      :options="nickValues"
+      :options="activeNicks"
       :disable="busy"
       :dense="$q.screen.xs"
       dark
@@ -102,7 +102,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
-import { months } from '../helpers'
+import { CONFIG, months } from '../helpers'
 import type { FindType } from '../helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
@@ -110,8 +110,15 @@ const app = useAppStore()
 const meta = useValuesStore()
 const route = useRoute()
 const router = useRouter()
+const activeNicks = computed(() => {
+  if (!meta.emailWithCount) return []
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return Object.entries(meta.emailWithCount).map(([email, count]) => {
+    return CONFIG.familyMap.get(email)
+  })
+})
 const { busy, find } = storeToRefs(app)
-const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
+const { tagsValues, yearValues, modelValues, lensValues } = storeToRefs(meta)
 const tmp = ref({ ...(find.value as FindType) })
 
 /**

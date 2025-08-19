@@ -14,7 +14,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import notify from '../helpers/notify'
-import { CONFIG, emailNick } from '../helpers'
+import { CONFIG } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from '../helpers/models'
 import { deepDiffMapper } from '../helpers/diff'
@@ -61,14 +61,6 @@ export const useValuesStore = defineStore('meta', {
     emailValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'email'))
     },
-    nickValues: (state: ValuesState) => {
-      const ret: string[] = []
-      const emails = byCountReverse(state, 'email')
-      Object.keys(emails).forEach((key) => {
-        ret.push(emailNick(key))
-      })
-      return ret
-    },
     yearValues: (state: ValuesState) => {
       return Object.keys(state.values.year).reverse()
     },
@@ -80,13 +72,13 @@ export const useValuesStore = defineStore('meta', {
       }
       return ret
     },
-    nickWithCount: (state: ValuesState): { [key: string]: number } => {
+    emailWithCount: (state: ValuesState): { [key: string]: number } => {
       const emails = byCountReverse(state, 'email')
       return Object.keys(emails)
         .filter((key): key is string => emails[key]! > 0)
         .reduce(
           (obj, key): { [key: string]: number } => {
-            obj[emailNick(key)] = emails[key]!
+            obj[key] = emails[key]!
             return obj
           },
           {} as { [key: string]: number },

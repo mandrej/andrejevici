@@ -14,8 +14,10 @@
     </q-card-section>
     <q-card-section class="row justify-between">
       <span>
-        <router-link :to="{ path: '/list', query: { nick: rec.nick } }" class="text-black undreline"
-          >{{ rec.nick }}
+        <router-link
+          :to="{ path: '/list', query: { nick: CONFIG.familyMap.get(rec.email) } }"
+          class="text-black undreline"
+          >{{ CONFIG.familyMap.get(rec.email) }}
         </router-link>
         ,
         <router-link
@@ -55,6 +57,7 @@
 
 <script setup lang="ts">
 import { fileBroken, formatDatum, U, reFilename } from '../helpers'
+import { CONFIG } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 
 defineProps<{

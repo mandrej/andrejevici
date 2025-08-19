@@ -23,13 +23,8 @@ const provider = new GoogleAuthProvider()
 // provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
 const deviceCol = collection(db, 'Device')
 
-// const timeStamp2Date = (ts) => {
-//   const timeStamp = ts.seconds * 1000 + ts.nanoseconds / 1e6;
-//   return new Date(timeStamp);
-// };
-
 const familyMember = (email: string): string | undefined => {
-  return CONFIG.family.find((el: string) => el === email)
+  return CONFIG.familyMap.get(email)
 }
 const adminMember = (email: string): string | undefined => {
   return CONFIG.admins.find((el: string) => el === email)

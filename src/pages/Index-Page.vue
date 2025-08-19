@@ -1,18 +1,19 @@
 <template>
   <div class="text-h4 text-center">
     <router-link
-      v-for="(count, value) in meta.nickWithCount"
+      v-for="(count, value) in meta.emailWithCount"
       :key="value"
-      :title="`${value}: ${count}`"
-      :to="{ path: '/list', query: { nick: value } }"
+      :title="`${CONFIG.familyMap.get(value as string)}: ${count}`"
+      :to="{ path: '/list', query: { nick: CONFIG.familyMap.get(value as string) } }"
       class="q-px-sm link"
-      >{{ value }}</router-link
+      >{{ CONFIG.familyMap.get(value as string) }}</router-link
     >
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { CONFIG } from '../helpers'
 import { useValuesStore } from '../stores/values'
 
 const meta = useValuesStore()

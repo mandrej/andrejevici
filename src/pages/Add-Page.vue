@@ -115,7 +115,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory, emailNick } from '../helpers'
+import { CONFIG, fakeHistory } from '../helpers'
 import notify from '../helpers/notify'
 import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
@@ -221,7 +221,7 @@ const uploadTask = (file: File): Promise<string> => {
           filename: filename,
           size: file.size,
           email: user.value!.email,
-          nick: emailNick(user.value!.email),
+          nick: CONFIG.familyMap.get(user.value!.email as string) as string,
         }
         uploaded.value.push(data)
         resolve(file.name)

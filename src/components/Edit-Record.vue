@@ -169,7 +169,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, fileBroken, formatBytes, U, emailNick, textSlug, sliceSlug } from '../helpers'
+import { CONFIG, fileBroken, formatBytes, U, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -253,8 +253,7 @@ const onSubmit = () => {
   tmp.month = datum.getMonth() + 1
   tmp.day = datum.getDate()
   tmp.tags = tmp.tags ? tmp.tags : []
-  tmp.nick = emailNick(tmp.email)
-  console.log(tmp.headline)
+  tmp.nick = CONFIG.familyMap.get(tmp.email) as string
 
   tmp.headline =
     tmp.headline === undefined || tmp.headline === null ? CONFIG.noTitle : tmp.headline.trim()

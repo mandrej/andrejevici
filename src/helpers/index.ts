@@ -24,10 +24,6 @@ const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFo
   const date = new Date(str)
   return formatDate(date, format)
 }
-const emailNick = (email: string): string => {
-  const match = email.match(/[^.@]+/)
-  return match ? match[0] : ''
-}
 /**
  * Fakes a new history state by pushing the current state onto the history stack.
  *
@@ -118,7 +114,6 @@ export {
   months,
   formatBytes,
   formatDatum,
-  emailNick,
   fakeHistory,
   removeHash,
   version,
