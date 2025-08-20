@@ -254,7 +254,9 @@ const addNewTag = (inputValue: string, done: (result: string) => void): void => 
  */
 const editRecord = async (rec: PhotoType): Promise<void> => {
   // Add properies to the record, such as headline, text, tags, email, and exif.
-  const newRec: PhotoType = await completePhoto(rec)
+  const tags = [...tagsToApply.value]
+  const headline = headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle
+  const newRec: PhotoType = await completePhoto(rec, tags, headline)
 
   // Show the edit interface.
   fakeHistory()
@@ -279,7 +281,9 @@ const publishSelected = async () => {
   // Create an array of promises for saving each record
   const promises: Promise<unknown>[] = []
   for (const rec of selected) {
-    const newRec: PhotoType = await completePhoto(rec)
+    const tags = [...tagsToApply.value]
+    const headline = headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle
+    const newRec: PhotoType = await completePhoto(rec, tags, headline)
     promises.push(app.saveRecord(newRec))
   }
 
