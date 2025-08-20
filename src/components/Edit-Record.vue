@@ -248,16 +248,20 @@ const onCancel = () => {
   showEdit.value = false
 }
 const onSubmit = () => {
-  const datum = new Date(Date.parse(tmp.date || ''))
+  // if change date
+  const datum = new Date(Date.parse((tmp.date as string) || ''))
   tmp.year = datum.getFullYear()
   tmp.month = datum.getMonth() + 1
   tmp.day = datum.getDate()
-  tmp.tags = tmp.tags ? tmp.tags : []
-  tmp.nick = CONFIG.familyMap.get(tmp.email) as string
-
+  // if change headline
   tmp.headline =
     tmp.headline === undefined || tmp.headline === null ? CONFIG.noTitle : tmp.headline.trim()
   tmp.text = sliceSlug(textSlug(tmp.headline))
+  // if change tags
+  tmp.tags = tmp.tags ? tmp.tags : []
+  // if change email
+  tmp.nick = CONFIG.familyMap.get(tmp.email) as string
+
   // set find on new added image
   if (!tmp.thumb) {
     find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })

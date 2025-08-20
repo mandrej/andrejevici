@@ -115,9 +115,8 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory } from '../helpers'
+import { CONFIG, fakeHistory, completePhoto } from '../helpers'
 import notify from '../helpers/notify'
-import readExif from '../helpers/exif'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
 import ButtonRow from 'components/Button-Row.vue'
@@ -247,19 +246,6 @@ const addNewTag = (inputValue: string, done: (result: string) => void): void => 
   done(inputValue)
 }
 
-const addProperies = async (rec: PhotoType): Promise<PhotoType> => {
-  const exif = await readExif(rec.url)
-  const tags = [...(tagsToApply.value || '')]
-  rec = { ...rec, ...exif }
-  // add flash tag if exif flash true
-  if (rec.flash && tags.indexOf('flash') === -1) {
-    tags.push('flash')
-  }
-  rec.tags = tags
-  rec.email = user.value!.email
-  return rec
-}
-
 /**
  * Edit a record.
  *
@@ -268,7 +254,7 @@ const addProperies = async (rec: PhotoType): Promise<PhotoType> => {
  */
 const editRecord = async (rec: PhotoType): Promise<void> => {
   // Add properies to the record, such as headline, text, tags, email, and exif.
-  const newRec: PhotoType = await addProperies(rec)
+  const newRec: PhotoType = await completePhoto(rec)
 
   // Show the edit interface.
   fakeHistory()
@@ -293,9 +279,7 @@ const publishSelected = async () => {
   // Create an array of promises for saving each record
   const promises: Promise<unknown>[] = []
   for (const rec of selected) {
-    // Add user email, tags: [] and read exif
-    const newRec: PhotoType = await addProperies(rec)
-    // Save the record
+    const newRec: PhotoType = await completePhoto(rec)
     promises.push(app.saveRecord(newRec))
   }
 

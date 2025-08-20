@@ -1,5 +1,6 @@
 import CONFIG from '../../config'
 import { date, format } from 'quasar'
+import readExif from './exif'
 import { slugify } from 'transliteration'
 import { computed } from 'vue'
 import type { PhotoType } from '../helpers/models'
@@ -109,6 +110,24 @@ export const thumbUrl = (filename: string) => {
     thumbName(filename),
   ].join('/')
 }
+
+const completePhoto = async (rec: PhotoType): Promise<PhotoType> => {
+  let tmp = { ...rec }
+  // url, filename, size, email, nick exist from uploadTask
+  const datum = new Date()
+  tmp.date = formatDatum(datum, CONFIG.dateFormat)
+  tmp.year = datum.getFullYear()
+  tmp.month = datum.getMonth() + 1
+  tmp.day = datum.getDate()
+  tmp.headline =
+    tmp.headline === undefined || tmp.headline === null ? CONFIG.noTitle : tmp.headline.trim()
+  tmp.text = sliceSlug(textSlug(tmp.headline))
+  tmp.tags = tmp.tags ? tmp.tags : []
+
+  const exif = await readExif(rec.url)
+  tmp = { ...tmp, ...exif }
+  return tmp
+}
 export {
   CONFIG,
   months,
@@ -121,4 +140,5 @@ export {
   changeByFilename,
   textSlug,
   sliceSlug,
+  completePhoto,
 }
