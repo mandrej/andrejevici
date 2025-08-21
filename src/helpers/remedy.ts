@@ -20,7 +20,7 @@ const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
 
 export const fix = async () => {
-  let num = 0
+  // let num = 0
   const q = query(photosCol, orderBy('date', 'desc'))
   const querySnapshot = await getDocs(q)
 
@@ -29,20 +29,32 @@ export const fix = async () => {
     if (!('text' in rec)) {
       const docRef = doc(db, 'Photo', rec.filename)
       rec.text = sliceSlug(textSlug(rec.headline))
+      notify({
+        message: `Fix missing for ${rec.filename}`,
+        group: 'fix',
+      })
+      await setDoc(docRef, rec, { merge: true })
+    } else if (rec.headline.toLowerCase().indexOf('š') || rec.headline.toLowerCase().indexOf('ш')) {
+      const docRef = doc(db, 'Photo', rec.filename)
+      rec.text = sliceSlug(textSlug(rec.headline))
+      notify({
+        message: `Fix Ш for ${rec.filename}`,
+        group: 'fix',
+      })
       await setDoc(docRef, rec, { merge: true })
     }
   })
-  if (num === 0) {
-    notify({
-      message: `No records to fix`,
-      group: 'fix',
-    })
-  } else {
-    notify({
-      message: `Fixed ${++num} records`,
-      group: 'fix',
-    })
-  }
+  // if (num === 0) {
+  //   notify({
+  //     message: `No records to fix`,
+  //     group: 'fix',
+  //   })
+  // } else {
+  //   notify({
+  //     message: `Fixed ${++num} records`,
+  //     group: 'fix',
+  //   })
+  // }
 }
 
 const getStorageData = (filename: string) => {

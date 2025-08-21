@@ -23,7 +23,7 @@
           </template>
         </ButtonRow>
         <ButtonRow>
-          {{ formatDatum('2024-10-27', 'DD.MM.YYYY') }} Fix text array
+          {{ formatDatum('2025-08-21', 'DD.MM.YYYY') }} Fix text array
           <template #button>
             <q-btn :disabled="!token" color="primary" label="Fix" @click="fix" />
           </template>
