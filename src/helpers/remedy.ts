@@ -44,6 +44,10 @@ export const fix = async () => {
       await setDoc(docRef, rec, { merge: true })
     }
   })
+  notify({
+    message: `ALL FIXED`,
+    group: 'fix',
+  })
   // if (num === 0) {
   //   notify({
   //     message: `No records to fix`,

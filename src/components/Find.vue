@@ -1,12 +1,12 @@
 <template>
   <form class="q-pa-md q-gutter-md" autocomplete="off">
     <q-input
-      label="by title"
+      label="part of title"
       v-model="tmp.text"
       :disable="busy"
       dark
       clearable
-      :rules="[(val) => val === '' || val.length > 2 || 'Provide at least 3 characters']"
+      placeholder="Provide at least 3 characters"
       @clear="submit"
       @keydown.enter.prevent="submit"
       :dense="$q.screen.xs"
@@ -24,7 +24,7 @@
       dark
       multiple
       @update:model-value="
-        (newValue) => {
+        (newValue: string[]) => {
           tmp.tags = newValue
           submit()
         }
