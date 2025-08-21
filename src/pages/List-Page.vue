@@ -32,7 +32,8 @@
           <div
             v-for="item in objects"
             :key="item.filename"
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+            class="col"
+            style="min-width: 250px; max-width: 400px"
           >
             <Picture-Card
               :rec="item"
