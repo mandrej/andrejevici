@@ -43,7 +43,7 @@
               <template #action>
                 <q-card-actions
                   v-if="isAuthorOrAdmin(item) && editMode"
-                  class="justify-around bg-grey-10 col"
+                  class="absolute-right column no-wrap"
                   style="max-width: 58px; padding-bottom: 53px"
                   vertical
                 >
@@ -209,7 +209,7 @@ const carouselCancel = (hash: string) => {
 <style lang="scss" scoped>
 .q-btn,
 .q-icon {
-  color: $grey-7;
+  color: $grey-2;
 }
 .q-btn.disabled {
   opacity: 0.2 !important;
