@@ -195,7 +195,7 @@ const onSubmit = async (evt: Event): Promise<void> => {
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const id: string = uuid4()
-    const filename = `${id.slice(24)}_${file.name}`
+    const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
 
     progressInfo[file.name] = 0

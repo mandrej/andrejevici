@@ -168,12 +168,14 @@ export const useValuesStore = defineStore('meta', {
           const counterRef = doc(db, 'Counter', counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
-        console.log(
-          deepDiffMapper.map(
-            this.values[field as keyof ValuesState['values']],
-            newValues[field as keyof ValuesState['values']],
-          ),
-        )
+        if (process.env.DEV) {
+          console.log(
+            deepDiffMapper.map(
+              this.values[field as keyof ValuesState['values']],
+              newValues[field as keyof ValuesState['values']],
+            ),
+          )
+        }
         this.values[field as keyof ValuesState['values']] = {
           ...newValues[field as keyof ValuesState['values']],
         }

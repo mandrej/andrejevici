@@ -20,7 +20,6 @@ const { user } = storeToRefs(auth)
 
 messageListener()
   .then((payload: any) => {
-    console.log(payload)
     const params = {
       type: 'external',
       message: payload.data.body,

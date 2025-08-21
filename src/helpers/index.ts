@@ -72,7 +72,7 @@ const textSlug = (text: string): string => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
   return slugify(text, {
     replace: [
-      ['ш', 's'],
+      ['ш', 'sh'],
       ['đ', 'dj'],
       ['џ', 'dz'],
       ['ћ', 'c'],
@@ -129,6 +129,9 @@ const completePhoto = async (
 
   const exif = await readExif(rec.url)
   tmp = { ...tmp, ...exif }
+  if (tmp.flash && tags.indexOf('flash') === -1) {
+    tags.push('flash')
+  }
   return tmp
 }
 export {

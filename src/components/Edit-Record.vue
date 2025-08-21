@@ -261,6 +261,10 @@ const onSubmit = () => {
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email
   tmp.nick = CONFIG.familyMap.get(tmp.email) as string
+  // add flash
+  if (tmp.flash && tmp.tags.indexOf('flash') === -1) {
+    tmp.tags.push('flash')
+  }
 
   // set find on new added image
   if (!tmp.thumb) {

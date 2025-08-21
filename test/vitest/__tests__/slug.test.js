@@ -21,7 +21,7 @@ describe('textSlug', () => {
   })
 
   it('should return an array of words when given a string with hyphens', () => {
-    expect(textSlug('Петровац на мору')).toEqual('petrovac-na-moru')
+    expect(textSlug('жиле žile')).toEqual('zile-zile')
   })
   it('should return an array of words when given a string with hyphens', () => {
     expect(textSlug('Ђаво носи Pradu')).toEqual('djavo-nosi-pradu')
