@@ -6,7 +6,7 @@
       :disable="busy"
       dark
       clearable
-      placeholder="Provide at least 3 characters"
+      placeholder="type at least 3 characters"
       @clear="submit"
       @keydown.enter.prevent="submit"
       :dense="$q.screen.xs"

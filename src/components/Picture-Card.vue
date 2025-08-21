@@ -1,15 +1,21 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
     <q-card-section horizontal>
-      <div
-        class="col cursor-pointer"
-        :style="thumbStyle(rec)"
+      <q-img
+        loading="lazy"
+        :ratio="5 / 4"
+        :src="rec.thumb"
         @click="emit('carousel-show', rec.filename)"
+        class="col cursor-pointer"
+        no-spinner
       >
+        <template #error>
+          <img :src="fileBroken" />
+        </template>
         <div class="absolute-bottom headline q-pa-md ellipsis">
           {{ rec.headline }}
         </div>
-      </div>
+      </q-img>
       <slot name="action"></slot>
     </q-card-section>
     <q-card-section class="row justify-between">
@@ -88,20 +94,6 @@ const cardAttributes = (filename: string) => {
     }
   }
   return attr
-}
-
-const thumbStyle = (rec: PhotoType) => {
-  const common = {
-    height: '240px',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  }
-  if (rec.thumb) {
-    return { ...common, backgroundImage: `url(${rec.thumb})` }
-  } else {
-    return { ...common, backgroundImage: `url(${fileBroken})`, backgroundSize: '30%' }
-  }
 }
 
 const openMaps = (loc: string) => {
