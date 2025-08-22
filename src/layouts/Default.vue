@@ -32,7 +32,14 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" class="column no-wrap" :width="320" show-if-above elevated dark>
+    <q-drawer
+      v-model="drawer"
+      class="column q-pa-md no-wrap"
+      :width="320"
+      show-if-above
+      elevated
+      dark
+    >
       <router-view name="sidebar" />
       <q-space />
       <Menu />

@@ -1,23 +1,21 @@
 <template>
   <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
-    <q-card-section horizontal>
-      <q-img
-        loading="lazy"
-        :ratio="5 / 4"
-        :src="rec.thumb"
-        @click="emit('carousel-show', rec.filename)"
-        class="col cursor-pointer"
-        no-spinner
-      >
-        <template #error>
-          <img :src="fileBroken" />
-        </template>
-        <div class="absolute-bottom headline q-pa-md ellipsis">
-          {{ rec.headline }}
-        </div>
-      </q-img>
-      <slot name="action"></slot>
-    </q-card-section>
+    <q-img
+      loading="lazy"
+      :ratio="5 / 4"
+      :src="rec.thumb"
+      @click="emit('carousel-show', rec.filename)"
+      class="col cursor-pointer"
+      no-spinner
+    >
+      <template #error>
+        <img :src="fileBroken" />
+      </template>
+      <div class="absolute-bottom headline ellipsis">
+        {{ rec.headline }}
+      </div>
+    </q-img>
+    <slot name="action"></slot>
     <q-card-section class="row justify-between">
       <span>
         <router-link
@@ -101,10 +99,3 @@ const openMaps = (loc: string) => {
   window.open(url, '_blank')
 }
 </script>
-
-<style lang="scss" scoped>
-.headline {
-  color: white;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-</style>

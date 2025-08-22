@@ -1,5 +1,5 @@
 <template>
-  <q-list dark :dense="$q.screen.xs">
+  <q-list dark>
     <q-item clickable @click="auth.signIn">
       <q-item-section avatar>
         <q-icon name="person" />
@@ -36,7 +36,6 @@
         <q-item-label caption>rebuild various counters</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item></q-item>
   </q-list>
 </template>
 

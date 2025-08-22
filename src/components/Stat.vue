@@ -1,16 +1,11 @@
 <template>
-  <q-list class="q-py-md" v-if="bucket.count > 0">
+  <q-list v-if="bucket.count > 0">
     <q-item>
       <q-item-section>
         <q-item-label>SITE STATISTICS</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item
-      v-for="item in list"
-      :key="item.value"
-      class="text-h6 text-warning text-weight-light"
-      clickable
-    >
+    <q-item v-for="item in list" :key="item.value" class="text-h6 text-warning" clickable>
       <q-item-section>
         {{ item.value }}
       </q-item-section>

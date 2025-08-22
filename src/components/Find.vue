@@ -1,7 +1,7 @@
 <template>
-  <form class="q-pa-md q-gutter-md" autocomplete="off">
+  <form autocomplete="off">
     <q-input
-      label="part of title"
+      label="by part of title"
       v-model="tmp.text"
       :disable="busy"
       dark
@@ -9,7 +9,6 @@
       placeholder="type at least 3 characters"
       @clear="submit"
       @keydown.enter.prevent="submit"
-      :dense="$q.screen.xs"
     >
       <template #append>
         <q-icon v-if="tmp.text" name="search" class="cursor-pointer" @click="submit" />
@@ -20,7 +19,6 @@
       v-model="tmp.tags"
       :options="tagsValues"
       :disable="busy"
-      :dense="$q.screen.xs"
       dark
       multiple
       @update:model-value="
@@ -35,7 +33,6 @@
       v-model="tmp.year"
       :options="yearValues"
       :disable="busy"
-      :dense="$q.screen.xs"
       dark
       class="col"
       @update:model-value="submit"
@@ -47,7 +44,6 @@
         :options="optionsMonth"
         :disable="busy"
         autocomplete="label"
-        :dense="$q.screen.xs"
         dark
         class="col"
         @update:model-value="submit"
@@ -59,7 +55,6 @@
         :options="optionsDay"
         :disable="busy"
         autocomplete="label"
-        :dense="$q.screen.xs"
         dark
         class="col"
         @update:model-value="submit"
@@ -70,7 +65,6 @@
       v-model="tmp.model"
       :options="modelValues"
       :disable="busy"
-      :dense="$q.screen.xs"
       dark
       @update:model-value="submit"
     />
@@ -79,7 +73,6 @@
       v-model="tmp.lens"
       :options="lensValues"
       :disable="busy"
-      :dense="$q.screen.xs"
       dark
       @update:model-value="submit"
     />
@@ -88,7 +81,6 @@
       v-model="tmp.nick"
       :options="activeNicks"
       :disable="busy"
-      :dense="$q.screen.xs"
       dark
       @update:model-value="submit"
     />
