@@ -60,11 +60,6 @@
               </template>
             </Picture-Card>
           </div>
-          <template v-slot:loading>
-            <div class="row justify-center q-my-md">
-              <q-spinner-dots color="dark" size="40px" />
-            </div>
-          </template>
         </transition-group>
       </q-infinite-scroll>
     </div>
