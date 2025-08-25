@@ -5,6 +5,7 @@
       v-model="tmp.text"
       :disable="busy"
       dark
+      dense
       clearable
       hint="type at least 3 characters"
       @clear="submit"
@@ -20,6 +21,7 @@
       :options="tagsValues"
       :disable="busy"
       dark
+      dense
       multiple
       hide-bottom-space
       @update:model-value="
@@ -35,6 +37,7 @@
       :options="yearValues"
       :disable="busy"
       dark
+      dense
       hide-bottom-space
       @update:model-value="submit"
     />
@@ -46,6 +49,7 @@
         :disable="busy"
         autocomplete="label"
         dark
+        dense
         hide-bottom-space
         class="col"
         @update:model-value="submit"
@@ -57,6 +61,7 @@
         :disable="busy"
         autocomplete="label"
         dark
+        dense
         hide-bottom-space
         class="col"
         @update:model-value="submit"
@@ -68,6 +73,7 @@
       :options="modelValues"
       :disable="busy"
       dark
+      dense
       hide-bottom-space
       @update:model-value="submit"
     />
@@ -77,6 +83,7 @@
       :options="lensValues"
       :disable="busy"
       dark
+      dense
       hide-bottom-space
       @update:model-value="submit"
     />
@@ -86,22 +93,24 @@
       :options="activeNicks"
       :disable="busy"
       dark
+      dense
       hide-bottom-space
       @update:model-value="submit"
     />
-  </q-form>
 
-  <Auto-Complete
-    v-if="editMode && user && user.isAdmin"
-    label="Tags to merge with existing"
-    v-model="tagsToApply"
-    :options="tagsValues"
-    dark
-    canadd
-    multiple
-    hide-bottom-space
-    @new-value="addNewTag"
-  />
+    <Auto-Complete
+      v-if="editMode && user && user.isAdmin"
+      label="Tags to merge with existing"
+      v-model="tagsToApply"
+      :options="tagsValues"
+      dark
+      dense
+      canadd
+      multiple
+      hide-bottom-space
+      @new-value="addNewTag"
+    />
+  </q-form>
 </template>
 
 <script setup lang="ts">
