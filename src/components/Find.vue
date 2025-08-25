@@ -34,7 +34,6 @@
       :options="yearValues"
       :disable="busy"
       dark
-      class="col"
       @update:model-value="submit"
     />
     <div class="row">
@@ -84,6 +83,17 @@
       dark
       @update:model-value="submit"
     />
+
+    <Auto-Complete
+      v-if="editMode && user && user.isAdmin"
+      label="Tags to merge with existing"
+      v-model="tagsToApply"
+      :options="tagsValues"
+      dark
+      canadd
+      multiple
+      @new-value="addNewTag"
+    />
   </form>
 </template>
 
@@ -92,6 +102,7 @@ import { computed, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
 import { CONFIG, months } from '../helpers'
@@ -99,6 +110,7 @@ import type { FindType } from '../helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
 const app = useAppStore()
+const auth = useUserStore()
 const meta = useValuesStore()
 const route = useRoute()
 const router = useRouter()
@@ -109,8 +121,9 @@ const activeNicks = computed(() => {
     return CONFIG.familyMap.get(email)
   })
 })
-const { busy, find } = storeToRefs(app)
-const { tagsValues, yearValues, modelValues, lensValues } = storeToRefs(meta)
+const { busy, find, editMode } = storeToRefs(app)
+const { user } = storeToRefs(auth)
+const { tagsValues, yearValues, modelValues, lensValues, tagsToApply } = storeToRefs(meta)
 const tmp = ref({ ...(find.value as FindType) })
 
 /**
@@ -167,4 +180,15 @@ const optionsDay = computed(() => {
       return { label: '' + day, value: day }
     })
 })
+
+const addNewTag = (inputValue: string, done: (result: string) => void): void => {
+  meta.addNewField(inputValue, 'tags')
+  done(inputValue)
+}
 </script>
+
+<style scoped>
+.q-field--with-bottom {
+  margin-bottom: 0px !important;
+}
+</style>

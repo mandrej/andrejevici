@@ -1,6 +1,7 @@
 <template>
   <q-select
     :label="label"
+    :hint="hint"
     v-model="model"
     :options="options"
     :hide-selected="multiple ? false : true"
@@ -37,6 +38,7 @@ const props = defineProps({
     default: '',
   },
   label: { type: String, required: true },
+  hint: { type: String, required: false, default: '' },
 })
 
 const model = ref(props.model)
