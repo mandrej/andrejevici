@@ -1,12 +1,12 @@
 <template>
-  <form autocomplete="off">
+  <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
     <q-input
       label="by part of title"
       v-model="tmp.text"
       :disable="busy"
       dark
       clearable
-      placeholder="type at least 3 characters"
+      hint="type at least 3 characters"
       @clear="submit"
       @keydown.enter.prevent="submit"
     >
@@ -21,6 +21,7 @@
       :disable="busy"
       dark
       multiple
+      hide-bottom-space
       @update:model-value="
         (newValue: string[]) => {
           tmp.tags = newValue
@@ -34,6 +35,7 @@
       :options="yearValues"
       :disable="busy"
       dark
+      hide-bottom-space
       @update:model-value="submit"
     />
     <div class="row">
@@ -44,10 +46,10 @@
         :disable="busy"
         autocomplete="label"
         dark
+        hide-bottom-space
         class="col"
         @update:model-value="submit"
       />
-      <div class="col-1" />
       <Auto-Complete
         label="by day"
         v-model="tmp.day"
@@ -55,6 +57,7 @@
         :disable="busy"
         autocomplete="label"
         dark
+        hide-bottom-space
         class="col"
         @update:model-value="submit"
       />
@@ -65,6 +68,7 @@
       :options="modelValues"
       :disable="busy"
       dark
+      hide-bottom-space
       @update:model-value="submit"
     />
     <Auto-Complete
@@ -73,6 +77,7 @@
       :options="lensValues"
       :disable="busy"
       dark
+      hide-bottom-space
       @update:model-value="submit"
     />
     <Auto-Complete
@@ -81,20 +86,22 @@
       :options="activeNicks"
       :disable="busy"
       dark
+      hide-bottom-space
       @update:model-value="submit"
     />
+  </q-form>
 
-    <Auto-Complete
-      v-if="editMode && user && user.isAdmin"
-      label="Tags to merge with existing"
-      v-model="tagsToApply"
-      :options="tagsValues"
-      dark
-      canadd
-      multiple
-      @new-value="addNewTag"
-    />
-  </form>
+  <Auto-Complete
+    v-if="editMode && user && user.isAdmin"
+    label="Tags to merge with existing"
+    v-model="tagsToApply"
+    :options="tagsValues"
+    dark
+    canadd
+    multiple
+    hide-bottom-space
+    @new-value="addNewTag"
+  />
 </template>
 
 <script setup lang="ts">
@@ -186,9 +193,3 @@ const addNewTag = (inputValue: string, done: (result: string) => void): void => 
   done(inputValue)
 }
 </script>
-
-<style scoped>
-.q-field--with-bottom {
-  margin-bottom: 0px !important;
-}
-</style>
