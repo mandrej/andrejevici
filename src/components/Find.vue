@@ -23,7 +23,6 @@
       dark
       dense
       multiple
-      hide-bottom-space
       @update:model-value="
         (newValue: string[]) => {
           tmp.tags = newValue
@@ -38,7 +37,6 @@
       :disable="busy"
       dark
       dense
-      hide-bottom-space
       @update:model-value="submit"
     />
     <div class="row">
@@ -50,7 +48,6 @@
         autocomplete="label"
         dark
         dense
-        hide-bottom-space
         class="col"
         @update:model-value="submit"
       />
@@ -62,7 +59,6 @@
         autocomplete="label"
         dark
         dense
-        hide-bottom-space
         class="col"
         @update:model-value="submit"
       />
@@ -74,7 +70,6 @@
       :disable="busy"
       dark
       dense
-      hide-bottom-space
       @update:model-value="submit"
     />
     <Auto-Complete
@@ -84,7 +79,6 @@
       :disable="busy"
       dark
       dense
-      hide-bottom-space
       @update:model-value="submit"
     />
     <Auto-Complete
@@ -94,7 +88,6 @@
       :disable="busy"
       dark
       dense
-      hide-bottom-space
       @update:model-value="submit"
     />
 
@@ -107,7 +100,6 @@
       dense
       canadd
       multiple
-      hide-bottom-space
       @new-value="addNewTag"
     />
   </q-form>

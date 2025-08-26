@@ -44,8 +44,6 @@
                 <q-card-actions
                   v-if="isAuthorOrAdmin(item) && editMode"
                   class="absolute-right column no-wrap"
-                  style="max-width: 42px"
-                  vertical
                 >
                   <q-btn flat round icon="delete" @click="confirmShow(item)" />
                   <q-btn flat round icon="edit" @click="editRecord(item)" />
