@@ -113,7 +113,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
-import { CONFIG, months } from '../helpers'
+import { months, nickInsteadEmail } from '../helpers'
 import type { FindType } from '../helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
@@ -126,7 +126,7 @@ const activeNicks = computed(() => {
   if (!meta.emailWithCount) return []
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return Object.entries(meta.emailWithCount).map(([email, count]) => {
-    return CONFIG.familyMap.get(email)
+    return nickInsteadEmail(email)
   })
 })
 const { busy, find, editMode } = storeToRefs(app)

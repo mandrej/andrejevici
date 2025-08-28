@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
-import { CONFIG } from '../helpers'
+import { CONFIG, nickInsteadEmail } from '../helpers'
 import { auth, db } from '../boot/fire'
 import {
   doc,
@@ -24,7 +24,7 @@ const provider = new GoogleAuthProvider()
 const deviceCol = collection(db, 'Device')
 
 const familyMember = (email: string): boolean => {
-  return CONFIG.familyMap.get(email) != undefined
+  return nickInsteadEmail(email) != undefined
 }
 const adminMember = (email: string, uid: string): boolean => {
   if (process.env.DEV) {

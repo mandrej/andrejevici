@@ -6,7 +6,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG } from '../helpers'
+import { nickInsteadEmail } from '../helpers'
 import router from '../router'
 
 import notify from './notify'
@@ -74,7 +74,7 @@ const getStorageData = (filename: string) => {
             filename: filename,
             size: metadata.size || 0,
             email: user.value?.email ?? '',
-            nick: CONFIG.familyMap.get(user.value?.email as string) as string,
+            nick: nickInsteadEmail(user.value?.email as string),
           })
         } else {
           reject()

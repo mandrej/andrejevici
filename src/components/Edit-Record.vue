@@ -169,7 +169,15 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, fileBroken, formatBytes, U, textSlug, sliceSlug } from '../helpers'
+import {
+  CONFIG,
+  fileBroken,
+  formatBytes,
+  U,
+  textSlug,
+  sliceSlug,
+  nickInsteadEmail,
+} from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -260,7 +268,7 @@ const onSubmit = () => {
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email
-  tmp.nick = CONFIG.familyMap.get(tmp.email) as string
+  tmp.nick = nickInsteadEmail(tmp.email)
   // add flash
   if (tmp.flash && tmp.tags.indexOf('flash') === -1) {
     tmp.tags.push('flash')

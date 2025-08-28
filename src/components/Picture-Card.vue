@@ -19,9 +19,9 @@
     <q-card-section class="row justify-between">
       <span>
         <router-link
-          :to="{ path: '/list', query: { nick: CONFIG.familyMap.get(rec.email) } }"
+          :to="{ path: '/list', query: { nick: nickInsteadEmail(rec.email) } }"
           class="text-black undreline"
-          >{{ CONFIG.familyMap.get(rec.email) }}
+          >{{ nickInsteadEmail(rec.email) }}
         </router-link>
         ,
         <router-link
@@ -60,8 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { fileBroken, formatDatum, U, reFilename } from '../helpers'
-import { CONFIG } from '../helpers'
+import { fileBroken, formatDatum, U, reFilename, nickInsteadEmail } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 
 defineProps<{

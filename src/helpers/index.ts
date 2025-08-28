@@ -53,6 +53,9 @@ const removeByFilename = (arr: PhotoType[], value: string): void => {
   const idx = arr.findIndex((it) => it.filename === value)
   if (idx > -1) arr.splice(idx, 1)
 }
+const nickInsteadEmail = (email: string): string => {
+  return CONFIG.familyMap.get(email as string) as string
+}
 /**
  * Updates an array of PhotoType objects with a new object by matching the filename property.
  * If the filename is found in the array, the function splices the array at that index and
@@ -144,6 +147,7 @@ export {
   version,
   removeByFilename,
   changeByFilename,
+  nickInsteadEmail,
   textSlug,
   sliceSlug,
   completePhoto,
