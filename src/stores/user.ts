@@ -20,7 +20,8 @@ import type { MyUserType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 
 const provider = new GoogleAuthProvider()
-// provider.addScope("https://www.googleapis.com/auth/userinfo.profile");
+provider.addScope('profile')
+provider.addScope('email')
 const deviceCol = collection(db, 'Device')
 
 const familyMember = (email: string): boolean => {
@@ -103,8 +104,8 @@ export const useUserStore = defineStore('auth', {
         router.push({ name: 'home' })
       } else {
         try {
-          const result_1 = await signInWithPopup(getAuth(), provider)
-          if (process.env.DEV) console.log(`Auth user: ${result_1.user.displayName}`)
+          const result = await signInWithPopup(getAuth(), provider)
+          if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
         } catch (err) {
           console.error(err)
         }

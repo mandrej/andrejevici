@@ -1,12 +1,14 @@
 <template>
-  <div class="absolute-center text-center">
-    <q-banner rounded class="text-white q-pa-md bg-negative">
-      <div class="text-h3">{{ props.code }}</div>
-      {{ text }}
-      <template v-slot:action>
-        <q-btn class="full-width" flat color="white" size="lg" to="/">Go Home</q-btn>
-      </template>
-    </q-banner>
+  <div class="column">
+    <div class="row justify-center">
+      <div class="text-h1 text-center text-weight-thin">
+        {{ props.code }}
+        <p class="q-ma-none text-body2">
+          {{ text }}
+        </p>
+        <q-btn class="full-width" flat size="lg" to="/">Go Home</q-btn>
+      </div>
+    </div>
   </div>
 </template>
 

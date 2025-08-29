@@ -1,7 +1,19 @@
 <template>
-  <div class="text-h4 text-center">
+  <div class="row justify-center">
+    <div class="text-h4 text-right text-weight-thin">
+      <span class="q-ma-none text-body2 text-right">{{ version }}</span
+      ><br />
+      {{ $route.meta.title }}
+      <p v-if="bucket.count > 0" class="q-ma-none text-body2">
+        {{ bucket.count }} photos since {{ sinceYear }} and counting
+      </p>
+    </div>
+    <HistoryButton v-if="find && Object.keys(find).length" size="2.3em" />
+  </div>
+
+  <div v-if="emailWithCount" class="text-h4 text-center">
     <router-link
-      v-for="(count, value) in meta.emailWithCount"
+      v-for="(count, value) in emailWithCount"
       :key="value"
       :title="`$nickInsteadEmail(value as string)}: ${count}`"
       :to="{ path: '/list', query: { nick: nickInsteadEmail(value as string) } }"
@@ -9,14 +21,26 @@
       >{{ nickInsteadEmail(value as string) }}</router-link
     >
   </div>
+  <div v-else class="text-body1 text-center q-mt-md">
+    There are no photos posted yet...<br />
+    To add some you need to sign-in with your Google account. Only registered family users can add,
+    delete or edit photos.
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { nickInsteadEmail } from '../helpers'
+import { onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { version, nickInsteadEmail } from '../helpers'
+import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 
+const app = useAppStore()
 const meta = useValuesStore()
+
+const emailWithCount = computed(() => meta.emailWithCount)
+const sinceYear = computed(() => meta.yearValues[(meta.yearValues.length - 1) as number])
+const { bucket, find } = storeToRefs(app)
 
 onMounted(async () => {
   // in App
