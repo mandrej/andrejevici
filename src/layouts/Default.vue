@@ -18,7 +18,7 @@
           </span>
         </template>
 
-        <History-Button v-else />
+        <HistoryButton v-else />
 
         <template v-if="$route.name === 'admin'">
           <q-tabs v-model="adminTab" inline-label indicator-color="primary">
@@ -57,8 +57,8 @@ import { ref, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
-import HistoryButton from '../components/History-Button.vue'
 import Menu from '../components/Menu.vue'
+import HistoryButton from '../components/History-Button.vue'
 
 const AskPermission = defineAsyncComponent(() => import('../components/Ask-Permission.vue'))
 

@@ -26,9 +26,9 @@
           />
         </router-link>
 
-        <q-div class="column col-xs-12 col-md-6 q-pa-md justify-center">
+        <div class="column col-xs-12 col-md-6 q-pa-md justify-center">
           <router-view />
-        </q-div>
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>

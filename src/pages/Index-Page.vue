@@ -36,6 +36,7 @@ import { storeToRefs } from 'pinia'
 import { version, isEmpty, nickInsteadEmail } from '../helpers'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
+import HistoryButton from '../components/History-Button.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()
