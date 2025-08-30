@@ -6,7 +6,6 @@
           class="col-xs-12 col-md-6"
           :style="imageStyle(lastRecord)"
           :to="{ path: '/list' }"
-          style="display: block"
           v-ripple.early="{ color: 'purple' }"
         >
           <q-btn
@@ -48,6 +47,7 @@ const { user } = storeToRefs(auth)
 const lastRecord = computed(() => app.lastRecord as LastPhoto)
 
 const common = {
+  display: 'block',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
