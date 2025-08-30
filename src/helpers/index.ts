@@ -41,6 +41,14 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
+const isEmpty = (obj: object) => {
+  for (const prop in obj) {
+    if (Object.hasOwn(obj, prop)) {
+      return false
+    }
+  }
+  return true
+}
 
 /**
  * Removes a PhotoType object from an array by matching the filename property.
@@ -144,6 +152,7 @@ export {
   formatDatum,
   fakeHistory,
   removeHash,
+  isEmpty,
   version,
   removeByFilename,
   changeByFilename,
