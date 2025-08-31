@@ -216,6 +216,7 @@ export const useAppStore = defineStore('app', {
 
         meta.updateValues(obj, 1)
         meta.updateValues(oldDoc.data() as PhotoType, -1)
+        meta.updateCounters(oldDoc.data() as PhotoType, obj as PhotoType)
         notify({ message: `${obj.filename} updated` })
       } else {
         // set thumbnail url = publish

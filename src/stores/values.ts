@@ -192,6 +192,51 @@ export const useValuesStore = defineStore('meta', {
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
 
+    updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
+      const oldObj: { [key: string]: number } = {}
+      const newObj: { [key: string]: number } = {}
+
+      if (oldData && newData) {
+        // diff
+      } else if (oldData && !newData) {
+        //remove
+      } else if (!oldData && newData) {
+        //add
+      }
+
+      if (oldData) {
+        for (const field of CONFIG.photo_filter) {
+          const oldFieldValue = oldData[field as keyof PhotoType]
+          if (oldFieldValue) {
+            if (field === 'tags') {
+              for (const tag of oldFieldValue as string[]) {
+                oldObj[counterId(field, tag)] = 1
+              }
+            } else {
+              oldObj[counterId(field, oldFieldValue as string)] = 1
+            }
+          }
+        }
+      }
+
+      if (newData) {
+        for (const field of CONFIG.photo_filter) {
+          const newFieldValue = newData[field as keyof PhotoType]
+          if (newFieldValue) {
+            if (field === 'tags') {
+              for (const tag of newFieldValue as string[]) {
+                newObj[counterId(field, tag)] = 1
+              }
+            } else {
+              newObj[counterId(field, newFieldValue as string)] = 1
+            }
+          }
+        }
+      }
+
+      console.log(oldObj, newObj)
+    },
+
     /**
      * Updates the counters in the database and store for a given photo.
      * This is used when a photo is added or removed from the database.
