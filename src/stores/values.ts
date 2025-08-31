@@ -17,7 +17,7 @@ import notify from '../helpers/notify'
 import { CONFIG } from '../helpers'
 import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from '../helpers/models'
-import { deepDiffMapper } from '../helpers/diff'
+import { deepDiffMap } from '../helpers/diff'
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')
@@ -170,12 +170,13 @@ export const useValuesStore = defineStore('meta', {
         })
         if (process.env.DEV) {
           console.log(
-            deepDiffMapper.map(
+            deepDiffMap(
               this.values[field as keyof ValuesState['values']],
               newValues[field as keyof ValuesState['values']],
             ),
           )
         }
+        // overwrite old values in the store
         this.values[field as keyof ValuesState['values']] = {
           ...newValues[field as keyof ValuesState['values']],
         }
@@ -190,103 +191,73 @@ export const useValuesStore = defineStore('meta', {
 
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
-    /**
-     * Increases the count of a value in the store and database. If the counter does not exist in the database, it is created.
-     * @param {string} id - The id of the counter in the database.
-     * @param {keyof ValuesState['values']} field - The field of the value to increase.
-     * @param {string} val - The value to increase.
-     * @return {Promise<void>} A promise that resolves when the value has been increased.
-     */
-    async increase(id: string, field: keyof ValuesState['values'], val: string): Promise<void> {
-      this.values[field][val] = (this.values[field][val] ?? 0) + 1
 
-      const counterRef = doc(db, 'Counter', id)
-      const oldDoc = await getDoc(counterRef)
-      if (oldDoc.exists()) {
-        await updateDoc(counterRef, {
-          count: oldDoc.data().count + 1,
-        })
-      } else {
-        await setDoc(counterRef, {
-          count: 1,
-          field,
-          value: val,
-        })
-      }
-      if (process.env.DEV) console.log('increase ' + id, this.values[field][val])
-    },
     /**
-     * Increases the count of each value in `newData` by 1 in the store and database.
-     * If a counter does not exist in the database, it is created.
-     * @param {PhotoType} newData - The data containing the values to increase.
-     * @return {Promise<void>} A promise that resolves when all values have been increased.
+     * Updates the counters in the database and store for a given photo.
+     * This is used when a photo is added or removed from the database.
+     * @param {PhotoType} oldData - The old data of the photo.
+     * @param {1 | -1} delta - 1 if the photo was added, -1 if it was removed.
+     * @return {Promise<void>} A promise that resolves when the counters have been updated.
      */
-    async increaseValues(newData: PhotoType): Promise<void> {
-      for (const field of CONFIG.photo_filter) {
-        const fieldValue = newData[field as keyof PhotoType]
-        if (fieldValue && newData.date) {
-          if (field === 'tags') {
-            for (const tag of fieldValue as string) {
-              const id = counterId(field, tag)
-              await this.increase(id, field, tag)
-            }
-          } else {
-            const id = counterId(field, fieldValue as string)
-            await this.increase(id, field as keyof ValuesState['values'], fieldValue as string)
-          }
-        }
-      }
-    },
-    /**
-     * Decreases the count of a value in the store and database. If the count after decrementing is 0 or less, the counter is deleted.
-     * @param {string} id - The id of the counter in the database.
-     * @param {keyof ValuesState['values']} field - The field of the value to decrease.
-     * @param {string} val - The value to decrease.
-     * @return {Promise<void>} A promise that resolves when the value has been decreased.
-     */
-    async decrease(id: string, field: keyof ValuesState['values'], val: string): Promise<void> {
-      const currentCount = this.values[field][val]
-      if (currentCount !== undefined) {
-        this.values[field][val] = currentCount - 1
-        if (this.values[field][val] <= 0) {
-          delete this.values[field][val]
-        }
-      }
-
-      const counterRef = doc(db, 'Counter', id)
-      const oldDoc = await getDoc(counterRef)
-      if (oldDoc.exists()) {
-        const oldCount = oldDoc.data().count
-        if (oldCount - 1 <= 0) {
-          await deleteDoc(counterRef)
-        } else {
-          await updateDoc(counterRef, {
-            count: oldCount - 1,
-          })
-        }
-        if (process.env.DEV) console.log('decrease ' + id, this.values[field][val])
-      }
-    },
-    /**
-     * Decreases the count of each value in `oldData` by 1 in the store and database.
-     * If a counter's count after decrementing is 0 or less, the counter is deleted.
-     * @param {PhotoType} oldData - The data containing the values to decrease.
-     * @return {Promise<void>} A promise that resolves when all values have been decreased.
-     */
-    async decreaseValues(oldData: PhotoType): Promise<void> {
+    async updateValues(oldData: PhotoType, delta: 1 | -1): Promise<void> {
       for (const field of CONFIG.photo_filter) {
         const fieldValue = oldData[field as keyof PhotoType]
         if (fieldValue) {
           if (field === 'tags') {
             for (const tag of fieldValue as string[]) {
               const id = counterId(field, tag)
-              await this.decrease(id, field, tag)
+              await this.update(id, field, tag, delta)
             }
           } else {
             const id = counterId(field, fieldValue as string)
-            await this.decrease(id, field as keyof ValuesState['values'], fieldValue as string)
+            await this.update(id, field as keyof ValuesState['values'], fieldValue as string, delta)
           }
         }
+      }
+    },
+
+    /**
+     * Updates the counter in the database and store for a given value.
+     * If the `delta` is positive, the count is increased. If the `delta` is negative, the count is decreased.
+     * If the count reaches 0, the counter is removed from the database.
+     * If the counter does not exist in the database and the `delta` is positive, the counter is created in the database.
+     * @param {string} id - The id of the counter to update.
+     * @param {keyof ValuesState['values']} field - The field of the value to update.
+     * @param {string} val - The value to update.
+     * @param {1 | -1} delta - The delta to apply to the count. 1 to increase, -1 to decrease.
+     * @return {Promise<void>} A promise that resolves when the counter has been updated.
+     */
+    async update(
+      id: string,
+      field: keyof ValuesState['values'],
+      val: string,
+      delta: 1 | -1,
+    ): Promise<void> {
+      // in memory store first
+      this.values[field][val] = (this.values[field][val] ?? 0) + delta
+      // then in database
+      const counterRef = doc(db, 'Counter', id)
+      const findDoc = await getDoc(counterRef)
+      let newCount = 1
+      if (findDoc.exists()) {
+        const oldCount = findDoc.data().count
+        newCount = oldCount + delta
+        if (newCount <= 0) {
+          await deleteDoc(counterRef)
+        } else {
+          await updateDoc(counterRef, {
+            count: newCount,
+          })
+        }
+      } else if (delta > 0) {
+        await setDoc(counterRef, {
+          count: newCount,
+          field,
+          value: val,
+        })
+      }
+      if (process.env.DEV) {
+        console.log(`${delta > 0 ? 'increase' : 'decrease'} ${id}`, newCount)
       }
     },
 
@@ -392,7 +363,7 @@ export const useValuesStore = defineStore('meta', {
      * @param {keyof ValuesState['values']} field - The field to add the value to.
      */
     addNewField(val: string, field: keyof ValuesState['values']) {
-      this.values[field][val] = 1
+      this.values[field][val] = 0
     },
   },
 })

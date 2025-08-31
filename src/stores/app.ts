@@ -211,11 +211,11 @@ export const useAppStore = defineStore('app', {
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
-        meta.decreaseValues(oldDoc.data() as PhotoType)
         await setDoc(docRef, obj, { merge: true })
-
         changeByFilename(this.objects, obj)
-        meta.increaseValues(obj)
+
+        meta.updateValues(obj, 1)
+        meta.updateValues(oldDoc.data() as PhotoType, -1)
         notify({ message: `${obj.filename} updated` })
       } else {
         // set thumbnail url = publish
@@ -230,7 +230,7 @@ export const useAppStore = defineStore('app', {
         changeByFilename(this.objects, obj, 0)
         this.getLast()
         this.bucketDiff(obj.size)
-        meta.increaseValues(obj)
+        meta.updateValues(obj, 1)
         // delete uploaded
         removeByFilename(this.uploaded, obj.filename)
         notify({ message: `${obj.filename} published` })
@@ -273,7 +273,7 @@ export const useAppStore = defineStore('app', {
 
         const meta = useValuesStore()
         this.bucketDiff(-data.size)
-        meta.decreaseValues(data)
+        meta.updateValues(data, -1)
         this.getLast()
       } else {
         removeByFilename(this.uploaded, obj.filename)

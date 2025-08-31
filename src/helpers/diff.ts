@@ -1,78 +1,47 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const VALUE_CREATED = 'created'
+export const VALUE_UPDATED = 'updated'
+export const VALUE_DELETED = 'deleted'
+export const VALUE_UNCHANGED = 'unchanged'
 
-export const deepDiffMapper = (() => {
-  const VALUE_CREATED = 'created'
-  const VALUE_UPDATED = 'updated'
-  const VALUE_DELETED = 'deleted'
-  const VALUE_UNCHANGED = 'unchanged'
+function isValue(x: any): boolean {
+  return typeof x !== 'object' || x === null
+}
 
-  const isFunction = (x: any): x is Function =>
-    Object.prototype.toString.call(x) === '[object Function]'
-  const isArray = (x: any): x is Array<any> =>
-    Object.prototype.toString.call(x) === '[object Array]'
-  const isDate = (x: any): x is Date => Object.prototype.toString.call(x) === '[object Date]'
-  const isObject = (x: any): x is object => Object.prototype.toString.call(x) === '[object Object]'
-  const isValue = (x: any): boolean => !isObject(x) && !isArray(x)
+function isDate(x: any): x is Date {
+  return x instanceof Date
+}
 
-  const compareValues = (value1: any, value2: any): string => {
-    if (value1 === value2) {
-      return VALUE_UNCHANGED
+function compareValues(value1: any, value2: any): string {
+  if (value1 === value2) return VALUE_UNCHANGED
+  if (isDate(value1) && isDate(value2) && value1.getTime() === value2.getTime())
+    return VALUE_UNCHANGED
+  if (value1 === undefined) return VALUE_CREATED
+  if (value2 === undefined) return VALUE_DELETED
+  return VALUE_UPDATED
+}
+
+export type DiffResult = {
+  key: string
+  status: string
+  value: any
+}
+
+export function deepDiffMap(obj1: any, obj2: any): DiffResult[] {
+  const keys = new Set([...Object.keys(obj1 || {}), ...Object.keys(obj2 || {})])
+  const result: DiffResult[] = []
+  for (const key of keys) {
+    const val1 = obj1 ? obj1[key] : undefined
+    const val2 = obj2 ? obj2[key] : undefined
+    const status = compareValues(val1, val2)
+    let value: any
+    if (!isValue(val1) && !isValue(val2)) {
+      value = deepDiffMap(val1, val2)
+    } else {
+      value = val1 === undefined ? val2 : val1
     }
-    if (isDate(value1) && isDate(value2) && value1.getTime() === value2.getTime()) {
-      return VALUE_UNCHANGED
-    }
-    if (value1 === undefined) {
-      return VALUE_CREATED
-    }
-    if (value2 === undefined) {
-      return VALUE_DELETED
-    }
-    return VALUE_UPDATED
+    if (status === VALUE_UNCHANGED) continue
+    result.push({ key, status, value })
   }
-
-  const map = (obj1: any, obj2: any): any => {
-    if (isFunction(obj1) || isFunction(obj2)) {
-      throw new Error('Invalid argument. Function given, object expected.')
-    }
-    if (isValue(obj1) || isValue(obj2)) {
-      return {
-        type: compareValues(obj1, obj2),
-        data: obj1 === undefined ? obj2 : obj1,
-      }
-    }
-
-    const diff: any = {}
-    for (const key in obj1) {
-      if (isFunction(obj1[key])) {
-        continue
-      }
-
-      const value2 = obj2 ? obj2[key] : undefined
-      diff[key] = map(obj1[key], value2)
-    }
-    for (const key in obj2) {
-      if (isFunction(obj2[key]) || diff[key] !== undefined) {
-        continue
-      }
-
-      diff[key] = map(undefined, obj2[key])
-    }
-
-    return diff
-  }
-
-  return {
-    VALUE_CREATED,
-    VALUE_UPDATED,
-    VALUE_DELETED,
-    VALUE_UNCHANGED,
-    map,
-    compareValues,
-    isFunction,
-    isArray,
-    isDate,
-    isObject,
-    isValue,
-  }
-})()
+  return result
+}
