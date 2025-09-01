@@ -9,15 +9,15 @@ import {
   getDoc,
   setDoc,
   getDocs,
-  updateDoc,
   deleteDoc,
   writeBatch,
 } from 'firebase/firestore'
 import notify from '../helpers/notify'
-import { CONFIG } from '../helpers'
+import { CONFIG, isEmpty } from '../helpers'
+import { deepDiffMap } from '../helpers/diff'
 import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from '../helpers/models'
-import { deepDiffMap } from '../helpers/diff'
+import type { DiffResult } from '../helpers/diff'
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')
@@ -192,17 +192,17 @@ export const useValuesStore = defineStore('meta', {
       notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
     },
 
+    /**
+     * Updates the counters in the database and store based on the old and new data.
+     * It builds a diff of the counters that have changed, and then calls batchUpdateCounters
+     * with the diff.
+     *
+     * @param {PhotoType | null} oldData - The old data to update counters from.
+     * @param {PhotoType | null} newData - The new data to update counters from.
+     */
     updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
       const oldObj: { [key: string]: number } = {}
       const newObj: { [key: string]: number } = {}
-
-      if (oldData && newData) {
-        // diff
-      } else if (oldData && !newData) {
-        //remove
-      } else if (!oldData && newData) {
-        //add
-      }
 
       if (oldData) {
         for (const field of CONFIG.photo_filter) {
@@ -234,76 +234,76 @@ export const useValuesStore = defineStore('meta', {
         }
       }
 
-      console.log(oldObj, newObj)
+      if (!isEmpty(oldObj) && !isEmpty(newObj)) {
+        const diff = deepDiffMap(oldObj, newObj)
+        this.batchUpdateCounters(diff)
+      } else if (isEmpty(oldObj) && !isEmpty(newObj)) {
+        const newList = Object.entries(newObj).map(([key, val]) => ({
+          key: key,
+          status: 'created',
+          value: val,
+        }))
+        this.batchUpdateCounters(newList)
+      } else if (!isEmpty(oldObj) && isEmpty(newObj)) {
+        const oldList = Object.entries(oldObj).map(([key, val]) => ({
+          key: key,
+          status: 'deleted',
+          value: val,
+        }))
+        this.batchUpdateCounters(oldList)
+      }
     },
 
     /**
-     * Updates the counters in the database and store for a given photo.
-     * This is used when a photo is added or removed from the database.
-     * @param {PhotoType} oldData - The old data of the photo.
-     * @param {1 | -1} delta - 1 if the photo was added, -1 if it was removed.
-     * @return {Promise<void>} A promise that resolves when the counters have been updated.
+     * Updates the counters in the database and store based on the results of the deep diff.
+     * It commits a batch write to the database and updates the store with the new values.
+     *
+     * @param {DiffResult[]} results - The results of the deep diff.
+     * @return {Promise<void>} A promise that resolves when the batch has been committed.
      */
-    async updateValues(oldData: PhotoType, delta: 1 | -1): Promise<void> {
-      for (const field of CONFIG.photo_filter) {
-        const fieldValue = oldData[field as keyof PhotoType]
-        if (fieldValue) {
-          if (field === 'tags') {
-            for (const tag of fieldValue as string[]) {
-              const id = counterId(field, tag)
-              await this.update(id, field, tag, delta)
+    async batchUpdateCounters(results: DiffResult[]): Promise<void> {
+      const batch = writeBatch(db)
+
+      for (const todo of results) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [_, field, value] = todo.key.split('||')
+        const counterRef = doc(db, 'Counter', todo.key)
+        const findDoc = await getDoc(counterRef)
+        if (todo.status === 'created') {
+          if (findDoc.exists()) {
+            const findCount = findDoc.data().count
+            this.values[field as keyof ValuesState['values']][value as string] = findCount + 1
+            batch.update(counterRef, {
+              count: findCount + 1,
+            })
+            if (process.env.DEV) console.log('inrcease existing', todo.key, findCount + 1)
+          } else {
+            this.values[field as keyof ValuesState['values']][value as string] = 1
+            batch.set(counterRef, { count: 1, field: field, value: value })
+            if (process.env.DEV) console.log('inrcease new', todo.key, 1)
+          }
+        }
+        if (todo.status === 'deleted') {
+          if (findDoc.exists()) {
+            const findCount = findDoc.data().count
+            if (findCount - 1 <= 0) {
+              delete this.values[field as keyof ValuesState['values']][value as string]
+              batch.delete(counterRef)
+              if (process.env.DEV) console.log('decrese and delete', todo.key, 0)
+            } else {
+              this.values[field as keyof ValuesState['values']][value as string] = findCount - 1
+              batch.update(counterRef, {
+                count: findCount - 1,
+              })
+              if (process.env.DEV) console.log('decrese existing', todo.key, findCount - 1)
             }
           } else {
-            const id = counterId(field, fieldValue as string)
-            await this.update(id, field as keyof ValuesState['values'], fieldValue as string, delta)
+            this.values[field as keyof ValuesState['values']][value as string] = 1
+            batch.set(counterRef, { count: 1, field: field, value: value })
           }
         }
       }
-    },
-
-    /**
-     * Updates the counter in the database and store for a given value.
-     * If the `delta` is positive, the count is increased. If the `delta` is negative, the count is decreased.
-     * If the count reaches 0, the counter is removed from the database.
-     * If the counter does not exist in the database and the `delta` is positive, the counter is created in the database.
-     * @param {string} id - The id of the counter to update.
-     * @param {keyof ValuesState['values']} field - The field of the value to update.
-     * @param {string} val - The value to update.
-     * @param {1 | -1} delta - The delta to apply to the count. 1 to increase, -1 to decrease.
-     * @return {Promise<void>} A promise that resolves when the counter has been updated.
-     */
-    async update(
-      id: string,
-      field: keyof ValuesState['values'],
-      val: string,
-      delta: 1 | -1,
-    ): Promise<void> {
-      // in memory store first
-      this.values[field][val] = (this.values[field][val] ?? 0) + delta
-      // then in database
-      const counterRef = doc(db, 'Counter', id)
-      const findDoc = await getDoc(counterRef)
-      let newCount = 1
-      if (findDoc.exists()) {
-        const oldCount = findDoc.data().count
-        newCount = oldCount + delta
-        if (newCount <= 0) {
-          await deleteDoc(counterRef)
-        } else {
-          await updateDoc(counterRef, {
-            count: newCount,
-          })
-        }
-      } else if (delta > 0) {
-        await setDoc(counterRef, {
-          count: newCount,
-          field,
-          value: val,
-        })
-      }
-      if (process.env.DEV) {
-        console.log(`${delta > 0 ? 'increase' : 'decrease'} ${id}`, newCount)
-      }
+      await batch.commit()
     },
 
     /**

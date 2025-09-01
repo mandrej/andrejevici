@@ -214,8 +214,6 @@ export const useAppStore = defineStore('app', {
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj)
 
-        meta.updateValues(obj, 1)
-        meta.updateValues(oldDoc.data() as PhotoType, -1)
         meta.updateCounters(oldDoc.data() as PhotoType, obj as PhotoType)
         notify({ message: `${obj.filename} updated` })
       } else {
@@ -231,7 +229,7 @@ export const useAppStore = defineStore('app', {
         changeByFilename(this.objects, obj, 0)
         this.getLast()
         this.bucketDiff(obj.size)
-        meta.updateValues(obj, 1)
+        meta.updateCounters(null, obj as PhotoType)
         // delete uploaded
         removeByFilename(this.uploaded, obj.filename)
         notify({ message: `${obj.filename} published` })
@@ -274,7 +272,7 @@ export const useAppStore = defineStore('app', {
 
         const meta = useValuesStore()
         this.bucketDiff(-data.size)
-        meta.updateValues(data, -1)
+        meta.updateCounters(data as PhotoType, null)
         this.getLast()
       } else {
         removeByFilename(this.uploaded, obj.filename)
