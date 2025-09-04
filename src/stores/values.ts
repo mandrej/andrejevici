@@ -128,14 +128,14 @@ export const useValuesStore = defineStore('meta', {
      * @return {Promise<void>} A promise that resolves when the counters have been built.
      */
     async countersBuild(): Promise<void> {
-      notify({ message: `Please wait`, group: 'build' })
+      notify({ message: `Please wait` })
 
       // Delete old counters
       const countersToDelete = await getDocs(query(countersCol))
       const deleteBatch = writeBatch(db)
       countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
-      notify({ message: `Deleted old counters`, group: 'build' })
+      notify({ message: `Deleted old counters` })
 
       // Build new counters
       const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
@@ -168,28 +168,28 @@ export const useValuesStore = defineStore('meta', {
           const counterRef = doc(db, 'Counter', counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
-        if (process.env.DEV) {
-          console.log(
-            deepDiffMap(
-              this.values[field as keyof ValuesState['values']],
-              newValues[field as keyof ValuesState['values']],
-            ),
-          )
+        const diff = deepDiffMap(
+          this.values[field as keyof ValuesState['values']],
+          newValues[field as keyof ValuesState['values']],
+        )
+        const messages: string[] = []
+        for (const change of diff) {
+          messages.push(`${change.key} ${change.status}`)
         }
         // overwrite old values in the store
         this.values[field as keyof ValuesState['values']] = {
           ...newValues[field as keyof ValuesState['values']],
         }
         notify({
-          message: `Values for ${field} updated`,
+          message: messages.join('\n') || `No changes for ${field}`,
           actions: [{ icon: 'close' }],
-          timeout: 0,
-          group: 'build',
+          timeout: messages.length > 0 ? 0 : 5000,
+          multiLine: true,
         })
       })
       await setBatch.commit()
 
-      notify({ message: `All done`, actions: [{ icon: 'close' }], timeout: 0, group: 'build' })
+      notify({ message: `All done` })
     },
 
     /**
