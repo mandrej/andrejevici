@@ -36,9 +36,13 @@ else
       firebase deploy --except functions,extensions
       exit ;;
     functions)
+      # cd functions
+      # npm run build
+      # cd ..
       firebase deploy --only functions
       exit ;;
     extensions)
+      # firebase ext:install firebase/storage-resize-images --local
       firebase deploy --only extensions
       exit ;;
     *)
