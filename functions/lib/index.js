@@ -24,7 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notify = void 0;
-/* eslint-disable comma-dangle */
 const app_1 = require("firebase-admin/app");
 const firestore_1 = require("firebase-admin/firestore");
 const messaging_1 = require("firebase-admin/messaging");

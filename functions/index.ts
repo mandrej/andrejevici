@@ -1,9 +1,10 @@
-/* eslint-disable comma-dangle */
 import { initializeApp } from 'firebase-admin/app'
-import { getFirestore, CollectionReference, DocumentData } from 'firebase-admin/firestore'
+import type { CollectionReference, DocumentData } from 'firebase-admin/firestore'
+import { getFirestore } from 'firebase-admin/firestore'
 import { getMessaging } from 'firebase-admin/messaging'
-import { onRequest, Request } from 'firebase-functions/v2/https'
-import { Response } from 'express'
+import type { Request } from 'firebase-functions/v2/https'
+import { onRequest } from 'firebase-functions/v2/https'
+import type { Response } from 'express'
 import * as logger from 'firebase-functions/logger'
 
 const TOPIC = 'newimages'
