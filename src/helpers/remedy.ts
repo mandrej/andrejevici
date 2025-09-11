@@ -1,12 +1,22 @@
 import { db, storage } from '../boot/fire'
-import { doc, collection, query, orderBy, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
+import type { DocumentSnapshot } from 'firebase/firestore'
+import {
+  doc,
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  getDoc,
+} from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { textSlug, sliceSlug } from '.'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { nickInsteadEmail } from '../helpers'
+import { nickInsteadEmail, reFilename } from '../helpers'
 import router from '../router'
 
 import notify from './notify'
@@ -87,6 +97,65 @@ const getStorageData = (filename: string) => {
   })
 }
 
+export const missingThumbnails = async () => {
+  notify({
+    message: `Please wait`,
+  })
+
+  const photoNames: string[] = []
+  const thumbNames: string[] = []
+
+  const photoRefs = await listAll(storageRef(storage, ''))
+  photoRefs.items.forEach((r) => {
+    const match = r.name.match(reFilename)
+    if (!match) return ''
+    const [, name] = match
+    if (name) photoNames.push(name)
+  })
+
+  const thumbRefs = await listAll(storageRef(storage, '/thumbnails'))
+  thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace('_400x400.jpeg', '')))
+
+  photoNames.sort()
+  thumbNames.sort()
+
+  const thumbSet = new Set(thumbNames)
+  const missing = photoNames.filter((x) => !thumbSet.has(x))
+
+  const promises: Array<Promise<DocumentSnapshot>> = []
+  missing.forEach((x) => {
+    const docRef = doc(db, 'Photo', x + '.jpg')
+    promises.push(getDoc(docRef))
+  })
+
+  const results = await Promise.allSettled(promises)
+  let message: string = ''
+  results.forEach((it) => {
+    if (it.status === 'fulfilled') {
+      if (it.value.exists()) {
+        const data = it.value.data()
+        const filename = it.value.id.replace('.jpg', '')
+        message += `${data.date} ${filename}<br/>`
+      }
+    } else {
+      notify({
+        type: 'negative',
+        message: `Rejected ${it.reason}.`,
+        actions: [{ icon: 'close' }],
+        timeout: 0,
+      })
+    }
+  })
+
+  notify({
+    message: message,
+    timeout: missing.length > 0 ? 0 : 5000,
+    actions: missing.length > 0 ? [{ icon: 'close' }] : [],
+    html: true,
+    multiLine: true,
+  })
+}
+
 export const mismatch = async () => {
   notify({
     message: `Please wait`,
@@ -109,10 +178,12 @@ export const mismatch = async () => {
   bucketNames.sort()
   storageNames.sort()
 
+  const storageSet = new Set(storageNames)
+  const bucketSet = new Set(bucketNames)
   const missing =
     bucketNames.length >= storageNames.length
-      ? bucketNames.filter((x) => !storageNames.includes(x))
-      : storageNames.filter((x) => !bucketNames.includes(x))
+      ? bucketNames.filter((x) => !storageSet.has(x))
+      : storageNames.filter((x) => !bucketSet.has(x))
 
   if (bucketNames.length >= storageNames.length) {
     const promises = missing

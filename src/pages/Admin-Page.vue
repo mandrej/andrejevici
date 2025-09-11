@@ -29,6 +29,12 @@
           </template>
         </ButtonRow>
         <ButtonRow>
+          Find images without thumbnails
+          <template #button>
+            <q-btn label="Find" color="primary" @click="missingThumbnails" />
+          </template>
+        </ButtonRow>
+        <ButtonRow>
           Resolve Cloud storage and datastore mismatch
           <template #button>
             <q-btn color="negative" label="Resolve" @click="mismatch" />
@@ -62,7 +68,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { fix, mismatch } from '../helpers/remedy'
+import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
 import notify from '../helpers/notify'
 import { CONFIG, formatDatum } from '../helpers'
 import ButtonRow from '../components/Button-Row.vue'
