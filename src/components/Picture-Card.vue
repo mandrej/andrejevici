@@ -4,14 +4,15 @@
       loading="lazy"
       :ratio="5 / 4"
       :src="rec.thumb"
-      :style="thumbStyle()"
       @click="emit('carousel-show', rec.filename)"
       class="col cursor-pointer"
       no-spinner
     >
-      <!-- <template #error>
-        <img :src="fileBroken" />
-      </template> -->
+      <template #error>
+        <div class="absolute-full flex flex-center bg-grey">
+          <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
+        </div>
+      </template>
       <div class="absolute-bottom headline ellipsis">
         {{ rec.headline }}
       </div>
@@ -53,7 +54,9 @@
   <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
     <q-img loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
-        <img :src="fileBroken" />
+        <div class="absolute-full flex flex-center bg-grey">
+          <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
+        </div>
       </template>
     </q-img>
     <slot name="action"></slot>
@@ -97,16 +100,5 @@ const cardAttributes = (filename: string) => {
 const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
-}
-
-const thumbStyle = () => {
-  return {
-    // height: '50%',
-    // width: '50%',
-    backgroundSize: 'contain',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    backgroundImage: `url(${fileBroken})`,
-  }
 }
 </script>

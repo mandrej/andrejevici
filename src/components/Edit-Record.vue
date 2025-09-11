@@ -36,7 +36,9 @@
             <div class="col-xs-12 col-sm-4 gt-xs">
               <q-img :ratio="1" :src="tmp.thumb ? tmp.thumb : tmp.url">
                 <template #error>
-                  <img :src="fileBroken" />
+                  <div class="absolute-full flex flex-center bg-grey">
+                    <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
+                  </div>
                 </template>
               </q-img>
             </div>
