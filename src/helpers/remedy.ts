@@ -147,13 +147,19 @@ export const missingThumbnails = async () => {
     }
   })
 
-  notify({
-    message: message,
-    timeout: missing.length > 0 ? 0 : 5000,
-    actions: missing.length > 0 ? [{ icon: 'close' }] : [],
-    html: true,
-    multiLine: true,
-  })
+  if (missing.length > 0) {
+    notify({
+      message: message,
+      timeout: 0,
+      actions: [{ icon: 'close' }],
+      html: true,
+      multiLine: true,
+    })
+  } else {
+    notify({
+      message: 'No missing thumbnails',
+    })
+  }
 }
 
 export const mismatch = async () => {
