@@ -36,9 +36,7 @@
             <div class="col-xs-12 col-sm-4 gt-xs">
               <q-img :ratio="1" :src="tmp.thumb ? tmp.thumb : tmp.url">
                 <template #error>
-                  <div class="absolute-full flex flex-center bg-grey">
-                    <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
-                  </div>
+                  <FileBroken />
                 </template>
               </q-img>
             </div>
@@ -171,21 +169,14 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import {
-  CONFIG,
-  fileBroken,
-  formatBytes,
-  U,
-  textSlug,
-  sliceSlug,
-  nickInsteadEmail,
-} from '../helpers'
+import { CONFIG, formatBytes, U, textSlug, sliceSlug, nickInsteadEmail } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import AutoComplete from './Auto-Complete.vue'
+import FileBroken from './File-Broken.vue'
 import type { PhotoType } from '../helpers/models'
 
 const emit = defineEmits(['edit-ok'])

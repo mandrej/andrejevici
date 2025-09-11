@@ -9,9 +9,7 @@
       no-spinner
     >
       <template #error>
-        <div class="absolute-full flex flex-center bg-grey">
-          <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
-        </div>
+        <FileBroken />
       </template>
       <div class="absolute-bottom headline ellipsis">
         {{ rec.headline }}
@@ -54,9 +52,7 @@
   <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
     <q-img loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
-        <div class="absolute-full flex flex-center bg-grey">
-          <img :src="fileBroken" style="min-width: 150px; min-height: 150px" />
-        </div>
+        <FileBroken />
       </template>
     </q-img>
     <slot name="action"></slot>
@@ -64,8 +60,9 @@
 </template>
 
 <script setup lang="ts">
-import { fileBroken, formatDatum, U, reFilename, nickInsteadEmail } from '../helpers'
+import { formatDatum, U, reFilename, nickInsteadEmail } from '../helpers'
 import type { PhotoType } from '../helpers/models'
+import FileBroken from './File-Broken.vue'
 
 defineProps<{
   rec: PhotoType
