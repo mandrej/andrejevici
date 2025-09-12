@@ -124,10 +124,15 @@ export const missingThumbnails = async () => {
 
   const promises: Array<Promise<DocumentSnapshot>> = []
   missing.forEach((x) => {
-    const docRef = doc(db, 'Photo', x + '.jpg')
+    let docRef = doc(db, 'Photo', x + '.jpg')
+    promises.push(getDoc(docRef))
+    docRef = doc(db, 'Photo', x + '.jpeg')
+    promises.push(getDoc(docRef))
+    docRef = doc(db, 'Photo', x + '.JPG')
     promises.push(getDoc(docRef))
   })
 
+  let hit = 0
   const results = await Promise.allSettled(promises)
   let message: string = ''
   results.forEach((it) => {
@@ -136,6 +141,7 @@ export const missingThumbnails = async () => {
         const data = it.value.data()
         const filename = it.value.id.replace('.jpg', '')
         message += `${data.date} ${filename}<br/>`
+        hit++
       }
     } else {
       notify({
@@ -147,7 +153,7 @@ export const missingThumbnails = async () => {
     }
   })
 
-  if (missing.length > 0) {
+  if (hit > 0) {
     notify({
       message: message,
       timeout: 0,
