@@ -34,7 +34,8 @@ export const fix = async () => {
   const q = query(photosCol, orderBy('date', 'desc'))
   const querySnapshot = await getDocs(q)
 
-  querySnapshot.forEach(async (it) => {
+  const promises: Promise<void>[] = []
+  querySnapshot.forEach((it) => {
     const rec = it.data()
     if (!('text' in rec)) {
       const docRef = doc(db, 'Photo', rec.filename)
@@ -43,7 +44,7 @@ export const fix = async () => {
         message: `Fix missing for ${rec.filename}`,
         group: 'fix',
       })
-      await setDoc(docRef, rec, { merge: true })
+      promises.push(setDoc(docRef, rec, { merge: true }))
     } else if (rec.headline.toLowerCase().indexOf('š') || rec.headline.toLowerCase().indexOf('ш')) {
       const docRef = doc(db, 'Photo', rec.filename)
       rec.text = sliceSlug(textSlug(rec.headline))
@@ -51,13 +52,21 @@ export const fix = async () => {
         message: `Fix Ш for ${rec.filename}`,
         group: 'fix',
       })
-      await setDoc(docRef, rec, { merge: true })
+      promises.push(setDoc(docRef, rec, { merge: true }))
     }
   })
-  notify({
-    message: `ALL FIXED`,
-    group: 'fix',
-  })
+  await Promise.all(promises)
+  if (promises.length === 0) {
+    notify({
+      message: `No records to fix`,
+      group: 'fix',
+    })
+  } else {
+    notify({
+      message: `Fixed ${promises.length} records`,
+      group: 'fix',
+    })
+  }
   // if (num === 0) {
   //   notify({
   //     message: `No records to fix`,
@@ -113,7 +122,7 @@ export const missingThumbnails = async () => {
     if (name) photoNames.push(name)
   })
 
-  const thumbRefs = await listAll(storageRef(storage, '/thumbnails'))
+  const thumbRefs = await listAll(storageRef(storage, 'thumbnails'))
   thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace('_400x400.jpeg', '')))
 
   photoNames.sort()
@@ -123,13 +132,12 @@ export const missingThumbnails = async () => {
   const missing = photoNames.filter((x) => !thumbSet.has(x))
 
   const promises: Array<Promise<DocumentSnapshot>> = []
-  missing.forEach((x) => {
-    let docRef = doc(db, 'Photo', x + '.jpg')
-    promises.push(getDoc(docRef))
-    docRef = doc(db, 'Photo', x + '.jpeg')
-    promises.push(getDoc(docRef))
-    docRef = doc(db, 'Photo', x + '.JPG')
-    promises.push(getDoc(docRef))
+  missing.forEach((name) => {
+    let docRef
+    for (const ext in ['jpg', 'jpeg', 'JPG']) {
+      docRef = doc(db, 'Photo', `${name}.${ext}`)
+      promises.push(getDoc(docRef))
+    }
   })
 
   let hit = 0
@@ -139,7 +147,7 @@ export const missingThumbnails = async () => {
     if (it.status === 'fulfilled') {
       if (it.value.exists()) {
         const data = it.value.data()
-        const filename = it.value.id.replace('.jpg', '')
+        const filename = it.value.id.replace(/\.[^.]+$/, '')
         message += `${data.date} ${filename}<br/>`
         hit++
       }
