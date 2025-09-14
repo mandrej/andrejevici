@@ -16,7 +16,6 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
-const { user } = storeToRefs(auth)
 
 messageListener()
   .then((payload: any) => {
@@ -30,12 +29,12 @@ messageListener()
   })
   .catch((err) => console.log('failed: ', err))
 
-onAuthStateChanged(getAuth(), (usr) => {
+onAuthStateChanged(getAuth(), async (usr) => {
   // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
   if (usr) {
-    auth.storeUser(usr)
+    await auth.storeUser(usr)
   } else {
-    user.value = null
+    auth.user = null
   }
 })
 
