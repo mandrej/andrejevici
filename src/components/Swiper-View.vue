@@ -19,20 +19,7 @@
             class="absolute-top row no-wrap justify-between"
             style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
           >
-            <q-btn
-              v-if="user && user.isAdmin"
-              flat
-              round
-              class="text-white q-pa-sm"
-              icon="delete"
-              @click="emit('confirm-delete', obj)"
-            />
-            <div
-              v-show="!full"
-              v-html="caption(obj)"
-              class="col q-my-sm text-white text-center ellipsis"
-            ></div>
-
+            <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
             <q-btn
               flat
               round
@@ -41,24 +28,38 @@
               @click="onCancel(U + obj.filename)"
             />
           </div>
+
           <div class="swiper-zoom-container">
             <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
             <div class="swiper-lazy-preloader" />
           </div>
-          <q-btn
-            flat
-            round
-            class="absolute-bottom-left text-white q-pa-sm"
-            @click="onShare()"
-            icon="share"
-          />
-          <q-btn
-            flat
-            round
-            class="absolute-bottom-right text-white q-pa-sm"
-            @click="$q.fullscreen.toggle()"
-            :icon="full ? 'fullscreen_exit' : 'fullscreen'"
-          />
+
+          <div v-show="!full" class="absolute-bottom-right row no-wrap">
+            <template v-if="isAuthorOrAdmin(obj) && editMode">
+              <q-btn
+                flat
+                round
+                class="text-white q-pa-sm"
+                icon="delete"
+                @click="emit('confirm-delete', obj)"
+              />
+              <q-btn
+                flat
+                round
+                class="text-white q-pa-sm"
+                icon="edit"
+                @click="emit('edit-record', obj)"
+              />
+            </template>
+            <q-btn flat round class="text-white q-pa-sm" @click="onShare()" icon="share" />
+            <q-btn
+              flat
+              round
+              class="text-white q-pa-sm"
+              @click="$q.fullscreen.toggle()"
+              :icon="full ? 'fullscreen_exit' : 'fullscreen'"
+            />
+          </div>
         </swiper-slide>
       </swiper-container>
     </q-card>
@@ -85,13 +86,13 @@ import 'swiper/scss/zoom'
 const props = defineProps<{
   index: number
 }>()
-const emit = defineEmits(['confirm-delete', 'carousel-cancel'])
+const emit = defineEmits(['confirm-delete', 'edit-record', 'carousel-cancel'])
 
 const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
 const route = useRoute()
-const { objects, showCarousel } = storeToRefs(app)
+const { objects, showCarousel, editMode } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const hash = ref<string | null>(null)
 const urlHash = new RegExp(/#(.*)?/) // matching string hash
@@ -139,6 +140,10 @@ const onError = (e: Event) => {
   if (target) {
     target.src = fileBroken
   }
+}
+
+const isAuthorOrAdmin = (rec: PhotoType) => {
+  return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
 }
 const caption = (rec: PhotoType) => {
   let tmp = ''

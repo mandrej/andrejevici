@@ -5,6 +5,7 @@
     v-if="showCarousel"
     :index="index"
     @confirm-delete="confirmShow"
+    @edit-record="editRecord"
     @carousel-cancel="carouselCancel"
   />
 
