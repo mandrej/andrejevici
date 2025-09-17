@@ -86,6 +86,8 @@ const { token } = storeToRefs(auth)
 const values = computed(() => meta.values)
 
 const send = () => {
+  const msg = message.value.trim()
+  if (msg === '') notify({ type: 'warning', message: 'No message provided' })
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -94,7 +96,7 @@ const send = () => {
     method: 'POST',
     mode: 'cors',
     headers: headers,
-    body: JSON.stringify({ text: message.value.trim() }),
+    body: JSON.stringify({ text: msg }),
   })
     .then((response) => {
       if (!response.ok) {
