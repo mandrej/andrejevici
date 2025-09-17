@@ -105,7 +105,7 @@ const send = () => {
       return response.text()
     })
     .then((text) => {
-      notify({ message: `Message ${text} sent` })
+      notify({ message: `${text}` })
       return text
     })
     .catch((error) => {

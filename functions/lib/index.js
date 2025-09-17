@@ -43,7 +43,7 @@ exports.notify = (0, https_1.onRequest)({
         registrationTokens.push(docSnap.id);
     });
     if (registrationTokens.length === 0) {
-        res.status(200).send('No subscribers found');
+        res.status(200).send('No subscribers found error');
         return;
     }
     const message = {
@@ -58,14 +58,29 @@ exports.notify = (0, https_1.onRequest)({
         (0, messaging_1.getMessaging)()
             .sendEachForMulticast(message)
             .then((response) => {
-            if (response.failureCount > 0) {
-                const failedTokens = [];
-                response.responses.forEach((resp, idx) => {
-                    if (resp && !resp.success && idx < registrationTokens.length) {
+            const failedTokens = [];
+            const successTokens = [];
+            response.responses.forEach((resp, idx) => {
+                if (resp && idx < registrationTokens.length) {
+                    if (!resp.success) {
                         failedTokens.push(registrationTokens[idx]);
                     }
-                });
+                    else {
+                        successTokens.push(registrationTokens[idx]);
+                    }
+                }
+            });
+            if (failedTokens.length > 0) {
                 failedTokens.forEach((token) => removeToken(token));
+                // logger.info(`Removed ${failedTokens.length} failed tokens`)
+            }
+            if (successTokens.length > 0) {
+                successTokens.forEach((token) => messageSent(token));
+                // logger.info(`Successfully sent to ${successTokens.length} tokens`)
+            }
+            else if (successTokens.length === 0) {
+                res.status(200).send('No active subscribers found');
+                logger.info(`No active subscribers found. No message sent`);
             }
         });
     }
@@ -80,5 +95,13 @@ const removeToken = async (token) => {
     const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
     const doc = await docRef.get();
     logger.info(`Remove token for ${doc.data()?.email}`);
+    await docRef.delete();
+};
+const messageSent = async (token) => {
+    if (token === undefined)
+        return;
+    const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
+    const doc = await docRef.get();
+    logger.info(`Message sent to ${doc.data()?.email}`);
     await docRef.delete();
 };
