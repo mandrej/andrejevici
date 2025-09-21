@@ -76,7 +76,6 @@ export const useUserStore = defineStore('auth', {
         if (diff > CONFIG.loginDays * 86400000) {
           this.askPush = true
         }
-        console.log(diff / 86400000)
       } else {
         this.askPush = true
       }
