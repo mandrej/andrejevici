@@ -72,11 +72,9 @@ exports.notify = (0, https_1.onRequest)({
             });
             if (failedTokens.length > 0) {
                 failedTokens.forEach((token) => removeToken(token));
-                // logger.info(`Removed ${failedTokens.length} failed tokens`)
             }
             if (successTokens.length > 0) {
                 successTokens.forEach((token) => messageSent(token));
-                // logger.info(`Successfully sent to ${successTokens.length} tokens`)
             }
             else if (successTokens.length === 0) {
                 res.status(200).send('No active subscribers found');
@@ -103,5 +101,4 @@ const messageSent = async (token) => {
     const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
     const doc = await docRef.get();
     logger.info(`Message sent to ${doc.data()?.email}`);
-    await docRef.delete();
 };

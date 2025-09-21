@@ -57,11 +57,9 @@ export const notify = onRequest(
           })
           if (failedTokens.length > 0) {
             failedTokens.forEach((token) => removeToken(token))
-            // logger.info(`Removed ${failedTokens.length} failed tokens`)
           }
           if (successTokens.length > 0) {
             successTokens.forEach((token) => messageSent(token))
-            // logger.info(`Successfully sent to ${successTokens.length} tokens`)
           } else if (successTokens.length === 0) {
             res.status(200).send('No active subscribers found')
             logger.info(`No active subscribers found. No message sent`)
