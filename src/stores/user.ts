@@ -12,11 +12,12 @@ import {
   query,
   where,
   writeBatch,
+  Timestamp,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User } from 'firebase/auth'
-import type { MyUserType } from '../helpers/models'
+import type { MyUserType, SubscriberType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 
 const provider = new GoogleAuthProvider()
@@ -39,18 +40,15 @@ export const useUserStore = defineStore('auth', {
   state(): {
     user: MyUserType | null
     token: string | null
+    allowPush: boolean
+    askPush: boolean
   } {
     return {
       user: null,
       token: null,
+      allowPush: false,
+      askPush: false,
     }
-  },
-  getters: {
-    showConsent: (state: { user: MyUserType | null; token: string | null }): boolean => {
-      return Boolean(
-        'Notification' in window && state.user && state.user.allowPush && state.user.askPush,
-      )
-    },
   },
   actions: {
     /**
@@ -69,22 +67,19 @@ export const useUserStore = defineStore('auth', {
         signedIn: new Date(),
       }
 
-      const docRef = doc(db, 'User', user.uid)
-      const docSnap = await getDoc(docRef)
-
-      if (docSnap.exists()) {
-        const data = docSnap.data() as MyUserType
-        if (!data.allowPush) {
-          this.user.allowPush = true
-        } else {
-          this.user.allowPush = data.allowPush // preserve old
+      const subscriberRef = doc(db, 'Subscriber', user.uid)
+      const snap = await getDoc(subscriberRef)
+      if (snap.exists()) {
+        const subscriber = snap.data() as SubscriberType
+        this.allowPush = subscriber.allowPush
+        const diff = +new Date() - subscriber.timestamp.seconds * 1000
+        if (diff > CONFIG.loginDays * 86400000) {
+          this.askPush = true
         }
+        console.log(diff / 86400000)
       } else {
-        this.user.allowPush = true
+        this.askPush = true
       }
-
-      this.user.askPush = this.token ? false : true
-      await setDoc(docRef, this.user, { merge: true })
     },
 
     /**
@@ -99,6 +94,8 @@ export const useUserStore = defineStore('auth', {
       if (this.user && this.user.uid) {
         await auth.signOut()
         this.user = null
+        this.askPush = false
+        this.allowPush = false
         // const routeName = router.currentRoute.value.name
         // if (routeName === 'add' || routeName === 'admin') {
         router.push({ name: 'home' })
@@ -122,6 +119,31 @@ export const useUserStore = defineStore('auth', {
       const docRef = doc(db, 'User', this.user!.uid)
       if (this.user) {
         await updateDoc(docRef, this.user)
+      }
+    },
+    /**
+     * Update the user's data in the Subscriber collection in Firestore.
+     *
+     * Updates the user's data in Firestore if the user object is not null.
+     * If the user's data already exists, updates the allowPush and timestamp fields.
+     * If not, sets the email, allowPush, and timestamp fields.
+     *
+     * @return {Promise<void>} Promise that resolves when the user's data is updated.
+     */
+    async updateSubscriber(): Promise<void> {
+      const docRef = doc(db, 'Subscriber', this.user!.uid)
+      const snap = await getDoc(docRef)
+      if (snap.exists()) {
+        await updateDoc(docRef, {
+          allowPush: this.allowPush,
+          timestamp: Timestamp.fromDate(new Date()),
+        })
+      } else {
+        await setDoc(docRef, {
+          email: this.user!.email,
+          allowPush: this.allowPush,
+          timestamp: Timestamp.fromDate(new Date()),
+        })
       }
     },
     /**

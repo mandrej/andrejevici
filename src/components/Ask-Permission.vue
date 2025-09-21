@@ -9,7 +9,7 @@
 
       <q-card-actions align="right">
         <q-btn flat label="Disable" @click="disableNotification" />
-        <!-- <q-btn flat label="Later" @click="askLater" /> -->
+        <q-btn flat label="Ask Later" @click="askLater" />
         <q-btn flat label="Enable" @click="enableNotifications" />
       </q-card-actions>
     </q-card>
@@ -20,7 +20,6 @@
 import { ref } from 'vue'
 import { CONFIG } from '../helpers'
 import notify from '../helpers/notify'
-import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
 import { getMessaging, getToken } from 'firebase/messaging'
 
@@ -33,44 +32,35 @@ defineProps({
   model: Boolean,
 })
 
-const { user, token } = storeToRefs(auth)
-
 const disableNotification = async () => {
-  if (user.value) {
-    user.value.allowPush = false
-    user.value.askPush = false
-    token.value = null
-    auth.removeDevice()
-    await auth.updateUser()
-  }
+  auth.askPush = false
+  auth.allowPush = false
+  await auth.updateSubscriber()
+  await auth.removeDevice()
 }
-// const askLater = async () => {
-//   open.value = false;
-//   user.value.askPush = true;
-//   await auth.updateUser();
-// };
+const askLater = async () => {
+  // after loginDays ask again
+  open.value = false
+  auth.askPush = false
+  auth.allowPush = false
+  await auth.updateSubscriber()
+}
 const enableNotifications = () => {
+  // after loginDays ask again
   Notification.requestPermission().then(async (permission) => {
     if (permission === 'granted') {
       wait.value = true
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
-      const tok = await getToken(messaging, {
+      const token = await getToken(messaging, {
         vapidKey: CONFIG.firebase.vapidKey,
       })
-      if (tok) {
-        token.value = tok
-        if (user.value) {
-          await auth.updateDevice(tok)
-          user.value.allowPush = true
-          user.value.askPush = false
-          await auth.updateUser()
-        }
+      if (token) {
+        auth.token = token
+        auth.askPush = false
+        auth.allowPush = true
+        await auth.updateSubscriber()
+        await auth.updateDevice(token)
       } else {
-        if (user.value) {
-          user.value.allowPush = true
-          user.value.askPush = true
-          await auth.updateUser()
-        }
         notify({
           type: 'negative',
           multiLine: true,

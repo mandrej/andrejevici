@@ -1,3 +1,5 @@
+import type { Timestamp } from '@google-cloud/firestore'
+
 export interface FindType {
   year?: number
   month?: number
@@ -56,6 +58,12 @@ export interface MyUserType {
   signedIn: Date
   askPush?: boolean
   allowPush?: boolean
+}
+export interface SubscriberType {
+  [key: string]: unknown
+  email: string
+  allowPush: boolean
+  timestamp: Timestamp
 }
 export interface ValuesState {
   headlineToApply: string

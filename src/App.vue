@@ -35,6 +35,8 @@ onAuthStateChanged(getAuth(), async (usr) => {
     await auth.storeUser(usr)
   } else {
     auth.user = null
+    auth.askPush = false
+    auth.allowPush = false
   }
 })
 

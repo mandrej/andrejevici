@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
@@ -66,7 +66,11 @@ const app = useAppStore()
 const auth = useUserStore()
 const drawer = ref(false)
 const { busy, editMode, adminTab } = storeToRefs(app)
-const { user, showConsent } = storeToRefs(auth)
+const { user, askPush } = storeToRefs(auth)
+
+const showConsent = computed(() => {
+  return Boolean('Notification' in window && askPush.value)
+})
 
 const changeMode = (mode: boolean) => {
   mode = !mode

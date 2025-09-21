@@ -87,5 +87,4 @@ const messageSent = async (token: string): Promise<void> => {
   const docRef = getFirestore().collection('Device').doc(token)
   const doc = await docRef.get()
   logger.info(`Message sent to ${doc.data()?.email}`)
-  await docRef.delete()
 }
