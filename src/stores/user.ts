@@ -66,6 +66,8 @@ export const useUserStore = defineStore('auth', {
         isAdmin: Boolean(adminMember(user.email as string, user.uid as string)),
         signedIn: new Date(),
       }
+      const userRef = doc(db, 'User', user.uid)
+      await setDoc(userRef, this.user, { merge: true })
 
       const subscriberRef = doc(db, 'Subscriber', user.uid)
       const snap = await getDoc(subscriberRef)
