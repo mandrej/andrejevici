@@ -72,10 +72,11 @@ export const useUserStore = defineStore('auth', {
       const userRef = doc(db, 'User', user.uid)
       await setDoc(userRef, this.user, { merge: true })
 
+      let subscriber: SubscriberType | null = null
       const subscriberRef = doc(db, 'Subscriber', user.uid)
       const snap = await getDoc(subscriberRef)
       if (snap.exists()) {
-        const subscriber = snap.data() as SubscriberType
+        subscriber = snap.data() as SubscriberType
         this.allowPush = subscriber.allowPush
         const diff = +new Date() - subscriber.timestamp.seconds * 1000
         if (diff > CONFIG.loginDays * 86400000) {
@@ -88,7 +89,7 @@ export const useUserStore = defineStore('auth', {
       const token = await getToken(messaging, {
         vapidKey: CONFIG.firebase.vapidKey,
       })
-      if (token) {
+      if (token && subscriber?.allowPush) {
         await this.updateDevice(token)
       }
     },
