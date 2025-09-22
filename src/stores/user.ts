@@ -15,10 +15,13 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { getMessaging, getToken } from 'firebase/messaging'
 import router from '../router'
 import type { User } from 'firebase/auth'
 import type { MyUserType, SubscriberType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
+
+const messaging = getMessaging()
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -64,7 +67,7 @@ export const useUserStore = defineStore('auth', {
         uid: user.uid,
         isAuthorized: Boolean(familyMember(user.email as string)), // only family members
         isAdmin: Boolean(adminMember(user.email as string, user.uid as string)),
-        signedIn: new Date(),
+        timestamp: Timestamp.fromDate(new Date()),
       }
       const userRef = doc(db, 'User', user.uid)
       await setDoc(userRef, this.user, { merge: true })
@@ -80,6 +83,13 @@ export const useUserStore = defineStore('auth', {
         }
       } else {
         this.askPush = true
+      }
+
+      const token = await getToken(messaging, {
+        vapidKey: CONFIG.firebase.vapidKey,
+      })
+      if (token) {
+        await this.updateDevice(token)
       }
     },
 
@@ -158,11 +168,14 @@ export const useUserStore = defineStore('auth', {
      */
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
-      const data: { email: string; stamp: Date } = {
-        email: this.user!.email,
-        stamp: new Date(),
+      const snap = await getDoc(docRef)
+      if (snap.exists()) {
+        await updateDoc(docRef, {
+          timestamp: Timestamp.fromDate(new Date()),
+        })
+      } else {
+        await setDoc(docRef, { email: this.user!.email, timestamp: Timestamp.fromDate(new Date()) })
       }
-      await setDoc(docRef, data, { merge: true })
     },
     /**
      * Remove the user's device token from Firestore.

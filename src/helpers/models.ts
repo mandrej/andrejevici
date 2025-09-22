@@ -55,9 +55,7 @@ export interface MyUserType {
   email: string
   isAuthorized: boolean
   isAdmin: boolean
-  signedIn: Date
-  askPush?: boolean
-  allowPush?: boolean
+  timestamp: Timestamp
 }
 export interface SubscriberType {
   [key: string]: unknown
