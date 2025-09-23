@@ -9,12 +9,15 @@ import { useAppStore } from './stores/app'
 import { useValuesStore } from './stores/values'
 import { useUserStore } from './stores/user'
 import { messageListener } from './boot/fire'
+import { CONFIG } from './helpers'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import { getMessaging, getToken } from 'firebase/messaging'
 
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
+const messaging = getMessaging()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
 messageListener()
@@ -27,18 +30,47 @@ messageListener()
     }
     notify(params)
   })
-  .catch((err) => console.log('failed: ', err))
+  .catch((err) => {
+    notify({
+      type: 'negative',
+      message: 'An error occurred while listening for messages.',
+      caption: err,
+      icon: 'error',
+    })
+  })
 
 onAuthStateChanged(getAuth(), async (usr) => {
   // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
   if (usr) {
     await auth.storeUser(usr)
+    if (auth.allowPush) {
+      onNewToken()
+    }
   } else {
     auth.user = null
     auth.askPush = false
     auth.allowPush = false
   }
 })
+
+const onNewToken = () => {
+  getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
+    .then((token) => {
+      if (token) {
+        auth.updateDevice(token)
+      } else {
+        auth.askPush = true
+      }
+    })
+    .catch((err) => {
+      notify({
+        type: 'negative',
+        message: 'An error occurred while retrieving token.',
+        caption: err,
+        icon: 'error',
+      })
+    })
+}
 
 onMounted(async () => {
   await app.getLast()

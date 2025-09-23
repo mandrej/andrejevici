@@ -15,13 +15,11 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
-import { getMessaging, getToken } from 'firebase/messaging'
 import router from '../router'
 import type { User } from 'firebase/auth'
 import type { MyUserType, SubscriberType } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
-
-const messaging = getMessaging()
+import notify from '../helpers/notify'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -85,13 +83,6 @@ export const useUserStore = defineStore('auth', {
       } else {
         this.askPush = true
       }
-
-      const token = await getToken(messaging, {
-        vapidKey: CONFIG.firebase.vapidKey,
-      })
-      if (token && subscriber?.allowPush) {
-        await this.updateDevice(token)
-      }
     },
 
     /**
@@ -116,7 +107,11 @@ export const useUserStore = defineStore('auth', {
           const result = await signInWithPopup(getAuth(), provider)
           if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
         } catch (err) {
-          console.error(err)
+          notify({
+            type: 'negative',
+            message: 'An error occurred during sign-in. ' + err,
+            icon: 'error',
+          })
         }
       }
     },
