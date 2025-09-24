@@ -63,6 +63,12 @@ export interface SubscriberType {
   allowPush: boolean
   timestamp: Timestamp
 }
+export interface DeviceType {
+  [key: string]: unknown
+  email: string
+  timestamp: Timestamp
+  ageDays?: number
+}
 export interface ValuesState {
   headlineToApply: string
   tagsToApply: string[]

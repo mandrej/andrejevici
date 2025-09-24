@@ -92,7 +92,7 @@ const removeToken = async (token) => {
         return;
     const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
     const doc = await docRef.get();
-    logger.info(`Remove token for ${doc.data()?.email}`);
+    logger.info(`Remove token for ${doc.data()?.email} age ${doc.data()?.ageDays} days`);
     await docRef.delete();
 };
 const messageSent = async (token) => {

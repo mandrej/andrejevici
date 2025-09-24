@@ -166,11 +166,16 @@ export const useUserStore = defineStore('auth', {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
+        const diff = +new Date() - snap.data()?.timestamp.seconds * 1000
         await updateDoc(docRef, {
-          timestamp: Timestamp.fromDate(new Date()),
+          ageDays: Math.floor(diff / 86400000),
         })
       } else {
-        await setDoc(docRef, { email: this.user!.email, timestamp: Timestamp.fromDate(new Date()) })
+        await setDoc(docRef, {
+          email: this.user!.email,
+          timestamp: Timestamp.fromDate(new Date()),
+          ageDays: 0,
+        })
       }
     },
     /**
