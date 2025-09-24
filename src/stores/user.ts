@@ -166,7 +166,7 @@ export const useUserStore = defineStore('auth', {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
-        const diff = +new Date() - snap.data()?.timestamp.seconds * 1000
+        const diff = +new Date() - snap.data()?.stamp.seconds * 1000
         await updateDoc(docRef, {
           ageDays: Math.floor(diff / 86400000),
         })

@@ -66,7 +66,7 @@ export interface SubscriberType {
 export interface DeviceType {
   [key: string]: unknown
   email: string
-  timestamp: Timestamp
+  stamp: Timestamp
   ageDays?: number
 }
 export interface ValuesState {
