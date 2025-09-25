@@ -58,7 +58,7 @@ export interface MyUserType {
   timestamp: Timestamp
 }
 export interface SubscriberType {
-  [key: string]: unknown
+  key: string
   email: string
   allowPush: boolean
   timestamp: Timestamp
@@ -68,6 +68,9 @@ export interface DeviceType {
   email: string
   timestamp: Timestamp
   ageDays?: number
+}
+export interface SubscriberAndDevices extends SubscriberType {
+  devices: number
 }
 export interface ValuesState {
   headlineToApply: string

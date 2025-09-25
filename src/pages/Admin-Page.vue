@@ -58,6 +58,10 @@
       <!-- <q-tab-panel name="camera" class="q-pa-none">
         <Camera-Tab />
       </q-tab-panel> -->
+
+      <q-tab-panel name="subscribers" class="q-pa-none">
+        <Subscribers-Tab />
+      </q-tab-panel>
     </q-tab-panels>
   </q-page>
 </template>
@@ -75,6 +79,7 @@ import ButtonRow from '../components/Button-Row.vue'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))
+const SubscribersTab = defineAsyncComponent(() => import('../components/Subscribers-Tab.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

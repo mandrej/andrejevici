@@ -9,22 +9,31 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   query,
   where,
   writeBatch,
   Timestamp,
+  orderBy,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User } from 'firebase/auth'
-import type { MyUserType, SubscriberType } from '../helpers/models'
+import type {
+  DeviceType,
+  MyUserType,
+  SubscriberType,
+  SubscriberAndDevices,
+} from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 import notify from '../helpers/notify'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
 provider.addScope('email')
+
 const deviceCol = collection(db, 'Device')
+const subscriberCol = collection(db, 'Subscriber')
 
 const familyMember = (email: string): boolean => {
   return nickInsteadEmail(email) != undefined
@@ -127,6 +136,53 @@ export const useUserStore = defineStore('auth', {
       if (this.user) {
         await updateDoc(docRef, this.user)
       }
+    },
+
+    async fetchDevices(): Promise<DeviceType[]> {
+      const devices: DeviceType[] = []
+      const q = query(deviceCol, orderBy('timestamp', 'desc'))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) {
+        snapshot.forEach((d) => {
+          devices.push(d.data() as DeviceType)
+        })
+      }
+      return devices
+    },
+
+    /**
+     * Fetches all subscribers from the Firestore collection, along with the count of devices associated with each subscriber.
+     *
+     * This method retrieves the list of devices first, then queries the subscriber collection ordered by timestamp in descending order.
+     * For each subscriber, it calculates the number of devices that match the subscriber's email and returns an array of objects
+     * containing subscriber data, a unique key, and the device count.
+     *
+     * @returns {Promise<SubscriberAndDevices[]>} A promise that resolves to an array of subscriber objects with device counts.
+     */
+    async fetchSubscribersAndDevices() {
+      const devices: DeviceType[] = await this.fetchDevices()
+      const result: SubscriberAndDevices[] = []
+      const q = query(subscriberCol, orderBy('timestamp', 'desc'))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) {
+        snapshot.forEach((d) => {
+          result.push({
+            ...(d.data() as SubscriberType),
+            key: d.id,
+            devices: devices.filter((f) => f.email === (d.data() as SubscriberType).email).length,
+          })
+        })
+      }
+      return result
+    },
+
+    async removeSubscriber(subscribersAndDevices: SubscriberAndDevices): Promise<void> {
+      const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
+      await deleteDoc(docRef)
+      notify({
+        message: `Subscriber ${subscribersAndDevices.email} removed`,
+        icon: 'check',
+      })
     },
     /**
      * Update the user's data in the Subscriber collection in Firestore.

@@ -20,14 +20,6 @@
 
         <HistoryButton v-else />
 
-        <template v-if="$route.name === 'admin'">
-          <q-tabs v-model="adminTab" inline-label indicator-color="primary">
-            <q-tab name="repair" label="Repair" />
-            <q-tab name="tags" label="Tags" />
-            <!-- <q-tab name="camera" label="Camera" /> -->
-          </q-tabs>
-        </template>
-
         <q-linear-progress v-show="busy" color="warning" class="absolute-bottom" indeterminate />
       </q-toolbar>
     </q-header>
@@ -47,6 +39,14 @@
 
     <q-page-container>
       <Ask-Permission v-if="showConsent" />
+      <template v-if="$route.name === 'admin'">
+        <q-tabs v-model="adminTab" inline-label indicator-color="primary" align="right">
+          <q-tab name="repair" label="Repair" />
+          <q-tab name="tags" label="Tags" />
+          <!-- <q-tab name="camera" label="Camera" /> -->
+          <q-tab name="subscribers" label="Subscribers" />
+        </q-tabs>
+      </template>
       <router-view />
     </q-page-container>
   </q-layout>
