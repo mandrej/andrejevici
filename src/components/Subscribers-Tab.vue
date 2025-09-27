@@ -5,14 +5,21 @@
       <q-item-section>
         <q-item-label>{{ item.email }}</q-item-label>
         <q-item-label caption>{{ item.timestamp.toDate().toLocaleString() }}</q-item-label>
+        <q-item-label caption>{{ item.deviceCount }} tokens</q-item-label>
       </q-item-section>
-      <q-item-section>{{ item.devices }} devices</q-item-section>
+      <q-item-section>
+        <q-list dense>
+          <q-item v-for="(age, index) in item.deviceAge" :key="index">
+            <q-item-section>Token{{ index + 1 }} {{ age }} days old</q-item-section>
+          </q-item>
+        </q-list>
+      </q-item-section>
       <q-item-section
         ><q-checkbox disable name="`allow-${item.key}`" v-model="item.allowPush" label="Allow Push"
       /></q-item-section>
-      <q-section>
+      <q-sectio side>
         <q-btn label="Remove" @click="remove(item)" color="primary" />
-      </q-section>
+      </q-sectio>
     </q-item>
   </q-list>
 </template>
@@ -25,12 +32,15 @@ import type { SubscriberAndDevices } from '../helpers/models'
 const auth = useUserStore()
 const result = ref<SubscriberAndDevices[]>([])
 
-onMounted(async () => {
+const fetchList = async () => {
   const subscribersAndDevices = await auth.fetchSubscribersAndDevices()
   result.value = subscribersAndDevices ?? []
-})
+}
+
+onMounted(fetchList)
 
 const remove = async (subscriber: SubscriberAndDevices) => {
   await auth.removeSubscriber(subscriber)
+  result.value = result.value.filter((item) => item.key !== subscriber.key)
 }
 </script>

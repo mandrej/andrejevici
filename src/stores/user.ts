@@ -144,7 +144,7 @@ export const useUserStore = defineStore('auth', {
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
-          devices.push(d.data() as DeviceType)
+          devices.push({ ...(d.data() as DeviceType), key: d.id })
         })
       }
       return devices
@@ -169,11 +169,17 @@ export const useUserStore = defineStore('auth', {
           result.push({
             ...(d.data() as SubscriberType),
             key: d.id,
-            devices: devices.filter((f) => f.email === (d.data() as SubscriberType).email).length,
+            deviceCount: devices.filter((dev) => dev.email === d.data().email).length,
+            deviceAge: devices
+              .filter((dev) => dev.email === d.data().email && typeof dev.ageDays === 'number')
+              .map((dev) => dev.ageDays)
+              .filter((age): age is number => age !== undefined),
           })
         })
+        return result
+      } else {
+        return []
       }
-      return result
     },
 
     async removeSubscriber(subscribersAndDevices: SubscriberAndDevices): Promise<void> {
