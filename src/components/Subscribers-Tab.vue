@@ -4,22 +4,32 @@
     <q-item v-for="item in result" :key="item.key">
       <q-item-section>
         <q-item-label>{{ item.email }}</q-item-label>
-        <q-item-label caption>{{ item.timestamp.toDate().toLocaleString() }}</q-item-label>
-        <q-item-label caption>{{ item.deviceCount }} tokens</q-item-label>
+        <q-item-label caption
+          >Subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago</q-item-label
+        >
       </q-item-section>
-      <q-item-section>
+      <q-item-section v-if="$q.screen.gt.xs" lines>
         <q-list dense>
-          <q-item v-for="(age, index) in item.deviceAge" :key="index">
-            <q-item-section>Token{{ index + 1 }} {{ age }} days old</q-item-section>
+          <q-item v-for="(timestamp, index) in item.timestamps" :key="index">
+            <q-item-section>token {{ ageDays(timestamp.toMillis()) }} days old</q-item-section>
+          </q-item>
+          <q-item v-if="item.timestamps.length === 0">
+            <q-item-section>No tokens</q-item-section>
           </q-item>
         </q-list>
       </q-item-section>
-      <q-item-section
-        ><q-checkbox disable name="`allow-${item.key}`" v-model="item.allowPush" label="Allow Push"
-      /></q-item-section>
-      <q-sectio side>
-        <q-btn label="Remove" @click="remove(item)" color="primary" />
-      </q-sectio>
+      <q-item-section>
+        <q-checkbox
+          class="self-end"
+          disable
+          name="`allow-${item.key}`"
+          v-model="item.allowPush"
+          label="Allow Push"
+        />
+      </q-item-section>
+      <q-item-section>
+        <q-btn class="self-end" icon="delete" @click="remove(item)" color="primary" flat />
+      </q-item-section>
     </q-item>
   </q-list>
 </template>
@@ -42,5 +52,10 @@ onMounted(fetchList)
 const remove = async (subscriber: SubscriberAndDevices) => {
   await auth.removeSubscriber(subscriber)
   result.value = result.value.filter((item) => item.key !== subscriber.key)
+}
+
+const ageDays = (timestamp: number) => {
+  const diff = Date.now() - timestamp
+  return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 </script>

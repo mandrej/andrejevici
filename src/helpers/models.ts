@@ -67,11 +67,9 @@ export interface DeviceType {
   key: string
   email: string
   timestamp: Timestamp
-  ageDays?: number
 }
 export interface SubscriberAndDevices extends SubscriberType {
-  deviceCount: number
-  deviceAge?: number[]
+  timestamps: Timestamp[]
 }
 export interface ValuesState {
   headlineToApply: string

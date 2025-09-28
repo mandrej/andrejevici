@@ -169,11 +169,9 @@ export const useUserStore = defineStore('auth', {
           result.push({
             ...(d.data() as SubscriberType),
             key: d.id,
-            deviceCount: devices.filter((dev) => dev.email === d.data().email).length,
-            deviceAge: devices
-              .filter((dev) => dev.email === d.data().email && typeof dev.ageDays === 'number')
-              .map((dev) => dev.ageDays)
-              .filter((age): age is number => age !== undefined),
+            timestamps: devices
+              .filter((dev) => dev.email === d.data().email)
+              .map((dev) => dev.timestamp as Timestamp),
           })
         })
         return result
@@ -227,27 +225,10 @@ export const useUserStore = defineStore('auth', {
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
-      if (snap.exists()) {
-        const d = snap.data()
-        let diff = 0
-        // TODO remove later 25.09.2025
-        if (!d.timestamp) {
-          diff = +new Date() - d.stamp.seconds * 1000
-          await updateDoc(docRef, {
-            timestamp: d.stamp,
-            ageDays: Math.floor(diff / 86400000),
-          })
-        } else {
-          diff = +new Date() - d.timestamp.seconds * 1000
-          await updateDoc(docRef, {
-            ageDays: Math.floor(diff / 86400000),
-          })
-        }
-      } else {
+      if (!snap.exists()) {
         await setDoc(docRef, {
           email: this.user!.email,
           timestamp: Timestamp.fromDate(new Date()),
-          ageDays: 0,
         })
       }
     },
