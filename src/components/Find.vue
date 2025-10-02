@@ -93,8 +93,10 @@
 
     <Auto-Complete
       v-if="editMode && user && user.isAdmin"
+      style="margin: 16px -16px 0 -16px; padding: 0 4px"
       label="Tags to merge with existing"
-      labelColor="warning"
+      square
+      standout
       v-model="tagsToApply"
       :options="tagsValues"
       dark
