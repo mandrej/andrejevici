@@ -94,6 +94,7 @@
     <Auto-Complete
       v-if="editMode && user && user.isAdmin"
       label="Tags to merge with existing"
+      labelColor="warning"
       v-model="tagsToApply"
       :options="tagsValues"
       dark
