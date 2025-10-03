@@ -77,7 +77,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
-import { U, fakeHistory, reFilename, removeHash } from '../helpers'
+import { U, fakeHistory, removeHash } from '../helpers'
 import notify from '../helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -163,8 +163,11 @@ const editRecord = (rec: PhotoType) => {
   fakeHistory()
   showEdit.value = true
 }
-const editOk = (hash: string) => {
-  const el = document.querySelector('#' + hash)
+const editOk = (filename: string) => {
+  // Yes, an HTML id attribute can technically contain a dot (.).
+  // document.getElementById('my.id')
+  // document.querySelector('#my\\.id')
+  const el = document.getElementById(filename)
   if (!el) return
   el.classList.add('bounce')
   setTimeout(() => {
@@ -181,22 +184,12 @@ const carouselShow = (filename: string) => {
 const carouselCancel = (hash: string) => {
   showCarousel.value = false
   index.value = -1
-  const match = hash.match(reFilename)
-  const [, id] = match ? match : []
-  nextTick(() => {
-    if (!id) {
-      removeHash()
-      return
-    }
-    const el = document.getElementById(id)
-    if (!el) {
-      removeHash()
-      return
-    }
+  const el = document.getElementById(hash.replace('#', ''))
+  if (el) {
     const target = getScrollTarget(el)
     setVerticalScrollPosition(target, el.offsetTop, 400)
-    removeHash()
-  })
+  }
+  removeHash()
 }
 </script>
 

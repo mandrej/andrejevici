@@ -169,7 +169,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, formatBytes, U, textSlug, sliceSlug, nickInsteadEmail } from '../helpers'
+import { CONFIG, U, formatBytes, textSlug, sliceSlug, nickInsteadEmail } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'

@@ -1,5 +1,5 @@
 <template>
-  <q-card v-if="rec.thumb" v-bind="cardAttributes(rec.filename)" flat>
+  <q-card v-if="rec.thumb" :id="U + rec.filename" class="shadow-1">
     <q-img
       loading="lazy"
       :ratio="5 / 4"
@@ -49,7 +49,7 @@
     </q-card-section>
   </q-card>
 
-  <q-card v-else v-bind="cardAttributes(rec.filename)" flat>
+  <q-card v-else :id="U + rec.filename" class="shadow-1">
     <q-img loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
         <FileBroken />
@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDatum, U, reFilename, nickInsteadEmail } from '../helpers'
+import { U, formatDatum, nickInsteadEmail } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 import FileBroken from './File-Broken.vue'
 
@@ -68,25 +68,6 @@ defineProps<{
   rec: PhotoType
 }>()
 const emit = defineEmits(['carousel-show'])
-
-const cardAttributes = (filename: string) => {
-  let attr
-  const match = filename.match(reFilename)
-  if (match) {
-    const [, name, ext] = match
-    attr = {
-      id: U + name,
-      class: ext!.substring(1) + ' shadow-1',
-    }
-  } else {
-    attr = {
-      id: U + 'x',
-      class: 'jpg shadow-1',
-    }
-  }
-
-  return attr
-}
 
 const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
