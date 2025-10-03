@@ -2,6 +2,7 @@
   <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
     <q-input
       label="by part of title"
+      label-color="secondary"
       v-model="tmp.text"
       :disable="busy"
       dark
@@ -17,6 +18,7 @@
     </q-input>
     <Auto-Complete
       label="by tags"
+      label-color="secondary"
       v-model="tmp.tags"
       :options="tagsValues"
       :disable="busy"
@@ -32,6 +34,7 @@
     />
     <Auto-Complete
       label="by year"
+      label-color="secondary"
       v-model="tmp.year"
       :options="yearValues"
       :disable="busy"
@@ -42,6 +45,7 @@
     <div class="row">
       <Auto-Complete
         label="by month"
+        label-color="secondary"
         v-model="tmp.month"
         :options="optionsMonth"
         :disable="busy"
@@ -65,6 +69,7 @@
     </div>
     <Auto-Complete
       label="by model"
+      label-color="secondary"
       v-model="tmp.model"
       :options="modelValues"
       :disable="busy"
@@ -74,6 +79,7 @@
     />
     <Auto-Complete
       label="by lens"
+      label-color="secondary"
       v-model="tmp.lens"
       :options="lensValues"
       :disable="busy"
@@ -83,6 +89,7 @@
     />
     <Auto-Complete
       label="by author"
+      label-color="secondary"
       v-model="tmp.nick"
       :options="activeNicks"
       :disable="busy"
@@ -93,10 +100,8 @@
 
     <Auto-Complete
       v-if="editMode && user && user.isAdmin"
-      style="margin: 16px -16px 0 -16px; padding: 0 4px"
       label="Tags to merge with existing"
-      square
-      standout
+      label-color="warning"
       v-model="tagsToApply"
       :options="tagsValues"
       dark
@@ -197,3 +202,9 @@ const addNewTag = (inputValue: string, done: (result: string) => void): void => 
   done(inputValue)
 }
 </script>
+
+<style scoped>
+.q-field--standout .q-field__control {
+  padding: 0 16px !important;
+}
+</style>

@@ -15,7 +15,13 @@
       </q-item-section>
     </q-item>
 
-    <q-item v-show="user && user.isAuthorized" to="/add">
+    <q-item
+      clickable
+      v-ripple
+      v-show="user && user.isAuthorized"
+      to="/add"
+      :active="$route.name === 'add'"
+    >
       <q-item-section avatar>
         <q-icon name="add_circle" />
       </q-item-section>
@@ -26,7 +32,13 @@
       </q-item-section>
     </q-item>
 
-    <q-item v-show="user && user.isAdmin" to="/admin">
+    <q-item
+      clickable
+      v-ripple
+      v-show="user && user.isAdmin"
+      to="/admin"
+      :active="$route.name === 'admin'"
+    >
       <q-item-section avatar>
         <q-icon name="settings" />
       </q-item-section>

@@ -20,7 +20,7 @@
       <span>
         <router-link
           :to="{ path: '/list', query: { nick: nickInsteadEmail(rec.email) } }"
-          class="text-black undreline"
+          class="link"
           >{{ nickInsteadEmail(rec.email) }}
         </router-link>
         ,
@@ -33,7 +33,7 @@
               day: rec.day,
             },
           }"
-          class="text-black undreline"
+          class="link"
           >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY') : '' }}</router-link
         >
         {{ rec.date ? rec.date.substring(11) : '' }}
@@ -71,26 +71,20 @@ const emit = defineEmits(['carousel-show'])
 
 const cardAttributes = (filename: string) => {
   let attr
-  try {
-    const match = filename.match(reFilename)
-    if (match) {
-      const [, name, ext] = match
-      attr = {
-        id: U + name,
-        class: ext!.substring(1) + ' bg-grey-3',
-      }
-    } else {
-      attr = {
-        id: U + 'x',
-        class: 'jpg bg-grey-3',
-      }
+  const match = filename.match(reFilename)
+  if (match) {
+    const [, name, ext] = match
+    attr = {
+      id: U + name,
+      class: ext!.substring(1) + ' shadow-1',
     }
-  } catch {
+  } else {
     attr = {
       id: U + 'x',
-      class: 'jpg bg-grey-3',
+      class: 'jpg shadow-1',
     }
   }
+
   return attr
 }
 
