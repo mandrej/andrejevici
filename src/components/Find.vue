@@ -1,5 +1,11 @@
 <template>
-  <q-form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
+  <q-form
+    class="q-pa-md"
+    autocorrect="off"
+    autocapitalize="off"
+    autocomplete="off"
+    spellcheck="false"
+  >
     <q-input
       label="by part of title"
       label-color="secondary"

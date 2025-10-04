@@ -1,16 +1,16 @@
 <template>
   <q-list v-if="bucket.count > 0">
     <q-item>
-      <q-item-section>
+      <q-item-section class="q-pa-md">
         <q-item-label>SITE STATISTICS</q-item-label>
       </q-item-section>
     </q-item>
     <q-item v-for="item in list" :key="item.value" class="text-h6 text-warning" clickable>
-      <q-item-section>
+      <q-item-section class="q-pl-md">
         {{ item.value }}
       </q-item-section>
       <q-item-section side>
-        {{ item.text }}
+        <span class="q-pr-md">{{ item.text }}</span>
       </q-item-section>
     </q-item>
   </q-list>
