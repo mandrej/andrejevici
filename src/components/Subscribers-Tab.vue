@@ -1,42 +1,43 @@
 <template>
   <div class="text-h6 q-pa-md">Subscribers</div>
-  <q-list separator>
-    <q-item v-for="item in result" :key="item.key">
-      <q-item-section>
-        <q-item-label>{{ item.email }}</q-item-label>
-        <q-item-label caption
-          >Subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago</q-item-label
-        >
-      </q-item-section>
-      <q-item-section v-if="$q.screen.gt.xs" lines>
-        <q-list dense>
-          <q-item v-for="(timestamp, index) in item.timestamps" :key="index">
-            <q-item-section>token {{ ageDays(timestamp.toMillis()) }} days old</q-item-section>
-          </q-item>
-          <q-item v-if="item.timestamps.length === 0">
-            <q-item-section>No tokens</q-item-section>
-          </q-item>
-        </q-list>
-      </q-item-section>
-      <q-item-section>
+  <q-banner
+    v-if="result.length === 0"
+    class="fixed-center text-center bg-warning q-pa-md"
+    style="z-index: 100"
+    rounded
+  >
+    <q-icon name="error_outline" size="4em" />
+    <div class="text-h6">No Subscribers found</div>
+  </q-banner>
+
+  <div class="q-px-md" v-for="item in result" :key="item.key">
+    <ButtonRow :wrap="false">
+      <div class="text-subtitle1">{{ item.email }}</div>
+      Subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago<br />
+      {{ countTokens(item.timestamps) }}
+      <template v-for="(timestamp, index) in item.timestamps" :key="index">
+        {{ ageDays(timestamp.toMillis()) }}
+        <span v-if="index < item.timestamps.length - 1">, </span>
+        <span v-else> days old </span>
+      </template>
+
+      <template #button>
         <q-checkbox
-          class="self-end"
           disable
           name="`allow-${item.key}`"
           v-model="item.allowPush"
           label="Allow Push"
         />
-      </q-item-section>
-      <q-item-section>
-        <q-btn class="self-end" icon="delete" @click="remove(item)" color="primary" flat />
-      </q-item-section>
-    </q-item>
-  </q-list>
+        <q-btn style="width: auto" icon="delete" @click="remove(item)" color="primary" flat />
+      </template>
+    </ButtonRow>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
+import ButtonRow from '../components/Button-Row.vue'
 import type { SubscriberAndDevices } from '../helpers/models'
 
 const auth = useUserStore()
@@ -57,5 +58,8 @@ const remove = async (subscriber: SubscriberAndDevices) => {
 const ageDays = (timestamp: number) => {
   const diff = Date.now() - timestamp
   return Math.floor(diff / (1000 * 60 * 60 * 24))
+}
+const countTokens = (timestamps: { toMillis: () => number }[]) => {
+  return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'
 }
 </script>
