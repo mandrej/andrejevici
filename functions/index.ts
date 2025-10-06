@@ -10,8 +10,9 @@ import * as logger from 'firebase-functions/logger'
 initializeApp()
 
 export const notify = onRequest(
+  // : Cloud Functions can be configured with a maximum timeout of 540 seconds (9 minutes)
   {
-    timeoutSeconds: 120,
+    timeoutSeconds: 540,
     region: ['us-central1'],
     cors: ['https://andrejevici.web.app', 'http://localhost:9200'],
   },
