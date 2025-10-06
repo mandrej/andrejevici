@@ -85,11 +85,13 @@ export const useUserStore = defineStore('auth', {
       if (snap.exists()) {
         subscriber = snap.data() as SubscriberType
         this.allowPush = subscriber.allowPush
+        // TODO if changed to true / false in Admin, do ask again after diff. Also stands for Ask Later.
         const diff = +new Date() - subscriber.timestamp.seconds * 1000
         if (diff > CONFIG.loginDays * 86400000) {
           this.askPush = true
         }
       } else {
+        // on delete subscriber, ask again
         this.askPush = true
       }
     },
@@ -162,7 +164,7 @@ export const useUserStore = defineStore('auth', {
     async fetchSubscribersAndDevices() {
       const devices: DeviceType[] = await this.fetchDevices()
       const result: SubscriberAndDevices[] = []
-      const q = query(subscriberCol, orderBy('timestamp', 'desc'))
+      const q = query(subscriberCol, orderBy('email', 'asc'))
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
@@ -174,6 +176,8 @@ export const useUserStore = defineStore('auth', {
               .map((dev) => dev.timestamp as Timestamp),
           })
         })
+        console.log(`Fetched subscribers`, result)
+
         return result
       } else {
         return []
@@ -188,7 +192,20 @@ export const useUserStore = defineStore('auth', {
         icon: 'check',
       })
     },
-    /**
+
+    async toggleAllowPush(subscribersAndDevices: SubscriberAndDevices): Promise<void> {
+      const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
+      const allowPush = subscribersAndDevices.allowPush
+      await updateDoc(docRef, {
+        allowPush: subscribersAndDevices.allowPush,
+        // timestamp: Timestamp.fromDate(new Date()),
+      })
+      notify({
+        message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,
+        icon: 'check',
+      })
+    },
+    /**}
      * Update the user's data in the Subscriber collection in Firestore.
      *
      * Updates the user's data in Firestore if the user object is not null.

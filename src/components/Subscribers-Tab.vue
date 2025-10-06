@@ -10,34 +10,38 @@
     <div class="text-h6">No Subscribers found</div>
   </q-banner>
 
-  <div class="q-px-md" v-for="item in result" :key="item.key">
-    <ButtonRow :wrap="false">
-      <div class="text-subtitle1">{{ item.email }}</div>
-      Subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago<br />
-      {{ countTokens(item.timestamps) }}
-      <template v-for="(timestamp, index) in item.timestamps" :key="index">
-        {{ ageDays(timestamp.toMillis()) }}
-        <span v-if="index < item.timestamps.length - 1">, </span>
-        <span v-else> days old </span>
-      </template>
-
-      <template #button>
+  <q-list separator>
+    <q-item v-for="item in result" :key="item.key" clickable>
+      <q-item-section>
+        <q-item-label>{{ item.email }}</q-item-label>
+        <q-item-label>subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago</q-item-label>
+        <q-item-label caption>
+          {{ countTokens(item.timestamps) }}
+          <template v-for="(timestamp, index) in item.timestamps" :key="index">
+            {{ ageDays(timestamp.toMillis()) }}
+            <span v-if="index < item.timestamps.length - 1">, </span>
+            <span v-else> days old </span>
+          </template>
+        </q-item-label>
+      </q-item-section>
+      <q-item-section side>
         <q-checkbox
-          disable
           name="`allow-${item.key}`"
           v-model="item.allowPush"
           label="Allow Push"
+          @click="toggle(item)"
         />
-        <q-btn style="width: auto" icon="delete" @click="remove(item)" color="primary" flat />
-      </template>
-    </ButtonRow>
-  </div>
+      </q-item-section>
+      <q-item-section side>
+        <q-btn icon="delete" @click="remove(item)" color="primary" flat />
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
-import ButtonRow from '../components/Button-Row.vue'
 import type { SubscriberAndDevices } from '../helpers/models'
 
 const auth = useUserStore()
@@ -61,5 +65,9 @@ const ageDays = (timestamp: number) => {
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
   return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'
+}
+const toggle = async (subscriber: SubscriberAndDevices) => {
+  await auth.toggleAllowPush(subscriber)
+  // fetchList()
 }
 </script>
