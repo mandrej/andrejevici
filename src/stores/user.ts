@@ -198,7 +198,6 @@ export const useUserStore = defineStore('auth', {
       const allowPush = subscribersAndDevices.allowPush
       await updateDoc(docRef, {
         allowPush: subscribersAndDevices.allowPush,
-        // timestamp: Timestamp.fromDate(new Date()),
       })
       notify({
         message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,

@@ -33,7 +33,6 @@
     </q-item>
 
     <q-item
-      class="q-mb-md"
       clickable
       v-ripple
       v-show="user && user.isAdmin"

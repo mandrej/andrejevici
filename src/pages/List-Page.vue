@@ -110,6 +110,21 @@ onMounted(() => {
 })
 
 const findIndex = (filename: string) => {
+  // if (!user.value) {
+  //   notify({
+  //     type: 'warning',
+  //     message: 'Please sign in to view details',
+  //     position: 'center',
+  //     multiLine: true,
+  //     actions: [
+  //       {
+  //         label: 'Sign In',
+  //         handler: auth.signIn,
+  //       },
+  //     ],
+  //   })
+  //   return
+  // }
   index.value = objects.value.findIndex((x) => x.filename === filename)
   switch (index.value) {
     case -1:

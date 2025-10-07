@@ -68,6 +68,5 @@ const countTokens = (timestamps: { toMillis: () => number }[]) => {
 }
 const toggle = async (subscriber: SubscriberAndDevices) => {
   await auth.toggleAllowPush(subscriber)
-  // fetchList()
 }
 </script>
