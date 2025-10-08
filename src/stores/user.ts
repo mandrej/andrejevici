@@ -176,8 +176,6 @@ export const useUserStore = defineStore('auth', {
               .map((dev) => dev.timestamp as Timestamp),
           })
         })
-        console.log(`Fetched subscribers`, result)
-
         return result
       } else {
         return []

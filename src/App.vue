@@ -83,7 +83,7 @@ onMounted(async () => {
   await app.bucketRead()
   // RESET
   busy.value = false
-  error.value = null
+  error.value = ''
   showEdit.value = false
   showConfirm.value = false
 })

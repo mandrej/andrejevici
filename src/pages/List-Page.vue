@@ -10,22 +10,15 @@
   />
 
   <q-page>
-    <q-banner
-      v-if="error"
-      class="fixed-center text-center bg-warning q-pa-md"
-      style="z-index: 100"
-      rounded
-    >
-      <q-icon name="error_outline" size="4em" />
-      <template v-if="error === 'empty'">
-        <div class="text-h6">No data found</div>
-        <div>for current filter/ search</div>
-      </template>
-      <template v-else>
-        <div class="text-h6">Something went wrong ...</div>
-        <div>{{ error }}</div>
-      </template>
-    </q-banner>
+    <ErrorBanner :clause="error == 'empty'">
+      <template #title>No data found</template>
+      <template #detail>for current filter/ search</template>
+    </ErrorBanner>
+
+    <ErrorBanner :clause="error != '' && error != 'empty'">
+      <template #title>Something went wrong ...</template>
+      <template #detail>{{ error }}</template>
+    </ErrorBanner>
 
     <div class="q-pa-md q-mb-md">
       <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
@@ -83,6 +76,7 @@ import type { PhotoType } from 'src/helpers/models'
 
 import PictureCard from '../components/Picture-Card.vue'
 import SwiperView from '../components/Swiper-View.vue'
+import ErrorBanner from '../components/Error-Banner.vue'
 const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
 const ConfirmDelete = defineAsyncComponent(() => import('../components/Confirm-Delete.vue'))
 
@@ -110,6 +104,7 @@ onMounted(() => {
 })
 
 const findIndex = (filename: string) => {
+  // TODO Secure site
   // if (!user.value) {
   //   notify({
   //     type: 'warning',

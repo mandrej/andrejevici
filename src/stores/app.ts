@@ -64,7 +64,7 @@ export const useAppStore = defineStore('app', {
     lastRecord: {} as PhotoType | null,
 
     busy: false,
-    error: null as string | null,
+    error: '',
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
@@ -192,7 +192,7 @@ export const useAppStore = defineStore('app', {
         )
       }
 
-      this.error = this.objects.length === 0 ? 'empty' : null
+      this.error = this.objects.length === 0 ? 'empty' : ''
       this.busy = false
       if (process.env.DEV) console.log('FETCH ' + JSON.stringify(this.find, null, 2))
     },

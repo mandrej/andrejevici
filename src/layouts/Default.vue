@@ -14,7 +14,7 @@
             editMode ? 'Edit mode' : 'View mode'
           }}</q-btn>
           <span v-if="$route.name === 'list'" class="q-mx-md">
-            {{ app.record.count }}
+            {{ record.count }}
           </span>
         </template>
 
@@ -65,7 +65,7 @@ const AskPermission = defineAsyncComponent(() => import('../components/Ask-Permi
 const app = useAppStore()
 const auth = useUserStore()
 const drawer = ref(false)
-const { busy, editMode, adminTab } = storeToRefs(app)
+const { busy, record, editMode, adminTab } = storeToRefs(app)
 const { user, askPush } = storeToRefs(auth)
 
 const showConsent = computed(() => {

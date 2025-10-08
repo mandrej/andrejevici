@@ -1,14 +1,8 @@
 <template>
   <div class="text-h6 q-pa-md">Subscribers</div>
-  <q-banner
-    v-if="result.length === 0"
-    class="fixed-center text-center bg-warning q-pa-md"
-    style="z-index: 100"
-    rounded
-  >
-    <q-icon name="error_outline" size="4em" />
-    <div class="text-h6">No Subscribers found</div>
-  </q-banner>
+  <ErrorBanner :clause="!busy && error != ''">
+    <template #title>{{ error }}</template>
+  </ErrorBanner>
 
   <q-list separator>
     <q-item v-for="item in result" :key="item.key" clickable>
@@ -41,15 +35,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
+import ErrorBanner from './Error-Banner.vue'
 import type { SubscriberAndDevices } from '../helpers/models'
 
+const app = useAppStore()
 const auth = useUserStore()
+const { busy, error } = storeToRefs(app)
 const result = ref<SubscriberAndDevices[]>([])
 
 const fetchList = async () => {
+  busy.value = true
+  error.value = ''
   const subscribersAndDevices = await auth.fetchSubscribersAndDevices()
   result.value = subscribersAndDevices ?? []
+  busy.value = false
+  error.value = result.value.length === 0 ? 'No subscribers found' : ''
 }
 
 onMounted(fetchList)
