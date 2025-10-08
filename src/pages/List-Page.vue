@@ -10,12 +10,12 @@
   />
 
   <q-page>
-    <ErrorBanner :clause="error == 'empty'">
+    <ErrorBanner :clause="!busy && error == 'empty'">
       <template #title>No data found</template>
       <template #detail>for current filter/ search</template>
     </ErrorBanner>
 
-    <ErrorBanner :clause="error != '' && error != 'empty'">
+    <ErrorBanner :clause="!busy && error != '' && error != 'empty'">
       <template #title>Something went wrong ...</template>
       <template #detail>{{ error }}</template>
     </ErrorBanner>
@@ -86,7 +86,7 @@ const meta = useValuesStore()
 const route = useRoute()
 const index = ref(-1)
 
-const { objects, error, next, showCarousel, showConfirm, editMode, showEdit, currentEdit } =
+const { objects, busy, error, next, showCarousel, showConfirm, editMode, showEdit, currentEdit } =
   storeToRefs(app)
 const select2delete = ref({})
 const { tagsToApply } = storeToRefs(meta)
