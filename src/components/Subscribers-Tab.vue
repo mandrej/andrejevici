@@ -15,11 +15,11 @@
     <q-item v-for="item in result" :key="item.key" clickable>
       <q-item-section>
         <q-item-label>{{ item.email }}</q-item-label>
-        <q-item-label>subscribed {{ ageDays(item.timestamp.toMillis()) }} days ago</q-item-label>
+        <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
         <q-item-label caption>
           {{ countTokens(item.timestamps) }}
           <template v-for="(timestamp, index) in item.timestamps" :key="index">
-            {{ ageDays(timestamp.toMillis()) }}
+            {{ ageDays(timestamp) }}
             <span v-if="index < item.timestamps.length - 1">, </span>
             <span v-else> days old </span>
           </template>
@@ -50,6 +50,7 @@ import notify from '../helpers/notify'
 import ButtonRow from './Button-Row.vue'
 import ErrorBanner from './Error-Banner.vue'
 import type { SubscriberAndDevices } from '../helpers/models'
+import type { Timestamp } from '@google-cloud/firestore'
 
 const app = useAppStore()
 const auth = useUserStore()
@@ -102,8 +103,8 @@ const remove = async (subscriber: SubscriberAndDevices) => {
   result.value = result.value.filter((item) => item.key !== subscriber.key)
 }
 
-const ageDays = (timestamp: number) => {
-  const diff = Date.now() - timestamp
+const ageDays = (timestamp: Timestamp) => {
+  const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {

@@ -45,27 +45,23 @@ export const notify = onRequest(
     try {
       getMessaging()
         .sendEachForMulticast(message)
-        .then((response) => {
-          const failedTokens: string[] = []
-          const successTokens: string[] = []
+        .then(async (response) => {
+          const promises: Promise<void>[] = []
           response.responses.forEach((resp, idx) => {
             if (resp && idx < registrationTokens.length) {
               if (!resp.success) {
-                failedTokens.push(registrationTokens[idx]!)
+                promises.push(tokenDispacher(registrationTokens[idx]!, false, 'n/a'))
               } else {
-                successTokens.push(registrationTokens[idx]!)
+                promises.push(tokenDispacher(registrationTokens[idx]!, true, text))
               }
             }
           })
-          if (failedTokens.length > 0) {
-            failedTokens.forEach(async (token) => await removeToken(token))
-          }
-          if (successTokens.length > 0) {
-            successTokens.forEach(async (token) => await messageSent(token, text))
-          } else if (successTokens.length === 0) {
+          if (promises.length === 0) {
             res.status(200).send('No active subscribers found')
             logger.info(`No active subscribers found. No message sent`)
+            return
           }
+          await Promise.all(promises)
         })
     } catch (error) {
       logger.error('Error sending multicast message:', error)
@@ -74,38 +70,28 @@ export const notify = onRequest(
   },
 )
 
-const removeToken = async (token: string): Promise<void> => {
+const tokenDispacher = async (token: string, status: boolean, msg: string): Promise<void> => {
   if (token === undefined) return
   const docRef = getFirestore().collection('Device').doc(token)
   const doc = await docRef.get()
   const data = doc.data()
-  const diff = Date.now() - data?.timestamp
-  logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000))
-  await docRef.delete()
+  let text = 'successfully sent'
 
+  if (status) {
+    logger.info(`Message sent to ${data?.email}`)
+  } else {
+    const diff = Date.now() - data?.timestamp.toMillis()
+    text = 'removed token age ' + Math.floor(diff / 86400000)
+    logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000))
+    await docRef.delete()
+  }
   await getFirestore()
     .collection('Message')
     .add({
       email: data?.email,
-      text: '-',
-      status: 'removed token age ' + Math.floor(diff / 86400000),
-      timestamp: Timestamp.fromDate(new Date()),
-    })
-}
-
-const messageSent = async (token: string, text: string): Promise<void> => {
-  if (token === undefined) return
-  const docRef = getFirestore().collection('Device').doc(token)
-  const doc = await docRef.get()
-  const data = doc.data()
-  logger.info(`Message sent to ${data?.email}`)
-
-  await getFirestore()
-    .collection('Message')
-    .add({
-      email: data?.email,
+      message: msg,
+      status: status,
       text: text,
-      status: 'successfully sent',
       timestamp: Timestamp.fromDate(new Date()),
     })
 }
