@@ -131,7 +131,7 @@ const findIndex = (filename: string) => {
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const onLoad = (index = 0, done: () => void) => {
-  if (next.value) {
+  if (next.value !== '') {
     app.fetchRecords(false)
   }
   done()

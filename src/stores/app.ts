@@ -59,7 +59,7 @@ export const useAppStore = defineStore('app', {
     find: {} as FindType | null,
     uploaded: [] as PhotoType[],
     objects: [] as PhotoType[],
-    next: null as string | null,
+    next: '',
     currentEdit: {} as PhotoType,
     lastRecord: {} as PhotoType | null,
 
@@ -159,8 +159,8 @@ export const useAppStore = defineStore('app', {
       )
 
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
-      if (reset) this.next = null
-      if (this.next) {
+      if (reset) this.next = ''
+      if (this.next != '') {
         const cursor: DocumentSnapshot = await getDoc(doc(db, 'Photo', this.next))
         constraints.push(startAfter(cursor))
       }
@@ -174,11 +174,11 @@ export const useAppStore = defineStore('app', {
           this.objects.push(d.data() as PhotoType)
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
-        this.next = next && next.id !== this.next ? next.id : null
+        this.next = next && next.id !== this.next ? next.id : ''
       } catch (err) {
         this.error = (err as Error).message
         this.busy = false
-        return { objects: [] as PhotoType[], error: (err as Error).message, next: null }
+        return { objects: [] as PhotoType[], error: (err as Error).message, next: '' }
       }
 
       if (this.find?.tags) {
