@@ -29,9 +29,12 @@ const firestore_1 = require("firebase-admin/firestore");
 const messaging_1 = require("firebase-admin/messaging");
 const https_1 = require("firebase-functions/v2/https");
 const logger = __importStar(require("firebase-functions/logger"));
+const firestore_2 = require("firebase-admin/firestore");
 (0, app_1.initializeApp)();
-exports.notify = (0, https_1.onRequest)({
-    timeoutSeconds: 120,
+exports.notify = (0, https_1.onRequest)(
+// : Cloud Functions can be configured with a maximum timeout of 540 seconds (9 minutes)
+{
+    timeoutSeconds: 540,
     region: ['us-central1'],
     cors: ['https://andrejevici.web.app', 'http://localhost:9200'],
 }, async (req, res) => {
@@ -71,10 +74,10 @@ exports.notify = (0, https_1.onRequest)({
                 }
             });
             if (failedTokens.length > 0) {
-                failedTokens.forEach((token) => removeToken(token));
+                failedTokens.forEach(async (token) => await removeToken(token));
             }
             if (successTokens.length > 0) {
-                successTokens.forEach((token) => messageSent(token));
+                successTokens.forEach(async (token) => await messageSent(token, text));
             }
             else if (successTokens.length === 0) {
                 res.status(200).send('No active subscribers found');
@@ -92,13 +95,32 @@ const removeToken = async (token) => {
         return;
     const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
     const doc = await docRef.get();
-    logger.info(`Remove token for ${doc.data()?.email} age ${doc.data()?.ageDays} days`);
+    const data = doc.data();
+    const diff = Date.now() - data?.timestamp;
+    logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000));
     await docRef.delete();
+    await (0, firestore_1.getFirestore)()
+        .collection('Message')
+        .add({
+        email: data?.email,
+        text: '-',
+        status: 'removed token age ' + Math.floor(diff / 86400000),
+        timestamp: firestore_2.Timestamp.fromDate(new Date()),
+    });
 };
-const messageSent = async (token) => {
+const messageSent = async (token, text) => {
     if (token === undefined)
         return;
     const docRef = (0, firestore_1.getFirestore)().collection('Device').doc(token);
     const doc = await docRef.get();
-    logger.info(`Message sent to ${doc.data()?.email}`);
+    const data = doc.data();
+    logger.info(`Message sent to ${data?.email}`);
+    await (0, firestore_1.getFirestore)()
+        .collection('Message')
+        .add({
+        email: data?.email,
+        text: text,
+        status: 'successfully sent',
+        timestamp: firestore_2.Timestamp.fromDate(new Date()),
+    });
 };

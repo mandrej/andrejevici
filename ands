@@ -36,9 +36,9 @@ else
       firebase deploy --except functions,extensions
       exit ;;
     functions)
-      # cd functions
-      # npm run build
-      # cd ..
+      cd functions
+      npm run build
+      cd ..
       firebase deploy --only functions
       exit ;;
     extensions)
