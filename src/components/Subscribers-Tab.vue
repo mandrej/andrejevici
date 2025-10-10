@@ -104,7 +104,7 @@ const remove = async (subscriber: SubscriberAndDevices) => {
 
 const ageDays = (timestamp: number) => {
   const diff = Date.now() - timestamp
-  return Math.floor(diff / (1000 * 60 * 60 * 24))
+  return Math.floor(diff / 86400000)
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
   return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'

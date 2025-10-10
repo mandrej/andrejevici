@@ -79,14 +79,14 @@ export const useUserStore = defineStore('auth', {
       const userRef = doc(db, 'User', user.uid)
       await setDoc(userRef, this.user, { merge: true })
 
-      let subscriber: SubscriberType | null = null
       const subscriberRef = doc(db, 'Subscriber', user.uid)
       const snap = await getDoc(subscriberRef)
       if (snap.exists()) {
-        subscriber = snap.data() as SubscriberType
-        this.allowPush = subscriber.allowPush
+        const data = snap.data() as SubscriberType
+        this.allowPush = data.allowPush
         // TODO if changed to true / false in Admin, do ask again after diff. Also stands for Ask Later.
-        const diff = +new Date() - subscriber.timestamp.seconds * 1000
+        const diff =
+          Date.now() - (data?.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0)
         if (diff > CONFIG.loginDays * 86400000) {
           this.askPush = true
         }
