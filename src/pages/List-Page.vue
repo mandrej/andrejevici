@@ -10,12 +10,12 @@
   />
 
   <q-page>
-    <ErrorBanner :clause="!busy && error == 'empty'">
+    <ErrorBanner :inquiry="!busy && error == 'empty'">
       <template #title>No data found</template>
       <template #detail>for current filter/ search</template>
     </ErrorBanner>
 
-    <ErrorBanner :clause="!busy && error != '' && error != 'empty'">
+    <ErrorBanner :inquiry="!busy && error != '' && error != 'empty'">
       <template #title>Something went wrong ...</template>
       <template #detail>{{ error }}</template>
     </ErrorBanner>

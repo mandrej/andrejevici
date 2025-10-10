@@ -1,6 +1,6 @@
 <template>
   <q-banner
-    v-if="clause"
+    v-if="inquiry"
     class="fixed-center text-center bg-warning q-pa-md"
     style="z-index: 100"
     rounded
@@ -13,6 +13,6 @@
 
 <script setup lang="ts">
 defineProps({
-  clause: Boolean,
+  inquiry: Boolean,
 })
 </script>

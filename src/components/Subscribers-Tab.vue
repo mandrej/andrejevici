@@ -1,6 +1,6 @@
 <template>
   <div class="text-h6 q-pa-md">Subscribers</div>
-  <ErrorBanner :clause="!busy && error != ''">
+  <ErrorBanner :inquiry="!busy && error != ''">
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
