@@ -3,12 +3,7 @@
     <q-tab-panels v-model="adminTab">
       <q-tab-panel name="repair">
         <div class="text-h6">Rebuild / Repair</div>
-        <ButtonRow>
-          <q-input v-model="message" label="Send message to subscribers" />
-          <template #button>
-            <q-btn :disabled="!token" color="secondary" label="Send" @click="send" />
-          </template>
-        </ButtonRow>
+
         <ButtonRow>
           Recreate existing field values for
           {{ Object.keys(values).join(', ') }}
@@ -67,14 +62,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
-import notify from '../helpers/notify'
-import { CONFIG, formatDatum } from '../helpers'
+// import notify from '../helpers/notify'
+import { formatDatum } from '../helpers'
 import ButtonRow from '../components/Button-Row.vue'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
@@ -85,38 +80,9 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 
-const message = ref('TEST')
 const { adminTab } = storeToRefs(app)
 const { token } = storeToRefs(auth)
 const values = computed(() => meta.values)
-
-const send = () => {
-  const msg = message.value.trim()
-  if (msg === '') notify({ type: 'warning', message: 'No message provided' })
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  }
-  fetch(CONFIG.notifyUrl, {
-    method: 'POST',
-    mode: 'cors',
-    headers: headers,
-    body: JSON.stringify({ text: msg }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw response
-      }
-      return response.text()
-    })
-    .then((text) => {
-      notify({ message: `${text}` })
-      return text
-    })
-    .catch((error) => {
-      notify({ type: 'negative', message: `${error}` })
-    })
-}
 
 // const show = () => {
 //   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external']
@@ -124,7 +90,7 @@ const send = () => {
 //     notify({
 //       type: color,
 //       html: true,
-//       message: `${color}<br>${message.value}`,
+//       message: `${color}<br>Testing`,
 //       actions: [{ icon: 'close' }],
 //       caption: 'testing',
 //     })

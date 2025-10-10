@@ -1,8 +1,15 @@
 <template>
-  <div class="text-h6 q-pa-md">Subscribers</div>
   <ErrorBanner :inquiry="!busy && error != ''">
     <template #title>{{ error }}</template>
   </ErrorBanner>
+
+  <div class="text-h6 q-pa-md">Subscribers</div>
+  <ButtonRow class="q-px-md">
+    <q-input v-model="message" label="Send message to subscribers" />
+    <template #button>
+      <q-btn :disabled="!token" color="secondary" label="Send" @click="send" />
+    </template>
+  </ButtonRow>
 
   <q-list separator>
     <q-item v-for="item in result" :key="item.key" clickable>
@@ -38,11 +45,16 @@ import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
+import { CONFIG } from '../helpers'
+import notify from '../helpers/notify'
+import ButtonRow from './Button-Row.vue'
 import ErrorBanner from './Error-Banner.vue'
 import type { SubscriberAndDevices } from '../helpers/models'
 
 const app = useAppStore()
 const auth = useUserStore()
+const message = ref('TEST')
+const { token } = storeToRefs(auth)
 const { busy, error } = storeToRefs(app)
 const result = ref<SubscriberAndDevices[]>([])
 
@@ -56,6 +68,34 @@ const fetchList = async () => {
 }
 
 onMounted(fetchList)
+
+const send = () => {
+  const msg = message.value.trim()
+  if (msg === '') notify({ type: 'warning', message: 'No message provided' })
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  }
+  fetch(CONFIG.notifyUrl, {
+    method: 'POST',
+    mode: 'cors',
+    headers: headers,
+    body: JSON.stringify({ text: msg }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw response
+      }
+      return response.text()
+    })
+    .then((text) => {
+      notify({ message: `${text}` })
+      return text
+    })
+    .catch((error) => {
+      notify({ type: 'negative', message: `${error}` })
+    })
+}
 
 const remove = async (subscriber: SubscriberAndDevices) => {
   await auth.removeSubscriber(subscriber)
