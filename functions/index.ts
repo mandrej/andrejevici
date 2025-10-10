@@ -83,14 +83,13 @@ const removeToken = async (token: string): Promise<void> => {
   logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000))
   await docRef.delete()
 
-  await getFirestore()
-    .collection('Message')
-    .add({
-      email: data?.email,
-      text: '-',
-      status: 'removed token age ' + Math.floor(diff / 86400000),
-      timestamp: Timestamp.fromDate(new Date()),
-    })
+  const msgRef = getFirestore().collection('Message').doc()
+  await msgRef.set({
+    email: data?.email,
+    text: '-',
+    status: 'removed token age ' + Math.floor(diff / 86400000),
+    timestamp: Timestamp.fromDate(new Date()),
+  })
 }
 
 const messageSent = async (token: string, text: string): Promise<void> => {
@@ -100,12 +99,11 @@ const messageSent = async (token: string, text: string): Promise<void> => {
   const data = doc.data()
   logger.info(`Message sent to ${data?.email}`)
 
-  await getFirestore()
-    .collection('Message')
-    .add({
-      email: data?.email,
-      text: text,
-      status: 'successfully sent',
-      timestamp: Timestamp.fromDate(new Date()),
-    })
+  const msgRef = getFirestore().collection('Message').doc()
+  await msgRef.set({
+    email: data?.email,
+    text: text,
+    status: 'successfully sent',
+    timestamp: Timestamp.fromDate(new Date()),
+  })
 }
