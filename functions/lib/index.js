@@ -29,7 +29,6 @@ const firestore_1 = require("firebase-admin/firestore");
 const messaging_1 = require("firebase-admin/messaging");
 const https_1 = require("firebase-functions/v2/https");
 const logger = __importStar(require("firebase-functions/logger"));
-const firestore_2 = require("firebase-admin/firestore");
 (0, app_1.initializeApp)();
 exports.notify = (0, https_1.onRequest)(
 // : Cloud Functions can be configured with a maximum timeout of 540 seconds (9 minutes)
@@ -101,13 +100,11 @@ const tokenDispacher = async (token, status, msg) => {
         logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000));
         await docRef.delete();
     }
-    await (0, firestore_1.getFirestore)()
-        .collection('Message')
-        .add({
+    await (0, firestore_1.getFirestore)().collection('Message').add({
         email: data?.email,
         message: msg,
         status: status,
         text: text,
-        timestamp: firestore_2.Timestamp.fromDate(new Date()),
+        timestamp: firestore_1.FieldValue.serverTimestamp(),
     });
 };

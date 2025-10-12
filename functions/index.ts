@@ -1,12 +1,11 @@
 import { initializeApp } from 'firebase-admin/app'
-import type { CollectionReference, DocumentData } from 'firebase-admin/firestore'
-import { getFirestore } from 'firebase-admin/firestore'
+import { FieldValue, getFirestore } from 'firebase-admin/firestore'
 import { getMessaging } from 'firebase-admin/messaging'
-import type { Request } from 'firebase-functions/v2/https'
 import { onRequest } from 'firebase-functions/v2/https'
+import type { Request } from 'firebase-functions/v2/https'
 import type { Response } from 'express'
+import type { CollectionReference, DocumentData } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
-import { Timestamp } from 'firebase-admin/firestore'
 
 initializeApp()
 
@@ -85,13 +84,11 @@ const tokenDispacher = async (token: string, status: boolean, msg: string): Prom
     logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000))
     await docRef.delete()
   }
-  await getFirestore()
-    .collection('Message')
-    .add({
-      email: data?.email,
-      message: msg,
-      status: status,
-      text: text,
-      timestamp: Timestamp.fromDate(new Date()),
-    })
+  await getFirestore().collection('Message').add({
+    email: data?.email,
+    message: msg,
+    status: status,
+    text: text,
+    timestamp: FieldValue.serverTimestamp(),
+  })
 }
