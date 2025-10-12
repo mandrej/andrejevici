@@ -82,3 +82,10 @@ export interface ValuesState {
     email: { [key: string]: number }
   }
 }
+export interface MessageType {
+  email: string
+  message: string
+  status: boolean
+  text: string
+  timestamp: Timestamp
+}

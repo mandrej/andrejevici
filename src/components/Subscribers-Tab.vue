@@ -46,10 +46,12 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { CONFIG } from '../helpers'
+import { db } from '../boot/fire'
+import { collection, onSnapshot } from 'firebase/firestore'
 import notify from '../helpers/notify'
 import ButtonRow from './Button-Row.vue'
 import ErrorBanner from './Error-Banner.vue'
-import type { SubscriberAndDevices } from '../helpers/models'
+import type { SubscriberAndDevices, MessageType } from '../helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
 
 const app = useAppStore()
@@ -69,14 +71,33 @@ const fetchList = async () => {
 }
 
 onMounted(fetchList)
+const messageRef = collection(db, 'Message')
 
 const send = () => {
   const msg = message.value.trim()
   if (msg === '') notify({ type: 'warning', message: 'No message provided' })
+  const lastSendTime = Date.now()
   const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
   }
+  const subscribe = onSnapshot(messageRef, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === 'added') {
+        const data = change.doc.data() as MessageType
+        // Only handle messages added after send is pressed
+        // console.log(data.timestamp.toMillis() - lastSendTime)
+        if (data.timestamp && data.timestamp.toMillis() > lastSendTime) {
+          notify({
+            type: data.status ? 'positive' : 'negative',
+            message: `${data.email}<br>${data.text}<br>${data.timestamp.toDate().toLocaleString()}`,
+            html: true,
+            timeout: 10000,
+          })
+        }
+      }
+    })
+  })
   fetch(CONFIG.notifyUrl, {
     method: 'POST',
     mode: 'cors',
@@ -91,7 +112,12 @@ const send = () => {
     })
     .then((text) => {
       notify({ message: `${text}` })
-      return text
+      setTimeout(
+        () => {
+          subscribe()
+        },
+        5 * 60 * 1000, // 5 minutes
+      )
     })
     .catch((error) => {
       notify({ type: 'negative', message: `${error}` })
