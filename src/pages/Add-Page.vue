@@ -1,90 +1,93 @@
 <template>
   <Edit-Record v-if="showEdit" :rec="currentEdit" />
 
-  <q-page class="q-pa-md">
-    <div class="text-h6">Upload / publish images</div>
-    <div class="relative-position column">
-      <div class="row absolute-top">
-        <q-linear-progress
-          v-for="(value, name) in progressInfo"
-          :key="name"
-          size="15px"
-          :value="value"
-          color="warning"
-          :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
-        />
-      </div>
-    </div>
+  <q-page>
+    <div class="text-h6 q-pa-md">Upload / publish images</div>
 
     <q-form @submit="onSubmit">
-      <ButtonRow wrap>
-        <q-file
-          name="photos"
-          v-model="files"
-          use-chips
-          multiple
-          :accept="CONFIG.fileType"
-          :max-file-size="CONFIG.fileSize"
-          :max-files="CONFIG.fileMax"
-          label="Select images to upload"
-          hint="Drag your images above to upload, or click to browse and select. Then
-          publish image on site. Accepts maximum 10 jpg, jpeg, png, or gif files less then 4
-          Mb in size."
-          class="q-mb-md"
-          @rejected="onValidationError"
-        />
-        <template #button>
-          <div class="row justify-end">
-            <q-btn
-              label="Cancel all"
-              type="button"
-              color="negative"
-              style="width: 200px"
-              @click="cancelAll"
-              v-morph:cancel:buttons:500="morphModel"
-            />
-            <q-btn
-              label="Upload"
-              type="submit"
-              icon="file_upload"
-              color="primary"
-              style="width: 200px"
-              v-morph:upload:buttons:500="morphModel"
-              :disable="files.length === 0"
-            />
-          </div>
-        </template>
-      </ButtonRow>
+      <q-item clickable>
+        <q-item-section>
+          <q-file
+            name="photos"
+            v-model="files"
+            use-chips
+            multiple
+            :accept="CONFIG.fileType"
+            :max-file-size="CONFIG.fileSize"
+            :max-files="CONFIG.fileMax"
+            label="Select images to upload"
+            hint="Drag your images above to upload, or click to browse and select. Then
+            publish image on site. Accepts maximum 10 jpg, jpeg, png, or gif files less then 4
+            Mb in size."
+            @rejected="onValidationError"
+          />
+        </q-item-section>
+        <q-item-section side>
+          <q-btn
+            label="Cancel all"
+            type="button"
+            color="negative"
+            style="width: 200px"
+            @click="cancelAll"
+            v-morph:cancel:buttons:500="morphModel"
+          />
+          <q-btn
+            label="Upload"
+            type="submit"
+            icon="file_upload"
+            color="primary"
+            style="width: 200px"
+            v-morph:upload:buttons:500="morphModel"
+            :disable="files.length === 0"
+          />
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section>
+          <q-linear-progress
+            v-for="(value, name) in progressInfo"
+            :key="name"
+            size="15px"
+            :value="value"
+            color="warning"
+            :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
+          />
+        </q-item-section>
+      </q-item>
+      <q-item>
+        <q-item-section>
+          <q-input
+            v-model="headlineToApply"
+            label="Headline to apply for next publish"
+            :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
+            clearable
+          />
+        </q-item-section>
+      </q-item>
+      <q-item clickable>
+        <q-item-section
+          ><Auto-Complete
+            label="Tags to apply for next publish / or to merge with existing"
+            v-model="tagsToApply"
+            :options="tagsValues"
+            canadd
+            multiple
+            hint="You can add / remove tag later"
+            @new-value="addNewTag"
+        /></q-item-section>
+        <q-item-section side>
+          <q-btn
+            :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
+            @click="publishSelected"
+            color="primary"
+            :disable="uploaded.length === 0"
+            style="width: 200px"
+          />
+        </q-item-section>
+      </q-item>
     </q-form>
 
-    <ButtonRow wrap>
-      <q-input
-        v-model="headlineToApply"
-        label="Headline to apply for next publish"
-        :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-        clearable
-      />
-      <Auto-Complete
-        label="Tags to apply for next publish / or to merge with existing"
-        v-model="tagsToApply"
-        :options="tagsValues"
-        canadd
-        multiple
-        hint="You can add / remove tag later"
-        @new-value="addNewTag"
-      />
-      <template #button>
-        <q-btn
-          :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
-          @click="publishSelected"
-          color="primary"
-          :disable="uploaded.length === 0"
-          style="width: 200px"
-        />
-      </template>
-    </ButtonRow>
-
-    <div class="q-mt-md">
+    <div class="q-pa-md">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
         <div
           v-for="rec in uploaded"
@@ -119,7 +122,6 @@ import { CONFIG, fakeHistory, completePhoto, nickInsteadEmail } from '../helpers
 import notify from '../helpers/notify'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
-import ButtonRow from 'components/Button-Row.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from 'src/helpers/models'
 

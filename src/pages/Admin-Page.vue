@@ -1,41 +1,46 @@
 <template>
   <q-page class="admin">
     <q-tab-panels v-model="adminTab">
-      <q-tab-panel name="repair">
-        <div class="text-h6">Rebuild / Repair</div>
+      <q-tab-panel name="repair" class="q-pa-none">
+        <div class="q-pa-md text-h6">Rebuild / Repair</div>
 
-        <SendMessage />
-        <ButtonRow>
-          Recreate existing field values for
-          {{ Object.keys(values).join(', ') }}
-          <template #button>
-            <q-btn color="primary" label="rebuild" @click="meta.countersBuild" />
-          </template>
-        </ButtonRow>
-        <ButtonRow>
-          Bucket count and size
-          <template #button>
-            <q-btn color="primary" label="Recalc" @click="app.bucketBuild" />
-          </template>
-        </ButtonRow>
-        <ButtonRow>
-          {{ formatDatum('2025-08-21', 'DD.MM.YYYY') }} Fix text array
-          <template #button>
-            <q-btn color="primary" label="Fix" @click="fix" />
-          </template>
-        </ButtonRow>
-        <ButtonRow>
-          Find images without thumbnails
-          <template #button>
-            <q-btn label="Find" color="primary" @click="missingThumbnails" />
-          </template>
-        </ButtonRow>
-        <ButtonRow>
-          Resolve Cloud storage and datastore mismatch
-          <template #button>
-            <q-btn color="negative" label="Resolve" @click="mismatch" />
-          </template>
-        </ButtonRow>
+        <q-list separator>
+          <q-item clickable>
+            <q-item-section>
+              Recreate existing field values for
+              {{ Object.keys(values).join(', ') }}
+            </q-item-section>
+            <q-item-section side>
+              <q-btn color="primary" label="rebuild" @click="meta.countersBuild" />
+            </q-item-section>
+          </q-item>
+          <q-item clickable>
+            <q-item-section> Bucket count and size </q-item-section>
+            <q-item-section side>
+              <q-btn color="primary" label="Recalc" @click="app.bucketBuild" />
+            </q-item-section>
+          </q-item>
+          <q-item clickable>
+            <q-item-section>
+              {{ formatDatum('2025-08-21', 'DD.MM.YYYY') }} Fix text array
+            </q-item-section>
+            <q-item-section side>
+              <q-btn color="primary" label="Fix" @click="fix" />
+            </q-item-section>
+          </q-item>
+          <q-item clickable>
+            <q-item-section> Find images without thumbnails </q-item-section>
+            <q-item-section side>
+              <q-btn label="Find" color="primary" @click="missingThumbnails" />
+            </q-item-section>
+          </q-item>
+          <q-item clickable>
+            <q-item-section> Resolve Cloud storage and datastore mismatch </q-item-section>
+            <q-item-section side>
+              <q-btn color="negative" label="Resolve" @click="mismatch" />
+            </q-item-section>
+          </q-item>
+        </q-list>
 
         <!-- <div class="q-pa-md">
           <q-btn color="primary" label="Show" @click="show" />
@@ -69,8 +74,6 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { formatDatum } from '../helpers'
 import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
-import SendMessage from 'src/components/Send-Message.vue'
-import ButtonRow from '../components/Button-Row.vue'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))

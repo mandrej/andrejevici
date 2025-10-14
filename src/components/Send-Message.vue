@@ -1,10 +1,12 @@
 <template>
-  <ButtonRow>
-    <q-input v-model="message" label="Send message to subscribers" />
-    <template #button>
+  <q-item clickable>
+    <q-item-section>
+      <q-input v-model="message" label="Send message to subscribers" color="teal" dark />
+    </q-item-section>
+    <q-item-section side>
       <q-btn :disabled="!token" color="secondary" label="Send" @click="send" />
-    </template>
-  </ButtonRow>
+    </q-item-section>
+  </q-item>
 </template>
 
 <script setup lang="ts">
@@ -16,7 +18,6 @@ import { collection, onSnapshot } from 'firebase/firestore'
 import { CONFIG } from '../helpers'
 import notify from '../helpers/notify'
 import type { MessageType } from '../helpers/models'
-import ButtonRow from '../components/Button-Row.vue'
 
 const auth = useUserStore()
 const { token } = storeToRefs(auth)

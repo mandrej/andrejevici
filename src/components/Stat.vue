@@ -1,18 +1,19 @@
 <template>
   <q-list v-if="bucket.count > 0">
     <q-item>
-      <q-item-section class="q-pa-md">
+      <q-item-section>
         <q-item-label>SITE STATISTICS</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item v-for="item in list" :key="item.value" class="text-h6 text-warning" clickable>
-      <q-item-section class="q-pl-md">
+    <q-item v-for="item in list" :key="item.value" class="text-h6 text-warning">
+      <q-item-section>
         {{ item.value }}
       </q-item-section>
       <q-item-section side>
-        <span class="q-pr-md">{{ item.text }}</span>
+        <span>{{ item.text }}</span>
       </q-item-section>
     </q-item>
+    <SendMessage />
   </q-list>
 </template>
 
@@ -22,6 +23,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { formatBytes } from '../helpers'
+import SendMessage from 'src/components/Send-Message.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()
