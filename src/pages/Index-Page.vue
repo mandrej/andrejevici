@@ -11,22 +11,22 @@
     <HistoryButton v-if="find && Object.keys(find).length" size="2.3em" />
   </div>
 
-  <div v-if="isEmpty(emailWithCount)" class="row justify-center">
-    <div class="text-body1 text-center q-mt-md col-xs-12 col-sm-8">
+  <div class="row justify-center">
+    <div v-if="isEmpty(emailWithCount)" class="text-body2 text-center q-mt-md col-xs-12 col-sm-8">
       There are no photos posted yet...<br />
       To add some you need to sign-in with your Google account. Only registered family users can
       add, delete or edit photos.
     </div>
-  </div>
-  <div v-else class="text-h4 text-center">
-    <router-link
-      v-for="(count, value) in emailWithCount"
-      :key="value"
-      :title="`${nickInsteadEmail(value as string)}: ${count}`"
-      :to="{ path: '/list', query: { nick: nickInsteadEmail(value as string) } }"
-      class="q-px-sm link"
-      >{{ nickInsteadEmail(value as string) }}</router-link
-    >
+    <div v-else class="text-h4">
+      <router-link
+        v-for="(count, value) in emailWithCount"
+        :key="value"
+        :title="`${nickInsteadEmail(value as string)}: ${count}`"
+        :to="{ path: '/list', query: { nick: nickInsteadEmail(value as string) } }"
+        class="q-px-sm link"
+        >{{ nickInsteadEmail(value as string) }}</router-link
+      >
+    </div>
   </div>
 </template>
 

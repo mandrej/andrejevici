@@ -4,6 +4,7 @@
       <q-tab-panel name="repair">
         <div class="text-h6">Rebuild / Repair</div>
 
+        <SendMessage />
         <ButtonRow>
           Recreate existing field values for
           {{ Object.keys(values).join(', ') }}
@@ -20,7 +21,7 @@
         <ButtonRow>
           {{ formatDatum('2025-08-21', 'DD.MM.YYYY') }} Fix text array
           <template #button>
-            <q-btn :disabled="!token" color="primary" label="Fix" @click="fix" />
+            <q-btn color="primary" label="Fix" @click="fix" />
           </template>
         </ButtonRow>
         <ButtonRow>
@@ -66,10 +67,9 @@ import { computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
-import { useUserStore } from '../stores/user'
-import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
-// import notify from '../helpers/notify'
 import { formatDatum } from '../helpers'
+import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
+import SendMessage from 'src/components/Send-Message.vue'
 import ButtonRow from '../components/Button-Row.vue'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
@@ -78,10 +78,8 @@ const SubscribersTab = defineAsyncComponent(() => import('../components/Subscrib
 
 const app = useAppStore()
 const meta = useValuesStore()
-const auth = useUserStore()
 
 const { adminTab } = storeToRefs(app)
-const { token } = storeToRefs(auth)
 const values = computed(() => meta.values)
 
 // const show = () => {
