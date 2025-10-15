@@ -3,9 +3,19 @@
 
   <q-page>
     <div class="text-h6 q-pa-md">Upload / publish images</div>
+    <div class="row q-px-md">
+      <q-linear-progress
+        v-for="(value, name) in progressInfo"
+        :key="name"
+        size="8px"
+        :value="value"
+        color="warning"
+        :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
+      />
+    </div>
 
     <q-form @submit="onSubmit">
-      <q-item clickable>
+      <q-item>
         <q-item-section>
           <q-file
             name="photos"
@@ -27,34 +37,21 @@
             label="Cancel all"
             type="button"
             color="negative"
-            style="width: 200px"
+            style="width: 120px"
             @click="cancelAll"
             v-morph:cancel:buttons:500="morphModel"
           />
           <q-btn
             label="Upload"
             type="submit"
-            icon="file_upload"
             color="primary"
-            style="width: 200px"
+            style="width: 120px"
             v-morph:upload:buttons:500="morphModel"
             :disable="files.length === 0"
           />
         </q-item-section>
       </q-item>
-      <q-item>
-        <q-item-section>
-          <q-linear-progress
-            v-for="(value, name) in progressInfo"
-            :key="name"
-            size="15px"
-            :value="value"
-            color="warning"
-            :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
-          />
-        </q-item-section>
-      </q-item>
-      <q-item>
+      <q-item class="q-mt-md">
         <q-item-section>
           <q-input
             v-model="headlineToApply"
@@ -81,7 +78,7 @@
             @click="publishSelected"
             color="primary"
             :disable="uploaded.length === 0"
-            style="width: 200px"
+            style="width: 120px"
           />
         </q-item-section>
       </q-item>
