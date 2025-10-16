@@ -33,7 +33,14 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type { FindType, BucketType, PhotoType, LastPhoto } from '../helpers/models'
+import type {
+  FindType,
+  BucketType,
+  PhotoType,
+  LastPhoto,
+  AppStoreState,
+  FileProgress,
+} from '../helpers/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')
@@ -50,7 +57,7 @@ const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
 const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 
 export const useAppStore = defineStore('app', {
-  state: () => ({
+  state: (): AppStoreState => ({
     bucket: {
       size: 0,
       count: 0,
@@ -62,8 +69,8 @@ export const useAppStore = defineStore('app', {
     next: '',
     currentEdit: {} as PhotoType,
     lastRecord: {} as PhotoType | null,
-
     busy: false,
+    progressInfo: {} as FileProgress,
     error: '',
     showEdit: false,
     showConfirm: false,

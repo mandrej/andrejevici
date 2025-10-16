@@ -89,3 +89,26 @@ export interface MessageType {
   text: string
   timestamp: Timestamp
 }
+
+export interface FileProgress {
+  // {file.name: progress 0..1, ...}
+  [key: string]: number
+}
+
+export interface AppStoreState {
+  bucket: BucketType
+  find: FindType | null
+  uploaded: PhotoType[]
+  objects: PhotoType[]
+  next: string
+  currentEdit: PhotoType
+  lastRecord: PhotoType | null
+  busy: boolean
+  progressInfo: FileProgress
+  error: string
+  showEdit: boolean
+  showConfirm: boolean
+  showCarousel: boolean
+  editMode: boolean
+  adminTab: string
+}

@@ -18,6 +18,7 @@ const routes: RouteRecordRaw[] = [
         name: 'list',
         components: {
           default: () => import('../pages/List-Page.vue'),
+          progress: () => import('../components/Linear-Progress.vue'),
           sidebar: () => import('../components/Find.vue'),
         },
       },
@@ -33,6 +34,7 @@ const routes: RouteRecordRaw[] = [
         name: 'add',
         components: {
           default: () => import('../pages/Add-Page.vue'),
+          progress: () => import('../components/Linear-Progress.vue'),
           sidebar: () => import('../components/Stat.vue'),
         },
       },
@@ -48,6 +50,7 @@ const routes: RouteRecordRaw[] = [
         name: 'admin',
         components: {
           default: () => import('../pages/Admin-Page.vue'),
+          progress: () => import('../components/Linear-Progress.vue'),
           sidebar: () => import('../components/Stat.vue'),
         },
       },

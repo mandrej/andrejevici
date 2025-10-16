@@ -17,10 +17,11 @@
             {{ record.count }}
           </span>
         </template>
-
         <HistoryButton v-else />
 
-        <q-linear-progress v-show="busy" color="warning" class="absolute-bottom" indeterminate />
+        <div class="row absolute-bottom">
+          <router-view name="progress" />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -65,7 +66,7 @@ const AskPermission = defineAsyncComponent(() => import('../components/Ask-Permi
 const app = useAppStore()
 const auth = useUserStore()
 const drawer = ref(false)
-const { busy, record, editMode, adminTab } = storeToRefs(app)
+const { record, editMode, adminTab } = storeToRefs(app)
 const { user, askPush } = storeToRefs(auth)
 
 const showConsent = computed(() => {
