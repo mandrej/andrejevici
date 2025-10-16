@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md text-h6">Model</div>
 
-  <q-item clickable>
+  <q-item>
     <q-item-section>
       <div class="row">
         <Auto-Complete
@@ -25,7 +25,7 @@
   </q-item>
 
   <div class="q-pa-md text-h6">Lens</div>
-  <q-item clickable>
+  <q-item>
     <q-item-section>
       <div class="row">
         <Auto-Complete

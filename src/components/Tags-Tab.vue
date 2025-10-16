@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md text-h6">Tags</div>
 
-  <q-item clickable>
+  <q-item>
     <q-item-section>
       <q-input
         ref="newTagRef"
@@ -15,7 +15,7 @@
       <q-btn label="Add" @click="addTag" color="primary" />
     </q-item-section>
   </q-item>
-  <q-item clickable>
+  <q-item>
     <q-item-section>
       <div class="row">
         <Auto-Complete label="Rename tag" v-model="existingTag" :options="tagsValues" class="col" />
@@ -33,7 +33,7 @@
       <q-btn label="Rename" @click="rename('tags', existingTag, changedTag)" color="primary" />
     </q-item-section>
   </q-item>
-  <q-item clickable>
+  <q-item>
     <q-item-section>Remove unused tags</q-item-section>
     <q-item-section side>
       <q-btn label="Remove" @click="removeTags" color="primary" />

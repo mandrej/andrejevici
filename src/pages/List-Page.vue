@@ -1,6 +1,7 @@
 <template>
   <Edit-Record v-if="showEdit" :rec="currentEdit" @edit-ok="editOk" />
   <Confirm-Delete v-if="showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
+
   <Swiper-View
     v-if="showCarousel"
     :index="index"

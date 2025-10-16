@@ -3,16 +3,6 @@
 
   <q-page>
     <div class="text-h6 q-pa-md">Upload / publish images</div>
-    <div class="row q-px-md">
-      <q-linear-progress
-        v-for="(value, name) in progressInfo"
-        :key="name"
-        size="8px"
-        :value="value"
-        color="warning"
-        :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
-      />
-    </div>
 
     <q-form @submit="onSubmit">
       <q-item>
@@ -61,7 +51,7 @@
           />
         </q-item-section>
       </q-item>
-      <q-item clickable>
+      <q-item>
         <q-item-section
           ><Auto-Complete
             label="Tags to apply for next publish / or to merge with existing"
@@ -108,7 +98,7 @@
 
 <script setup lang="ts">
 import uuid4 from 'uuid4'
-import { computed, defineAsyncComponent, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { storage } from '../boot/fire'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
@@ -133,9 +123,6 @@ const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 const selection = ref<string[]>([])
 
-interface Info {
-  [key: string]: number
-}
 interface Task {
   [key: string]: ReturnType<typeof uploadBytesResumable>
 }
@@ -145,12 +132,11 @@ interface ValidationErrors {
 }
 
 const files = ref([])
-const progressInfo: Info = reactive({})
 const task: Task = {}
 const morphModel = ref('upload')
 
 const cancelAll = (): void => {
-  Object.keys(progressInfo).forEach((key: string) => {
+  Object.keys(app.progressInfo).forEach((key: string) => {
     if (task[key]) {
       task[key].cancel()
     }
@@ -181,11 +167,11 @@ const onSubmit = async (evt: Event): Promise<void> => {
         timeout: 0,
       })
       delete task[it.reason]
-      delete progressInfo[it.reason]
+      delete app.progressInfo[it.reason]
     } else if (it.status === 'fulfilled') {
       notify({ message: `Uploaded ${it.value}.` })
       delete task[it.value as string]
-      delete progressInfo[it.value as string]
+      delete app.progressInfo[it.value as string]
     }
   })
   morphModel.value = 'upload'
@@ -197,7 +183,7 @@ const uploadTask = (file: File): Promise<string> => {
     const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
 
-    progressInfo[file.name] = 0
+    app.progressInfo[file.name] = 0
     task[file.name] = uploadBytesResumable(_ref, file, {
       contentType: file.type,
       cacheControl: 'public, max-age=604800',
@@ -205,11 +191,11 @@ const uploadTask = (file: File): Promise<string> => {
     task[file.name]?.on(
       'state_changed',
       (snapshot: UploadTaskSnapshot) => {
-        progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
+        app.progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (error: Error) => {
-        progressInfo[file.name] = 0
+        app.progressInfo[file.name] = 0
         reject(file.name)
       },
       async () => {
