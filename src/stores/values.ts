@@ -327,18 +327,20 @@ export const useValuesStore = defineStore('meta', {
       // delete from database
       const q = query(countersCol, where('field', '==', 'tags'))
       const querySnapshot = await getDocs(q)
-      querySnapshot.forEach(async (d) => {
+
+      // Use for...of loop instead of forEach to properly handle async operations
+      for (const d of querySnapshot.docs) {
         const obj = d.data()
         if (obj.count <= 0) {
           try {
-            id = counterId('tags', obj.value)
-            counterRef = doc(db, 'Counter', id)
+            const id = counterId('tags', obj.value)
+            const counterRef = doc(db, 'Counter', id)
             await deleteDoc(counterRef)
           } finally {
             delete this.values.tags[obj.value]
           }
         }
-      })
+      }
     },
     /**
      * Renames a value in the store and database.

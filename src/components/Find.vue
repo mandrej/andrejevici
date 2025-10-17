@@ -174,16 +174,16 @@ const fixQuery = (query: FindType): FindType => {
 
 watch(
   route,
-  (to) => {
+  async (to) => {
     tmp.value = find.value = fixQuery(to.query)
-    app.fetchRecords(true)
+    await app.fetchRecords(true)
   },
   { immediate: true },
 )
 
 const submit = () => {
   tmp.value = find.value = fixQuery(tmp.value)
-  router.push({
+  void router.push({
     path: '/list',
     query: tmp.value as LocationQueryRaw,
   })

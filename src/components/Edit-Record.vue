@@ -248,7 +248,7 @@ window.onpopstate = function () {
 const onCancel = () => {
   showEdit.value = false
 }
-const onSubmit = () => {
+const onSubmit = async () => {
   // if change date
   const datum = new Date(Date.parse((tmp.date as string) || ''))
   tmp.year = datum.getFullYear()
@@ -267,12 +267,19 @@ const onSubmit = () => {
     tmp.tags.push('flash')
   }
 
-  // set find on new added image
-  if (!tmp.thumb) {
-    find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })
+  try {
+    // set find on new added image
+    if (!tmp.thumb) {
+      find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })
+    }
+
+    await app.saveRecord(tmp)
+    emit('edit-ok', U + tmp.filename)
+    showEdit.value = false
+  } catch (error) {
+    console.error('Failed to save record:', error)
+    // Optionally show error notification to user
+    // notify.error('Failed to save changes')
   }
-  app.saveRecord(tmp)
-  emit('edit-ok', U + tmp.filename)
-  showEdit.value = false
 }
 </script>

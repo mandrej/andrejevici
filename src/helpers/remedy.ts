@@ -80,30 +80,25 @@ export const fix = async () => {
   // }
 }
 
-const getStorageData = (filename: string) => {
-  return new Promise((resolve, reject) => {
-    const fetchData = async () => {
-      try {
-        const _ref = storageRef(storage, filename)
-        const downloadURL = await getDownloadURL(_ref)
-        const metadata = await getMetadata(_ref)
-        if (downloadURL) {
-          resolve({
-            url: downloadURL,
-            filename: filename,
-            size: metadata.size || 0,
-            email: user.value?.email ?? '',
-            nick: nickInsteadEmail(user.value?.email as string),
-          })
-        } else {
-          reject()
-        }
-      } catch (error) {
-        reject(error)
+const getStorageData = async (filename: string) => {
+  try {
+    const _ref = storageRef(storage, filename)
+    const downloadURL = await getDownloadURL(_ref)
+    const metadata = await getMetadata(_ref)
+    if (downloadURL) {
+      return {
+        url: downloadURL,
+        filename: filename,
+        size: metadata.size || 0,
+        email: user.value?.email ?? '',
+        nick: nickInsteadEmail(user.value?.email as string),
       }
+    } else {
+      throw new Error(`Failed to get download URL for file: ${filename}`)
     }
-    fetchData()
-  })
+  } catch (error) {
+    throw error instanceof Error ? error : new Error(String(error))
+  }
 }
 
 export const missingThumbnails = async () => {
@@ -134,10 +129,10 @@ export const missingThumbnails = async () => {
   const promises: Array<Promise<DocumentSnapshot>> = []
   missing.forEach((name) => {
     let docRef
-    for (const ext in ['jpg', 'jpeg', 'JPG']) {
+    ;['jpg', 'jpeg', 'JPG'].forEach((ext) => {
       docRef = doc(db, 'Photo', `${name}.${ext}`)
       promises.push(getDoc(docRef))
-    }
+    })
   })
 
   let hit = 0
@@ -222,7 +217,7 @@ export const mismatch = async () => {
           {
             label: 'Resolve',
             handler: () => {
-              router.push({ path: '/add' })
+              void router.push({ path: '/add' })
             },
           },
         ],
@@ -258,9 +253,7 @@ export const rename = async (
         type: 'warning',
         message: `Cannot change "${existing}"`,
       })
-    } else if (
-      Object.keys(meta.values[field as keyof typeof meta.values]).indexOf(changed) !== -1
-    ) {
+    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
       notify({
         type: 'warning',
         message: `"${changed}" already exists"`,

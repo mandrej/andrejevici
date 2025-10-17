@@ -7,7 +7,7 @@
         ref="newTagRef"
         v-model="newTag"
         label="Add new tag"
-        :rules="[(val) => tagsValues.indexOf(val) === -1 || 'Tag already in use']"
+        :rules="[(val: string) => tagsValues.indexOf(val) === -1 || 'Tag already in use']"
         clearable
       />
     </q-item-section>
@@ -24,7 +24,7 @@
           v-model="changedTag"
           label="to tag"
           clearable
-          :rules="[(val) => val.indexOf('/') === -1 || 'Cannot use / here']"
+          :rules="[(val: string) => val.indexOf('/') === -1 || 'Cannot use / here']"
           class="col"
         />
       </div>
@@ -81,10 +81,17 @@ const addTag = () => {
     newTagRef.value.resetValidation()
   }
 }
-const removeTags = () => {
-  meta.removeUnusedTags()
-  notify({
-    message: `Successfully removed unused tags`,
-  })
+const removeTags = async () => {
+  try {
+    await meta.removeUnusedTags()
+    notify({
+      message: `Successfully removed unused tags`,
+    })
+  } catch (error) {
+    notify({
+      message: `Failed to remove unused tags: ${error instanceof Error ? error.message : String(error)}`,
+      type: 'negative',
+    })
+  }
 }
 </script>

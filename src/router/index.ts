@@ -32,7 +32,7 @@ router.beforeEach((to: RouteLocationNormalized) => {
 })
 router.afterEach((to: RouteLocationNormalized) => {
   // Use next tick to handle router history correctly
-  nextTick(() => {
+  void nextTick(() => {
     document.title = (to.meta.title as string) || CONFIG.title
   })
 })

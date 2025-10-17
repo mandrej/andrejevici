@@ -39,13 +39,19 @@ messageListener()
     })
   })
 
-onAuthStateChanged(getAuth(), async (usr) => {
+onAuthStateChanged(getAuth(), (usr) => {
   // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
   if (usr) {
-    await auth.storeUser(usr)
-    if (auth.allowPush) {
-      onNewToken()
-    }
+    auth
+      .storeUser(usr)
+      .then(() => {
+        if (auth.allowPush) {
+          onNewToken()
+        }
+      })
+      .catch((err) => {
+        console.error('Error storing user:', err)
+      })
   } else {
     auth.user = null
     auth.askPush = false
@@ -57,7 +63,9 @@ const onNewToken = () => {
   getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
     .then((token) => {
       if (token) {
-        auth.updateDevice(token)
+        auth.updateDevice(token).catch((err) => {
+          console.error('Error updating device token:', err)
+        })
       } else {
         auth.askPush = true
       }

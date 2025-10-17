@@ -31,7 +31,7 @@ const send = () => {
   const sendDateTime = Timestamp.fromDate(new Date())
   // Only handle messages added after send is pressed
   const q = query(messageRef, where('timestamp', '>', sendDateTime), orderBy('timestamp', 'desc'))
-  const subscribe = onSnapshot(q, (snapshot) => {
+  const unsubscribe = onSnapshot(q, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
         const data = change.doc.data() as MessageType
@@ -67,7 +67,7 @@ const send = () => {
   })
     .then((response) => {
       if (!response.ok) {
-        throw response
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       return response.text()
     })
@@ -75,14 +75,15 @@ const send = () => {
       notify({ message: `${text}` })
       setTimeout(
         () => {
-          subscribe()
+          unsubscribe()
           // TODO remove older messages
         },
         2 * 60 * 1000, // 2 minutes
       )
     })
     .catch((error) => {
-      notify({ type: 'negative', message: `${error}` })
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      notify({ type: 'negative', message: `Failed to send message: ${errorMessage}` })
     })
 }
 </script>

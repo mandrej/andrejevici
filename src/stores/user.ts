@@ -73,7 +73,7 @@ export const useUserStore = defineStore('auth', {
         email: user.email || '',
         uid: user.uid,
         isAuthorized: Boolean(familyMember(user.email as string)), // only family members
-        isAdmin: Boolean(adminMember(user.email as string, user.uid as string)),
+        isAdmin: Boolean(adminMember(user.email as string, user.uid)),
         timestamp: Timestamp.fromDate(new Date()),
       }
       const userRef = doc(db, 'User', user.uid)
@@ -112,7 +112,7 @@ export const useUserStore = defineStore('auth', {
         this.allowPush = false
         // const routeName = router.currentRoute.value.name
         // if (routeName === 'add' || routeName === 'admin') {
-        router.push({ name: 'home' })
+        void router.push({ name: 'home' })
       } else {
         try {
           const result = await signInWithPopup(getAuth(), provider)
@@ -120,7 +120,7 @@ export const useUserStore = defineStore('auth', {
         } catch (err) {
           notify({
             type: 'negative',
-            message: 'An error occurred during sign-in. ' + err,
+            message: 'An error occurred during sign-in. ' + String(err),
             icon: 'error',
           })
         }
@@ -202,7 +202,7 @@ export const useUserStore = defineStore('auth', {
         icon: 'check',
       })
     },
-    /**}
+    /**
      * Update the user's data in the Subscriber collection in Firestore.
      *
      * Updates the user's data in Firestore if the user object is not null.
@@ -287,7 +287,7 @@ export const useUserStore = defineStore('auth', {
       // Recurse on the next process tick, to avoid
       // exploding the stack.
       nextTick(() => {
-        this.deleteQueryBatch(db, query, resolve)
+        void this.deleteQueryBatch(db, query, resolve)
       })
     },
   },

@@ -221,7 +221,7 @@ export const useAppStore = defineStore('app', {
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj)
 
-        meta.updateCounters(oldDoc.data() as PhotoType, obj as PhotoType)
+        meta.updateCounters(oldDoc.data() as PhotoType, obj)
         notify({ message: `${obj.filename} updated` })
       } else {
         // set thumbnail url = publish
@@ -234,14 +234,14 @@ export const useAppStore = defineStore('app', {
         // save everything
         await setDoc(docRef, obj, { merge: true })
         changeByFilename(this.objects, obj, 0)
-        this.getLast()
-        this.bucketDiff(obj.size)
-        meta.updateCounters(null, obj as PhotoType)
+        await this.getLast()
+        await this.bucketDiff(obj.size)
+        meta.updateCounters(null, obj)
         // delete uploaded
         removeByFilename(this.uploaded, obj.filename)
         notify({ message: `${obj.filename} published` })
       }
-      this.currentEdit = obj as PhotoType
+      this.currentEdit = obj
       // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
       return obj
     },
@@ -269,8 +269,8 @@ export const useAppStore = defineStore('app', {
       } catch (err) {
         notify({
           type: 'error',
-          group: `${obj.filename}`,
-          message: `${obj.filename} ${err}`,
+          group: obj.filename,
+          message: `${obj.filename} ${String(err)}`,
         })
       }
 
@@ -278,9 +278,9 @@ export const useAppStore = defineStore('app', {
         removeByFilename(this.objects, obj.filename)
 
         const meta = useValuesStore()
-        this.bucketDiff(-data.size)
-        meta.updateCounters(data as PhotoType, null)
-        this.getLast()
+        await this.bucketDiff(-data.size)
+        meta.updateCounters(data, null)
+        await this.getLast()
       } else {
         removeByFilename(this.uploaded, obj.filename)
       }
@@ -302,10 +302,12 @@ export const useAppStore = defineStore('app', {
         const rec = getRec(querySnapshot) as LastPhoto
         if (rec) {
           // Set the href property to the URL of the last month it was taken
-          rec.href = '/list?' + new URLSearchParams({ year: '' + rec.year, month: '' + rec.month })
+          rec.href =
+            '/list?' +
+            new URLSearchParams({ year: String(rec.year), month: String(rec.month) }).toString()
         }
         this.lastRecord = rec
-        return rec as LastPhoto
+        return rec
       } catch (error) {
         console.error('Failed to get last record:', error)
         return null

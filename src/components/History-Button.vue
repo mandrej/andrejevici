@@ -31,9 +31,11 @@ watch(
 
 const previousCollection = () => {
   // app.fetchRecords(true, 'refresh')
-  router.push({
-    path: '/list',
-    query: { ...find.value },
-  })
+  if (find.value) {
+    void router.push({
+      path: '/list',
+      query: { ...find.value },
+    })
+  }
 }
 </script>

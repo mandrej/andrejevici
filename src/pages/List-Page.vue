@@ -131,9 +131,9 @@ const findIndex = (filename: string) => {
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const onLoad = (index = 0, done: () => void) => {
+const onLoad = async (index = 0, done: () => void) => {
   if (next.value !== '') {
-    app.fetchRecords(false)
+    await app.fetchRecords(false)
   }
   done()
 }
@@ -148,10 +148,16 @@ const tagsToApplyExist = (): boolean => {
   )
 }
 
-const mergeTags = (rec: PhotoType) => {
+const mergeTags = async (rec: PhotoType) => {
   rec.tags = Array.from(new Set([...(tagsToApply.value ?? []), ...(rec.tags ?? [])])).sort()
-  app.saveRecord(rec)
-  editOk(U + rec.filename)
+  try {
+    await app.saveRecord(rec)
+    editOk(U + rec.filename)
+  } catch (error) {
+    console.error('Failed to save record:', error)
+    // Optionally show error notification to user
+    // notify.error('Failed to save changes')
+  }
 }
 
 const confirmShow = (rec: PhotoType) => {
@@ -186,11 +192,10 @@ const editOk = (filename: string) => {
   }, 2000)
 }
 
-const carouselShow = (filename: string) => {
+const carouselShow = async (filename: string) => {
   fakeHistory()
-  nextTick(() => {
-    findIndex(filename)
-  })
+  await nextTick()
+  findIndex(filename)
 }
 const carouselCancel = (hash: string) => {
   showCarousel.value = false

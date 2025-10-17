@@ -62,7 +62,7 @@ const removeByFilename = (arr: PhotoType[], value: string): void => {
   if (idx > -1) arr.splice(idx, 1)
 }
 const nickInsteadEmail = (email: string): string => {
-  return CONFIG.familyMap.get(email as string) as string
+  return CONFIG.familyMap.get(email) as string
 }
 /**
  * Updates an array of PhotoType objects with a new object by matching the filename property.

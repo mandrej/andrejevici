@@ -42,7 +42,7 @@ const app = useAppStore()
 const meta = useValuesStore()
 
 const emailWithCount = computed(() => meta.emailWithCount)
-const sinceYear = computed(() => meta.yearValues[(meta.yearValues.length - 1) as number])
+const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket, find } = storeToRefs(app)
 
 onMounted(async () => {

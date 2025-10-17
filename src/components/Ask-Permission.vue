@@ -45,9 +45,11 @@ const askLater = async () => {
   auth.allowPush = false
   await auth.updateSubscriber()
 }
-const enableNotifications = () => {
-  // after loginDays ask again
-  Notification.requestPermission().then(async (permission) => {
+const enableNotifications = async () => {
+  try {
+    // after loginDays ask again
+    const permission = await Notification.requestPermission()
+
     if (permission === 'granted') {
       wait.value = true
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
@@ -68,7 +70,26 @@ const enableNotifications = () => {
         })
       }
       wait.value = false
+    } else if (permission === 'denied') {
+      // Handle denied permission
+      auth.askPush = false
+      auth.allowPush = false
+      await auth.updateSubscriber()
+      notify({
+        type: 'warning',
+        message: 'Notifications permission denied. You can enable it later in browser settings.',
+      })
     }
-  })
+  } catch (error) {
+    console.error('Error enabling notifications:', error)
+    wait.value = false
+    auth.askPush = false
+    auth.allowPush = false
+    await auth.updateSubscriber()
+    notify({
+      type: 'negative',
+      message: 'Failed to enable notifications. Please try again.',
+    })
+  }
 }
 </script>

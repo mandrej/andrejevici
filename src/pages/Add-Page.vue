@@ -166,12 +166,18 @@ const onSubmit = async (evt: Event): Promise<void> => {
         actions: [{ icon: 'close' }],
         timeout: 0,
       })
-      delete task[it.reason]
-      delete app.progressInfo[it.reason]
+      // Fix: Properly handle unknown type for rejected promise reason
+      if (typeof it.reason === 'string') {
+        delete task[it.reason]
+        delete app.progressInfo[it.reason]
+      }
     } else if (it.status === 'fulfilled') {
-      notify({ message: `Uploaded ${it.value}.` })
-      delete task[it.value as string]
-      delete app.progressInfo[it.value as string]
+      notify({ message: `Uploaded ${it.value as string}.` })
+      // Fix: Properly handle unknown type for fulfilled promise value
+      if (typeof it.value === 'string') {
+        delete task[it.value]
+        delete app.progressInfo[it.value]
+      }
     }
   })
   morphModel.value = 'upload'
@@ -196,20 +202,25 @@ const uploadTask = (file: File): Promise<string> => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (error: Error) => {
         app.progressInfo[file.name] = 0
-        reject(file.name)
+        reject(new Error(file.name))
       },
-      async () => {
-        const downloadURL = await getDownloadURL(task[file.name]!.snapshot.ref)
-        const data: PhotoType = {
-          url: downloadURL,
-          filename: filename,
-          size: file.size,
-          email: user.value!.email,
-          nick: nickInsteadEmail(user.value!.email as string),
-        }
-        uploaded.value.push(data)
-        resolve(file.name)
-        if (process.env.DEV) console.log('uploaded', file.name)
+      () => {
+        getDownloadURL(task[file.name]!.snapshot.ref)
+          .then((downloadURL) => {
+            const data: PhotoType = {
+              url: downloadURL,
+              filename: filename,
+              size: file.size,
+              email: user.value!.email,
+              nick: nickInsteadEmail(user.value!.email),
+            }
+            uploaded.value.push(data)
+            resolve(file.name)
+            if (process.env.DEV) console.log('uploaded', file.name)
+          })
+          .catch(() => {
+            reject(new Error(`Failed to get download URL: ${file.name}`))
+          })
       },
     )
   })
