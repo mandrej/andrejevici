@@ -2045,16 +2045,16 @@
     "@types/node" "*"
 
 "@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
-  version "24.8.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.8.0.tgz#a98a689a687c31d9c553f603961230333e4b5230"
-  integrity sha512-5x08bUtU8hfboMTrJ7mEO4CpepS9yBwAqcL52y86SWNmbPX8LVbNs3EP4cNrIZgdjk2NAlP2ahNihozpoZIxSg==
+  version "24.8.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.8.1.tgz#74c8ae00b045a0a351f2837ec00f25dfed0053be"
+  integrity sha512-alv65KGRadQVfVcG69MuB4IzdYVpRwMG/mq8KWOaoOdyY617P5ivaDiMCGOFDWD2sAn5Q0mR3mRtUOgm99hL9Q==
   dependencies:
     undici-types "~7.14.0"
 
 "@types/node@^20.5.9":
-  version "20.19.21"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.21.tgz#6e5378e04993c40395473b13baf94a09875157b8"
-  integrity sha512-CsGG2P3I5y48RPMfprQGfy4JPRZ6csfC3ltBZSRItG3ngggmNY/qs2uZKp4p9VbrpqNNSMzUZNFZKzgOGnd/VA==
+  version "20.19.22"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.22.tgz#f17e80ee1d1fdd10d50bef449abe23bfc0216780"
+  integrity sha512-hRnu+5qggKDSyWHlnmThnUqg62l29Aj/6vcYgUaSFL9oc7DVjeWEQN3PRgdSc6F8d9QRMWkf36CLMch1Do/+RQ==
   dependencies:
     undici-types "~6.21.0"
 
@@ -2577,9 +2577,9 @@ base64-js@^1.3.1:
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
 
 baseline-browser-mapping@^2.8.9:
-  version "2.8.16"
-  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.8.16.tgz#e17789673e7f4b7654f81ab2ef25e96ab6a895f9"
-  integrity sha512-OMu3BGQ4E7P1ErFsIPpbJh0qvDudM/UuJeHgkAvfWe+0HFJCXh+t/l8L6fVLR55RI/UbKrVLnAXZSVwd9ysWYw==
+  version "2.8.17"
+  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.8.17.tgz#85aff3f7dd6326ea25b77ce834b96bb698545dc6"
+  integrity sha512-j5zJcx6golJYTG6c05LUZ3Z8Gi+M62zRT/ycz4Xq4iCOdpcxwg7ngEYD4KA0eWZC7U17qh/Smq8bYbACJ0ipBA==
 
 binary-extensions@^2.0.0:
   version "2.3.0"
@@ -4927,9 +4927,9 @@ picomatch@^4.0.2, picomatch@^4.0.3:
   integrity sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==
 
 pinia-plugin-persistedstate-2@^2.0.28:
-  version "2.0.31"
-  resolved "https://registry.yarnpkg.com/pinia-plugin-persistedstate-2/-/pinia-plugin-persistedstate-2-2.0.31.tgz#05078ea75d87d128ddfa643703431d27e0785001"
-  integrity sha512-69RzArSPEe/enItRhdKcbP8OejrtX45xtxtgDvSSJ0fSPMqcyjHO0i7hqI/0RDhrRRaug8uhUtwYGmmD9JCBtQ==
+  version "2.0.32"
+  resolved "https://registry.yarnpkg.com/pinia-plugin-persistedstate-2/-/pinia-plugin-persistedstate-2-2.0.32.tgz#517696f517eba36c9cea3f9fd98f0995551b82ac"
+  integrity sha512-QI7XtFc9PWxdiDOCSgkA1QesbuXJ2pPmeDJFsWtI3CA1KTIdA11g4kfzdfU4s1amgQobd42s3JWUuYc7V7OjWQ==
   dependencies:
     shvl "3.0.0"
 
