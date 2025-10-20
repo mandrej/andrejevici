@@ -201,7 +201,8 @@ export const useAppStore = defineStore('app', {
 
       this.error = this.objects.length === 0 ? 'empty' : ''
       this.busy = false
-      if (process.env.DEV) console.log('FETCH ' + JSON.stringify(this.find, null, 2))
+      if (process.env.DEV)
+        console.log('FETCH ' + JSON.stringify(this.find, null, 2) + ' with next: ' + this.next)
     },
 
     /**

@@ -25,18 +25,12 @@ const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFo
   const date = new Date(str)
   return formatDate(date, format)
 }
-/**
- * Fakes a new history state by pushing the current state onto the history stack.
- *
- * This function is useful for testing or when you want to simulate a page refresh
- * without actually refreshing the page.
- */
-const fakeHistory = () => {
-  window.history.pushState(history.state, '', history.state.current)
-}
-const removeHash = () => {
-  window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
-}
+// const fakeHistory = () => {
+//   window.history.pushState(history.state, '', history.state.current)
+// }
+// const removeHash = () => {
+//   window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
+// }
 const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
@@ -150,8 +144,6 @@ export {
   months,
   formatBytes,
   formatDatum,
-  fakeHistory,
-  removeHash,
   isEmpty,
   version,
   removeByFilename,

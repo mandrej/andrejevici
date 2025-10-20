@@ -71,7 +71,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
-import { U, fakeHistory, removeHash } from '../helpers'
+import { U } from '../helpers'
 import notify from '../helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -99,12 +99,12 @@ onMounted(() => {
   if (hash) {
     const marker = hash.substring(2)
     debounce(() => {
-      findIndex(marker)
+      findPhoto(marker)
     }, 2000)()
   }
 })
 
-const findIndex = (filename: string) => {
+const findPhoto = (filename: string) => {
   // TODO Secure site
   // if (!user.value) {
   //   notify({
@@ -127,6 +127,8 @@ const findIndex = (filename: string) => {
       notify({ type: 'warning', message: 'Photo not found' })
       break
     default:
+      // removeHash
+      window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
       showCarousel.value = true
   }
 }
@@ -162,7 +164,6 @@ const mergeTags = async (rec: PhotoType) => {
 
 const confirmShow = (rec: PhotoType) => {
   select2delete.value = rec
-  fakeHistory()
   showConfirm.value = true
 }
 const confirmOk = async (rec: PhotoType) => {
@@ -171,13 +172,11 @@ const confirmOk = async (rec: PhotoType) => {
   if (objects.value.length === 0 && showCarousel.value) {
     showCarousel.value = false
     error.value = 'empty'
-    removeHash()
   }
 }
 
 const editRecord = (rec: PhotoType) => {
   currentEdit.value = rec
-  fakeHistory()
   showEdit.value = true
 }
 const editOk = (filename: string) => {
@@ -193,9 +192,8 @@ const editOk = (filename: string) => {
 }
 
 const carouselShow = async (filename: string) => {
-  fakeHistory()
   await nextTick()
-  findIndex(filename)
+  findPhoto(filename)
 }
 const carouselCancel = (hash: string) => {
   showCarousel.value = false
@@ -205,7 +203,6 @@ const carouselCancel = (hash: string) => {
     const target = getScrollTarget(el)
     setVerticalScrollPosition(target, el.offsetTop, 400)
   }
-  removeHash()
 }
 </script>
 

@@ -11,7 +11,6 @@
         }"
         :lazy="true"
         @swiperinit="onSwiper"
-        @swiperslidechange="onSlideChange"
       >
         <swiper-slide v-for="obj in objects" :key="obj.filename" :data-hash="U + obj.filename">
           <div
@@ -72,7 +71,6 @@ import { storeToRefs } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from 'src/stores/user'
-import { useRoute } from 'vue-router'
 import { fileBroken, U } from '../helpers'
 import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
@@ -91,11 +89,9 @@ const emit = defineEmits(['confirm-delete', 'edit-record', 'carousel-cancel'])
 const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
-const route = useRoute()
 const { objects, showCarousel, editMode } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const hash = ref<string | null>(null)
-const urlHash = new RegExp(/#(.*)?/) // matching string hash
 const full = ref(false)
 
 register()
@@ -106,23 +102,23 @@ const onSwiper = (e: { detail: Swiper[] }): void => {
   if (swiper) {
     Object.assign(swiper, { modules: [Keyboard, Zoom] })
     swiper.slideTo(props.index, 0)
-    onSlideChange()
+    // onSlideChange()
   }
 }
-const onSlideChange = () => {
-  let url = route.fullPath
-  const slide = swiper!.slides[swiper!.activeIndex]
-  if (slide) {
-    hash.value = slide.dataset.hash || null
-    const sufix = '#' + hash.value
-    if (urlHash.test(url)) {
-      url = url.replace(urlHash, sufix)
-    } else {
-      url += sufix
-    }
-    window.history.replaceState(history.state, '', url)
-  }
-}
+// const onSlideChange = () => {
+//   let url = route.fullPath
+//   const slide = swiper!.slides[swiper!.activeIndex]
+//   if (slide) {
+//     hash.value = slide.dataset.hash ?? null
+//     const sufix = '#' + hash.value
+//     if (urlHash.test(url)) {
+//       url = url.replace(urlHash, sufix)
+//     } else {
+//       url += sufix
+//     }
+//     window.history.replaceState(history.state, '', url)
+//   }
+// }
 
 const onLoad = (e: Event): void => {
   const target = e.target as HTMLImageElement
@@ -160,13 +156,25 @@ const caption = (rec: PhotoType) => {
 }
 
 const onShare = () => {
-  copyToClipboard(window.location.href)
-    .then(() => {
-      notify({ message: 'URL copied to clipboard' })
-    })
-    .catch(() => {
-      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-    })
+  let url = window.location.href
+  const urlHash = new RegExp(/#(.*)?/) // matching string hash
+  const slide = swiper!.slides[swiper!.activeIndex]
+  if (slide) {
+    hash.value = slide.dataset.hash ?? null
+    if (urlHash.test(url)) {
+      url = url.replace(urlHash, hash.value ? '#' + hash.value : '')
+    } else {
+      url += hash.value ? '#' + hash.value : ''
+    }
+
+    copyToClipboard(url)
+      .then(() => {
+        notify({ message: 'URL copied to clipboard' })
+      })
+      .catch(() => {
+        notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+      })
+  }
 }
 
 window.onpopstate = function () {
@@ -175,7 +183,7 @@ window.onpopstate = function () {
 }
 const onCancel = (hsh: string) => {
   showCarousel.value = false
-  if (!hash.value) hash.value = hsh
+  if (!hash.value) hash.value = hsh ?? null
   emit('carousel-cancel', hash.value)
 }
 
