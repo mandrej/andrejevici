@@ -25,12 +25,10 @@ const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFo
   const date = new Date(str)
   return formatDate(date, format)
 }
-// const fakeHistory = () => {
-//   window.history.pushState(history.state, '', history.state.current)
-// }
-// const removeHash = () => {
-//   window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
-// }
+const fakeHistory = () => {
+  if (typeof window === 'undefined' || !window.history) return
+  window.history.pushState(history.state, '', history.state.current)
+}
 const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
@@ -146,6 +144,7 @@ export {
   formatDatum,
   isEmpty,
   version,
+  fakeHistory,
   removeByFilename,
   changeByFilename,
   nickInsteadEmail,

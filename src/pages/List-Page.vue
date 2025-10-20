@@ -71,7 +71,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useRoute } from 'vue-router'
-import { U } from '../helpers'
+import { U, fakeHistory } from '../helpers'
 import notify from '../helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -164,6 +164,7 @@ const mergeTags = async (rec: PhotoType) => {
 
 const confirmShow = (rec: PhotoType) => {
   select2delete.value = rec
+  fakeHistory()
   showConfirm.value = true
 }
 const confirmOk = async (rec: PhotoType) => {
@@ -177,6 +178,7 @@ const confirmOk = async (rec: PhotoType) => {
 
 const editRecord = (rec: PhotoType) => {
   currentEdit.value = rec
+  fakeHistory()
   showEdit.value = true
 }
 const editOk = (filename: string) => {
@@ -192,6 +194,7 @@ const editOk = (filename: string) => {
 }
 
 const carouselShow = async (filename: string) => {
+  fakeHistory()
   await nextTick()
   findPhoto(filename)
 }

@@ -105,7 +105,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { CONFIG, completePhoto, nickInsteadEmail } from '../helpers'
+import { CONFIG, fakeHistory, completePhoto, nickInsteadEmail } from '../helpers'
 import notify from '../helpers/notify'
 import PictureCard from '../components/Picture-Card.vue'
 import AutoComplete from '../components/Auto-Complete.vue'
@@ -254,9 +254,8 @@ const editRecord = async (rec: PhotoType): Promise<void> => {
     tagsToApply.value,
     headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle,
   )
-  // Show the edit interface.
+  fakeHistory()
   showEdit.value = true
-  // Set the current edit record to the new record.
   currentEdit.value = newRec
 }
 
