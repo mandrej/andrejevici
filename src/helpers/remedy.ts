@@ -1,4 +1,4 @@
-import { db, storage } from '../boot/fire'
+import { db, storage } from '../lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
 import {
   doc,

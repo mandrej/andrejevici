@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import { CONFIG, nickInsteadEmail } from '../helpers'
-import { auth, db } from '../boot/fire'
+import { auth, db } from '../lib/firebase'
 import {
   doc,
   collection,

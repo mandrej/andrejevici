@@ -13,7 +13,7 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
-import { db } from '../boot/fire'
+import { db } from '../lib/firebase'
 import { query, where, orderBy, collection, onSnapshot, Timestamp } from 'firebase/firestore'
 import { CONFIG } from '../helpers'
 import notify from '../helpers/notify'

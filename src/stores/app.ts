@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { db, storage } from '../boot/fire'
+import { db, storage } from '../lib/firebase'
 import {
   doc,
   collection,
