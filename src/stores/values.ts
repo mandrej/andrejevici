@@ -404,13 +404,19 @@ export const useValuesStore = defineStore('meta', {
     },
 
     /**
-     * Adds a new field to the values store.
-     *
-     * @param {string} val - The value to add to the field.
-     * @param {keyof ValuesState['values']} field - The field to add the value to.
+     * Adds a new value to the specified field in the values state
+     * @param inputValue - The value to be added
+     * @param field - The field key in the values state where the value should be added
+     * @param done - Callback function to be called after the value is added
+     * @returns void
      */
-    addNewField(val: string, field: keyof ValuesState['values']) {
-      this.values[field][val] = 0
+    addNewValue(
+      inputValue: string,
+      field: keyof ValuesState['values'],
+      done: (value: string) => void,
+    ) {
+      this.values[field][inputValue] = 0
+      done(inputValue)
     },
   },
 })

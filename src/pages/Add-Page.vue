@@ -60,7 +60,10 @@
             canadd
             multiple
             hint="You can add / remove tag later"
-            @new-value="addNewTag"
+            @new-value="
+              (value: string, done: (value: string) => void) =>
+                meta.addNewValue(value, 'tags', done)
+            "
         /></q-item-section>
         <q-item-section side>
           <q-btn
@@ -235,11 +238,6 @@ const onValidationError = (rejectedEntries: ValidationErrors[]) => {
       timeout: 0,
     })
   })
-}
-
-const addNewTag = (inputValue: string, done: (result: string) => void): void => {
-  meta.addNewField(inputValue, 'tags')
-  done(inputValue)
 }
 
 /**

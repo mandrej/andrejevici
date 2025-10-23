@@ -59,7 +59,10 @@
                   (val: string) => !!val || 'Email is missing',
                   (val: string) => isValidEmail(val),
                 ]"
-                @new-value="addNewEmail"
+                @new-value="
+                  (value: string, done: (value: string) => void) =>
+                    meta.addNewValue(value, 'email', done)
+                "
               />
               <q-input v-model="tmp.date" label="Date taken">
                 <template #prepend>
@@ -97,7 +100,10 @@
                   clearable
                   class="col-auto"
                   :hint="tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply : ''"
-                  @new-value="addNewTag"
+                  @new-value="
+                    (value: string, done: (value: string) => void) =>
+                      meta.addNewValue(value, 'tags', done)
+                  "
                 >
                 </Auto-Complete>
               </div>
@@ -128,7 +134,10 @@
                 v-model="tmp.model"
                 :options="modelValues"
                 canadd
-                @new-value="addNewModel"
+                @new-value="
+                  (value: string, done: (value: string) => void) =>
+                    meta.addNewValue(value, 'model', done)
+                "
               />
             </div>
             <div class="col-xs-12 col-sm-6">
@@ -137,7 +146,10 @@
                 v-model="tmp.lens"
                 :options="lensValues"
                 canadd
-                @new-value="addNewLens"
+                @new-value="
+                  (value: string, done: (value: string) => void) =>
+                    meta.addNewValue(value, 'lens', done)
+                "
               />
             </div>
             <div class="col-xs-6 col-sm-4">
@@ -214,23 +226,6 @@ const isValidEmail = (val: string) => {
   return emailPattern.test(val) || 'Invalid email'
 }
 
-// new values
-const addNewEmail = (inputValue: string, done: (value: string) => void) => {
-  meta.addNewField(inputValue, 'email')
-  done(inputValue)
-}
-const addNewTag = (inputValue: string, done: (value: string) => void) => {
-  meta.addNewField(inputValue, 'tags')
-  done(inputValue)
-}
-const addNewModel = (inputValue: string, done: (value: string) => void) => {
-  meta.addNewField(inputValue, 'model')
-  done(inputValue)
-}
-const addNewLens = (inputValue: string, done: (value: string) => void) => {
-  meta.addNewField(inputValue, 'lens')
-  done(inputValue)
-}
 const copyTags = (source: string[]) => {
   tagsToApply.value = source
 }

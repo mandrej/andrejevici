@@ -114,7 +114,9 @@
       dense
       canadd
       multiple
-      @new-value="addNewTag"
+      @new-value="
+        (value: string, done: (value: string) => void) => meta.addNewValue(value, 'tags', done)
+      "
     />
   </q-form>
 </template>
@@ -202,11 +204,6 @@ const optionsDay = computed(() => {
       return { label: '' + day, value: day }
     })
 })
-
-const addNewTag = (inputValue: string, done: (result: string) => void): void => {
-  meta.addNewField(inputValue, 'tags')
-  done(inputValue)
-}
 </script>
 
 <style scoped>
