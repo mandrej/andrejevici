@@ -45,7 +45,7 @@
           <q-tab name="repair" label="Repair" />
           <q-tab name="tags" label="Tags" />
           <!-- <q-tab name="camera" label="Camera" /> -->
-          <q-tab name="subscribers" label="Subscribers" />
+          <q-tab name="users" label="Users" />
         </q-tabs>
       </template>
       <router-view />

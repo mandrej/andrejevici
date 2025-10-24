@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
-import { CONFIG, nickInsteadEmail } from '../helpers'
+import { CONFIG } from '../helpers'
 import { auth, db } from '../lib/firebase'
 import {
   doc,
@@ -9,7 +9,6 @@ import {
   getDoc,
   getDocs,
   updateDoc,
-  deleteDoc,
   query,
   where,
   writeBatch,
@@ -19,12 +18,7 @@ import {
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User } from 'firebase/auth'
-import type {
-  DeviceType,
-  MyUserType,
-  SubscriberType,
-  SubscriberAndDevices,
-} from '../helpers/models'
+import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 import notify from '../helpers/notify'
 
@@ -33,18 +27,18 @@ provider.addScope('profile')
 provider.addScope('email')
 
 const deviceCol = collection(db, 'Device')
-const subscriberCol = collection(db, 'Subscriber')
+const userCol = collection(db, 'User')
 
-const familyMember = (email: string): boolean => {
-  return nickInsteadEmail(email) != undefined
-}
-const adminMember = (email: string, uid: string): boolean => {
-  if (process.env.DEV) {
-    return CONFIG.adminMap.get(email) != undefined
-  } else {
-    return CONFIG.adminMap.get(email) === uid
-  }
-}
+// const familyMember = (email: string): boolean => {
+//   return nickInsteadEmail(email) != undefined
+// }
+// const adminMember = (email: string, uid: string): boolean => {
+//   if (process.env.DEV) {
+//     return CONFIG.adminMap.get(email) != undefined
+//   } else {
+//     return CONFIG.adminMap.get(email) === uid
+//   }
+// }
 
 export const useUserStore = defineStore('auth', {
   state(): {
@@ -68,50 +62,40 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} Promise that resolves when the user data is stored.
      */
     async storeUser(user: User): Promise<void> {
-      this.user = {
-        name: user.displayName || '',
-        email: user.email || '',
-        uid: user.uid,
-        isAuthorized: Boolean(familyMember(user.email as string)), // only family members
-        isAdmin: Boolean(adminMember(user.email as string, user.uid)),
-        timestamp: Timestamp.fromDate(new Date()),
-      }
       const userRef = doc(db, 'User', user.uid)
-      await setDoc(userRef, this.user, { merge: true })
-
-      const subscriberRef = doc(db, 'Subscriber', user.uid)
-      const snap = await getDoc(subscriberRef)
-      if (snap.exists()) {
-        const data = snap.data() as SubscriberType
+      const userSnap = await getDoc(userRef)
+      if (userSnap.exists()) {
+        const data = userSnap.data() as MyUserType
         this.allowPush = data.allowPush
-        // TODO if changed to true / false in Admin, do ask again after diff. Also stands for Ask Later.
         const diff =
           Date.now() - (data?.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0)
         if (diff > CONFIG.loginDays * 86400000) {
           this.askPush = true
         }
+        this.askPush = false
+        this.user = data
       } else {
-        // on delete subscriber, ask again
-        this.askPush = true
+        this.allowPush = false
+        this.user = {
+          name: user.displayName || '',
+          email: user.email || '',
+          nick: user.email?.match(/[^.@]+/)?.[0] || user.displayName || 'anonymous',
+          uid: user.uid,
+          isAuthorized: false,
+          isAdmin: false,
+          allowPush: false,
+          timestamp: Timestamp.fromDate(new Date()),
+        }
       }
+      await setDoc(userRef, this.user, { merge: true })
     },
 
-    /**
-     * Sign in the user.
-     *
-     * If the user is currently signed in, signs them out and sets the user to null.
-     * If the user is currently not signed in, signs in the user with Google.
-     *
-     * @return {Promise<void>} Promise that resolves when the user is signed in or signed out.
-     */
     async signIn(): Promise<void> {
       if (this.user && this.user.uid) {
         await auth.signOut()
         this.user = null
         this.askPush = false
         this.allowPush = false
-        // const routeName = router.currentRoute.value.name
-        // if (routeName === 'add' || routeName === 'admin') {
         void router.push({ name: 'home' })
       } else {
         try {
@@ -126,14 +110,9 @@ export const useUserStore = defineStore('auth', {
         }
       }
     },
-    /**
-     * Update the user's data in Firestore.
-     *
-     * Updates the user's data in Firestore if the user object is not null.
-     *
-     * @return {Promise<void>} Promise that resolves when the user's data is updated.
-     */
+
     async updateUser(): Promise<void> {
+      // TODO build form for user
       const docRef = doc(db, 'User', this.user!.uid)
       if (this.user) {
         await updateDoc(docRef, this.user)
@@ -152,65 +131,48 @@ export const useUserStore = defineStore('auth', {
       return devices
     },
 
-    /**
-     * Fetches all subscribers from the Firestore collection, along with the count of devices associated with each subscriber.
-     *
-     * This method retrieves the list of devices first, then queries the subscriber collection ordered by timestamp in descending order.
-     * For each subscriber, it calculates the number of devices that match the subscriber's email and returns an array of objects
-     * containing subscriber data, a unique key, and the device count.
-     *
-     * @returns {Promise<SubscriberAndDevices[]>} A promise that resolves to an array of subscriber objects with device counts.
-     */
-    async fetchSubscribersAndDevices() {
+    async fetchUsersAndDevices() {
       const devices: DeviceType[] = await this.fetchDevices()
-      const result: SubscriberAndDevices[] = []
-      const q = query(subscriberCol, orderBy('email', 'asc'))
+      const result: UsersAndDevices[] = []
+      const q = query(userCol, orderBy('email', 'asc'))
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
           result.push({
-            ...(d.data() as SubscriberType),
-            key: d.id,
+            ...(d.data() as MyUserType),
             timestamps: devices
               .filter((dev) => dev.email === d.data().email)
               .map((dev) => dev.timestamp as Timestamp),
           })
         })
+        console.log('Fetched users and devices:', result)
         return result
       } else {
         return []
       }
     },
 
-    async removeSubscriber(subscribersAndDevices: SubscriberAndDevices): Promise<void> {
-      const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-      await deleteDoc(docRef)
-      notify({
-        message: `Subscriber ${subscribersAndDevices.email} removed`,
-        icon: 'check',
-      })
-    },
+    // async removeSubscriber(subscribersAndDevices: UsersAndDevices): Promise<void> {
+    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
+    //   await deleteDoc(docRef)
+    //   notify({
+    //     message: `Subscriber ${subscribersAndDevices.email} removed`,
+    //     icon: 'check',
+    //   })
+    // },
 
-    async toggleAllowPush(subscribersAndDevices: SubscriberAndDevices): Promise<void> {
-      const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-      const allowPush = subscribersAndDevices.allowPush
-      await updateDoc(docRef, {
-        allowPush: subscribersAndDevices.allowPush,
-      })
-      notify({
-        message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,
-        icon: 'check',
-      })
-    },
-    /**
-     * Update the user's data in the Subscriber collection in Firestore.
-     *
-     * Updates the user's data in Firestore if the user object is not null.
-     * If the user's data already exists, updates the allowPush and timestamp fields.
-     * If not, sets the email, allowPush, and timestamp fields.
-     *
-     * @return {Promise<void>} Promise that resolves when the user's data is updated.
-     */
+    // async toggleAllowPush(subscribersAndDevices: UsersAndDevices): Promise<void> {
+    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
+    //   const allowPush = subscribersAndDevices.allowPush
+    //   await updateDoc(docRef, {
+    //     allowPush: subscribersAndDevices.allowPush,
+    //   })
+    //   notify({
+    //     message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,
+    //     icon: 'check',
+    //   })
+    // },
+
     async updateSubscriber(): Promise<void> {
       const docRef = doc(db, 'Subscriber', this.user!.uid)
       const snap = await getDoc(docRef)

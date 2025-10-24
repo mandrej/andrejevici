@@ -3,12 +3,12 @@
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
-  <div class="text-h6 q-pa-md">Subscribers</div>
+  <div class="text-h6 q-pa-md">Users</div>
 
   <q-list separator>
-    <q-item v-for="item in result" :key="item.key" clickable>
+    <q-item v-for="item in result" :key="item.uid" clickable>
       <q-item-section>
-        <q-item-label>{{ item.email }}</q-item-label>
+        <q-item-label>{{ item.email }} alias {{ item.nick }}</q-item-label>
         <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
         <q-item-label caption>
           {{ countTokens(item.timestamps) }}
@@ -21,14 +21,30 @@
       </q-item-section>
       <q-item-section side>
         <q-checkbox
-          name="`allow-${item.key}`"
-          v-model="item.allowPush"
-          label="Allow Push"
-          @click="toggle(item)"
+          name="`admin-${item.key}`"
+          v-model="item.isAdmin"
+          color="negative"
+          label="Admin"
         />
       </q-item-section>
       <q-item-section side>
-        <q-btn icon="delete" @click="remove(item)" color="primary" flat />
+        <q-checkbox
+          name="`authorized-${item.key}`"
+          v-model="item.isAuthorized"
+          color="primary"
+          label="Authorized"
+        />
+      </q-item-section>
+      <q-item-section side>
+        <q-checkbox
+          name="`allow-${item.key}`"
+          v-model="item.allowPush"
+          color="secondary"
+          label="Allow Push"
+        />
+      </q-item-section>
+      <q-item-section side>
+        <q-btn color="primary" label="Edit" />
       </q-item-section>
     </q-item>
   </q-list>
@@ -41,19 +57,19 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 
 import ErrorBanner from './Error-Banner.vue'
-import type { SubscriberAndDevices } from '../helpers/models'
+import type { UsersAndDevices } from '../helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
 
 const app = useAppStore()
 const auth = useUserStore()
 
 const { busy, error } = storeToRefs(app)
-const result = ref<SubscriberAndDevices[]>([])
+const result = ref<UsersAndDevices[]>([])
 
 const fetchList = async () => {
   busy.value = true
   error.value = ''
-  const subscribersAndDevices = await auth.fetchSubscribersAndDevices()
+  const subscribersAndDevices = await auth.fetchUsersAndDevices()
   result.value = subscribersAndDevices ?? []
   busy.value = false
   error.value = result.value.length === 0 ? 'No subscribers found' : ''
@@ -61,10 +77,10 @@ const fetchList = async () => {
 
 onMounted(fetchList)
 
-const remove = async (subscriber: SubscriberAndDevices) => {
-  await auth.removeSubscriber(subscriber)
-  result.value = result.value.filter((item) => item.key !== subscriber.key)
-}
+// const remove = async (subscriber: UsersAndDevices) => {
+//   await auth.removeSubscriber(subscriber)
+//   result.value = result.value.filter((item) => item.key !== subscriber.key)
+// }
 
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
@@ -73,7 +89,7 @@ const ageDays = (timestamp: Timestamp) => {
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
   return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'
 }
-const toggle = async (subscriber: SubscriberAndDevices) => {
-  await auth.toggleAllowPush(subscriber)
-}
+// const toggle = async (subscriber: UsersAndDevices) => {
+//   await auth.toggleAllowPush(subscriber)
+// }
 </script>

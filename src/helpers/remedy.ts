@@ -1,17 +1,8 @@
 import { db, storage } from '../lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
-import {
-  doc,
-  collection,
-  query,
-  orderBy,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  getDoc,
-} from 'firebase/firestore'
+import { doc, collection, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import { textSlug, sliceSlug } from '.'
+import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
@@ -20,7 +11,7 @@ import { nickInsteadEmail, reFilename } from '../helpers'
 import router from '../router'
 
 import notify from './notify'
-import type { PhotoType, ValuesState } from './models'
+import type { PhotoType, ValuesState, SubscriberType } from './models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -28,56 +19,45 @@ const auth = useUserStore()
 const { uploaded } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
+const usersCol = collection(db, 'User')
+const subscribersCol = collection(db, 'Subscriber')
 
 export const fix = async () => {
-  // let num = 0
-  const q = query(photosCol, orderBy('date', 'desc'))
-  const querySnapshot = await getDocs(q)
+  const setBatch = writeBatch(db)
+  const subscribers = [] as Array<SubscriberType>
+  let q = query(usersCol)
+  const usersSnap = await getDocs(q)
 
-  const promises: Promise<void>[] = []
-  querySnapshot.forEach((it) => {
-    const rec = it.data()
-    if (!('text' in rec)) {
-      const docRef = doc(db, 'Photo', rec.filename)
-      rec.text = sliceSlug(textSlug(rec.headline))
-      notify({
-        message: `Fix missing for ${rec.filename}`,
-        group: 'fix',
-      })
-      promises.push(setDoc(docRef, rec, { merge: true }))
-    } else if (rec.headline.toLowerCase().indexOf('š') || rec.headline.toLowerCase().indexOf('ш')) {
-      const docRef = doc(db, 'Photo', rec.filename)
-      rec.text = sliceSlug(textSlug(rec.headline))
-      notify({
-        message: `Fix Ш for ${rec.filename}`,
-        group: 'fix',
-      })
-      promises.push(setDoc(docRef, rec, { merge: true }))
-    }
+  q = query(subscribersCol)
+  const subscribersSnap = await getDocs(q)
+  subscribersSnap.forEach((doc) => {
+    subscribers.push(doc.data() as SubscriberType)
   })
-  await Promise.all(promises)
-  if (promises.length === 0) {
-    notify({
-      message: `No records to fix`,
-      group: 'fix',
-    })
-  } else {
-    notify({
-      message: `Fixed ${promises.length} records`,
-      group: 'fix',
-    })
-  }
-  // if (num === 0) {
-  //   notify({
-  //     message: `No records to fix`,
-  //     group: 'fix',
-  //   })
-  // } else {
-  //   notify({
-  //     message: `Fixed ${++num} records`,
-  //     group: 'fix',
-  //   })
-  // }
+  usersSnap.forEach((it) => {
+    const user = it.data()
+    user.nick = nickInsteadEmail(user.email)
+    user.isAuthorized = CONFIG.familyMap.get(user.email) != undefined
+    user.isAdmin = process.env.DEV
+      ? CONFIG.adminMap.get(user.email) != undefined
+      : CONFIG.adminMap.get(user.email) === user.uid
+    user.allowPush = subscribers.find((sub) => sub.email === user.email)?.allowPush || false
+    user.timestamp =
+      subscribers.find((sub) => sub.email === user.email)?.timestamp || user.timestamp
+    const docRef = doc(usersCol, it.id)
+    setBatch.set(docRef, user, { merge: true })
+  })
+
+  await setBatch.commit()
+  notify({
+    message: `All users fixed`,
+  })
+
+  const deleteBatch = writeBatch(db)
+  subscribersSnap.forEach((doc) => deleteBatch.delete(doc.ref))
+  await deleteBatch.commit()
+  notify({
+    message: `All subscribers deleted`,
+  })
 }
 
 const getStorageData = async (filename: string) => {

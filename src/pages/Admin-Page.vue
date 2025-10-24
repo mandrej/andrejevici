@@ -22,7 +22,7 @@
           </q-item>
           <q-item clickable>
             <q-item-section>
-              {{ formatDatum('2025-08-21', 'DD.MM.YYYY') }} Fix text array
+              {{ formatDatum('2025-10-24', 'DD.MM.YYYY') }} Merge users and subsribers
             </q-item-section>
             <q-item-section side>
               <q-btn color="primary" label="Fix" @click="fix" />
@@ -60,8 +60,8 @@
         <Camera-Tab />
       </q-tab-panel> -->
 
-      <q-tab-panel name="subscribers" class="q-pa-none">
-        <Subscribers-Tab />
+      <q-tab-panel name="users" class="q-pa-none">
+        <Users-Tab />
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -77,7 +77,7 @@ import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))
-const SubscribersTab = defineAsyncComponent(() => import('../components/Subscribers-Tab.vue'))
+const UsersTab = defineAsyncComponent(() => import('../components/Users-Tab.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

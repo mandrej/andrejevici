@@ -53,8 +53,10 @@ export interface MyUserType {
   readonly uid: string
   name: string
   email: string
+  nick: string
   isAuthorized: boolean
   isAdmin: boolean
+  allowPush: boolean
   timestamp: Timestamp
 }
 export interface SubscriberType {
@@ -68,7 +70,7 @@ export interface DeviceType {
   email: string
   timestamp: Timestamp
 }
-export interface SubscriberAndDevices extends SubscriberType {
+export interface UsersAndDevices extends MyUserType {
   timestamps: Timestamp[]
 }
 export interface ValuesState {
