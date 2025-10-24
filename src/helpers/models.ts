@@ -82,6 +82,7 @@ export interface ValuesState {
     tags: { [key: string]: number }
     model: { [key: string]: number }
     lens: { [key: string]: number }
+    email: { [key: string]: number }
     nick: { [key: string]: number }
   }
 }

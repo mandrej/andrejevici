@@ -45,7 +45,7 @@ export const useValuesStore = defineStore('meta', {
   state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
     tagsToApply: [],
-    values: { year: {}, tags: {}, model: {}, lens: {}, nick: {} },
+    values: { year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} },
   }),
   getters: {
     // values getters
@@ -57,6 +57,9 @@ export const useValuesStore = defineStore('meta', {
     },
     lensValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'lens'))
+    },
+    emailValues: (state: ValuesState) => {
+      return Object.keys(byCountReverse(state, 'email'))
     },
     nickValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'nick'))
@@ -101,13 +104,13 @@ export const useValuesStore = defineStore('meta', {
     },
   },
   actions: {
-    async fieldCount(field: 'year' | 'tags' | 'model' | 'lens' | 'nick'): Promise<void> {
+    async fieldCount(field: keyof ValuesState['values']): Promise<void> {
       const q = query(countersCol, where('field', '==', field))
       const querySnapshot = await getDocs(q)
       querySnapshot.forEach((d) => {
         const obj = d.data() as {
           count: number
-          field: 'year' | 'tags' | 'model' | 'lens' | 'nick'
+          field: string
           value: string
         }
         this.values[field][obj.value] = obj.count
@@ -137,6 +140,7 @@ export const useValuesStore = defineStore('meta', {
         tags: {},
         model: {},
         lens: {},
+        email: {},
         nick: {},
       }
 

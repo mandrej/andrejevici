@@ -19,29 +19,27 @@
           </template>
         </q-item-label>
       </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`admin-${item.key}`"
-          v-model="item.isAdmin"
-          color="negative"
-          label="Admin"
-        />
-      </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`authorized-${item.key}`"
-          v-model="item.isAuthorized"
-          color="primary"
-          label="Authorized"
-        />
-      </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`allow-${item.key}`"
-          v-model="item.allowPush"
-          color="secondary"
-          label="Allow Push"
-        />
+      <q-item-section side v-if="$q.screen.gt.xs">
+        <div class="row">
+          <q-checkbox
+            name="`admin-${item.key}`"
+            v-model="item.isAdmin"
+            color="negative"
+            label="Admin"
+          />
+          <q-checkbox
+            name="`authorized-${item.key}`"
+            v-model="item.isAuthorized"
+            color="primary"
+            label="Editor"
+          />
+          <q-checkbox
+            name="`allow-${item.key}`"
+            v-model="item.allowPush"
+            color="secondary"
+            label="Push"
+          />
+        </div>
       </q-item-section>
       <q-item-section side>
         <q-btn color="primary" label="Edit" />
