@@ -141,15 +141,19 @@ export const useValuesStore = defineStore('meta', {
       }
 
       photoSnapshot.forEach((doc) => {
-        const obj = doc.data()
+        const obj = doc.data() as Record<string, unknown>
         CONFIG.photo_filter.forEach((field) => {
           if (field === 'tags') {
-            obj[field].forEach((tag: string) => {
-              newValues[field][tag] = (newValues[field][tag] ?? 0) + 1
-            })
-          } else if (obj[field]) {
-            newValues[field as keyof ValuesState['values']][obj[field]] =
-              (newValues[field as keyof ValuesState['values']][obj[field]] ?? 0) + 1
+            const tags = Array.isArray(obj.tags) ? obj.tags : []
+            for (const tag of tags) {
+              newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
+            }
+          } else {
+            const val = obj[field]
+            if (val !== undefined && val !== null && val !== '') {
+              newValues[field as keyof ValuesState['values']][val as string] =
+                (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
+            }
           }
         })
       })

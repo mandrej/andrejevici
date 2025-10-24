@@ -36,6 +36,6 @@ yarn-error.log*
 .config
 
 # secret
-config.js
+config.ts
 credentials.json
 .env
