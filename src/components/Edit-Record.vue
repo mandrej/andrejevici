@@ -53,16 +53,11 @@
                 label="Author"
                 v-model="tmp.email"
                 :options="emailValues"
-                canadd
                 hint="Existing member can add freind's photo and email"
                 :rules="[
                   (val: string) => !!val || 'Email is missing',
                   (val: string) => isValidEmail(val),
                 ]"
-                @new-value="
-                  (value: string, done: (value: string) => void) =>
-                    meta.addNewValue(value, 'email', done)
-                "
               />
               <q-input v-model="tmp.date" label="Date taken">
                 <template #prepend>
@@ -180,8 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { CONFIG, U, formatBytes, textSlug, sliceSlug, nickInsteadEmail } from '../helpers'
+import { reactive, computed } from 'vue'
+import { CONFIG, U, formatBytes, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -201,8 +196,9 @@ const meta = useValuesStore()
 const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit, find } = storeToRefs(app)
-const { emailValues, tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
-const { user } = storeToRefs(auth)
+const { tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
+const { user, emailNickMap } = storeToRefs(auth)
+const emailValues = computed(() => Array.from(emailNickMap.value.keys()))
 
 const getExif = async () => {
   /**
@@ -256,7 +252,8 @@ const onSubmit = async () => {
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email
-  tmp.nick = nickInsteadEmail(tmp.email)
+  tmp.email = user.value!.email
+  tmp.nick = user.value!.nick
   // add flash
   if (tmp.flash && tmp.tags.indexOf('flash') === -1) {
     tmp.tags.push('flash')

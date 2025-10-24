@@ -83,7 +83,8 @@ const onNewToken = () => {
 onMounted(async () => {
   await app.getLast()
   await meta.fieldCount('year')
-  await meta.fieldCount('email')
+  await meta.fieldCount('nick')
+  await auth.getEmailNickMap()
   // in Index-Page
   // await meta.fieldCount('tags')
   // await meta.fieldCount('model')

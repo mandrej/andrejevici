@@ -17,7 +17,7 @@ const CONFIG = {
     ? 'http://localhost:5001/andrejevici/us-central1/notify'
     : 'https://notify-hq2yjfmwca-uc.a.run.app',
   thumbnails: 'thumbnails',
-  photo_filter: ['year', 'tags', 'model', 'lens', 'email'],
+  photo_filter: ['year', 'tags', 'model', 'lens', 'nick'],
   adminMap: new Map<string, string>()
     .set('milan.andrejevic@gmail.com', 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
     .set('mihailo.genije@gmail.com', 'HG9VdF9syLNxHYbdQcU7kspLZ9H2'),

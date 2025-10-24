@@ -1,17 +1,17 @@
 import { db, storage } from '../lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
-import { doc, collection, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
+import { doc, collection, query, getDocs, deleteDoc, getDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import { CONFIG } from './index'
+// import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { nickInsteadEmail, reFilename } from '../helpers'
+import { reFilename } from '../helpers'
 import router from '../router'
 
 import notify from './notify'
-import type { PhotoType, ValuesState, SubscriberType } from './models'
+import type { PhotoType, ValuesState } from './models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -19,46 +19,45 @@ const auth = useUserStore()
 const { uploaded } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
-const usersCol = collection(db, 'User')
-const subscribersCol = collection(db, 'Subscriber')
+// const usersCol = collection(db, 'User')
 
-export const fix = async () => {
-  const setBatch = writeBatch(db)
-  const subscribers = [] as Array<SubscriberType>
-  let q = query(usersCol)
-  const usersSnap = await getDocs(q)
+// export const fix = async () => {
+//   const setBatch = writeBatch(db)
+//   const subscribers = [] as Array<SubscriberType>
+//   let q = query(usersCol)
+//   const usersSnap = await getDocs(q)
 
-  q = query(subscribersCol)
-  const subscribersSnap = await getDocs(q)
-  subscribersSnap.forEach((doc) => {
-    subscribers.push(doc.data() as SubscriberType)
-  })
-  usersSnap.forEach((it) => {
-    const user = it.data()
-    user.nick = nickInsteadEmail(user.email)
-    user.isAuthorized = CONFIG.familyMap.get(user.email) != undefined
-    user.isAdmin = process.env.DEV
-      ? CONFIG.adminMap.get(user.email) != undefined
-      : CONFIG.adminMap.get(user.email) === user.uid
-    user.allowPush = subscribers.find((sub) => sub.email === user.email)?.allowPush || false
-    user.timestamp =
-      subscribers.find((sub) => sub.email === user.email)?.timestamp || user.timestamp
-    const docRef = doc(usersCol, it.id)
-    setBatch.set(docRef, user, { merge: true })
-  })
+//   q = query(subscribersCol)
+//   const subscribersSnap = await getDocs(q)
+//   subscribersSnap.forEach((doc) => {
+//     subscribers.push(doc.data() as SubscriberType)
+//   })
+//   usersSnap.forEach((it) => {
+//     const user = it.data()
+//     user.nick = nickInsteadEmail(user.email)
+//     user.isAuthorized = CONFIG.familyMap.get(user.email) != undefined
+//     user.isAdmin = process.env.DEV
+//       ? CONFIG.adminMap.get(user.email) != undefined
+//       : CONFIG.adminMap.get(user.email) === user.uid
+//     user.allowPush = subscribers.find((sub) => sub.email === user.email)?.allowPush || false
+//     user.timestamp =
+//       subscribers.find((sub) => sub.email === user.email)?.timestamp || user.timestamp
+//     const docRef = doc(usersCol, it.id)
+//     setBatch.set(docRef, user, { merge: true })
+//   })
 
-  await setBatch.commit()
-  notify({
-    message: `All users fixed`,
-  })
+//   await setBatch.commit()
+//   notify({
+//     message: `All users fixed`,
+//   })
 
-  const deleteBatch = writeBatch(db)
-  subscribersSnap.forEach((doc) => deleteBatch.delete(doc.ref))
-  await deleteBatch.commit()
-  notify({
-    message: `All subscribers deleted`,
-  })
-}
+//   const deleteBatch = writeBatch(db)
+//   subscribersSnap.forEach((doc) => deleteBatch.delete(doc.ref))
+//   await deleteBatch.commit()
+//   notify({
+//     message: `All subscribers deleted`,
+//   })
+// }
 
 const getStorageData = async (filename: string) => {
   try {
@@ -70,8 +69,8 @@ const getStorageData = async (filename: string) => {
         url: downloadURL,
         filename: filename,
         size: metadata.size || 0,
-        email: user.value?.email ?? '',
-        nick: nickInsteadEmail(user.value?.email as string),
+        email: user.value?.email,
+        nick: user.value?.nick,
       }
     } else {
       throw new Error(`Failed to get download URL for file: ${filename}`)

@@ -97,7 +97,7 @@
       label="by author"
       label-color="secondary"
       v-model="tmp.nick"
-      :options="activeNicks"
+      :options="nickValues"
       :disable="busy"
       dark
       dense
@@ -129,7 +129,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import AutoComplete from './Auto-Complete.vue'
-import { months, nickInsteadEmail } from '../helpers'
+import { months } from '../helpers'
 import type { FindType } from '../helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
@@ -138,16 +138,17 @@ const auth = useUserStore()
 const meta = useValuesStore()
 const route = useRoute()
 const router = useRouter()
-const activeNicks = computed(() => {
-  if (!meta.emailWithCount) return []
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return Object.entries(meta.emailWithCount).map(([email, count]) => {
-    return nickInsteadEmail(email)
-  })
-})
+// const activeNicks = computed(() => {
+//   if (!meta.nickWithCount) return []
+//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//   return Object.entries(meta.nickWithCount).map(([email, count]) => {
+//     return nickInsteadEmail(email)
+//   })
+// })
 const { busy, find, editMode } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const { tagsValues, yearValues, modelValues, lensValues, tagsToApply } = storeToRefs(meta)
+const { tagsValues, yearValues, modelValues, lensValues, nickValues, tagsToApply } =
+  storeToRefs(meta)
 const tmp = ref({ ...(find.value as FindType) })
 
 /**

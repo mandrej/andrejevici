@@ -12,19 +12,19 @@
   </div>
 
   <div class="row justify-center">
-    <div v-if="isEmpty(emailWithCount)" class="text-body2 text-center q-mt-md col-xs-12 col-sm-8">
+    <div v-if="isEmpty(nickWithCount)" class="text-body2 text-center q-mt-md col-xs-12 col-sm-8">
       There are no photos posted yet...<br />
       To add some you need to sign-in with your Google account. Only registered family users can
       add, delete or edit photos.
     </div>
     <div v-else class="text-h4">
       <router-link
-        v-for="(count, value) in emailWithCount"
+        v-for="(count, value) in nickWithCount"
         :key="value"
-        :title="`${nickInsteadEmail(value as string)}: ${count}`"
-        :to="{ path: '/list', query: { nick: nickInsteadEmail(value as string) } }"
+        :title="`${value}: ${count}`"
+        :to="{ path: '/list', query: { nick: value } }"
         class="q-px-sm link"
-        >{{ nickInsteadEmail(value as string) }}</router-link
+        >{{ value }}</router-link
       >
     </div>
   </div>
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { version, isEmpty, nickInsteadEmail } from '../helpers'
+import { version, isEmpty } from '../helpers'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import HistoryButton from '../components/History-Button.vue'
@@ -41,14 +41,14 @@ import HistoryButton from '../components/History-Button.vue'
 const app = useAppStore()
 const meta = useValuesStore()
 
-const emailWithCount = computed(() => meta.emailWithCount)
+const nickWithCount = computed(() => meta.nickWithCount)
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket, find } = storeToRefs(app)
 
 onMounted(async () => {
   // in App
   // await meta.fieldCount('year')
-  // await meta.fieldCount('email')
+  // await meta.fieldCount('nick')
   await meta.fieldCount('tags')
   await meta.fieldCount('model')
   await meta.fieldCount('lens')

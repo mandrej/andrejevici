@@ -45,7 +45,7 @@ export const useValuesStore = defineStore('meta', {
   state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
     tagsToApply: [],
-    values: { year: {}, tags: {}, model: {}, lens: {}, email: {} },
+    values: { year: {}, tags: {}, model: {}, lens: {}, nick: {} },
   }),
   getters: {
     // values getters
@@ -58,8 +58,8 @@ export const useValuesStore = defineStore('meta', {
     lensValues: (state: ValuesState) => {
       return Object.keys(byCountReverse(state, 'lens'))
     },
-    emailValues: (state: ValuesState) => {
-      return Object.keys(byCountReverse(state, 'email'))
+    nickValues: (state: ValuesState) => {
+      return Object.keys(byCountReverse(state, 'nick'))
     },
     yearValues: (state: ValuesState) => {
       return Object.keys(state.values.year).reverse()
@@ -72,8 +72,8 @@ export const useValuesStore = defineStore('meta', {
       }
       return ret
     },
-    emailWithCount: (state: ValuesState): { [key: string]: number } => {
-      const emails = byCountReverse(state, 'email')
+    nickWithCount: (state: ValuesState): { [key: string]: number } => {
+      const emails = byCountReverse(state, 'nick')
       return Object.keys(emails)
         .filter((key): key is string => emails[key]! > 0)
         .reduce(
@@ -101,20 +101,13 @@ export const useValuesStore = defineStore('meta', {
     },
   },
   actions: {
-    /**
-     * Retrieves the count of values for a given field from the database
-     * and updates the corresponding values in the store.
-     *
-     * @param {('year' | 'tags' | 'model' | 'lens' | 'email')} field - The field to retrieve counts for.
-     * @return {Promise<void>} A promise that resolves when the counts have been retrieved and the store has been updated.
-     */
-    async fieldCount(field: 'year' | 'tags' | 'model' | 'lens' | 'email'): Promise<void> {
+    async fieldCount(field: 'year' | 'tags' | 'model' | 'lens' | 'nick'): Promise<void> {
       const q = query(countersCol, where('field', '==', field))
       const querySnapshot = await getDocs(q)
       querySnapshot.forEach((d) => {
         const obj = d.data() as {
           count: number
-          field: 'year' | 'tags' | 'model' | 'lens' | 'email'
+          field: 'year' | 'tags' | 'model' | 'lens' | 'nick'
           value: string
         }
         this.values[field][obj.value] = obj.count
@@ -144,7 +137,7 @@ export const useValuesStore = defineStore('meta', {
         tags: {},
         model: {},
         lens: {},
-        email: {},
+        nick: {},
       }
 
       photoSnapshot.forEach((doc) => {

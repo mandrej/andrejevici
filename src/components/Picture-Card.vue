@@ -18,10 +18,8 @@
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
       <span>
-        <router-link
-          :to="{ path: '/list', query: { nick: nickInsteadEmail(rec.email) } }"
-          class="link"
-          >{{ nickInsteadEmail(rec.email) }}
+        <router-link :to="{ path: '/list', query: { nick: rec.nick } }" class="link"
+          >{{ rec.nick }}
         </router-link>
         ,
         <router-link
@@ -60,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { U, formatDatum, nickInsteadEmail } from '../helpers'
+import { U, formatDatum } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 import FileBroken from './File-Broken.vue'
 

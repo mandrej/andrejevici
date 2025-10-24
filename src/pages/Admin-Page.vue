@@ -25,19 +25,19 @@
               {{ formatDatum('2025-10-24', 'DD.MM.YYYY') }} Merge users and subsribers
             </q-item-section>
             <q-item-section side>
-              <q-btn color="primary" label="Fix" @click="fix" />
+              <q-btn color="primary" :disable="true" label="Fix" />
             </q-item-section>
           </q-item>
           <q-item clickable>
             <q-item-section> Find images without thumbnails </q-item-section>
             <q-item-section side>
-              <q-btn label="Find" color="primary" @click="missingThumbnails" />
+              <q-btn label="Find" :disable="true" color="primary" @click="missingThumbnails" />
             </q-item-section>
           </q-item>
           <q-item clickable>
             <q-item-section> Resolve Cloud storage and datastore mismatch </q-item-section>
             <q-item-section side>
-              <q-btn color="negative" label="Resolve" @click="mismatch" />
+              <q-btn color="negative" :disable="true" label="Resolve" @click="mismatch" />
             </q-item-section>
           </q-item>
         </q-list>
@@ -73,7 +73,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { formatDatum } from '../helpers'
-import { fix, mismatch, missingThumbnails } from '../helpers/remedy'
+import { mismatch, missingThumbnails } from '../helpers/remedy'
 
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))

@@ -46,21 +46,37 @@ export const useUserStore = defineStore('auth', {
     token: string | null
     allowPush: boolean
     askPush: boolean
+    emailNickMap: Map<string, string>
   } {
     return {
       user: null,
       token: null,
       allowPush: false,
       askPush: false,
+      emailNickMap: new Map<string, string>(),
     }
   },
   actions: {
-    /**
-     * Store user data in the User collection in Firestore and update local state.
-     *
-     * @param {User} user - Firebase user object.
-     * @return {Promise<void>} Promise that resolves when the user data is stored.
-     */
+    async getEmailNickMap(): Promise<void> {
+      const users = await this.fetchUsers()
+      // The persisted state plugin serializes Maps to plain objects. Ensure we
+      // have a real Map instance before calling .set on it.
+      if (!(this.emailNickMap instanceof Map)) {
+        try {
+          // Convert plain object to Map; if it's null/undefined, start fresh
+          const obj = this.emailNickMap as unknown as Record<string, string> | null
+          this.emailNickMap = obj ? new Map(Object.entries(obj)) : new Map<string, string>()
+        } catch {
+          // Fallback: create a new Map
+          this.emailNickMap = new Map<string, string>()
+        }
+      }
+
+      users.forEach((user) => {
+        this.emailNickMap.set(user.email, user.nick)
+      })
+    },
+
     async storeUser(user: User): Promise<void> {
       const userRef = doc(db, 'User', user.uid)
       const userSnap = await getDoc(userRef)
@@ -119,6 +135,18 @@ export const useUserStore = defineStore('auth', {
       }
     },
 
+    async fetchUsers(): Promise<MyUserType[]> {
+      const users: MyUserType[] = []
+      const q = query(userCol, orderBy('email', 'asc'))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) {
+        snapshot.forEach((d) => {
+          users.push({ ...(d.data() as MyUserType) })
+        })
+      }
+      return users
+    },
+
     async fetchDevices(): Promise<DeviceType[]> {
       const devices: DeviceType[] = []
       const q = query(deviceCol, orderBy('timestamp', 'desc'))
@@ -132,24 +160,20 @@ export const useUserStore = defineStore('auth', {
     },
 
     async fetchUsersAndDevices() {
-      const devices: DeviceType[] = await this.fetchDevices()
       const result: UsersAndDevices[] = []
-      const q = query(userCol, orderBy('email', 'asc'))
-      const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        snapshot.forEach((d) => {
-          result.push({
-            ...(d.data() as MyUserType),
-            timestamps: devices
-              .filter((dev) => dev.email === d.data().email)
-              .map((dev) => dev.timestamp as Timestamp),
-          })
+      const devices: DeviceType[] = await this.fetchDevices()
+      const users: MyUserType[] = await this.fetchUsers()
+
+      users.forEach((user) => {
+        result.push({
+          ...user,
+          timestamps: devices
+            .filter((dev) => dev.email === user.email)
+            .map((dev) => dev.timestamp as Timestamp),
         })
-        console.log('Fetched users and devices:', result)
-        return result
-      } else {
-        return []
-      }
+      })
+      console.log('Fetched users and devices:', result)
+      return result
     },
 
     // async removeSubscriber(subscribersAndDevices: UsersAndDevices): Promise<void> {

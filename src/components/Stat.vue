@@ -28,7 +28,7 @@ import SendMessage from 'src/components/Send-Message.vue'
 const app = useAppStore()
 const meta = useValuesStore()
 const { bucket } = storeToRefs(app)
-const { yearValues, tagsValues, modelValues, lensValues, emailValues } = storeToRefs(meta)
+const { yearValues, tagsValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
 const list = computed(() => [
   {
     text: 'storage',
@@ -56,7 +56,7 @@ const list = computed(() => [
   },
   {
     text: 'authors',
-    value: emailValues.value.length,
+    value: nickValues.value.length,
   },
 ])
 </script>
