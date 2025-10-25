@@ -95,7 +95,8 @@ export const useUserStore = defineStore('auth', {
         this.user = {
           name: user.displayName || '',
           email: user.email || '',
-          nick: user.email?.match(/[^.@]+/)?.[0] || user.displayName || 'anonymous',
+          // TODO set unique nick
+          nick: user.email?.match(/[^.@]+/)?.[0] || 'anonymous',
           uid: user.uid,
           isAuthorized: false,
           isAdmin: false,
@@ -172,7 +173,6 @@ export const useUserStore = defineStore('auth', {
             .map((dev) => dev.timestamp as Timestamp),
         })
       })
-      console.log('Fetched users and devices:', result)
       return result
     },
 
@@ -185,43 +185,61 @@ export const useUserStore = defineStore('auth', {
     //   })
     // },
 
-    // async toggleAllowPush(subscribersAndDevices: UsersAndDevices): Promise<void> {
-    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-    //   const allowPush = subscribersAndDevices.allowPush
-    //   await updateDoc(docRef, {
-    //     allowPush: subscribersAndDevices.allowPush,
-    //   })
-    //   notify({
-    //     message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,
-    //     icon: 'check',
-    //   })
-    // },
+    async toggleAllowPush(user: UsersAndDevices): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      const settings = user.allowPush
+      await updateDoc(docRef, {
+        allowPush: settings,
+      })
+      notify({
+        message: `Subscriber ${user.email} allowPush set to ${settings}`,
+        icon: 'check',
+      })
+    },
+    async toggleEdit(user: UsersAndDevices): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      const settings = user.isAuthorized
+      await updateDoc(docRef, {
+        isAuthorized: settings,
+      })
+      notify({
+        message: `User ${user.email} has editor role set to ${settings}`,
+        icon: 'check',
+      })
+    },
+    async toggleAdmin(user: UsersAndDevices): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      const settings = user.isAdmin
+      await updateDoc(docRef, {
+        isAdmin: settings,
+      })
+      notify({
+        message: `User ${user.email} has admin role set to ${settings}`,
+        icon: 'check',
+      })
+    },
+    async changeNick(user: UsersAndDevices): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      const settings = user.nick
+      await updateDoc(docRef, {
+        nick: settings,
+      })
+      notify({
+        message: `User ${user.email} change nick name to ${settings}`,
+        icon: 'check',
+      })
+    },
 
     async updateSubscriber(): Promise<void> {
-      const docRef = doc(db, 'Subscriber', this.user!.uid)
+      const docRef = doc(db, 'User', this.user!.uid)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
         await updateDoc(docRef, {
           allowPush: this.allowPush,
           timestamp: Timestamp.fromDate(new Date()),
         })
-      } else {
-        await setDoc(docRef, {
-          email: this.user!.email,
-          allowPush: this.allowPush,
-          timestamp: Timestamp.fromDate(new Date()),
-        })
       }
     },
-    /**
-     * Update the user's device token in Firestore.
-     *
-     * Updates the user's device token in Firestore with the given token.
-     * The token is associated with the user's email and a timestamp.
-     *
-     * @param {string} token - The new device token to associate with the user.
-     * @return {Promise<void>} Promise that resolves when the device token is updated.
-     */
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
