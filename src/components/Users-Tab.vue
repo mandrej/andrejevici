@@ -30,7 +30,7 @@
             {{ countTokens(item.timestamps) }}
           </q-badge>
           <template v-for="(timestamp, index) in item.timestamps" :key="index">
-            <q-badge v-if="index < item.timestamps.length - 1" color="secondary" class="q-ml-xs">
+            <q-badge v-if="index < item.timestamps.length" color="secondary" class="q-ml-xs">
               {{ ageDays(timestamp) }}
             </q-badge>
             <span v-else> days old </span>
