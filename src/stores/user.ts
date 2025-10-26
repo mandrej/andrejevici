@@ -128,14 +128,6 @@ export const useUserStore = defineStore('auth', {
       }
     },
 
-    async updateUser(): Promise<void> {
-      // TODO build form for user
-      const docRef = doc(db, 'User', this.user!.uid)
-      if (this.user) {
-        await updateDoc(docRef, this.user)
-      }
-    },
-
     async fetchUsers(): Promise<MyUserType[]> {
       const users: MyUserType[] = []
       const q = query(userCol, orderBy('email', 'asc'))
@@ -176,56 +168,16 @@ export const useUserStore = defineStore('auth', {
       return result
     },
 
-    // async removeSubscriber(subscribersAndDevices: UsersAndDevices): Promise<void> {
-    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-    //   await deleteDoc(docRef)
-    //   notify({
-    //     message: `Subscriber ${subscribersAndDevices.email} removed`,
-    //     icon: 'check',
-    //   })
-    // },
+    async updateUser(user: UsersAndDevices, field: string): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      await updateDoc(docRef, {
+        allowPush: user[field as keyof UsersAndDevices],
+      })
 
-    async toggleAllowPush(user: UsersAndDevices): Promise<void> {
-      const docRef = doc(db, 'User', user.uid)
-      const settings = user.allowPush
-      await updateDoc(docRef, {
-        allowPush: settings,
-      })
+      const value = user[field as keyof UsersAndDevices] as string | boolean
+      const message = `User ${user.email} has updated ${field} to ${value}`
       notify({
-        message: `Subscriber ${user.email} allowPush set to ${settings}`,
-        icon: 'check',
-      })
-    },
-    async toggleEdit(user: UsersAndDevices): Promise<void> {
-      const docRef = doc(db, 'User', user.uid)
-      const settings = user.isAuthorized
-      await updateDoc(docRef, {
-        isAuthorized: settings,
-      })
-      notify({
-        message: `User ${user.email} has editor role set to ${settings}`,
-        icon: 'check',
-      })
-    },
-    async toggleAdmin(user: UsersAndDevices): Promise<void> {
-      const docRef = doc(db, 'User', user.uid)
-      const settings = user.isAdmin
-      await updateDoc(docRef, {
-        isAdmin: settings,
-      })
-      notify({
-        message: `User ${user.email} has admin role set to ${settings}`,
-        icon: 'check',
-      })
-    },
-    async changeNick(user: UsersAndDevices): Promise<void> {
-      const docRef = doc(db, 'User', user.uid)
-      const settings = user.nick
-      await updateDoc(docRef, {
-        nick: settings,
-      })
-      notify({
-        message: `User ${user.email} change nick name to ${settings}`,
+        message: message,
         icon: 'check',
       })
     },
@@ -250,13 +202,7 @@ export const useUserStore = defineStore('auth', {
         })
       }
     },
-    /**
-     * Remove the user's device token from Firestore.
-     *
-     * Removes the user's device token from Firestore.
-     *
-     * @return {Promise<void>} Promise that resolves when the device token is removed.
-     */
+
     removeDevice(): Promise<void> {
       const q = query(deviceCol, where('email', '==', this.user?.email || ''))
       return new Promise((resolve, reject) => {

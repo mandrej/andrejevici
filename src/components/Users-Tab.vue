@@ -10,6 +10,7 @@
       <q-item-section>
         <q-item-label>
           <q-input
+            class="text-h6"
             v-model="item.nick"
             :readonly="nickValues.includes(item.nick)"
             :rules="[
@@ -19,15 +20,19 @@
             :label="`Use nickname for ${item.email}`"
           >
             <template v-if="!nickValues.includes(item.nick)" v-slot:after>
-              <q-btn round dense flat icon="edit" @click="auth.changeNick(item)" />
+              <q-btn round dense flat icon="edit" @click="auth.updateUser(item, 'nick')" />
             </template>
           </q-input>
         </q-item-label>
         <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
         <q-item-label caption>
-          {{ countTokens(item.timestamps) }}
+          <q-badge color="secondary">
+            {{ countTokens(item.timestamps) }}
+          </q-badge>
           <template v-for="(timestamp, index) in item.timestamps" :key="index">
-            {{ ageDays(timestamp) }}
+            <q-badge color="secondary" class="q-ml-sm">
+              {{ ageDays(timestamp) }}
+            </q-badge>
             <span v-if="index < item.timestamps.length - 1">, </span>
             <span v-else> days old </span>
           </template>
@@ -36,26 +41,23 @@
       <q-item-section side v-if="$q.screen.gt.xs">
         <div class="row no-wrap">
           <q-checkbox
-            name="`admin-${item.key}`"
             v-model="item.isAdmin"
             :disable="user?.email === item.email"
             color="negative"
             label="Admin"
-            @click="auth.toggleAdmin(item)"
+            @click="user?.email !== item.email ? auth.updateUser(item, 'isAdmin') : null"
           />
           <q-checkbox
-            name="`authorized-${item.key}`"
             v-model="item.isAuthorized"
             color="primary"
             label="Editor"
-            @click="auth.toggleEdit(item)"
+            @click="auth.updateUser(item, 'isAuthorized')"
           />
           <q-checkbox
-            name="`allow-${item.key}`"
             v-model="item.allowPush"
             color="secondary"
             label="Push"
-            @click="auth.toggleAllowPush(item)"
+            @click="auth.updateUser(item, 'allowPush')"
           />
         </div>
       </q-item-section>
@@ -98,16 +100,11 @@ const fetchList = async () => {
 
 onMounted(fetchList)
 
-// const remove = async (subscriber: UsersAndDevices) => {
-//   await auth.removeSubscriber(subscriber)
-//   result.value = result.value.filter((item) => item.key !== subscriber.key)
-// }
-
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
-  return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'
+  return timestamps.length > 0 ? `${timestamps.length} tokens` : 'No tokens'
 }
 </script>
