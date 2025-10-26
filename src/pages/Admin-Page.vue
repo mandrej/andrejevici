@@ -31,13 +31,13 @@
           <q-item clickable>
             <q-item-section> Find images without thumbnails </q-item-section>
             <q-item-section side>
-              <q-btn label="Find" :disable="true" color="primary" @click="missingThumbnails" />
+              <q-btn label="Find" color="primary" @click="missingThumbnails" />
             </q-item-section>
           </q-item>
           <q-item clickable>
             <q-item-section> Resolve Cloud storage and datastore mismatch </q-item-section>
             <q-item-section side>
-              <q-btn color="negative" :disable="true" label="Resolve" @click="mismatch" />
+              <q-btn color="negative" label="Resolve" @click="mismatch" />
             </q-item-section>
           </q-item>
         </q-list>

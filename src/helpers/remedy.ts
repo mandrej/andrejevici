@@ -1,6 +1,6 @@
 import { db, storage } from '../lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
-import { doc, collection, query, getDocs, deleteDoc, getDoc } from 'firebase/firestore'
+import { doc, collection, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 // import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
@@ -19,45 +19,23 @@ const auth = useUserStore()
 const { uploaded } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
-// const usersCol = collection(db, 'User')
+const usersCol = collection(db, 'User')
 
-// export const fix = async () => {
-//   const setBatch = writeBatch(db)
-//   const subscribers = [] as Array<SubscriberType>
-//   let q = query(usersCol)
-//   const usersSnap = await getDocs(q)
+export const fix = async () => {
+  const setBatch = writeBatch(db)
+  const q = query(usersCol)
+  const usersSnap = await getDocs(q)
+  usersSnap.forEach((it) => {
+    const user = it.data()
+    const docRef = doc(usersCol, user.uid)
+    setBatch.set(docRef, user, { merge: true })
+  })
 
-//   q = query(subscribersCol)
-//   const subscribersSnap = await getDocs(q)
-//   subscribersSnap.forEach((doc) => {
-//     subscribers.push(doc.data() as SubscriberType)
-//   })
-//   usersSnap.forEach((it) => {
-//     const user = it.data()
-//     user.nick = nickInsteadEmail(user.email)
-//     user.isAuthorized = CONFIG.familyMap.get(user.email) != undefined
-//     user.isAdmin = process.env.DEV
-//       ? CONFIG.adminMap.get(user.email) != undefined
-//       : CONFIG.adminMap.get(user.email) === user.uid
-//     user.allowPush = subscribers.find((sub) => sub.email === user.email)?.allowPush || false
-//     user.timestamp =
-//       subscribers.find((sub) => sub.email === user.email)?.timestamp || user.timestamp
-//     const docRef = doc(usersCol, it.id)
-//     setBatch.set(docRef, user, { merge: true })
-//   })
-
-//   await setBatch.commit()
-//   notify({
-//     message: `All users fixed`,
-//   })
-
-//   const deleteBatch = writeBatch(db)
-//   subscribersSnap.forEach((doc) => deleteBatch.delete(doc.ref))
-//   await deleteBatch.commit()
-//   notify({
-//     message: `All subscribers deleted`,
-//   })
-// }
+  await setBatch.commit()
+  notify({
+    message: `All users fixed`,
+  })
+}
 
 const getStorageData = async (filename: string) => {
   try {

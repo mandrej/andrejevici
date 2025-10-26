@@ -5,47 +5,65 @@
 
   <div class="text-h6 q-pa-md">Users</div>
 
-  <q-list separator>
+  <q-list separator dense>
     <q-item v-for="item in result" :key="item.uid" clickable>
       <q-item-section>
-        <q-item-label>{{ item.email }} alias {{ item.nick }}</q-item-label>
+        <q-item-label>
+          <q-input
+            class="text-h6"
+            v-model="item.nick"
+            :readonly="nickValues.includes(item.nick)"
+            :rules="[
+              (v) => !!v || 'Nick cannot be empty',
+              (v) => !nickValues.includes(v) || 'Nick already taken',
+            ]"
+            :label="`Use nickname for ${item.email}`"
+          >
+            <template v-if="!nickValues.includes(item.nick)" v-slot:after>
+              <q-btn round dense flat icon="edit" @click="auth.updateUser(item, 'nick')" />
+            </template>
+          </q-input>
+        </q-item-label>
         <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
         <q-item-label caption>
-          {{ countTokens(item.timestamps) }}
+          <q-badge color="secondary">
+            {{ countTokens(item.timestamps) }}
+          </q-badge>
           <template v-for="(timestamp, index) in item.timestamps" :key="index">
-            {{ ageDays(timestamp) }}
-            <span v-if="index < item.timestamps.length - 1">, </span>
+            <q-badge v-if="index < item.timestamps.length - 1" color="secondary" class="q-ml-xs">
+              {{ ageDays(timestamp) }}
+            </q-badge>
             <span v-else> days old </span>
           </template>
         </q-item-label>
       </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`admin-${item.key}`"
-          v-model="item.isAdmin"
-          color="negative"
-          label="Admin"
-        />
+      <q-item-section side v-if="$q.screen.gt.xs">
+        <div class="row no-wrap">
+          <q-checkbox
+            v-model="item.isAdmin"
+            :disable="user?.email === item.email"
+            color="negative"
+            label="Admin"
+            @click="user?.email !== item.email ? auth.updateUser(item, 'isAdmin') : null"
+          />
+          <q-checkbox
+            v-model="item.isAuthorized"
+            color="primary"
+            label="Editor"
+            @click="auth.updateUser(item, 'isAuthorized')"
+          />
+          <q-checkbox
+            v-model="item.allowPush"
+            color="secondary"
+            label="Push"
+            @click="auth.updateUser(item, 'allowPush')"
+          />
+        </div>
       </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`authorized-${item.key}`"
-          v-model="item.isAuthorized"
-          color="primary"
-          label="Authorized"
-        />
-      </q-item-section>
-      <q-item-section side>
-        <q-checkbox
-          name="`allow-${item.key}`"
-          v-model="item.allowPush"
-          color="secondary"
-          label="Allow Push"
-        />
-      </q-item-section>
-      <q-item-section side>
+      <!-- <q-item-section side>
         <q-btn color="primary" label="Edit" />
-      </q-item-section>
+        <q-btn color="primary" label="Edit" :disable="nickValues.includes(item.nick)" />
+      </q-item-section> -->
     </q-item>
   </q-list>
 </template>
@@ -54,6 +72,7 @@
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
+import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 
 import ErrorBanner from './Error-Banner.vue'
@@ -61,9 +80,12 @@ import type { UsersAndDevices } from '../helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
 
 const app = useAppStore()
+const meta = useValuesStore()
 const auth = useUserStore()
 
 const { busy, error } = storeToRefs(app)
+const { user } = storeToRefs(auth)
+const { nickValues } = storeToRefs(meta)
 const result = ref<UsersAndDevices[]>([])
 
 const fetchList = async () => {
@@ -77,19 +99,11 @@ const fetchList = async () => {
 
 onMounted(fetchList)
 
-// const remove = async (subscriber: UsersAndDevices) => {
-//   await auth.removeSubscriber(subscriber)
-//   result.value = result.value.filter((item) => item.key !== subscriber.key)
-// }
-
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
-  return timestamps.length > 0 ? `${timestamps.length} tokens:` : 'No tokens'
+  return timestamps.length > 0 ? `${timestamps.length} tokens` : 'No tokens'
 }
-// const toggle = async (subscriber: UsersAndDevices) => {
-//   await auth.toggleAllowPush(subscriber)
-// }
 </script>

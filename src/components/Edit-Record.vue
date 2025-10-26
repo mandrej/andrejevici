@@ -53,7 +53,7 @@
                 label="Author"
                 v-model="tmp.email"
                 :options="emailValues"
-                hint="Existing member can add freind's photo and email"
+                hint="Admin can add freind's photo and email"
                 :rules="[
                   (val: string) => !!val || 'Email is missing',
                   (val: string) => isValidEmail(val),
@@ -175,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive } from 'vue'
 import { CONFIG, U, formatBytes, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
@@ -196,9 +196,8 @@ const meta = useValuesStore()
 const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit, find } = storeToRefs(app)
-const { tagsValues, tagsToApply, modelValues, lensValues } = storeToRefs(meta)
-const { user, emailNickMap } = storeToRefs(auth)
-const emailValues = computed(() => Array.from(emailNickMap.value.keys()))
+const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
+const { user } = storeToRefs(auth)
 
 const getExif = async () => {
   /**

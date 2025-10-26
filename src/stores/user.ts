@@ -1,3 +1,4 @@
+import uuid4 from 'uuid4'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import { CONFIG } from '../helpers'
@@ -95,7 +96,7 @@ export const useUserStore = defineStore('auth', {
         this.user = {
           name: user.displayName || '',
           email: user.email || '',
-          nick: user.email?.match(/[^.@]+/)?.[0] || user.displayName || 'anonymous',
+          nick: uuid4().substring(0, 8), //was user.email?.match(/[^.@]+/)?.[0] || 'anonymous',
           uid: user.uid,
           isAuthorized: false,
           isAdmin: false,
@@ -124,14 +125,6 @@ export const useUserStore = defineStore('auth', {
             icon: 'error',
           })
         }
-      }
-    },
-
-    async updateUser(): Promise<void> {
-      // TODO build form for user
-      const docRef = doc(db, 'User', this.user!.uid)
-      if (this.user) {
-        await updateDoc(docRef, this.user)
       }
     },
 
@@ -172,56 +165,33 @@ export const useUserStore = defineStore('auth', {
             .map((dev) => dev.timestamp as Timestamp),
         })
       })
-      console.log('Fetched users and devices:', result)
       return result
     },
 
-    // async removeSubscriber(subscribersAndDevices: UsersAndDevices): Promise<void> {
-    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-    //   await deleteDoc(docRef)
-    //   notify({
-    //     message: `Subscriber ${subscribersAndDevices.email} removed`,
-    //     icon: 'check',
-    //   })
-    // },
+    async updateUser(user: UsersAndDevices, field: string): Promise<void> {
+      const docRef = doc(db, 'User', user.uid)
+      await updateDoc(docRef, {
+        allowPush: user[field as keyof UsersAndDevices],
+      })
 
-    // async toggleAllowPush(subscribersAndDevices: UsersAndDevices): Promise<void> {
-    //   const docRef = doc(db, 'Subscriber', subscribersAndDevices.key)
-    //   const allowPush = subscribersAndDevices.allowPush
-    //   await updateDoc(docRef, {
-    //     allowPush: subscribersAndDevices.allowPush,
-    //   })
-    //   notify({
-    //     message: `Subscriber ${subscribersAndDevices.email} allowPush set to ${allowPush}`,
-    //     icon: 'check',
-    //   })
-    // },
+      const value = user[field as keyof UsersAndDevices] as string | boolean
+      const message = `User ${user.email} has updated ${field} to ${value}`
+      notify({
+        message: message,
+        icon: 'check',
+      })
+    },
 
     async updateSubscriber(): Promise<void> {
-      const docRef = doc(db, 'Subscriber', this.user!.uid)
+      const docRef = doc(db, 'User', this.user!.uid)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
         await updateDoc(docRef, {
           allowPush: this.allowPush,
           timestamp: Timestamp.fromDate(new Date()),
         })
-      } else {
-        await setDoc(docRef, {
-          email: this.user!.email,
-          allowPush: this.allowPush,
-          timestamp: Timestamp.fromDate(new Date()),
-        })
       }
     },
-    /**
-     * Update the user's device token in Firestore.
-     *
-     * Updates the user's device token in Firestore with the given token.
-     * The token is associated with the user's email and a timestamp.
-     *
-     * @param {string} token - The new device token to associate with the user.
-     * @return {Promise<void>} Promise that resolves when the device token is updated.
-     */
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
@@ -232,13 +202,7 @@ export const useUserStore = defineStore('auth', {
         })
       }
     },
-    /**
-     * Remove the user's device token from Firestore.
-     *
-     * Removes the user's device token from Firestore.
-     *
-     * @return {Promise<void>} Promise that resolves when the device token is removed.
-     */
+
     removeDevice(): Promise<void> {
       const q = query(deviceCol, where('email', '==', this.user?.email || ''))
       return new Promise((resolve, reject) => {
