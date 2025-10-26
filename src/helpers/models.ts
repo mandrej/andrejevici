@@ -59,13 +59,6 @@ export interface MyUserType {
   allowPush: boolean
   timestamp: Timestamp
 }
-// TODO REMOVE unused interfaces
-export interface SubscriberType {
-  key: string
-  email: string
-  allowPush: boolean
-  timestamp: Timestamp
-}
 export interface DeviceType {
   key: string
   email: string

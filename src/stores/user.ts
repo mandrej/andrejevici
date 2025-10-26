@@ -1,3 +1,4 @@
+import uuid4 from 'uuid4'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import { CONFIG } from '../helpers'
@@ -95,8 +96,7 @@ export const useUserStore = defineStore('auth', {
         this.user = {
           name: user.displayName || '',
           email: user.email || '',
-          // TODO set unique nick
-          nick: user.email?.match(/[^.@]+/)?.[0] || 'anonymous',
+          nick: uuid4().substring(0, 8), //was user.email?.match(/[^.@]+/)?.[0] || 'anonymous',
           uid: user.uid,
           isAuthorized: false,
           isAdmin: false,
