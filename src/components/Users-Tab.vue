@@ -33,8 +33,7 @@
             <q-badge color="secondary" class="q-ml-sm">
               {{ ageDays(timestamp) }}
             </q-badge>
-            <span v-if="index < item.timestamps.length - 1">, </span>
-            <span v-else> days old </span>
+            days old
           </template>
         </q-item-label>
       </q-item-section>
