@@ -169,27 +169,28 @@ export const useValuesStore = defineStore('meta', {
           const counterRef = doc(db, 'Counter', counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
-        const diff = deepDiffMap(
-          this.values[field as keyof ValuesState['values']],
-          newValues[field as keyof ValuesState['values']],
-        )
-        const messages: string[] = []
-        for (const change of diff) {
-          messages.push(`${change.key} ${change.status}`)
-        }
+        // const diff = deepDiffMap(
+        //   this.values[field as keyof ValuesState['values']],
+        //   newValues[field as keyof ValuesState['values']],
+        // )
+        // const messages: string[] = []
+        // for (const change of diff) {
+        //   messages.push(`${change.key} ${change.status}`)
+        // }
         // overwrite old values in the store
         this.values[field as keyof ValuesState['values']] = {
           ...newValues[field as keyof ValuesState['values']],
         }
-        notify({
-          message: messages.join('\n') || `No changes for ${field}`,
-          actions: [{ icon: 'close' }],
-          timeout: messages.length > 0 ? 0 : 5000,
-          multiLine: true,
-        })
+        // notify({
+        //   message: messages.join('\n') || `No changes for ${field}`,
+        //   actions: [{ icon: 'close' }],
+        //   timeout: messages.length > 0 ? 0 : 5000,
+        //   multiLine: true,
+        // })
+        notify({ message: `Built counters for ${field}` })
       })
-      await setBatch.commit()
 
+      await setBatch.commit()
       notify({ message: `All done` })
     },
 
