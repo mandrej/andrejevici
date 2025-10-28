@@ -26,7 +26,7 @@
           item.status ? item.message : item.text
         }}</q-item-label>
         <q-item-label
-          >from {{ item.email }} -
+          >{{ item.email }} -
           {{ formatDatum(item.timestamp.toDate(), 'DD.MM.YYYY HH:mm') }}</q-item-label
         >
       </q-item-section>

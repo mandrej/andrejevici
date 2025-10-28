@@ -58,6 +58,7 @@ export const useUserStore = defineStore('auth', {
     }
   },
   actions: {
+    // TODO Not used
     async getEmailNickMap(): Promise<void> {
       const users = await this.fetchUsers()
       // The persisted state plugin serializes Maps to plain objects. Ensure we
