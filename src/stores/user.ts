@@ -58,7 +58,7 @@ export const useUserStore = defineStore('auth', {
     }
   },
   actions: {
-    // TODO Not used
+    // Used for Edit-Record.vue to get nick from email
     async getEmailNickMap(): Promise<void> {
       const users = await this.fetchUsers()
       // The persisted state plugin serializes Maps to plain objects. Ensure we

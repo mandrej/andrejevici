@@ -175,8 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { CONFIG, U, formatBytes, textSlug, sliceSlug } from '../helpers'
+import { onMounted, reactive } from 'vue'
+import { CONFIG, U, formatBytes, textSlug, sliceSlug, isEmpty } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -197,7 +197,13 @@ const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit, find } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
-const { user } = storeToRefs(auth)
+const { user, emailNickMap } = storeToRefs(auth)
+
+onMounted(() => {
+  if (isEmpty(emailNickMap.value)) {
+    auth.getEmailNickMap()
+  }
+})
 
 const getExif = async () => {
   /**
@@ -250,10 +256,13 @@ const onSubmit = async () => {
   tmp.text = sliceSlug(textSlug(tmp.headline))
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []
-  // if change email
-  tmp.email = user.value!.email
-  tmp.nick = user.value!.nick
-  // add flash
+  // if change email by admin
+  if (tmp.email !== user.value!.email && user.value!.isAdmin) {
+    tmp.nick = emailNickMap.value.get(tmp.email) || CONFIG.familyMap.get(tmp.email) || 'unknown'
+  } else {
+    tmp.email = user.value!.email
+    tmp.nick = user.value!.nick
+  }
   if (tmp.flash && tmp.tags.indexOf('flash') === -1) {
     tmp.tags.push('flash')
   }

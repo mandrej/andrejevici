@@ -21,16 +21,16 @@ const CONFIG = {
   // adminMap: new Map<string, string>()
   //   .set('milan.andrejevic@gmail.com', 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
   //   .set('mihailo.genije@gmail.com', 'HG9VdF9syLNxHYbdQcU7kspLZ9H2'),
-  // familyMap: new Map<string, string>()
-  //   .set('milan.andrejevic@gmail.com', 'milan') // email.match(/[^.@]+/)
-  //   .set('mihailo.genije@gmail.com', 'mihailo')
-  //   .set('ana.devic@gmail.com', 'ana')
-  //   .set('dannytaboo@gmail.com', 'dannytaboo')
-  //   .set('svetlana.andrejevic@gmail.com', 'svetlana')
-  //   .set('011.nina@gmail.com', '011')
-  //   .set('djordjeandrejevic13@gmail.com', 'djordje')
-  //   .set('bogdan.andrejevic16@gmail.com', 'bogdan')
-  //   .set('zile.zikson@gmail.com', 'zile'),
+  familyMap: new Map<string, string>()
+    .set('milan.andrejevic@gmail.com', 'milan') // email.match(/[^.@]+/)
+    .set('mihailo.genije@gmail.com', 'mihailo')
+    .set('ana.devic@gmail.com', 'ana')
+    .set('dannytaboo@gmail.com', 'dannytaboo')
+    .set('svetlana.andrejevic@gmail.com', 'svetlana')
+    .set('011.nina@gmail.com', '011')
+    .set('djordjeandrejevic13@gmail.com', 'djordje')
+    .set('bogdan.andrejevic16@gmail.com', 'bogdan')
+    .set('zile.zikson@gmail.com', 'zile'),
 
   dateFormat: 'YYYY-MM-DD HH:mm',
   cache_control: 'public, max-age=604800',
