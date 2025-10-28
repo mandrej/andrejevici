@@ -95,3 +95,9 @@ const removeTags = async () => {
   }
 }
 </script>
+
+<style scoped>
+.q-btn--standard {
+  width: 100px;
+}
+</style>

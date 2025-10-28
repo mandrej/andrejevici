@@ -63,6 +63,9 @@
       <q-tab-panel name="users" class="q-pa-none">
         <Users-Tab />
       </q-tab-panel>
+      <q-tab-panel name="messages" class="q-pa-none">
+        <Messages-Tab />
+      </q-tab-panel>
     </q-tab-panels>
   </q-page>
 </template>
@@ -78,6 +81,7 @@ import { mismatch, missingThumbnails } from '../helpers/remedy'
 const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/Users-Tab.vue'))
+const MessagesTab = defineAsyncComponent(() => import('../components/Messages-Tab.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -98,3 +102,9 @@ const values = computed(() => meta.values)
 //   }
 // }
 </script>
+
+<style scoped>
+.q-btn--standard {
+  width: 100px;
+}
+</style>

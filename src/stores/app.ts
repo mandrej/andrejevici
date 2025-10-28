@@ -40,10 +40,12 @@ import type {
   LastPhoto,
   AppStoreState,
   FileProgress,
+  MessageType,
 } from '../helpers/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')
+const messagesCol = collection(db, 'Message')
 
 /**
  * Retrieves the data from the first document in the given snapshot.
@@ -313,6 +315,27 @@ export const useAppStore = defineStore('app', {
         console.error('Failed to get last record:', error)
         return null
       }
+    },
+
+    async fetchMessages(): Promise<MessageType[]> {
+      const messages: MessageType[] = []
+      const q = query(messagesCol, orderBy('timestamp', 'desc'), limit(50))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) {
+        snapshot.forEach((d) => {
+          messages.push({ ...(d.data() as MessageType), key: d.id })
+        })
+      }
+      return messages
+    },
+
+    async deleteMessages(keys: string[]): Promise<void> {
+      const deletePromises = keys.map(async (key) => {
+        const docRef = doc(db, 'Message', key)
+        await deleteDoc(docRef)
+      })
+      await Promise.all(deletePromises)
+      notify({ message: `Deleted ${keys.length} messages` })
     },
   },
 })

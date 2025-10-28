@@ -46,6 +46,7 @@
           <q-tab name="tags" label="Tags" />
           <!-- <q-tab name="camera" label="Camera" /> -->
           <q-tab name="users" label="Users" />
+          <q-tab name="messages" label="Messages" />
         </q-tabs>
       </template>
       <router-view />

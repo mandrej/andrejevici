@@ -80,6 +80,7 @@ export interface ValuesState {
   }
 }
 export interface MessageType {
+  key: string
   email: string
   message: string
   status: boolean
