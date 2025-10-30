@@ -7,6 +7,11 @@
 
   <q-list separator dense>
     <q-item v-for="item in result" :key="item.uid" clickable>
+      <q-item-section avatar>
+        <q-badge class="text-body1 text-black" color="warning">{{
+          contribution(item.nick)
+        }}</q-badge>
+      </q-item-section>
       <q-item-section>
         <q-item-label>
           <q-input
@@ -85,7 +90,7 @@ const auth = useUserStore()
 
 const { busy, error } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const { nickValues } = storeToRefs(meta)
+const { nickValues, nickWithCount } = storeToRefs(meta)
 const result = ref<UsersAndDevices[]>([])
 
 const fetchList = async () => {
@@ -105,5 +110,9 @@ const ageDays = (timestamp: Timestamp) => {
 }
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
   return timestamps.length > 0 ? `${timestamps.length} tokens` : 'No tokens'
+}
+const contribution = (nick: string) => {
+  const entry = nickWithCount.value[nick]
+  return entry ? entry : 0
 }
 </script>
