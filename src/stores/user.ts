@@ -17,6 +17,7 @@ import {
   orderBy,
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { useValuesStore } from './values'
 import router from '../router'
 import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
@@ -58,28 +59,32 @@ export const useUserStore = defineStore('auth', {
     }
   },
   actions: {
-    // Used for Edit-Record.vue to get nick from email
-    async getEmailNickMap(): Promise<void> {
-      const users = await this.fetchUsers()
-      // The persisted state plugin serializes Maps to plain objects. Ensure we
-      // have a real Map instance before calling .set on it.
-      if (!(this.emailNickMap instanceof Map)) {
-        try {
-          // Convert plain object to Map; if it's null/undefined, start fresh
-          const obj = this.emailNickMap as unknown as Record<string, string> | null
-          this.emailNickMap = obj ? new Map(Object.entries(obj)) : new Map<string, string>()
-        } catch {
-          // Fallback: create a new Map
-          this.emailNickMap = new Map<string, string>()
-        }
-      }
-
-      users.forEach((user) => {
-        this.emailNickMap.set(user.email, user.nick)
-      })
+    // TODO remove this when all users have uid
+    getEmailNickMap(): void {
+      this.emailNickMap = CONFIG.familyMap
     },
+    // async getEmailNickMap(): Promise<void> {
+    //   const users = await this.fetchUsers()
+    //   // The persisted state plugin serializes Maps to plain objects. Ensure we
+    //   // have a real Map instance before calling .set on it.
+    //   if (!(this.emailNickMap instanceof Map)) {
+    //     try {
+    //       // Convert plain object to Map; if it's null/undefined, start fresh
+    //       const obj = this.emailNickMap as unknown as Record<string, string> | null
+    //       this.emailNickMap = obj ? new Map(Object.entries(obj)) : new Map<string, string>()
+    //     } catch {
+    //       // Fallback: create a new Map
+    //       this.emailNickMap = new Map<string, string>()
+    //     }
+    //   }
+
+    //   users.forEach((user) => {
+    //     this.emailNickMap.set(user.email, user.nick)
+    //   })
+    // },
 
     async storeUser(user: User): Promise<void> {
+      const meta = useValuesStore()
       const userRef = doc(db, 'User', user.uid)
       const userSnap = await getDoc(userRef)
       if (userSnap.exists()) {
@@ -93,11 +98,15 @@ export const useUserStore = defineStore('auth', {
         this.askPush = false
         this.user = data
       } else {
+        // TODO if user had contributions
+        const nick = meta.emailValues.includes(user.email || '')
+          ? this.emailNickMap.get(user.email || '')
+          : user.email?.match(/[^.@]+/)?.[0] || 'anonymous'
         this.allowPush = false
         this.user = {
           name: user.displayName || '',
           email: user.email || '',
-          nick: uuid4().substring(0, 8), //was user.email?.match(/[^.@]+/)?.[0] || 'anonymous',
+          nick: nick || uuid4().substring(0, 8),
           uid: user.uid,
           isAuthorized: false,
           isAdmin: false,

@@ -175,8 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue'
-import { CONFIG, U, formatBytes, textSlug, sliceSlug, isEmpty } from '../helpers'
+import { reactive } from 'vue'
+import { CONFIG, U, formatBytes, textSlug, sliceSlug } from '../helpers'
 import readExif from '../helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
@@ -198,12 +198,6 @@ const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit, find } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user, emailNickMap } = storeToRefs(auth)
-
-onMounted(() => {
-  if (isEmpty(emailNickMap.value)) {
-    auth.getEmailNickMap()
-  }
-})
 
 const getExif = async () => {
   /**
@@ -258,7 +252,7 @@ const onSubmit = async () => {
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email by admin
   if (tmp.email !== user.value!.email && user.value!.isAdmin) {
-    tmp.nick = emailNickMap.value.get(tmp.email) || CONFIG.familyMap.get(tmp.email) || 'unknown'
+    tmp.nick = emailNickMap.value.get(tmp.email) || 'unknown'
   } else {
     tmp.email = user.value!.email
     tmp.nick = user.value!.nick
