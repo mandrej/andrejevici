@@ -1,7 +1,7 @@
 <template>
   <q-item clickable>
     <q-item-section>
-      <q-input v-model="message" label="Send message to subscribers" color="teal" dark />
+      <q-input v-model="message" label="Send message to subscribers" color="teal" />
     </q-item-section>
     <q-item-section side>
       <q-btn :disabled="!token" color="secondary" label="Send" @click="send" />

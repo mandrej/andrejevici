@@ -30,7 +30,9 @@
           </q-input>
         </q-item-label>
         <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
-        <q-item-label caption>
+      </q-item-section>
+      <q-item-section side v-if="$q.screen.gt.xs">
+        <q-item-label>
           <q-badge color="secondary">
             {{ countTokens(item.timestamps) }}
           </q-badge>
@@ -65,10 +67,6 @@
           />
         </div>
       </q-item-section>
-      <!-- <q-item-section side>
-        <q-btn color="primary" label="Edit" />
-        <q-btn color="primary" label="Edit" :disable="nickValues.includes(item.nick)" />
-      </q-item-section> -->
     </q-item>
   </q-list>
 </template>

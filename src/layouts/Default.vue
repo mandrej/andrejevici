@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh Lpr lFf">
-    <q-header class="fixed-top" elevated>
-      <q-toolbar class="bg-white text-dark">
+    <q-header class="fixed-top">
+      <q-toolbar :class="$q.dark ? 'bd-dark' : 'bg-yellow'">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="drawer = !drawer" />
         <q-toolbar-title>
           <router-link to="/" style="color: inherit; text-decoration: none">{{
@@ -25,14 +25,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="drawer"
-      class="q-pb-sm column no-wrap"
-      :width="320"
-      show-if-above
-      elevated
-      dark
-    >
+    <q-drawer v-model="drawer" class="q-pb-sm column no-wrap" :width="320" show-if-above bordered>
       <router-view name="sidebar" />
       <q-space />
       <Menu />

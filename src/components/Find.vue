@@ -11,7 +11,6 @@
       label-color="secondary"
       v-model="tmp.text"
       :disable="busy"
-      dark
       dense
       clearable
       hint="type at least 3 characters"
@@ -28,7 +27,6 @@
       v-model="tmp.tags"
       :options="tagsValues"
       :disable="busy"
-      dark
       dense
       multiple
       @update:model-value="
@@ -44,7 +42,6 @@
       v-model="tmp.year"
       :options="yearValues"
       :disable="busy"
-      dark
       dense
       @update:model-value="submit"
     />
@@ -56,7 +53,6 @@
         :options="optionsMonth"
         :disable="busy"
         autocomplete="label"
-        dark
         dense
         class="col"
         @update:model-value="submit"
@@ -67,7 +63,6 @@
         :options="optionsDay"
         :disable="busy"
         autocomplete="label"
-        dark
         dense
         class="col"
         @update:model-value="submit"
@@ -79,7 +74,6 @@
       v-model="tmp.model"
       :options="modelValues"
       :disable="busy"
-      dark
       dense
       @update:model-value="submit"
     />
@@ -89,7 +83,6 @@
       v-model="tmp.lens"
       :options="lensValues"
       :disable="busy"
-      dark
       dense
       @update:model-value="submit"
     />
@@ -99,7 +92,6 @@
       v-model="tmp.nick"
       :options="nickValues"
       :disable="busy"
-      dark
       dense
       @update:model-value="submit"
     />
@@ -110,7 +102,6 @@
       label-color="warning"
       v-model="tagsToApply"
       :options="tagsValues"
-      dark
       dense
       canadd
       multiple

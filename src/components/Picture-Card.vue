@@ -1,5 +1,5 @@
 <template>
-  <q-card v-if="rec.thumb" :id="U + rec.filename" class="shadow-1">
+  <q-card v-if="rec.thumb" :id="U + rec.filename" flat>
     <q-img
       loading="lazy"
       :ratio="5 / 4"

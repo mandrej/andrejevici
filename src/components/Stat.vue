@@ -5,12 +5,14 @@
         <q-item-label>SITE STATISTICS</q-item-label>
       </q-item-section>
     </q-item>
-    <q-item v-for="item in list" :key="item.value" class="text-h6 text-warning">
+    <q-item v-for="item in list" :key="item.value">
       <q-item-section>
-        {{ item.value }}
+        <q-item-label class="text-body1">
+          {{ item.text }}
+        </q-item-label>
       </q-item-section>
       <q-item-section side>
-        <span>{{ item.text }}</span>
+        <q-badge class="text-body1" color="secondary">{{ item.value }}</q-badge>
       </q-item-section>
     </q-item>
     <SendMessage />
