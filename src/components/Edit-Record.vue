@@ -7,7 +7,7 @@
     persistent
   >
     <q-card class="q-dialog-plugin full-width" style="max-width: 800px">
-      <q-toolbar class="bg-white text-black row justify-between">
+      <q-toolbar class="row justify-between">
         <div>
           <q-btn color="primary" type="submit" label="Save" @click="onSubmit" />
           <q-btn

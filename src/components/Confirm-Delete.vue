@@ -7,7 +7,7 @@
   >
     <q-card class="q-dialog-plugin">
       <template v-if="rec!.filename">
-        <q-toolbar class="bg-grey-2 text-black row justify-between" bordered>
+        <q-toolbar class="row justify-between" bordered>
           <q-toolbar-title>Confirm Delete</q-toolbar-title>
         </q-toolbar>
         <q-card-section
@@ -23,7 +23,7 @@
         </q-card-actions>
       </template>
       <template v-else>
-        <q-toolbar class="bg-negative text-white row justify-between" bordered>
+        <q-toolbar class="row justify-between" bordered>
           <q-toolbar-title>Confirm Delete</q-toolbar-title>
         </q-toolbar>
         <q-card-section>No selected image to delete</q-card-section>

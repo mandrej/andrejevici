@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh Lpr lFf">
     <q-header class="fixed-top">
-      <q-toolbar :class="$q.dark ? 'bd-dark' : 'bg-yellow'">
+      <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="drawer = !drawer" />
         <q-toolbar-title>
           <router-link to="/" style="color: inherit; text-decoration: none">{{
