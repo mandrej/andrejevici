@@ -8,7 +8,6 @@
   >
     <q-input
       label="by part of title"
-      label-color="secondary"
       v-model="tmp.text"
       :disable="busy"
       dense
@@ -23,7 +22,6 @@
     </q-input>
     <Auto-Complete
       label="by tags"
-      label-color="secondary"
       v-model="tmp.tags"
       :options="tagsValues"
       :disable="busy"
@@ -38,7 +36,6 @@
     />
     <Auto-Complete
       label="by year"
-      label-color="secondary"
       v-model="tmp.year"
       :options="yearValues"
       :disable="busy"
@@ -48,7 +45,6 @@
     <div class="row">
       <Auto-Complete
         label="by month"
-        label-color="secondary"
         v-model="tmp.month"
         :options="optionsMonth"
         :disable="busy"
@@ -70,7 +66,6 @@
     </div>
     <Auto-Complete
       label="by model"
-      label-color="secondary"
       v-model="tmp.model"
       :options="modelValues"
       :disable="busy"
@@ -79,7 +74,6 @@
     />
     <Auto-Complete
       label="by lens"
-      label-color="secondary"
       v-model="tmp.lens"
       :options="lensValues"
       :disable="busy"
@@ -88,7 +82,6 @@
     />
     <Auto-Complete
       label="by author"
-      label-color="secondary"
       v-model="tmp.nick"
       :options="nickValues"
       :disable="busy"
@@ -99,7 +92,7 @@
     <Auto-Complete
       v-if="editMode && user && user.isAdmin"
       label="Tags to merge with existing"
-      label-color="warning"
+      label-color="primary"
       v-model="tagsToApply"
       :options="tagsValues"
       dense
