@@ -23,8 +23,10 @@ $info: #31ccec;
 $warning: #f2c037;
 
 :root {
-  --q-my-toolbar-bg: #{$primary};
+  --q-my-toolbar-bg: #fff;
+  --q-my-toolbar-text: #{$dark};
 }
 .body--dark {
   --q-my-toolbar-bg: #{$dark};
+  --q-my-toolbar-text: #fff;
 }
