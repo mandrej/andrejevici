@@ -7,7 +7,7 @@
     </q-item>
     <q-item v-for="item in list" :key="item.value">
       <q-item-section avatar>
-        <q-icon :name="item.icon" color="grey" />
+        <q-icon :name="item.icon" class="text-grey" />
       </q-item-section>
       <q-item-section>
         <q-item-label class="text-body1">{{ item.text }}</q-item-label>

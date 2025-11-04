@@ -245,8 +245,7 @@ const onSubmit = async () => {
   tmp.month = datum.getMonth() + 1
   tmp.day = datum.getDate()
   // if change headline
-  tmp.headline =
-    tmp.headline === undefined || tmp.headline === null ? CONFIG.noTitle : tmp.headline.trim()
+  tmp.headline = tmp.headline?.trim() || CONFIG.noTitle
   tmp.text = sliceSlug(textSlug(tmp.headline))
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []

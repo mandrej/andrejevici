@@ -87,7 +87,7 @@
           <Picture-Card :rec="rec">
             ><template #action>
               <q-card-actions class="justify-between">
-                <q-btn flat round icon="delete" @click="app.deleteRecord(rec)" />
+                <q-btn flat round icon="delete" @click="deleteRec(rec)" />
                 <q-checkbox v-model="selection" :val="rec.filename" />
                 <q-btn flat round icon="publish" @click="editRecord(rec)" />
               </q-card-actions>
@@ -255,6 +255,11 @@ const editRecord = async (rec: PhotoType): Promise<void> => {
   fakeHistory()
   showEdit.value = true
   currentEdit.value = newRec
+}
+
+const deleteRec = (rec: PhotoType): void => {
+  selection.value = selection.value.filter((item) => item !== rec.filename)
+  app.deleteRecord(rec)
 }
 
 /**
