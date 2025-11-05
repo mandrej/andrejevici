@@ -17,6 +17,44 @@
             {{ record.count }}
           </span>
         </template>
+        <template v-if="$route.name === 'admin'">
+          <div v-if="$q.screen.xs">
+            <q-tabs v-model="adminTab" inline-label>
+              <q-btn-dropdown
+                v-if="$q.screen.xs"
+                auto-close
+                stretch
+                flat
+                icon="more"
+                label="More&#x2026;"
+              >
+                <q-list>
+                  <q-item clickable @click="adminTab = 'repair'">
+                    <q-item-section>Repair</q-item-section>
+                  </q-item>
+                  <q-item clickable @click="adminTab = 'tags'">
+                    <q-item-section>Tags</q-item-section>
+                  </q-item>
+                  <q-item clickable @click="adminTab = 'users'">
+                    <q-item-section>Users</q-item-section>
+                  </q-item>
+                  <q-item clickable @click="adminTab = 'messages'">
+                    <q-item-section>Messages</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-btn-dropdown>
+            </q-tabs>
+          </div>
+          <div v-else>
+            <q-tabs v-model="adminTab" inline-label>
+              <q-tab name="repair" label="Repair" />
+              <q-tab name="tags" label="Tags" />
+              <!-- <q-tab name="camera" label="Camera" /> -->
+              <q-tab name="users" label="Users" />
+              <q-tab name="messages" label="Messages" />
+            </q-tabs>
+          </div>
+        </template>
         <HistoryButton v-else />
 
         <div class="row absolute-bottom">
@@ -33,15 +71,6 @@
 
     <q-page-container>
       <Ask-Permission v-if="showConsent" />
-      <template v-if="$route.name === 'admin'">
-        <q-tabs v-model="adminTab" inline-label indicator-color="primary" align="right">
-          <q-tab name="repair" label="Repair" />
-          <q-tab name="tags" label="Tags" />
-          <!-- <q-tab name="camera" label="Camera" /> -->
-          <q-tab name="users" label="Users" />
-          <q-tab name="messages" label="Messages" />
-        </q-tabs>
-      </template>
       <router-view />
     </q-page-container>
   </q-layout>
