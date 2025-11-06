@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from 'src/stores/user'
 
 const auth = useUserStore()
 const { user } = storeToRefs(auth)

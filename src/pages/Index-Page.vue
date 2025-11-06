@@ -33,10 +33,10 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { version, isEmpty } from '../helpers'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import HistoryButton from '../components/History-Button.vue'
+import { version, isEmpty } from 'src/helpers'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import HistoryButton from 'src/components/History-Button.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

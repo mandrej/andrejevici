@@ -5,12 +5,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from './stores/app'
-import { useValuesStore } from './stores/values'
-import { useUserStore } from './stores/user'
-import { messageListener } from './lib/firebase'
-import { CONFIG } from './helpers'
-import notify from './helpers/notify'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { useUserStore } from 'src/stores/user'
+import { messageListener } from 'src/lib/firebase'
+import { CONFIG } from 'src/helpers'
+import notify from 'src/helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { getMessaging, getToken } from 'firebase/messaging'
 

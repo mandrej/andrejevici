@@ -37,8 +37,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useUserStore } from '../stores/user'
+import { useAppStore } from 'src/stores/app'
+import { useUserStore } from 'src/stores/user'
 import type { LastPhoto } from 'src/helpers/models'
 
 const app = useAppStore()

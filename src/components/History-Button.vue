@@ -5,9 +5,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
+import { useAppStore } from 'src/stores/app'
 import { watch } from 'vue'
-import type { FindType } from '../helpers/models'
+import type { FindType } from 'src/helpers/models'
 
 const app = useAppStore()
 const router = useRouter()

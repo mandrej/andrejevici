@@ -73,15 +73,15 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { formatDatum } from '../helpers'
-import { mismatch, missingThumbnails } from '../helpers/remedy'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { formatDatum } from 'src/helpers'
+import { mismatch, missingThumbnails } from 'src/helpers/remedy'
 
-const TagsTab = defineAsyncComponent(() => import('../components/Tags-Tab.vue'))
-// const CameraTab = defineAsyncComponent(() => import('../components/Camera-Tab.vue'))
-const UsersTab = defineAsyncComponent(() => import('../components/Users-Tab.vue'))
-const MessagesTab = defineAsyncComponent(() => import('../components/Messages-Tab.vue'))
+const TagsTab = defineAsyncComponent(() => import('src/components/tab/Tags-Tab.vue'))
+// const CameraTab = defineAsyncComponent(() => import('src/components/tab/Camera-Tab.vue'))
+const UsersTab = defineAsyncComponent(() => import('src/components/tab/Users-Tab.vue'))
+const MessagesTab = defineAsyncComponent(() => import('src/components/tab/Messages-Tab.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

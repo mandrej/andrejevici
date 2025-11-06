@@ -176,15 +176,15 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, U, formatBytes, textSlug, sliceSlug } from '../helpers'
-import readExif from '../helpers/exif'
+import { CONFIG, U, formatBytes, textSlug, sliceSlug } from 'src/helpers'
+import readExif from 'src/helpers/exif'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { useUserStore } from '../stores/user'
-import AutoComplete from './Auto-Complete.vue'
-import FileBroken from './File-Broken.vue'
-import type { PhotoType } from '../helpers/models'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { useUserStore } from 'src/stores/user'
+import AutoComplete from 'src/components/Auto-Complete.vue'
+import FileBroken from 'src/components/File-Broken.vue'
+import type { PhotoType } from 'src/helpers/models'
 
 const emit = defineEmits(['edit-ok'])
 const props = defineProps({

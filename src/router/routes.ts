@@ -1,83 +1,86 @@
-import { CONFIG } from '../helpers'
+import { CONFIG } from 'src/helpers'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('../layouts/Plain.vue'),
+    component: () => import('src/layouts/Plain.vue'),
     meta: { title: CONFIG.title },
-    children: [{ path: '', name: 'home', component: () => import('../pages/Index-Page.vue') }],
+    children: [{ path: '', name: 'home', component: () => import('src/pages/Index-Page.vue') }],
   },
   {
     path: '/list',
-    component: () => import('../layouts/Default.vue'),
+    component: () => import('src/layouts/Default.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: 'list',
         components: {
-          default: () => import('../pages/List-Page.vue'),
-          progress: () => import('../components/Linear-Progress.vue'),
-          sidebar: () => import('../components/Find.vue'),
+          default: () => import('src/pages/List-Page.vue'),
+          progress: () => import('src/components/Linear-Progress.vue'),
+          sidebar: () => import('src/components/sidebar/Find.vue'),
+          toolbar: () => import('src/components//toolbar/List-Toolbar.vue'),
         },
       },
     ],
   },
   {
     path: '/add',
-    component: () => import('../layouts/Default.vue'),
+    component: () => import('src/layouts/Default.vue'),
     meta: { title: 'Add', requiresAuth: true },
     children: [
       {
         path: '',
         name: 'add',
         components: {
-          default: () => import('../pages/Add-Page.vue'),
-          progress: () => import('../components/Linear-Progress.vue'),
-          sidebar: () => import('../components/Stat.vue'),
+          default: () => import('src/pages/Add-Page.vue'),
+          progress: () => import('src/components/Linear-Progress.vue'),
+          sidebar: () => import('src/components/sidebar/Stat.vue'),
+          toolbar: () => import('src/components/toolbar/Add-Toolbar.vue'),
         },
       },
     ],
   },
   {
     path: '/admin',
-    component: () => import('../layouts/Default.vue'),
+    component: () => import('src/layouts/Default.vue'),
     meta: { title: 'Administration', requiresAdmin: true },
     children: [
       {
         path: '',
         name: 'admin',
         components: {
-          default: () => import('../pages/Admin-Page.vue'),
-          progress: () => import('../components/Linear-Progress.vue'),
-          sidebar: () => import('../components/Stat.vue'),
+          default: () => import('src/pages/Admin-Page.vue'),
+          progress: () => import('src/components/Linear-Progress.vue'),
+          sidebar: () => import('src/components/sidebar/Stat.vue'),
+          toolbar: () => import('src/components/toolbar/Admin-Toolbar.vue'),
         },
       },
     ],
   },
   {
     path: '/401',
-    component: () => import('../layouts/Plain.vue'),
+    component: () => import('src/layouts/Plain.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: '401',
-        component: () => import('../pages/Error-Page.vue'),
+        component: () => import('src/pages/Error-Page.vue'),
         props: { code: 401 },
       },
     ],
   },
   {
     path: '/:pathMatch(.*)*',
-    component: () => import('../layouts/Plain.vue'),
+    component: () => import('src/layouts/Plain.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: '404',
-        component: () => import('../pages/Error-Page.vue'),
+        component: () => import('src/pages/Error-Page.vue'),
         props: { code: 404 },
       },
     ],

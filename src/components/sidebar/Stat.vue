@@ -21,9 +21,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { formatBytes } from '../helpers'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { formatBytes } from 'src/helpers'
 import SendMessage from 'src/components/Send-Message.vue'
 
 const app = useAppStore()

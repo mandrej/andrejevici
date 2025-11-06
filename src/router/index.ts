@@ -1,9 +1,9 @@
 import { nextTick } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from 'src/stores/user'
 import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
-import type { MyUserType } from '../helpers/models'
+import type { MyUserType } from 'src/helpers/models'
 import CONFIG from 'app/config'
 
 /*

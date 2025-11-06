@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { fileBroken } from '../helpers'
+import { fileBroken } from 'src/helpers'
 </script>

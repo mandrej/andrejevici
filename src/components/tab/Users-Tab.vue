@@ -74,12 +74,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { useUserStore } from '../stores/user'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { useUserStore } from 'src/stores/user'
 
-import ErrorBanner from './Error-Banner.vue'
-import type { UsersAndDevices } from '../helpers/models'
+import ErrorBanner from 'src/components/Error-Banner.vue'
+import type { UsersAndDevices } from 'src/helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
 
 const app = useAppStore()

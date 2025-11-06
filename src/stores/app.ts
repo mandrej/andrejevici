@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { db, storage } from '../lib/firebase'
+import { db, storage } from 'src/lib/firebase'
 import {
   doc,
   collection,
@@ -22,8 +22,8 @@ import {
   changeByFilename,
   textSlug,
   sliceSlug,
-} from '../helpers'
-import notify from '../helpers/notify'
+} from 'src/helpers'
+import notify from 'src/helpers/notify'
 import { useValuesStore } from './values'
 import type {
   QuerySnapshot,
@@ -41,7 +41,7 @@ import type {
   AppStoreState,
   FileProgress,
   MessageType,
-} from '../helpers/models'
+} from 'src/helpers/models'
 
 const bucketRef = doc(db, 'Bucket', 'total')
 const photosCol = collection(db, 'Photo')

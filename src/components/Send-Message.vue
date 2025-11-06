@@ -12,12 +12,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useUserStore } from '../stores/user'
-// import { db } from '../lib/firebase'
+import { useUserStore } from 'src/stores/user'
+// import { db } from 'src/lib/firebase'
 // import { query, where, orderBy, collection, onSnapshot, Timestamp } from 'firebase/firestore'
-import { CONFIG } from '../helpers'
-import notify from '../helpers/notify'
-// import type { MessageType } from '../helpers/models'
+import { CONFIG } from 'src/helpers'
+import notify from 'src/helpers/notify'
+// import type { MessageType } from 'src/helpers/models'
 
 const auth = useUserStore()
 const { token } = storeToRefs(auth)

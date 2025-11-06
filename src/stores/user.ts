@@ -1,8 +1,8 @@
 import uuid4 from 'uuid4'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
-import { CONFIG } from '../helpers'
-import { auth, db } from '../lib/firebase'
+import { CONFIG } from 'src/helpers'
+import { auth, db } from 'src/lib/firebase'
 import {
   doc,
   collection,
@@ -18,11 +18,11 @@ import {
 } from 'firebase/firestore'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { useValuesStore } from './values'
-import router from '../router'
+import router from 'src/router'
 import type { User } from 'firebase/auth'
-import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
+import type { DeviceType, MyUserType, UsersAndDevices } from 'src/helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
-import notify from '../helpers/notify'
+import notify from 'src/helpers/notify'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')

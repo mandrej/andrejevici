@@ -57,10 +57,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useValuesStore } from '../stores/values'
-import AutoComplete from '../components/Auto-Complete.vue'
-import { rename } from '../helpers/remedy'
-import notify from '../helpers/notify'
+import { useValuesStore } from 'src/stores/values'
+import AutoComplete from 'src/components/Auto-Complete.vue'
+import { rename } from 'src/helpers/remedy'
+import notify from 'src/helpers/notify'
 import type { QInput } from 'quasar'
 
 const meta = useValuesStore()

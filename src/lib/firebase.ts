@@ -5,7 +5,7 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 import { getMessaging, onMessage } from 'firebase/messaging'
 // import { getAnalytics } from "firebase/analytics";
-import { CONFIG } from '../helpers'
+import { CONFIG } from 'src/helpers'
 
 const firebaseApp = initializeApp(CONFIG.firebase)
 const auth = getAuth(firebaseApp)

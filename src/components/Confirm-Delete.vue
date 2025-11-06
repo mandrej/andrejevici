@@ -39,8 +39,8 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { formatBytes } from '../helpers'
+import { useAppStore } from 'src/stores/app'
+import { formatBytes } from 'src/helpers'
 
 const emit = defineEmits(['confirm-ok'])
 defineProps({

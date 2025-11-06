@@ -67,19 +67,19 @@
 import { scroll, debounce } from 'quasar'
 import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useUserStore } from '../stores/user'
-import { useValuesStore } from '../stores/values'
+import { useAppStore } from 'src/stores/app'
+import { useUserStore } from 'src/stores/user'
+import { useValuesStore } from 'src/stores/values'
 import { useRoute } from 'vue-router'
-import { U, fakeHistory } from '../helpers'
-import notify from '../helpers/notify'
+import { U, fakeHistory } from 'src/helpers'
+import notify from 'src/helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
-import PictureCard from '../components/Picture-Card.vue'
-import SwiperView from '../components/Swiper-View.vue'
-import ErrorBanner from '../components/Error-Banner.vue'
-const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
-const ConfirmDelete = defineAsyncComponent(() => import('../components/Confirm-Delete.vue'))
+import PictureCard from 'src/components/Picture-Card.vue'
+import SwiperView from 'src/components/Swiper-View.vue'
+import ErrorBanner from 'src/components/Error-Banner.vue'
+const EditRecord = defineAsyncComponent(() => import('src/components/Edit-Record.vue'))
+const ConfirmDelete = defineAsyncComponent(() => import('src/components/Confirm-Delete.vue'))
 
 const app = useAppStore()
 const auth = useUserStore()

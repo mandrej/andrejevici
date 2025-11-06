@@ -58,9 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import { U, formatDatum } from '../helpers'
-import type { PhotoType } from '../helpers/models'
-import FileBroken from './File-Broken.vue'
+import { U, formatDatum } from 'src/helpers'
+import type { PhotoType } from 'src/helpers/models'
+import FileBroken from 'src/components/File-Broken.vue'
 
 defineProps<{
   rec: PhotoType

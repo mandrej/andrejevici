@@ -102,20 +102,20 @@
 <script setup lang="ts">
 import uuid4 from 'uuid4'
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { storage } from '../lib/firebase'
+import { storage } from 'src/lib/firebase'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { useUserStore } from '../stores/user'
-import { CONFIG, fakeHistory, completePhoto } from '../helpers'
-import notify from '../helpers/notify'
-import PictureCard from '../components/Picture-Card.vue'
-import AutoComplete from '../components/Auto-Complete.vue'
+import { useAppStore } from 'src/stores/app'
+import { useValuesStore } from 'src/stores/values'
+import { useUserStore } from 'src/stores/user'
+import { CONFIG, fakeHistory, completePhoto } from 'src/helpers'
+import notify from 'src/helpers/notify'
+import PictureCard from 'src/components/Picture-Card.vue'
+import AutoComplete from 'src/components/Auto-Complete.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from 'src/helpers/models'
 
-const EditRecord = defineAsyncComponent(() => import('../components/Edit-Record.vue'))
+const EditRecord = defineAsyncComponent(() => import('src/components/Edit-Record.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

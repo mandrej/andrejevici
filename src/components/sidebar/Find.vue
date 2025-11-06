@@ -109,12 +109,12 @@
 import { computed, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
-import { useAppStore } from '../stores/app'
-import { useUserStore } from '../stores/user'
-import { useValuesStore } from '../stores/values'
-import AutoComplete from './Auto-Complete.vue'
-import { months } from '../helpers'
-import type { FindType } from '../helpers/models'
+import { useAppStore } from 'src/stores/app'
+import { useUserStore } from 'src/stores/user'
+import { useValuesStore } from 'src/stores/values'
+import AutoComplete from 'src/components/Auto-Complete.vue'
+import { months } from 'src/helpers'
+import type { FindType } from 'src/helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
 const app = useAppStore()

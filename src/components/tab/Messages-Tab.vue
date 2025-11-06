@@ -40,11 +40,11 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { formatDatum } from '../helpers'
+import { useAppStore } from 'src/stores/app'
+import { formatDatum } from 'src/helpers'
 const result = ref<MessageType[]>([])
-import ErrorBanner from './Error-Banner.vue'
-import type { MessageType } from '../helpers/models'
+import ErrorBanner from 'src/components//Error-Banner.vue'
+import type { MessageType } from 'src/helpers/models'
 
 const app = useAppStore()
 const { busy, error } = storeToRefs(app)

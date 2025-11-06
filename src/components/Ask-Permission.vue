@@ -18,9 +18,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CONFIG } from '../helpers'
-import notify from '../helpers/notify'
-import { useUserStore } from '../stores/user'
+import { CONFIG } from 'src/helpers'
+import notify from 'src/helpers/notify'
+import { useUserStore } from 'src/stores/user'
 import { getMessaging, getToken } from 'firebase/messaging'
 
 const auth = useUserStore()

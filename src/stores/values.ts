@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { db } from '../lib/firebase'
+import { db } from 'src/lib/firebase'
 import {
   doc,
   collection,
@@ -12,12 +12,12 @@ import {
   deleteDoc,
   writeBatch,
 } from 'firebase/firestore'
-import notify from '../helpers/notify'
-import { CONFIG, isEmpty } from '../helpers'
-import { deepDiffMap } from '../helpers/diff'
+import notify from 'src/helpers/notify'
+import { CONFIG, isEmpty } from 'src/helpers'
+import { deepDiffMap } from 'src/helpers/diff'
 import type { DocumentReference } from 'firebase/firestore'
-import type { PhotoType, ValuesState } from '../helpers/models'
-import type { DiffResult } from '../helpers/diff'
+import type { PhotoType, ValuesState } from 'src/helpers/models'
+import type { DiffResult } from 'src/helpers/diff'
 
 const photosCol = collection(db, 'Photo')
 const countersCol = collection(db, 'Counter')

@@ -3,7 +3,7 @@ import { date, format } from 'quasar'
 import readExif from './exif'
 import { slugify } from 'transliteration'
 import { computed } from 'vue'
-import type { PhotoType } from '../helpers/models'
+import type { PhotoType } from 'src/helpers/models'
 
 const { humanStorageSize } = format
 const { formatDate } = date

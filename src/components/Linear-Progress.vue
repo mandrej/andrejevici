@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
+import { useAppStore } from 'src/stores/app'
 
 const app = useAppStore()
 const { busy, progressInfo } = storeToRefs(app)

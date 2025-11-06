@@ -71,10 +71,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { rename } from '../helpers/remedy'
+import { rename } from 'src/helpers/remedy'
 import { storeToRefs } from 'pinia'
-import { useValuesStore } from '../stores/values'
-import AutoComplete from '../components/Auto-Complete.vue'
+import { useValuesStore } from 'src/stores/values'
+import AutoComplete from 'src/components/Auto-Complete.vue'
 
 const meta = useValuesStore()
 const { modelValues, lensValues } = storeToRefs(meta)
