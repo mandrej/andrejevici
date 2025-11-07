@@ -1,6 +1,6 @@
 <template>
   <q-form
-    class="q-pa-md"
+    class="q-px-md q-pt-md"
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"
@@ -88,20 +88,6 @@
       dense
       @update:model-value="submit"
     />
-
-    <Auto-Complete
-      v-if="editMode && user && user.isAdmin"
-      label="Tags to merge with existing"
-      label-color="primary"
-      v-model="tagsToApply"
-      :options="tagsValues"
-      dense
-      canadd
-      multiple
-      @new-value="
-        (value: string, done: (value: string) => void) => meta.addNewValue(value, 'tags', done)
-      "
-    />
   </q-form>
 </template>
 
@@ -110,7 +96,6 @@ import { computed, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from 'src/stores/app'
-import { useUserStore } from 'src/stores/user'
 import { useValuesStore } from 'src/stores/values'
 import AutoComplete from 'src/components/Auto-Complete.vue'
 import { months } from 'src/helpers'
@@ -118,7 +103,6 @@ import type { FindType } from 'src/helpers/models'
 import type { LocationQueryRaw } from 'vue-router'
 
 const app = useAppStore()
-const auth = useUserStore()
 const meta = useValuesStore()
 const route = useRoute()
 const router = useRouter()
@@ -129,10 +113,8 @@ const router = useRouter()
 //     return nickInsteadEmail(email)
 //   })
 // })
-const { busy, find, editMode } = storeToRefs(app)
-const { user } = storeToRefs(auth)
-const { tagsValues, yearValues, modelValues, lensValues, nickValues, tagsToApply } =
-  storeToRefs(meta)
+const { busy, find } = storeToRefs(app)
+const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
 const tmp = ref({ ...(find.value as FindType) })
 
 /**

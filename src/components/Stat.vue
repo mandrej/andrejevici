@@ -14,7 +14,6 @@
       </q-item-section>
       <q-item-section class="text-body1" side>{{ item.value }}</q-item-section>
     </q-item>
-    <SendMessage />
   </q-list>
 </template>
 
@@ -24,7 +23,6 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { formatBytes } from 'src/helpers'
-import SendMessage from 'src/components/Send-Message.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

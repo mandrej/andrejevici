@@ -9,12 +9,17 @@
     editMode ? 'Edit mode' : 'View mode'
   }}</q-btn>
   <span class="q-mx-md">{{ record.count }}</span>
+
+  <div class="row absolute-bottom">
+    <LinearProgress />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
+import LinearProgress from 'src/components/Linear-Progress.vue'
 
 const app = useAppStore()
 const auth = useUserStore()

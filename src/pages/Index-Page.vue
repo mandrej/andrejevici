@@ -1,32 +1,27 @@
 <template>
-  <div class="row justify-center">
-    <div class="text-h4 text-right text-weight-thin">
-      <span class="q-ma-none text-body2 text-right">{{ version }}</span
-      ><br />
-      {{ $route.meta.title }}
-      <p v-if="bucket.count > 0" class="q-ma-none text-body2">
-        {{ bucket.count }} photos since {{ sinceYear }} and counting
-      </p>
-    </div>
-    <HistoryButton v-if="find && Object.keys(find).length" size="2.3em" />
+  <HistoryButton v-if="find && Object.keys(find).length" size="2em" />
+  <div class="text-body2">{{ version }}</div>
+  <div class="text-h4 text-weight-thin">
+    {{ $route.meta.title }}
+  </div>
+  <div v-if="bucket.count > 0" class="text-body2">
+    {{ bucket.count }} photos since {{ sinceYear }} and counting
   </div>
 
-  <div class="row justify-center">
-    <div v-if="isEmpty(nickWithCount)" class="text-body2 text-center q-mt-md col-xs-12 col-sm-8">
-      There are no photos posted yet...<br />
-      To add some you need to sign-in with your Google account. Only registered family users can
-      add, delete or edit photos.
-    </div>
-    <div v-else class="text-h4">
-      <router-link
-        v-for="(count, value) in nickWithCount"
-        :key="value"
-        :title="`${value}: ${count}`"
-        :to="{ path: '/list', query: { nick: value } }"
-        class="q-px-sm link"
-        >{{ value }}</router-link
-      >
-    </div>
+  <div v-if="isEmpty(nickWithCount)" class="text-center text-body2">
+    There are no photos posted yet...<br />
+    To add some you need to sign-in with your Google account. Only registered users can add, delete
+    or edit photos.
+  </div>
+  <div v-else class="text-h4">
+    <router-link
+      v-for="(count, value) in nickWithCount"
+      :key="value"
+      :title="`${value}: ${count}`"
+      :to="{ path: '/list', query: { nick: value } }"
+      class="q-px-sm link"
+      >{{ value }}</router-link
+    >
   </div>
 </template>
 

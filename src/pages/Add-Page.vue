@@ -52,19 +52,12 @@
         </q-item-section>
       </q-item>
       <q-item>
-        <q-item-section
-          ><Auto-Complete
-            label="Tags to apply for next publish / or to merge with existing"
-            v-model="tagsToApply"
-            :options="tagsValues"
-            canadd
-            multiple
-            hint="You can add / remove tag later"
-            @new-value="
-              (value: string, done: (value: string) => void) =>
-                meta.addNewValue(value, 'tags', done)
-            "
-        /></q-item-section>
+        <q-item-section>
+          <TagsMerge
+            :label="`Tags to apply for next publish / or to merge with existing`"
+            :hint="`You can add / remove tag later`"
+          />
+        </q-item-section>
         <q-item-section side>
           <q-btn
             :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
@@ -111,7 +104,7 @@ import { useUserStore } from 'src/stores/user'
 import { CONFIG, fakeHistory, completePhoto } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import PictureCard from 'src/components/Picture-Card.vue'
-import AutoComplete from 'src/components/Auto-Complete.vue'
+import TagsMerge from 'src/components/Tags-Merge.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -122,7 +115,7 @@ const meta = useValuesStore()
 const auth = useUserStore()
 const uploaded = computed(() => app.uploaded)
 const { showEdit, currentEdit } = storeToRefs(app)
-const { tagsValues, headlineToApply, tagsToApply } = storeToRefs(meta)
+const { headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 const selection = ref<string[]>([])
 
