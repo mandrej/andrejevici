@@ -13,7 +13,7 @@
     To add some you need to sign-in with your Google account. Only registered users can add, delete
     or edit photos.
   </div>
-  <div v-else class="text-h4">
+  <div v-else class="text-center text-h4">
     <router-link
       v-for="(count, value) in nickWithCount"
       :key="value"
@@ -31,7 +31,7 @@ import { storeToRefs } from 'pinia'
 import { version, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
-import HistoryButton from 'src/components/History-Button.vue'
+import HistoryButton from 'src/components/toolbar/History-Button.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

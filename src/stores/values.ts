@@ -124,14 +124,14 @@ export const useValuesStore = defineStore('meta', {
      * @return {Promise<void>} A promise that resolves when the counters have been built.
      */
     async countersBuild(): Promise<void> {
-      notify({ message: `Please wait` })
+      notify({ group: 'counters', message: `Please wait` })
 
       // Delete old counters
       const countersToDelete = await getDocs(query(countersCol))
       const deleteBatch = writeBatch(db)
       countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
-      notify({ message: `Deleted old counters` })
+      notify({ group: 'counters', message: `Deleted old counters` })
 
       // Build new counters
       const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
@@ -187,11 +187,11 @@ export const useValuesStore = defineStore('meta', {
         //   timeout: messages.length > 0 ? 0 : 5000,
         //   multiLine: true,
         // })
-        notify({ message: `Built counters for ${field}` })
+        notify({ group: 'counters', message: `Built counters for ${field}` })
       })
 
       await setBatch.commit()
-      notify({ message: `All done` })
+      notify({ group: 'counters', message: `All done` })
     },
 
     /**

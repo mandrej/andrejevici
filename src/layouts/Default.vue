@@ -23,7 +23,7 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from 'src/stores/user'
 
-const AskPermission = defineAsyncComponent(() => import('src/components/Ask-Permission.vue'))
+const AskPermission = defineAsyncComponent(() => import('src/components/dialog/Ask-Permission.vue'))
 
 const auth = useUserStore()
 const drawer = ref(false)

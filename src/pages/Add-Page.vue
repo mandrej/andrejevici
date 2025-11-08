@@ -104,11 +104,11 @@ import { useUserStore } from 'src/stores/user'
 import { CONFIG, fakeHistory, completePhoto } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import PictureCard from 'src/components/Picture-Card.vue'
-import TagsMerge from 'src/components/Tags-Merge.vue'
+import TagsMerge from 'src/components/sidebar/Tags-Merge.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from 'src/helpers/models'
 
-const EditRecord = defineAsyncComponent(() => import('src/components/Edit-Record.vue'))
+const EditRecord = defineAsyncComponent(() => import('src/components/dialog/Edit-Record.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

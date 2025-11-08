@@ -76,10 +76,10 @@ import notify from 'src/helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
 import PictureCard from 'src/components/Picture-Card.vue'
-import SwiperView from 'src/components/Swiper-View.vue'
+import SwiperView from 'src/components/dialog/Swiper-View.vue'
 import ErrorBanner from 'src/components/Error-Banner.vue'
-const EditRecord = defineAsyncComponent(() => import('src/components/Edit-Record.vue'))
-const ConfirmDelete = defineAsyncComponent(() => import('src/components/Confirm-Delete.vue'))
+const EditRecord = defineAsyncComponent(() => import('src/components/dialog/Edit-Record.vue'))
+const ConfirmDelete = defineAsyncComponent(() => import('src/components/dialog/Confirm-Delete.vue'))
 
 const app = useAppStore()
 const auth = useUserStore()

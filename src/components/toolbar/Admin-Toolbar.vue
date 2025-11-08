@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
-import LinearProgress from 'src/components/Linear-Progress.vue'
+import LinearProgress from './Linear-Progress.vue'
 
 const app = useAppStore()
 const { adminTab } = storeToRefs(app)

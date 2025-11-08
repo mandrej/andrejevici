@@ -13,6 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import HistoryButton from 'src/components/History-Button.vue'
-import LinearProgress from 'src/components/Linear-Progress.vue'
+import HistoryButton from 'src/components/toolbar/History-Button.vue'
+import LinearProgress from 'src/components/toolbar/Linear-Progress.vue'
 </script>

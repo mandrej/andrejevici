@@ -13,9 +13,9 @@
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
 import { storeToRefs } from 'pinia'
-import Find from 'src/components/Find.vue'
-import Menu from 'src/components/Menu.vue'
-import TagsMerge from 'src/components/Tags-Merge.vue'
+import Find from './Find.vue'
+import Menu from './Menu.vue'
+import TagsMerge from './Tags-Merge.vue'
 
 const app = useAppStore()
 const auth = useUserStore()

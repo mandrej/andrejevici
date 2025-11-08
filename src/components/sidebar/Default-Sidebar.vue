@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import Stat from 'src/components/Stat.vue'
-import Menu from 'src/components/Menu.vue'
-import SendMessage from 'src/components/Send-Message.vue'
+import Stat from './Stat.vue'
+import Menu from './Menu.vue'
+import SendMessage from './Send-Message.vue'
 </script>
