@@ -181,7 +181,7 @@ export const useUserStore = defineStore('auth', {
     async updateUser(user: UsersAndDevices, field: string): Promise<void> {
       const docRef = doc(db, 'User', user.uid)
       await updateDoc(docRef, {
-        allowPush: user[field as keyof UsersAndDevices],
+        [field]: user[field as keyof UsersAndDevices], // dynamc field
       })
 
       const value = user[field as keyof UsersAndDevices] as string | boolean
