@@ -2,7 +2,7 @@ import { db, storage } from 'src/lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
 import { doc, collection, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-// import { CONFIG } from './index'
+import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
@@ -74,7 +74,7 @@ export const missingThumbnails = async () => {
     if (name) photoNames.push(name)
   })
 
-  const thumbRefs = await listAll(storageRef(storage, 'thumbnails'))
+  const thumbRefs = await listAll(storageRef(storage, CONFIG.thumbnails))
   thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace('_400x400.jpeg', '')))
 
   photoNames.sort()
