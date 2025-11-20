@@ -27,7 +27,7 @@
         </router-link>
 
         <div
-          class="column col-xs-12 col-md-6 q-pa-md justify-center items-center"
+          class="column col-xs-12 col-md-6 justify-center items-center q-pa-lg"
           style="min-height: 50vh"
         >
           <router-view />
