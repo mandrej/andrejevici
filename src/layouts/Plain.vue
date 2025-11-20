@@ -26,11 +26,10 @@
           />
         </router-link>
 
-        <div
-          class="column col-xs-12 col-md-6 justify-center items-center q-pa-lg"
-          style="min-height: 50vh"
-        >
-          <router-view />
+        <div class="column col-xs-12 col-md-6 justify-center items-center" style="min-height: 50vh">
+          <div class="q-pa-lg">
+            <router-view />
+          </div>
         </div>
       </q-page>
     </q-page-container>
