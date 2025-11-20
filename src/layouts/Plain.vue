@@ -27,9 +27,7 @@
         </router-link>
 
         <div class="column col-xs-12 col-md-6 justify-center items-center" style="min-height: 50vh">
-          <div class="q-pa-lg">
-            <router-view />
-          </div>
+          <router-view />
         </div>
       </q-page>
     </q-page-container>

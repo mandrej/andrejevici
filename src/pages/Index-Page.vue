@@ -13,7 +13,7 @@
     To add some you need to sign-in with your Google account. Only registered users can add, delete
     or edit photos.
   </div>
-  <div v-else class="text-center text-h4">
+  <div v-else class="q-pa-lg text-h4 text-center">
     <router-link
       v-for="(count, value) in nickWithCount"
       :key="value"
