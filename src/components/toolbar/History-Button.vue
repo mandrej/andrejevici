@@ -1,5 +1,12 @@
 <template>
-  <q-btn flat round :size="size" icon="history" @click="previousCollection" />
+  <q-btn
+    flat
+    round
+    :size="size"
+    icon="history"
+    @click="previousCollection"
+    class="history-button"
+  />
 </template>
 
 <script setup lang="ts">

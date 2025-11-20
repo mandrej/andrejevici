@@ -1,5 +1,5 @@
 <template>
-  <HistoryButton v-if="find && Object.keys(find).length" size="2em" />
+  <HistoryButton v-if="find && Object.keys(find).length" class="fixed-center z-max" size="2em" />
   <div class="text-body2">{{ version }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
