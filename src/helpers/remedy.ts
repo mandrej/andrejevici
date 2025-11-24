@@ -102,7 +102,7 @@ export const missingThumbnails = async () => {
   missing.forEach((name) => {
     let docRef
     ;['jpg', 'jpeg', 'JPG'].forEach((ext) => {
-      docRef = doc(db, 'Photo', `${name}.${ext}`)
+      docRef = doc(photosCol, `${name}.${ext}`)
       promises.push(getDoc(docRef))
     })
   })
@@ -207,7 +207,7 @@ export const mismatch = async () => {
       notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
     }
   } else {
-    await Promise.all(missing.map((name) => deleteDoc(doc(db, 'Photo', name))))
+    await Promise.all(missing.map((name) => deleteDoc(doc(photosCol, name))))
     notify({
       message: `${missing.length} records deleted from firestore that doesn't have image reference`,
       type: 'negative',

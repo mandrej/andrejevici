@@ -144,7 +144,7 @@ export const useValuesStore = defineStore('meta', {
       const setBatch = writeBatch(db)
       CONFIG.photo_filter.forEach((field) => {
         Object.entries(newValues[field as keyof ValuesState['values']]).forEach(([key, count]) => {
-          const counterRef = doc(db, 'Counter', counterId(field, key))
+          const counterRef = doc(countersCol, counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
         // const diff = deepDiffMap(
@@ -247,7 +247,7 @@ export const useValuesStore = defineStore('meta', {
       for (const todo of results) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_, field, value] = todo.key.split('||')
-        const counterRef = doc(db, 'Counter', todo.key)
+        const counterRef = doc(countersCol, todo.key)
         const findDoc = await getDoc(counterRef)
         if (todo.status === 'created') {
           if (findDoc.exists()) {
@@ -297,7 +297,7 @@ export const useValuesStore = defineStore('meta', {
         if (typeof count === 'number' && count <= 0) {
           try {
             id = counterId('tags', value)
-            counterRef = doc(db, 'Counter', id)
+            counterRef = doc(countersCol, id)
             await deleteDoc(counterRef)
           } finally {
             delete this.values.tags[value]
@@ -314,7 +314,7 @@ export const useValuesStore = defineStore('meta', {
         if (obj.count <= 0) {
           try {
             const id = counterId('tags', obj.value)
-            const counterRef = doc(db, 'Counter', id)
+            const counterRef = doc(countersCol, id)
             await deleteDoc(counterRef)
           } finally {
             delete this.values.tags[obj.value]
@@ -345,7 +345,7 @@ export const useValuesStore = defineStore('meta', {
       const querySnapshot = await getDocs(q)
 
       querySnapshot.forEach((d) => {
-        const photoRef = doc(db, 'Photo', d.id)
+        const photoRef = doc(photosCol, d.id)
         if (field === 'tags') {
           const obj = d.data()
           const idx = obj.tags.indexOf(oldValue)
@@ -360,8 +360,8 @@ export const useValuesStore = defineStore('meta', {
       await batch.commit()
 
       // Update counters
-      const oldRef = doc(db, 'Counter', counterId(field, oldValue))
-      const newRef = doc(db, 'Counter', counterId(field, newValue))
+      const oldRef = doc(countersCol, counterId(field, oldValue))
+      const newRef = doc(countersCol, counterId(field, newValue))
       const counter = await getDoc(oldRef)
       const obj = counter.data()
 

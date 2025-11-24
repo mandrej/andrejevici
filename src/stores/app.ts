@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { db, storage } from 'src/lib/firebase'
+import { storage } from 'src/lib/firebase'
 import {
   doc,
   query,
@@ -41,9 +41,9 @@ import type {
   FileProgress,
   MessageType,
 } from 'src/helpers/models'
-import { photosCol, messagesCol } from 'src/helpers/collections'
+import { photosCol, messagesCol, bucketCol } from 'src/helpers/collections'
 
-const bucketRef = doc(db, 'Bucket', 'total')
+const bucketRef = doc(bucketCol, 'total')
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -180,7 +180,7 @@ export const useAppStore = defineStore('app', {
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
       if (reset) this.next = ''
       if (this.next != '') {
-        const cursor: DocumentSnapshot = await getDoc(doc(db, 'Photo', this.next))
+        const cursor: DocumentSnapshot = await getDoc(doc(photosCol, this.next))
         constraints.push(startAfter(cursor))
       }
       constraints.push(limit(max))
@@ -227,7 +227,7 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<PhotoType>} The saved photo record.
      */
     async saveRecord(obj: PhotoType): Promise<PhotoType> {
-      const docRef = doc(db, 'Photo', obj.filename)
+      const docRef = doc(photosCol, obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
@@ -269,7 +269,7 @@ export const useAppStore = defineStore('app', {
      * complete.
      */
     async deleteRecord(obj: PhotoType) {
-      const docRef = doc(db, 'Photo', obj.filename)
+      const docRef = doc(photosCol, obj.filename)
       const docSnap = await getDoc(docRef)
       const data = docSnap.data() as PhotoType
       const stoRef = storageRef(storage, obj.filename)
@@ -352,7 +352,7 @@ export const useAppStore = defineStore('app', {
      */
     async deleteMessages(keys: string[]): Promise<void> {
       const deletePromises = keys.map(async (key) => {
-        const docRef = doc(db, 'Message', key)
+        const docRef = doc(messagesCol, key)
         await deleteDoc(docRef)
       })
       await Promise.all(deletePromises)
