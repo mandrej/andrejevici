@@ -1,5 +1,12 @@
 import { Notify } from 'quasar'
 import type { QNotifyOptions } from 'quasar'
+
+/**
+ * Sends a notification to the user.
+ *
+ * @param {QNotifyOptions} options - The options for the notification.
+ * @return {void} This function does not return anything.
+ */
 export default function notify({
   type = 'info',
   message = 'no message',

@@ -83,6 +83,12 @@ export const useUserStore = defineStore('auth', {
     //   })
     // },
 
+    /**
+     * Stores a user in the database.
+     *
+     * @param {User} user - The user object to store.
+     * @return {Promise<void>} A promise that resolves when the user is stored.
+     */
     async storeUser(user: User): Promise<void> {
       const meta = useValuesStore()
       const userRef = doc(db, 'User', user.uid)
@@ -117,6 +123,11 @@ export const useUserStore = defineStore('auth', {
       await setDoc(userRef, this.user, { merge: true })
     },
 
+    /**
+     * Signs in the user.
+     *
+     * @return {Promise<void>} A promise that resolves when the user is signed in.
+     */
     async signIn(): Promise<void> {
       if (this.user && this.user.uid) {
         await auth.signOut()
@@ -138,6 +149,11 @@ export const useUserStore = defineStore('auth', {
       }
     },
 
+    /**
+     * Retrieves the list of users from the database.
+     *
+     * @return {Promise<MyUserType[]>} A promise that resolves to an array of user objects.
+     */
     async fetchUsers(): Promise<MyUserType[]> {
       const users: MyUserType[] = []
       const q = query(userCol, orderBy('email', 'asc'))
@@ -150,6 +166,11 @@ export const useUserStore = defineStore('auth', {
       return users
     },
 
+    /**
+     * Retrieves the list of devices from the database.
+     *
+     * @return {Promise<DeviceType[]>} A promise that resolves to an array of device objects.
+     */
     async fetchDevices(): Promise<DeviceType[]> {
       const devices: DeviceType[] = []
       const q = query(deviceCol, orderBy('timestamp', 'desc'))
@@ -162,6 +183,11 @@ export const useUserStore = defineStore('auth', {
       return devices
     },
 
+    /**
+     * Retrieves the list of users and their associated devices from the database.
+     *
+     * @return {Promise<UsersAndDevices[]>} A promise that resolves to an array of user and device objects.
+     */
     async fetchUsersAndDevices() {
       const result: UsersAndDevices[] = []
       const devices: DeviceType[] = await this.fetchDevices()
@@ -178,6 +204,13 @@ export const useUserStore = defineStore('auth', {
       return result
     },
 
+    /**
+     * Updates a user's field in the database.
+     *
+     * @param {UsersAndDevices} user - The user object to update.
+     * @param {string} field - The field to update.
+     * @return {Promise<void>} A promise that resolves when the user is updated.
+     */
     async updateUser(user: UsersAndDevices, field: string): Promise<void> {
       const docRef = doc(db, 'User', user.uid)
       await updateDoc(docRef, {
@@ -192,6 +225,11 @@ export const useUserStore = defineStore('auth', {
       })
     },
 
+    /**
+     * Updates a user's subscription status in the database.
+     *
+     * @return {Promise<void>} A promise that resolves when the user's subscription status is updated.
+     */
     async updateSubscriber(): Promise<void> {
       const docRef = doc(db, 'User', this.user!.uid)
       const snap = await getDoc(docRef)
@@ -202,6 +240,12 @@ export const useUserStore = defineStore('auth', {
         })
       }
     },
+    /**
+     * Updates a device in the database.
+     *
+     * @param {string} token - The token of the device to update.
+     * @return {Promise<void>} A promise that resolves when the device is updated.
+     */
     async updateDevice(token: string): Promise<void> {
       const docRef = doc(db, 'Device', token)
       const snap = await getDoc(docRef)
@@ -213,6 +257,11 @@ export const useUserStore = defineStore('auth', {
       }
     },
 
+    /**
+     * Removes a device from the database.
+     *
+     * @return {Promise<void>} A promise that resolves when the device is removed.
+     */
     removeDevice(): Promise<void> {
       const q = query(deviceCol, where('email', '==', this.user?.email || ''))
       return new Promise((resolve, reject) => {

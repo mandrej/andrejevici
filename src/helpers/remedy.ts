@@ -21,6 +21,11 @@ const { user } = storeToRefs(auth)
 const photosCol = collection(db, 'Photo')
 const usersCol = collection(db, 'User')
 
+/**
+ * Fixes the users in the database.
+ *
+ * @return {Promise<void>} A promise that resolves when the users are fixed.
+ */
 export const fix = async () => {
   const setBatch = writeBatch(db)
   const q = query(usersCol)
@@ -37,6 +42,12 @@ export const fix = async () => {
   })
 }
 
+/**
+ * Gets the storage data for a file.
+ *
+ * @param {string} filename - The name of the file.
+ * @return {Promise<PhotoType | null>} A promise that resolves to an object containing the storage data, or null if the file does not exist.
+ */
 const getStorageData = async (filename: string) => {
   try {
     const _ref = storageRef(storage, filename)
@@ -58,6 +69,11 @@ const getStorageData = async (filename: string) => {
   }
 }
 
+/**
+ * Gets the missing thumbnails.
+ *
+ * @return {Promise<void>} A promise that resolves when the missing thumbnails are found.
+ */
 export const missingThumbnails = async () => {
   notify({
     message: `Please wait`,
@@ -128,6 +144,11 @@ export const missingThumbnails = async () => {
   }
 }
 
+/**
+ * Gets the mismatched files.
+ *
+ * @return {Promise<void>} A promise that resolves when the mismatched files are found.
+ */
 export const mismatch = async () => {
   notify({
     message: `Please wait`,
@@ -196,6 +217,14 @@ export const mismatch = async () => {
   }
 }
 
+/**
+ * Renames a value in the database.
+ *
+ * @param {keyof ValuesState['values']} field - The field to rename.
+ * @param {string} existing - The existing value.
+ * @param {string} changed - The new value.
+ * @return {Promise<void>} A promise that resolves when the value is renamed.
+ */
 export const rename = async (
   field: keyof ValuesState['values'],
   existing: string,

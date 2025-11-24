@@ -48,16 +48,26 @@ const photosCol = collection(db, 'Photo')
 const messagesCol = collection(db, 'Message')
 
 /**
- * Retrieves the data from the first document in the given snapshot.
- *
- * @param {Object} snapshot - The snapshot containing the documents.
- * @return {Object|null} The data from the first document, or null if the snapshot is empty.
+ * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
+ * @param snapshot The QuerySnapshot containing document data.
+ * @returns The data of the first document in the snapshot, or null if no documents are present.
  */
 const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
   snapshot.docs.length ? snapshot.docs[0]?.data() : null
 
+/**
+ * Checks if all elements of a target array are present in a source array.
+ * @template T The type of elements in the arrays.
+ * @param arr The source array to check against.
+ * @param target The target array to check for presence in the source array.
+ * @returns True if all elements of the target array are present in the source array, false otherwise.
+ */
 const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 
+/**
+ * Creates a Pinia store for the application.
+ * @returns The application store instance.
+ */
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
     bucket: {
@@ -88,7 +98,9 @@ export const useAppStore = defineStore('app', {
     },
   },
   actions: {
-    // bucket
+    /**
+     * Reads the bucket data from the database and updates the store state.
+     */
     async bucketRead() {
       const docSnap = await getDoc(bucketRef)
       if (docSnap.exists()) {
@@ -317,6 +329,11 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    /**
+     * Retrieves the most recent messages from the Firestore database.
+     *
+     * @return {Promise<MessageType[]>} A promise that resolves to an array of the most recent messages.
+     */
     async fetchMessages(): Promise<MessageType[]> {
       const messages: MessageType[] = []
       const q = query(messagesCol, orderBy('timestamp', 'desc'), limit(50))
@@ -329,6 +346,12 @@ export const useAppStore = defineStore('app', {
       return messages
     },
 
+    /**
+     * Deletes messages from the Firestore database.
+     *
+     * @param {string[]} keys - An array of message keys to delete.
+     * @return {Promise<void>} A promise that resolves when the messages are deleted.
+     */
     async deleteMessages(keys: string[]): Promise<void> {
       const deletePromises = keys.map(async (key) => {
         const docRef = doc(db, 'Message', key)

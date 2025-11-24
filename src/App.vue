@@ -39,6 +39,9 @@ messageListener()
     })
   })
 
+/**
+ * Handles the authentication state changes.
+ */
 onAuthStateChanged(getAuth(), (usr) => {
   // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
   if (usr) {
@@ -60,6 +63,9 @@ onAuthStateChanged(getAuth(), (usr) => {
   auth.getEmailNickMap()
 })
 
+/**
+ * Handles the new token received from Firebase.
+ */
 const onNewToken = () => {
   getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
     .then((token) => {

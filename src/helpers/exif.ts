@@ -14,6 +14,12 @@ const LENSES: LensSwap = {
   'Canon EF 50mm f1.8 STM': 'EF50mm f1.8 STM',
 }
 
+/**
+ * Reads the EXIF data from a file.
+ *
+ * @param {string} url - The URL of the file to read.
+ * @return {Promise<ExifType | null>} A promise that resolves to an object containing the EXIF data, or null if the file does not contain EXIF data.
+ */
 const readExif = async (url: string): Promise<ExifType | null> => {
   const result: ExifType = { model: 'UNKNOWN', date: formatDatum(new Date()) }
   const tags = await exifReader.load(url, { expanded: true })
