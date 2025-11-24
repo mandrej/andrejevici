@@ -2,7 +2,6 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db, storage } from 'src/lib/firebase'
 import {
   doc,
-  collection,
   query,
   where,
   limit,
@@ -42,10 +41,9 @@ import type {
   FileProgress,
   MessageType,
 } from 'src/helpers/models'
+import { photosCol, messagesCol } from 'src/helpers/collections'
 
 const bucketRef = doc(db, 'Bucket', 'total')
-const photosCol = collection(db, 'Photo')
-const messagesCol = collection(db, 'Message')
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.

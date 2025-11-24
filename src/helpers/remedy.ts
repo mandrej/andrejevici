@@ -1,6 +1,6 @@
 import { db, storage } from 'src/lib/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
-import { doc, collection, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
+import { doc, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
@@ -9,6 +9,7 @@ import { useValuesStore } from 'src/stores/values'
 import { useUserStore } from 'src/stores/user'
 import { reFilename } from 'src/helpers'
 import router from 'src/router'
+import { photosCol, usersCol } from 'src/helpers/collections'
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
@@ -18,8 +19,6 @@ const meta = useValuesStore()
 const auth = useUserStore()
 const { uploaded } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const photosCol = collection(db, 'Photo')
-const usersCol = collection(db, 'User')
 
 /**
  * Fixes the users in the database.
