@@ -2,7 +2,6 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from 'src/lib/firebase'
 import {
   doc,
-  collection,
   query,
   where,
   orderBy,
@@ -13,14 +12,13 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import notify from 'src/helpers/notify'
+import { buildCounters } from 'src/helpers/expensive'
 import { CONFIG, isEmpty } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
+import { photosCol, countersCol } from 'src/helpers/collections'
 import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
-
-const photosCol = collection(db, 'Photo')
-const countersCol = collection(db, 'Counter')
 
 const counterId = (field: string, value: string): string => {
   return `Photo||${field}||${value}`
@@ -104,6 +102,12 @@ export const useValuesStore = defineStore('meta', {
     },
   },
   actions: {
+    /**
+     * Gets the count of each value for a specific field.
+     *
+     * @param {keyof ValuesState['values']} field - The field to get the count for.
+     * @return {Promise<void>} A promise that resolves when the count is retrieved.
+     */
     async fieldCount(field: keyof ValuesState['values']): Promise<void> {
       const q = query(countersCol, where('field', '==', field))
       const querySnapshot = await getDocs(q)
@@ -126,41 +130,15 @@ export const useValuesStore = defineStore('meta', {
     async countersBuild(): Promise<void> {
       notify({ group: 'counters', message: `Please wait` })
 
+      // Build new counters
+      const newValues = await buildCounters()
+
       // Delete old counters
       const countersToDelete = await getDocs(query(countersCol))
       const deleteBatch = writeBatch(db)
       countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
       notify({ group: 'counters', message: `Deleted old counters` })
-
-      // Build new counters
-      const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
-      const newValues: ValuesState['values'] = {
-        year: {},
-        tags: {},
-        model: {},
-        lens: {},
-        email: {},
-        nick: {},
-      }
-
-      photoSnapshot.forEach((doc) => {
-        const obj = doc.data() as Record<string, unknown>
-        CONFIG.photo_filter.forEach((field) => {
-          if (field === 'tags') {
-            const tags = Array.isArray(obj.tags) ? obj.tags : []
-            for (const tag of tags) {
-              newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
-            }
-          } else {
-            const val = obj[field]
-            if (val !== undefined && val !== null && val !== '') {
-              newValues[field as keyof ValuesState['values']][val as string] =
-                (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
-            }
-          }
-        })
-      })
 
       // Write new counters to database and store
       const setBatch = writeBatch(db)
@@ -195,6 +173,30 @@ export const useValuesStore = defineStore('meta', {
     },
 
     /**
+     * Helper function to build counter map from photo data
+     * @param {PhotoType} data - The photo data to extract counters from
+     * @returns {Object} Map of counter IDs to count values
+     */
+    buildCounterMap(data: PhotoType): { [key: string]: number } {
+      const counterMap: { [key: string]: number } = {}
+
+      for (const field of CONFIG.photo_filter) {
+        const fieldValue = data[field as keyof PhotoType]
+        if (!fieldValue) continue
+
+        if (field === 'tags') {
+          for (const tag of fieldValue as string[]) {
+            counterMap[counterId(field, tag)] = 1
+          }
+        } else {
+          counterMap[counterId(field, fieldValue as string)] = 1
+        }
+      }
+
+      return counterMap
+    },
+
+    /**
      * Updates the counters in the database and store based on the old and new data.
      * It builds a diff of the counters that have changed, and then calls batchUpdateCounters
      * with the diff.
@@ -203,57 +205,33 @@ export const useValuesStore = defineStore('meta', {
      * @param {PhotoType | null} newData - The new data to update counters from.
      */
     updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
-      const oldObj: { [key: string]: number } = {}
-      const newObj: { [key: string]: number } = {}
+      const oldObj = oldData ? this.buildCounterMap(oldData) : {}
+      const newObj = newData ? this.buildCounterMap(newData) : {}
 
-      if (oldData) {
-        for (const field of CONFIG.photo_filter) {
-          const oldFieldValue = oldData[field as keyof PhotoType]
-          if (oldFieldValue) {
-            if (field === 'tags') {
-              for (const tag of oldFieldValue as string[]) {
-                oldObj[counterId(field, tag)] = 1
-              }
-            } else {
-              oldObj[counterId(field, oldFieldValue as string)] = 1
-            }
-          }
-        }
-      }
+      // Early return if both are empty
+      if (isEmpty(oldObj) && isEmpty(newObj)) return
 
-      if (newData) {
-        for (const field of CONFIG.photo_filter) {
-          const newFieldValue = newData[field as keyof PhotoType]
-          if (newFieldValue) {
-            if (field === 'tags') {
-              for (const tag of newFieldValue as string[]) {
-                newObj[counterId(field, tag)] = 1
-              }
-            } else {
-              newObj[counterId(field, newFieldValue as string)] = 1
-            }
-          }
-        }
-      }
+      let diff: DiffResult[]
 
       if (!isEmpty(oldObj) && !isEmpty(newObj)) {
-        const diff = deepDiffMap(oldObj, newObj)
-        this.batchUpdateCounters(diff)
-      } else if (isEmpty(oldObj) && !isEmpty(newObj)) {
-        const newList = Object.entries(newObj).map(([key, val]) => ({
-          key: key,
+        // Both exist: compute diff
+        diff = deepDiffMap(oldObj, newObj)
+      } else if (!isEmpty(newObj)) {
+        // Only new data: all created
+        diff = Object.entries(newObj).map(([key, val]) => ({
+          key,
           status: 'created',
           value: val,
         }))
-        this.batchUpdateCounters(newList)
-      } else if (!isEmpty(oldObj) && isEmpty(newObj)) {
-        const oldList = Object.entries(oldObj).map(([key, val]) => ({
-          key: key,
+      } else {
+        // Only old data: all deleted
+        diff = Object.entries(oldObj).map(([key, val]) => ({
+          key,
           status: 'deleted',
           value: val,
         }))
-        this.batchUpdateCounters(oldList)
       }
+      this.batchUpdateCounters(diff)
     },
 
     /**
