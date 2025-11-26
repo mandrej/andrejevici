@@ -88,6 +88,7 @@ const sliceSlug = (slug: string): string[] => {
 }
 
 export const U = '_'
+export const delimiter = '||' // for counter id
 export const fileBroken = CONFIG.fileBroken
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
 export const thumbName = (filename: string) => {

@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore'
 import notify from 'src/helpers/notify'
 import { buildCounters } from 'src/helpers/expensive'
-import { CONFIG, isEmpty } from 'src/helpers'
+import { CONFIG, isEmpty, delimiter } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
 import { photoCollection, counterCollection } from 'src/helpers/collections'
 import type { DocumentReference } from 'firebase/firestore'
@@ -21,7 +21,7 @@ import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
 
 const counterId = (field: string, value: string): string => {
-  return `Photo||${field}||${value}`
+  return `Photo${delimiter}${field}${delimiter}${value}`
 }
 
 /**
@@ -246,7 +246,7 @@ export const useValuesStore = defineStore('meta', {
 
       for (const todo of results) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_, field, value] = todo.key.split('||')
+        const [_, field, value] = todo.key.split(delimiter)
         const counterRef = doc(counterCollection, todo.key)
         const findDoc = await getDoc(counterRef)
         if (todo.status === 'created') {
