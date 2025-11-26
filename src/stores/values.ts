@@ -21,7 +21,7 @@ import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
 
 const counterId = (field: string, value: string): string => {
-  return `Photo${delimiter}${field}${delimiter}${value}`
+  return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
 }
 
 /**
