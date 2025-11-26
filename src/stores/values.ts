@@ -15,7 +15,7 @@ import notify from 'src/helpers/notify'
 import { buildCounters } from 'src/helpers/expensive'
 import { CONFIG, isEmpty } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
-import { photosCol, countersCol } from 'src/helpers/collections'
+import { photoCollection, counterCollection } from 'src/helpers/collections'
 import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
@@ -109,7 +109,7 @@ export const useValuesStore = defineStore('meta', {
      * @return {Promise<void>} A promise that resolves when the count is retrieved.
      */
     async fieldCount(field: keyof ValuesState['values']): Promise<void> {
-      const q = query(countersCol, where('field', '==', field))
+      const q = query(counterCollection, where('field', '==', field))
       const querySnapshot = await getDocs(q)
       querySnapshot.forEach((d) => {
         const obj = d.data() as {
@@ -134,7 +134,7 @@ export const useValuesStore = defineStore('meta', {
       const newValues = await buildCounters()
 
       // Delete old counters
-      const countersToDelete = await getDocs(query(countersCol))
+      const countersToDelete = await getDocs(query(counterCollection))
       const deleteBatch = writeBatch(db)
       countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
@@ -144,7 +144,7 @@ export const useValuesStore = defineStore('meta', {
       const setBatch = writeBatch(db)
       CONFIG.photo_filter.forEach((field) => {
         Object.entries(newValues[field as keyof ValuesState['values']]).forEach(([key, count]) => {
-          const counterRef = doc(countersCol, counterId(field, key))
+          const counterRef = doc(counterCollection, counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
         // const diff = deepDiffMap(
@@ -247,7 +247,7 @@ export const useValuesStore = defineStore('meta', {
       for (const todo of results) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [_, field, value] = todo.key.split('||')
-        const counterRef = doc(countersCol, todo.key)
+        const counterRef = doc(counterCollection, todo.key)
         const findDoc = await getDoc(counterRef)
         if (todo.status === 'created') {
           if (findDoc.exists()) {
@@ -297,7 +297,7 @@ export const useValuesStore = defineStore('meta', {
         if (typeof count === 'number' && count <= 0) {
           try {
             id = counterId('tags', value)
-            counterRef = doc(countersCol, id)
+            counterRef = doc(counterCollection, id)
             await deleteDoc(counterRef)
           } finally {
             delete this.values.tags[value]
@@ -305,7 +305,7 @@ export const useValuesStore = defineStore('meta', {
         }
       }
       // delete from database
-      const q = query(countersCol, where('field', '==', 'tags'))
+      const q = query(counterCollection, where('field', '==', 'tags'))
       const querySnapshot = await getDocs(q)
 
       // Use for...of loop instead of forEach to properly handle async operations
@@ -314,7 +314,7 @@ export const useValuesStore = defineStore('meta', {
         if (obj.count <= 0) {
           try {
             const id = counterId('tags', obj.value)
-            const counterRef = doc(countersCol, id)
+            const counterRef = doc(counterCollection, id)
             await deleteDoc(counterRef)
           } finally {
             delete this.values.tags[obj.value]
@@ -341,11 +341,11 @@ export const useValuesStore = defineStore('meta', {
         field === 'tags'
           ? where(field, 'array-contains-any', [oldValue])
           : where(field, '==', oldValue)
-      const q = query(photosCol, filter, orderBy('date', 'desc'))
+      const q = query(photoCollection, filter, orderBy('date', 'desc'))
       const querySnapshot = await getDocs(q)
 
       querySnapshot.forEach((d) => {
-        const photoRef = doc(photosCol, d.id)
+        const photoRef = doc(photoCollection, d.id)
         if (field === 'tags') {
           const obj = d.data()
           const idx = obj.tags.indexOf(oldValue)
@@ -360,8 +360,8 @@ export const useValuesStore = defineStore('meta', {
       await batch.commit()
 
       // Update counters
-      const oldRef = doc(countersCol, counterId(field, oldValue))
-      const newRef = doc(countersCol, counterId(field, newValue))
+      const oldRef = doc(counterCollection, counterId(field, oldValue))
+      const newRef = doc(counterCollection, counterId(field, newValue))
       const counter = await getDoc(oldRef)
       const obj = counter.data()
 

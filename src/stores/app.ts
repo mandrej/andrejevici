@@ -41,9 +41,9 @@ import type {
   FileProgress,
   MessageType,
 } from 'src/helpers/models'
-import { photosCol, messagesCol, bucketCol } from 'src/helpers/collections'
+import { photoCollection, messageCollection, bucketCollection } from 'src/helpers/collections'
 
-const bucketRef = doc(bucketCol, 'total')
+const bucketRef = doc(bucketCollection, 'total')
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -138,7 +138,7 @@ export const useAppStore = defineStore('app', {
         count: 0,
         size: 0,
       }
-      const q = query(photosCol, orderBy('date', 'desc'))
+      const q = query(photoCollection, orderBy('date', 'desc'))
       const querySnapshot = await getDocs(q)
       if (!querySnapshot.empty) {
         querySnapshot.forEach((d) => {
@@ -180,14 +180,14 @@ export const useAppStore = defineStore('app', {
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
       if (reset) this.next = ''
       if (this.next != '') {
-        const cursor: DocumentSnapshot = await getDoc(doc(photosCol, this.next))
+        const cursor: DocumentSnapshot = await getDoc(doc(photoCollection, this.next))
         constraints.push(startAfter(cursor))
       }
       constraints.push(limit(max))
 
       this.busy = true
       try {
-        const querySnapshot: QuerySnapshot = await getDocs(query(photosCol, ...constraints))
+        const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
         if (reset) this.objects.length = 0
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
           this.objects.push(d.data() as PhotoType)
@@ -227,7 +227,7 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<PhotoType>} The saved photo record.
      */
     async saveRecord(obj: PhotoType): Promise<PhotoType> {
-      const docRef = doc(photosCol, obj.filename)
+      const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
@@ -269,7 +269,7 @@ export const useAppStore = defineStore('app', {
      * complete.
      */
     async deleteRecord(obj: PhotoType) {
-      const docRef = doc(photosCol, obj.filename)
+      const docRef = doc(photoCollection, obj.filename)
       const docSnap = await getDoc(docRef)
       const data = docSnap.data() as PhotoType
       const stoRef = storageRef(storage, obj.filename)
@@ -311,7 +311,9 @@ export const useAppStore = defineStore('app', {
      */
     async getLast(): Promise<LastPhoto | null> {
       try {
-        const querySnapshot = await getDocs(query(photosCol, orderBy('date', 'desc'), limit(1)))
+        const querySnapshot = await getDocs(
+          query(photoCollection, orderBy('date', 'desc'), limit(1)),
+        )
         const rec = getRec(querySnapshot) as LastPhoto
         if (rec) {
           // Set the href property to the URL of the last month it was taken
@@ -334,7 +336,7 @@ export const useAppStore = defineStore('app', {
      */
     async fetchMessages(): Promise<MessageType[]> {
       const messages: MessageType[] = []
-      const q = query(messagesCol, orderBy('timestamp', 'desc'), limit(50))
+      const q = query(messageCollection, orderBy('timestamp', 'desc'), limit(50))
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
@@ -352,7 +354,7 @@ export const useAppStore = defineStore('app', {
      */
     async deleteMessages(keys: string[]): Promise<void> {
       const deletePromises = keys.map(async (key) => {
-        const docRef = doc(messagesCol, key)
+        const docRef = doc(messageCollection, key)
         await deleteDoc(docRef)
       })
       await Promise.all(deletePromises)

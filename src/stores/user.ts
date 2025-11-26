@@ -22,7 +22,7 @@ import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from 'src/helpers/models'
 import type { Firestore, Query } from '@firebase/firestore'
 import notify from 'src/helpers/notify'
-import { devicesCol, usersCol } from 'src/helpers/collections'
+import { deviceCollection, userCollection } from 'src/helpers/collections'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -88,7 +88,7 @@ export const useUserStore = defineStore('auth', {
      */
     async storeUser(user: User): Promise<void> {
       const meta = useValuesStore()
-      const userRef = doc(usersCol, user.uid)
+      const userRef = doc(userCollection, user.uid)
       const userSnap = await getDoc(userRef)
       if (userSnap.exists()) {
         const data = userSnap.data() as MyUserType
@@ -153,7 +153,7 @@ export const useUserStore = defineStore('auth', {
      */
     async fetchUsers(): Promise<MyUserType[]> {
       const users: MyUserType[] = []
-      const q = query(usersCol, orderBy('email', 'asc'))
+      const q = query(userCollection, orderBy('email', 'asc'))
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
@@ -170,7 +170,7 @@ export const useUserStore = defineStore('auth', {
      */
     async fetchDevices(): Promise<DeviceType[]> {
       const devices: DeviceType[] = []
-      const q = query(devicesCol, orderBy('timestamp', 'desc'))
+      const q = query(deviceCollection, orderBy('timestamp', 'desc'))
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
@@ -209,7 +209,7 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} A promise that resolves when the user is updated.
      */
     async updateUser(user: UsersAndDevices, field: string): Promise<void> {
-      const docRef = doc(usersCol, user.uid)
+      const docRef = doc(userCollection, user.uid)
       await updateDoc(docRef, {
         [field]: user[field as keyof UsersAndDevices], // dynamc field
       })
@@ -228,7 +228,7 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} A promise that resolves when the user's subscription status is updated.
      */
     async updateSubscriber(): Promise<void> {
-      const docRef = doc(usersCol, this.user!.uid)
+      const docRef = doc(userCollection, this.user!.uid)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
         await updateDoc(docRef, {
@@ -244,7 +244,7 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} A promise that resolves when the device is updated.
      */
     async updateDevice(token: string): Promise<void> {
-      const docRef = doc(devicesCol, token)
+      const docRef = doc(deviceCollection, token)
       const snap = await getDoc(docRef)
       if (!snap.exists()) {
         await setDoc(docRef, {
@@ -260,7 +260,7 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} A promise that resolves when the device is removed.
      */
     removeDevice(): Promise<void> {
-      const q = query(devicesCol, where('email', '==', this.user?.email || ''))
+      const q = query(deviceCollection, where('email', '==', this.user?.email || ''))
       return new Promise((resolve, reject) => {
         this.deleteQueryBatch(db, q, resolve).catch(reject)
       })

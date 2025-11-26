@@ -9,7 +9,7 @@ import { useValuesStore } from 'src/stores/values'
 import { useUserStore } from 'src/stores/user'
 import { reFilename } from 'src/helpers'
 import router from 'src/router'
-import { photosCol, usersCol } from 'src/helpers/collections'
+import { photoCollection, userCollection } from 'src/helpers/collections'
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
@@ -27,11 +27,11 @@ const { user } = storeToRefs(auth)
  */
 export const fix = async () => {
   const setBatch = writeBatch(db)
-  const q = query(usersCol)
+  const q = query(userCollection)
   const usersSnap = await getDocs(q)
   usersSnap.forEach((it) => {
     const user = it.data()
-    const docRef = doc(usersCol, user.uid)
+    const docRef = doc(userCollection, user.uid)
     setBatch.set(docRef, user, { merge: true })
   })
 
@@ -102,7 +102,7 @@ export const missingThumbnails = async () => {
   missing.forEach((name) => {
     let docRef
     ;['jpg', 'jpeg', 'JPG'].forEach((ext) => {
-      docRef = doc(photosCol, `${name}.${ext}`)
+      docRef = doc(photoCollection, `${name}.${ext}`)
       promises.push(getDoc(docRef))
     })
   })
@@ -163,7 +163,7 @@ export const mismatch = async () => {
 
   refs.items.forEach((r) => bucketNames.push(r.name))
 
-  const q = query(photosCol)
+  const q = query(photoCollection)
   const snapshot = await getDocs(q)
   snapshot.forEach((doc) => storageNames.push(doc.id))
 
@@ -207,7 +207,7 @@ export const mismatch = async () => {
       notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
     }
   } else {
-    await Promise.all(missing.map((name) => deleteDoc(doc(photosCol, name))))
+    await Promise.all(missing.map((name) => deleteDoc(doc(photoCollection, name))))
     notify({
       message: `${missing.length} records deleted from firestore that doesn't have image reference`,
       type: 'negative',

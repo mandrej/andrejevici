@@ -1,6 +1,6 @@
 import { query, orderBy, getDocs } from 'firebase/firestore'
 import { CONFIG } from 'src/helpers'
-import { photosCol } from 'src/helpers/collections'
+import { photoCollection } from 'src/helpers/collections'
 
 import type { ValuesState } from 'src/helpers/models'
 
@@ -11,7 +11,7 @@ import type { ValuesState } from 'src/helpers/models'
  */
 export const buildCounters = async (): Promise<ValuesState['values']> => {
   // Build new counters
-  const photoSnapshot = await getDocs(query(photosCol, orderBy('date', 'desc')))
+  const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
   const newValues: ValuesState['values'] = {
     year: {},
     tags: {},
