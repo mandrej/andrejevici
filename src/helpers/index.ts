@@ -40,6 +40,7 @@ const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
+
 const isEmpty = (obj: object) => {
   for (const prop in obj) {
     if (Object.hasOwn(obj, prop)) {
@@ -49,35 +50,16 @@ const isEmpty = (obj: object) => {
   return true
 }
 
-/**
- * Removes a PhotoType object from an array by matching the filename property.
- *
- * @param {PhotoType[]} arr - The array to search for the filename.
- * @param {string} value - The filename to match and remove.
- * @return {void} This function does not return anything.
- */
-const removeByFilename = (arr: PhotoType[], value: string): void => {
-  const idx = arr.findIndex((it) => it.filename === value)
+const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
+  const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx > -1) arr.splice(idx, 1)
 }
-// const nickInsteadEmail = (email: string): string => {
-//   return CONFIG.familyMap.get(email) as string
-// }
-/**
- * Updates an array of PhotoType objects with a new object by matching the filename property.
- * If the filename is found in the array, the function splices the array at that index and
- * replaces it with the new object.
- *
- * @param {PhotoType[]} arr - The array to search for the filename.
- * @param {PhotoType} obj - The new object to replace the existing object in the array.
- * @param {number} [op=1] - The number of times to replace the existing object with the new object. Defaults to 1.
- */
-const changeByFilename = (arr: PhotoType[], obj: PhotoType, op = 1): void => {
+
+const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
-  if (idx >= 0) {
-    arr.splice(idx, op, obj)
-  }
+  if (idx > -1) arr.splice(idx, 1, obj)
 }
+
 const textSlug = (text: string): string => {
   // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
   return slugify(text, {
@@ -92,6 +74,7 @@ const textSlug = (text: string): string => {
     ],
   })
 }
+
 const sliceSlug = (slug: string): string[] => {
   const text = []
   for (const word of slug.split('-')) {
@@ -152,9 +135,8 @@ export {
   isEmpty,
   version,
   fakeHistory,
-  removeByFilename,
-  changeByFilename,
-  // nickInsteadEmail,
+  removeFromList,
+  replaceInList,
   textSlug,
   sliceSlug,
   completePhoto,

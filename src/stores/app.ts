@@ -17,8 +17,8 @@ import {
   CONFIG,
   thumbName,
   thumbUrl,
-  removeByFilename,
-  changeByFilename,
+  removeFromList,
+  replaceInList,
   textSlug,
   sliceSlug,
 } from 'src/helpers'
@@ -232,7 +232,7 @@ export const useAppStore = defineStore('app', {
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
         await setDoc(docRef, obj, { merge: true })
-        changeByFilename(this.objects, obj)
+        replaceInList(this.objects, obj)
 
         meta.updateCounters(oldDoc.data() as PhotoType, obj)
         notify({ message: `${obj.filename} updated` })
@@ -246,12 +246,11 @@ export const useAppStore = defineStore('app', {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true })
-        changeByFilename(this.objects, obj, 0)
         await this.getLast()
         await this.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
-        removeByFilename(this.uploaded, obj.filename)
+        removeFromList(this.uploaded, obj)
         notify({ message: `${obj.filename} published` })
       }
       this.currentEdit = obj
@@ -288,14 +287,14 @@ export const useAppStore = defineStore('app', {
       }
 
       if (obj.thumb) {
-        removeByFilename(this.objects, obj.filename)
+        removeFromList(this.objects, obj)
 
         const meta = useValuesStore()
         await this.bucketDiff(-data.size)
         meta.updateCounters(data, null)
         await this.getLast()
       } else {
-        removeByFilename(this.uploaded, obj.filename)
+        removeFromList(this.uploaded, obj)
       }
       notify({
         message: `${obj.filename} deleted`,
