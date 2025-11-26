@@ -13,15 +13,7 @@ import {
   startAfter,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
-import {
-  CONFIG,
-  thumbName,
-  thumbUrl,
-  removeFromList,
-  replaceInList,
-  textSlug,
-  sliceSlug,
-} from 'src/helpers'
+import { CONFIG, thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import { useValuesStore } from './values'
 import type {
@@ -164,13 +156,13 @@ export const useAppStore = defineStore('app', {
       const max =
         CONFIG.limit *
         (this.find?.tags?.length || 1) *
-        (this.find?.text ? sliceSlug(textSlug(this.find.text)).length : 1)
+        (this.find?.text ? sliceSlug(this.find.text).length : 1)
       const filters: QueryFieldFilterConstraint[] = Object.entries(this.find || {}).map(
         ([key, val]) => {
           if (key === 'tags') {
             return where(key, 'array-contains-any', val)
           } else if (key === 'text') {
-            return where(key, 'array-contains-any', sliceSlug(textSlug(val as string)))
+            return where(key, 'array-contains-any', sliceSlug(val as string))
           } else {
             return where(key, '==', val)
           }
@@ -207,7 +199,7 @@ export const useAppStore = defineStore('app', {
       }
       if (this.find?.text) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.text as string[], sliceSlug(textSlug(this.find?.text || ''))),
+          includeSub(d.text as string[], sliceSlug(this.find?.text || '')),
         )
       }
 

@@ -176,7 +176,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, U, formatBytes, textSlug, sliceSlug } from 'src/helpers'
+import { CONFIG, U, formatBytes, sliceSlug } from 'src/helpers'
 import readExif from 'src/helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
@@ -246,7 +246,7 @@ const onSubmit = async () => {
   tmp.day = datum.getDate()
   // if change headline
   tmp.headline = tmp.headline?.trim() || CONFIG.noTitle
-  tmp.text = sliceSlug(textSlug(tmp.headline))
+  tmp.text = sliceSlug(tmp.headline)
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email by admin

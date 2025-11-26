@@ -75,16 +75,23 @@ const textSlug = (text: string): string => {
   })
 }
 
-const sliceSlug = (slug: string): string[] => {
-  const text = []
+/**
+ * Slices a slug into an array of strings.
+ *
+ * @param {string} text - The text to be sliced.
+ * @return {string[]} An array of strings.
+ */
+const sliceSlug = (text: string): string[] => {
+  const slug = textSlug(text) // 'hello-world-of-code'
+  const result: string[] = []
   for (const word of slug.split('-')) {
     for (let j = 3; j < word.length + 1; j++) {
       const part = word.slice(0, j)
       if (part.length > 8) break
-      text.push(part)
+      result.push(part)
     }
   }
-  return text
+  return result
 }
 
 export const U = '_'
@@ -138,7 +145,6 @@ export {
   fakeHistory,
   removeFromList,
   replaceInList,
-  textSlug,
   sliceSlug,
   completePhoto,
 }
