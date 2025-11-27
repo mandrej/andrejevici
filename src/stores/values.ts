@@ -12,7 +12,6 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import notify from 'src/helpers/notify'
-import { buildCounters } from 'src/helpers/expensive'
 import { CONFIG, isEmpty, delimiter } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
 import { photoCollection, counterCollection } from 'src/helpers/collections'
@@ -22,6 +21,39 @@ import type { DiffResult } from 'src/helpers/diff'
 
 const counterId = (field: string, value: string): string => {
   return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
+}
+
+const buildCounters = async (): Promise<ValuesState['values']> => {
+  // Build new counters
+  const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+  const newValues: ValuesState['values'] = {
+    year: {},
+    tags: {},
+    model: {},
+    lens: {},
+    email: {},
+    nick: {},
+  }
+
+  photoSnapshot.forEach((doc) => {
+    const obj = doc.data() as Record<string, unknown>
+    CONFIG.photo_filter.forEach((field) => {
+      if (field === 'tags') {
+        const tags = Array.isArray(obj.tags) ? obj.tags : []
+        for (const tag of tags) {
+          newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
+        }
+      } else {
+        const val = obj[field]
+        if (val !== undefined && val !== null && val !== '') {
+          newValues[field as keyof ValuesState['values']][val as string] =
+            (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
+        }
+      }
+    })
+  })
+
+  return newValues
 }
 
 /**
