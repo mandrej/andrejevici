@@ -71,10 +71,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { rename } from 'src/helpers/remedy'
+import { renameValue } from 'src/helpers/remedy'
 import { storeToRefs } from 'pinia'
 import { useValuesStore } from 'src/stores/values'
 import AutoComplete from 'src/components/Auto-Complete.vue'
+import type { ValuesState } from 'src/helpers/models'
+import notify from 'src/helpers/notify'
 
 const meta = useValuesStore()
 const { modelValues, lensValues } = storeToRefs(meta)
@@ -83,4 +85,25 @@ const existingModel = ref(''),
   changedModel = ref(''),
   existingLens = ref(''),
   changedLens = ref('')
+
+const rename = async (field: keyof ValuesState['values'], existing: string, changed: string) => {
+  if (existing !== '' && changed !== '') {
+    if (field === 'model' && existing === 'UNKNOWN') {
+      notify({
+        type: 'warning',
+        message: `Cannot change "${existing}"`,
+      })
+    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
+      notify({
+        type: 'warning',
+        message: `"${changed}" already exists"`,
+      })
+    } else {
+      await renameValue(field, existing, changed)
+      notify({
+        message: `${existing} successfully renamed to ${changed}`,
+      })
+    }
+  }
+}
 </script>

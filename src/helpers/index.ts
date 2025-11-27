@@ -98,6 +98,7 @@ export const U = '_'
 export const delimiter = '||' // for counter id
 export const fileBroken = CONFIG.fileBroken
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
+
 export const thumbName = (filename: string) => {
   const match = filename.match(reFilename)
   if (!match) return ''
@@ -110,6 +111,10 @@ export const thumbUrl = (filename: string) => {
     CONFIG.firebase.storageBucket,
     thumbName(filename),
   ].join('/')
+}
+
+export const counterId = (field: string, value: string): string => {
+  return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
 }
 
 const completePhoto = async (

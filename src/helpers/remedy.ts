@@ -1,15 +1,25 @@
 import { db, storage } from 'src/lib/firebase'
-import type { DocumentSnapshot } from 'firebase/firestore'
-import { doc, query, getDocs, deleteDoc, getDoc, writeBatch } from 'firebase/firestore'
+import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
+import {
+  doc,
+  query,
+  getDocs,
+  deleteDoc,
+  getDoc,
+  writeBatch,
+  where,
+  orderBy,
+  setDoc,
+} from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { CONFIG } from './index'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { useUserStore } from 'src/stores/user'
-import { reFilename } from 'src/helpers'
+import { reFilename, counterId } from 'src/helpers'
 import router from 'src/router'
-import { photoCollection, userCollection } from 'src/helpers/collections'
+import { counterCollection, photoCollection, userCollection } from 'src/helpers/collections'
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
@@ -217,37 +227,98 @@ export const mismatch = async () => {
 }
 
 /**
+ * Removes unused tags from the database.
+ *
+ * @return {Promise<void>} A promise that resolves when the unused tags are removed.
+ */
+export const removeUnusedTags = async (): Promise<void> => {
+  // delete from store
+  let id, counterRef: DocumentReference
+  for (const [value, count] of Object.entries(meta.values.tags)) {
+    if (typeof count === 'number' && count <= 0) {
+      try {
+        id = counterId('tags', value)
+        counterRef = doc(counterCollection, id)
+        await deleteDoc(counterRef)
+      } finally {
+        delete meta.values.tags[value]
+      }
+    }
+  }
+  // delete from database
+  const q = query(counterCollection, where('field', '==', 'tags'))
+  const querySnapshot = await getDocs(q)
+
+  // Use for...of loop instead of forEach to properly handle async operations
+  for (const d of querySnapshot.docs) {
+    const obj = d.data()
+    if (obj.count <= 0) {
+      try {
+        const id = counterId('tags', obj.value)
+        const counterRef = doc(counterCollection, id)
+        await deleteDoc(counterRef)
+      } finally {
+        delete meta.values.tags[obj.value]
+      }
+    }
+  }
+}
+
+/**
  * Renames a value in the database.
  *
- * @param {keyof ValuesState['values']} field - The field to rename.
- * @param {string} existing - The existing value.
- * @param {string} changed - The new value.
+ * @param {keyof ValuesState['values']} field - The field to be renamed.
+ * @param {string} oldValue - The old value to be renamed.
+ * @param {string} newValue - The new value to be renamed.
  * @return {Promise<void>} A promise that resolves when the value is renamed.
  */
-export const rename = async (
+export const renameValue = async (
   field: keyof ValuesState['values'],
-  existing: string,
-  changed: string,
-) => {
-  if (existing !== '' && changed !== '') {
-    if (
-      (field === 'tags' && existing === 'flash') ||
-      (field === 'model' && existing === 'UNKNOWN')
-    ) {
-      notify({
-        type: 'warning',
-        message: `Cannot change "${existing}"`,
-      })
-    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
-      notify({
-        type: 'warning',
-        message: `"${changed}" already exists"`,
-      })
+  oldValue: string,
+  newValue: string,
+): Promise<void> => {
+  // Prepare batch for photo updates
+  const batch = writeBatch(db)
+  const filter =
+    field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
+  const q = query(photoCollection, filter, orderBy('date', 'desc'))
+  const querySnapshot = await getDocs(q)
+
+  querySnapshot.forEach((d) => {
+    const photoRef = doc(photoCollection, d.id)
+    if (field === 'tags') {
+      const obj = d.data()
+      const idx = obj.tags.indexOf(oldValue)
+      obj.tags.splice(idx, 1, newValue)
+      batch.update(photoRef, { [field]: obj.tags })
     } else {
-      await meta.renameValue(field, existing, changed)
-      notify({
-        message: `${existing} successfully renamed to ${changed}`,
-      })
+      batch.update(photoRef, { [field]: newValue })
     }
+  })
+
+  // Commit batch for photos
+  await batch.commit()
+
+  // Update counters
+  const oldRef = doc(counterCollection, counterId(field, oldValue))
+  const newRef = doc(counterCollection, counterId(field, newValue))
+  const counter = await getDoc(oldRef)
+  const obj = counter.data()
+
+  if (obj) {
+    await setDoc(
+      newRef,
+      {
+        count: obj.count,
+        field: field,
+        value: newValue,
+      },
+      { merge: true },
+    )
+    await deleteDoc(oldRef)
+
+    // Update store
+    meta.values[field][newValue] = obj.count
+    delete meta.values[field][oldValue]
   }
 }

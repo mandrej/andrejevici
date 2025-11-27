@@ -1,27 +1,12 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from 'src/lib/firebase'
-import {
-  doc,
-  query,
-  where,
-  orderBy,
-  getDoc,
-  setDoc,
-  getDocs,
-  deleteDoc,
-  writeBatch,
-} from 'firebase/firestore'
+import { doc, query, where, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
 import notify from 'src/helpers/notify'
-import { CONFIG, isEmpty, delimiter } from 'src/helpers'
+import { CONFIG, isEmpty, delimiter, counterId } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
 import { photoCollection, counterCollection } from 'src/helpers/collections'
-import type { DocumentReference } from 'firebase/firestore'
 import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
-
-const counterId = (field: string, value: string): string => {
-  return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
-}
 
 const buildCounters = async (): Promise<ValuesState['values']> => {
   // Build new counters
@@ -316,103 +301,6 @@ export const useValuesStore = defineStore('meta', {
         }
       }
       await batch.commit()
-    },
-
-    /**
-     * Removes all tags from the store and database that are not used by any photo.
-     * @return {Promise<void>} A promise that resolves when all unused tags have been removed.
-     */
-    async removeUnusedTags(): Promise<void> {
-      // delete from store
-      let id, counterRef: DocumentReference
-      for (const [value, count] of Object.entries(this.values.tags)) {
-        if (typeof count === 'number' && count <= 0) {
-          try {
-            id = counterId('tags', value)
-            counterRef = doc(counterCollection, id)
-            await deleteDoc(counterRef)
-          } finally {
-            delete this.values.tags[value]
-          }
-        }
-      }
-      // delete from database
-      const q = query(counterCollection, where('field', '==', 'tags'))
-      const querySnapshot = await getDocs(q)
-
-      // Use for...of loop instead of forEach to properly handle async operations
-      for (const d of querySnapshot.docs) {
-        const obj = d.data()
-        if (obj.count <= 0) {
-          try {
-            const id = counterId('tags', obj.value)
-            const counterRef = doc(counterCollection, id)
-            await deleteDoc(counterRef)
-          } finally {
-            delete this.values.tags[obj.value]
-          }
-        }
-      }
-    },
-    /**
-     * Renames a value in the store and database.
-     *
-     * @param {keyof ValuesState['values']} field - The field of the value to rename.
-     * @param {string} oldValue - The old value to rename.
-     * @param {string} newValue - The new value to rename to.
-     * @return {Promise<void>} A promise that resolves when the value has been renamed.
-     */
-    async renameValue(
-      field: keyof ValuesState['values'],
-      oldValue: string,
-      newValue: string,
-    ): Promise<void> {
-      // Prepare batch for photo updates
-      const batch = writeBatch(db)
-      const filter =
-        field === 'tags'
-          ? where(field, 'array-contains-any', [oldValue])
-          : where(field, '==', oldValue)
-      const q = query(photoCollection, filter, orderBy('date', 'desc'))
-      const querySnapshot = await getDocs(q)
-
-      querySnapshot.forEach((d) => {
-        const photoRef = doc(photoCollection, d.id)
-        if (field === 'tags') {
-          const obj = d.data()
-          const idx = obj.tags.indexOf(oldValue)
-          obj.tags.splice(idx, 1, newValue)
-          batch.update(photoRef, { [field]: obj.tags })
-        } else {
-          batch.update(photoRef, { [field]: newValue })
-        }
-      })
-
-      // Commit batch for photos
-      await batch.commit()
-
-      // Update counters
-      const oldRef = doc(counterCollection, counterId(field, oldValue))
-      const newRef = doc(counterCollection, counterId(field, newValue))
-      const counter = await getDoc(oldRef)
-      const obj = counter.data()
-
-      if (obj) {
-        await setDoc(
-          newRef,
-          {
-            count: obj.count,
-            field: field,
-            value: newValue,
-          },
-          { merge: true },
-        )
-        await deleteDoc(oldRef)
-
-        // Update store
-        this.values[field][newValue] = obj.count
-        delete this.values[field][oldValue]
-      }
     },
 
     /**
