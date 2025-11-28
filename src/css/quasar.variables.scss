@@ -16,7 +16,9 @@ $primary: #1976d2;
 $secondary: #26a69a;
 $accent: #9c27b0;
 
+$light: #fff;
 $dark: #1d1d1d;
+$light-page: #fffafa;
 $dark-page: #121212;
 
 $positive: #21ba45;
@@ -25,12 +27,12 @@ $info: #31ccec;
 $warning: #f2c037;
 
 :root {
-  --q-my-toolbar-bg: #fff;
-  --q-my-page-bg: #fff;
+  --q-my-toolbar-bg: #{$light};
+  --q-my-page-bg: #{$light-page};
   --q-my-text: #{$dark};
 }
 .body--dark {
   --q-my-toolbar-bg: #{$dark};
   --q-my-page-bg: #{$dark-page};
-  --q-my-text: #fff;
+  --q-my-text: #{$light};
 }

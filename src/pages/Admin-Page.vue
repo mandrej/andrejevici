@@ -104,6 +104,9 @@ const values = computed(() => meta.values)
 </script>
 
 <style scoped>
+.body {
+  background-color: var(--q-my-page-bg);
+}
 .q-btn--standard {
   width: 100px;
 }

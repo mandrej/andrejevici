@@ -7,7 +7,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="drawer" class="q-pb-sm column no-wrap" :width="320" show-if-above bordered>
+    <q-drawer v-model="drawer" class="q-pb-sm column no-wrap" :width="320" show-if-above>
       <router-view name="sidebar" />
     </q-drawer>
 

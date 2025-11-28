@@ -1,4 +1,4 @@
-.body {
+body {
   background-color: var(--q-my-page-bg);
 }
 .q-toolbar {
@@ -7,7 +7,7 @@
 }
 .history-button {
   color: var(--q-my-text);
-  background-color: var(--q-my-page-bg);
+  background-color: inherit;
 }
 // Index-Page, Admin-Page
 .link {
