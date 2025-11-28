@@ -1,95 +1,93 @@
 <template>
   <Edit-Record v-if="showEdit" :rec="currentEdit" />
 
-  <q-page>
-    <div class="text-h6 q-pa-md">Upload / publish images</div>
+  <div class="text-h6 q-pa-md">Upload / publish images</div>
 
-    <q-form @submit="onSubmit">
-      <q-item>
-        <q-item-section>
-          <q-file
-            name="photos"
-            v-model="files"
-            use-chips
-            multiple
-            :accept="CONFIG.fileType"
-            :max-file-size="CONFIG.fileSize"
-            :max-files="CONFIG.fileMax"
-            label="Select images to upload"
-            hint="Drag your images above to upload, or click to browse and select. Then
+  <q-form @submit="onSubmit">
+    <q-item>
+      <q-item-section>
+        <q-file
+          name="photos"
+          v-model="files"
+          use-chips
+          multiple
+          :accept="CONFIG.fileType"
+          :max-file-size="CONFIG.fileSize"
+          :max-files="CONFIG.fileMax"
+          label="Select images to upload"
+          hint="Drag your images above to upload, or click to browse and select. Then
             publish image on site. Accepts maximum 10 jpg, jpeg, png, or gif files less then 4
             Mb in size."
-            @rejected="onValidationError"
-          />
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            label="Cancel all"
-            type="button"
-            color="negative"
-            style="width: 120px"
-            @click="cancelAll"
-            v-morph:cancel:buttons:500="morphModel"
-          />
-          <q-btn
-            label="Upload"
-            type="submit"
-            color="primary"
-            style="width: 120px"
-            v-morph:upload:buttons:500="morphModel"
-            :disable="files.length === 0"
-          />
-        </q-item-section>
-      </q-item>
-      <q-item class="q-mt-md">
-        <q-item-section>
-          <q-input
-            v-model="headlineToApply"
-            label="Headline to apply for next publish"
-            :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-            clearable
-          />
-        </q-item-section>
-      </q-item>
-      <q-item>
-        <q-item-section>
-          <TagsMerge
-            :label="`Tags to apply for next publish / or to merge with existing`"
-            :hint="`You can add / remove tag later`"
-          />
-        </q-item-section>
-        <q-item-section side>
-          <q-btn
-            :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
-            @click="publishSelected"
-            color="primary"
-            :disable="uploaded.length === 0"
-            style="width: 120px"
-          />
-        </q-item-section>
-      </q-item>
-    </q-form>
+          @rejected="onValidationError"
+        />
+      </q-item-section>
+      <q-item-section side>
+        <q-btn
+          label="Cancel all"
+          type="button"
+          color="negative"
+          style="width: 120px"
+          @click="cancelAll"
+          v-morph:cancel:buttons:500="morphModel"
+        />
+        <q-btn
+          label="Upload"
+          type="submit"
+          color="primary"
+          style="width: 120px"
+          v-morph:upload:buttons:500="morphModel"
+          :disable="files.length === 0"
+        />
+      </q-item-section>
+    </q-item>
+    <q-item class="q-mt-md">
+      <q-item-section>
+        <q-input
+          v-model="headlineToApply"
+          label="Headline to apply for next publish"
+          :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
+          clearable
+        />
+      </q-item-section>
+    </q-item>
+    <q-item>
+      <q-item-section>
+        <TagsMerge
+          :label="`Tags to apply for next publish / or to merge with existing`"
+          :hint="`You can add / remove tag later`"
+        />
+      </q-item-section>
+      <q-item-section side>
+        <q-btn
+          :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
+          @click="publishSelected"
+          color="primary"
+          :disable="uploaded.length === 0"
+          style="width: 120px"
+        />
+      </q-item-section>
+    </q-item>
+  </q-form>
 
-    <div class="q-pa-md">
-      <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-        <div
-          v-for="rec in uploaded"
-          :key="rec.filename"
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
-        >
-          <Picture-Card :rec="rec">
-            ><template #action>
-              <q-card-actions class="justify-between">
-                <q-btn flat round icon="delete" @click="deleteRec(rec)" />
-                <q-checkbox v-model="selection" :val="rec.filename" />
-                <q-btn flat round icon="publish" @click="editRecord(rec)" />
-              </q-card-actions>
-            </template>
-          </Picture-Card>
-        </div>
-      </transition-group>
-    </div>
-  </q-page>
+  <div class="q-pa-md">
+    <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+      <div
+        v-for="rec in uploaded"
+        :key="rec.filename"
+        class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+      >
+        <Picture-Card :rec="rec">
+          ><template #action>
+            <q-card-actions class="justify-between">
+              <q-btn flat round icon="delete" @click="deleteRec(rec)" />
+              <q-checkbox v-model="selection" :val="rec.filename" />
+              <q-btn flat round icon="publish" @click="editRecord(rec)" />
+            </q-card-actions>
+          </template>
+        </Picture-Card>
+      </div>
+    </transition-group>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -10,57 +10,55 @@
     @carousel-cancel="carouselCancel"
   />
 
-  <q-page>
-    <ErrorBanner :inquiry="!busy && error == 'empty'">
-      <template #title>No data found</template>
-      <template #detail>for current filter/ search</template>
-    </ErrorBanner>
+  <ErrorBanner :inquiry="!busy && error == 'empty'">
+    <template #title>No data found</template>
+    <template #detail>for current filter/ search</template>
+  </ErrorBanner>
 
-    <ErrorBanner :inquiry="!busy && error != '' && error != 'empty'">
-      <template #title>Something went wrong ...</template>
-      <template #detail>{{ error }}</template>
-    </ErrorBanner>
+  <ErrorBanner :inquiry="!busy && error != '' && error != 'empty'">
+    <template #title>Something went wrong ...</template>
+    <template #detail>{{ error }}</template>
+  </ErrorBanner>
 
-    <div class="q-pa-md q-mb-md">
-      <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
-        <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-          <div
-            v-for="item in objects"
-            :key="item.filename"
-            class="col"
-            style="min-width: 250px; max-width: 400px"
+  <div class="q-pa-md q-mb-md">
+    <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
+      <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+        <div
+          v-for="item in objects"
+          :key="item.filename"
+          class="col"
+          style="min-width: 250px; max-width: 400px"
+        >
+          <Picture-Card
+            :rec="item"
+            @carousel-show="carouselShow(item.filename)"
+            @carouselCancel="carouselCancel"
           >
-            <Picture-Card
-              :rec="item"
-              @carousel-show="carouselShow(item.filename)"
-              @carouselCancel="carouselCancel"
-            >
-              <template #action>
-                <q-card-actions
-                  v-if="isAuthorOrAdmin(item) && editMode"
-                  class="absolute-right column no-wrap"
-                >
-                  <q-btn flat round icon="delete" @click="confirmShow(item)" />
-                  <q-btn flat round icon="edit" @click="editRecord(item)" />
-                  <q-btn
-                    v-if="tagsToApplyExist"
-                    flat
-                    round
-                    icon="content_paste"
-                    @click="mergeTags(item)"
-                  />
-                </q-card-actions>
-              </template>
-            </Picture-Card>
-          </div>
-        </transition-group>
-      </q-infinite-scroll>
-    </div>
+            <template #action>
+              <q-card-actions
+                v-if="isAuthorOrAdmin(item) && editMode"
+                class="absolute-right column no-wrap"
+              >
+                <q-btn flat round icon="delete" @click="confirmShow(item)" />
+                <q-btn flat round icon="edit" @click="editRecord(item)" />
+                <q-btn
+                  v-if="tagsToApplyExist"
+                  flat
+                  round
+                  icon="content_paste"
+                  @click="mergeTags(item)"
+                />
+              </q-card-actions>
+            </template>
+          </Picture-Card>
+        </div>
+      </transition-group>
+    </q-infinite-scroll>
+  </div>
 
-    <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
-      <q-btn fab icon="arrow_upward" color="warning" />
-    </q-page-scroller>
-  </q-page>
+  <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+    <q-btn fab icon="arrow_upward" color="warning" />
+  </q-page-scroller>
 </template>
 
 <script setup lang="ts">
