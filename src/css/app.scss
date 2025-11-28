@@ -8,6 +8,9 @@ body,
 }
 .history-button {
   color: var(--q-my-text);
+  background-color: var(--q-my-page-bg);
+}
+.q-toolbar .history-button {
   background-color: inherit;
 }
 // Index-Page, Admin-Page
