@@ -6,7 +6,7 @@
     transition-hide="slide-down"
     persistent
   >
-    <q-card class="q-dialog-plugin full-width" style="max-width: 800px">
+    <q-card class="full-width" style="max-width: 800px" flat>
       <q-toolbar class="row justify-between">
         <div>
           <q-btn flat type="submit" label="Save" @click="onSubmit" />

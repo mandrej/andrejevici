@@ -2,9 +2,17 @@ body,
 .body {
   background-color: var(--q-my-page-bg);
 }
-.q-toolbar {
+// .q-header {
+//   border-bottom: 1px solid #c00;
+// }
+.q-toolbar,
+.card {
   color: var(--q-my-text);
   background-color: var(--q-my-toolbar-bg);
+}
+.q-drawer {
+  color: var(--q-my-text);
+  background-color: var(--q-my-page-bg);
 }
 .history-button {
   color: var(--q-my-text);

@@ -5,7 +5,7 @@
     transition-hide="slide-up"
     persistent
   >
-    <q-card class="q-dialog-plugin">
+    <q-card flat>
       <template v-if="rec!.filename">
         <q-toolbar class="row justify-between" bordered>
           <q-toolbar-title>Confirm Delete</q-toolbar-title>

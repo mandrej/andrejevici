@@ -1,6 +1,6 @@
 <template>
   <q-dialog v-model="open" transition-show="slide-down" transition-hide="slide-up" persistent>
-    <q-card>
+    <q-card flat>
       <q-card-section class="row items-center">
         <q-icon name="camera" size="56px" color="primary" />
         <span class="q-ml-md">Would you like to enable notifications?</span>

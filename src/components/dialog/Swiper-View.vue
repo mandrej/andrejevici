@@ -1,6 +1,6 @@
 <template>
   <q-dialog v-model="showCarousel" :maximized="true" persistent>
-    <q-card>
+    <q-card flat>
       <swiper-container
         :keyboard="{
           enabled: true,
