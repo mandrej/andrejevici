@@ -47,7 +47,7 @@
     </q-card-section>
   </q-card>
 
-  <q-card v-else :id="U + rec.filename" class="shadow-1">
+  <q-card v-else :id="U + rec.filename" class="card" flat>
     <q-img loading="lazy" :ratio="5 / 4" :src="rec.url" no-spinner>
       <template #error>
         <FileBroken />
