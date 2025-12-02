@@ -8,6 +8,7 @@ interface LensSwap {
 
 const LENSES: LensSwap = {
   1007: '30mm F2.8',
+  '70.0-300.0 mm f4.5-5.6': 'VR 70-300mm f4.5-5.6E',
   'Nikon NIKKOR Z 24-70mm f4 S': 'NIKKOR Z 24-70mm f4 S',
   'Canon EF-S 17-55mm f2.8 IS USM': 'EF-S17-55mm f2.8 IS USM',
   'Canon EF 100mm f2.8 Macro USM': 'EF100mm f2.8 Macro USM',
