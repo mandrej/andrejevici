@@ -5,6 +5,9 @@ body,
 // .q-header {
 //   border-bottom: 1px solid #c00;
 // }
+.q-dark {
+  background-color: var(--q-my-page-bg);
+}
 .q-toolbar,
 .card {
   color: var(--q-my-text);
