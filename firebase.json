@@ -76,6 +76,13 @@
     "storage-resize-images": "firebase/storage-resize-images@0.2.10"
   },
   "functions": {
-    "source": "functions"
-  }
+    "source": "functionNotify",
+    "codebase": "function-notify",
+    "ignore": ["**/node_modules/**"]
+  },
+  {
+    "source": "functionCron",
+    "codebase": "function-cron",
+    "ignore": ["**/node_modules/**"]
+    }
 }

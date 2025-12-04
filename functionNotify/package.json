@@ -1,5 +1,5 @@
 {
-  "name": "functions",
+  "name": "function-notify",
   "description": "Cloud Functions for Firebase",
   "scripts": {
     "lint": "eslint .",

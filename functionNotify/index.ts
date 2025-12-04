@@ -49,9 +49,9 @@ export const notify = onRequest(
           response.responses.forEach((resp, idx) => {
             if (resp && idx < registrationTokens.length) {
               if (!resp.success) {
-                promises.push(tokenDispacher(registrationTokens[idx]!, false, 'n/a'))
+                promises.push(tokenDispacher(registrationTokens[idx], false, 'n/a'))
               } else {
-                promises.push(tokenDispacher(registrationTokens[idx]!, true, text))
+                promises.push(tokenDispacher(registrationTokens[idx], true, text))
               }
             }
           })

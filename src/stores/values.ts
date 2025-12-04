@@ -160,28 +160,12 @@ export const useValuesStore = defineStore('meta', {
       // Write new counters to database and store
       const setBatch = writeBatch(db)
       CONFIG.photo_filter.forEach((field) => {
-        Object.entries(newValues[field as keyof ValuesState['values']]).forEach(([key, count]) => {
+        const fieldKey = field as keyof ValuesState['values']
+        Object.entries(newValues[fieldKey]).forEach(([key, count]) => {
           const counterRef = doc(counterCollection, counterId(field, key))
           setBatch.set(counterRef, { count, field, value: key })
         })
-        // const diff = deepDiffMap(
-        //   this.values[field as keyof ValuesState['values']],
-        //   newValues[field as keyof ValuesState['values']],
-        // )
-        // const messages: string[] = []
-        // for (const change of diff) {
-        //   messages.push(`${change.key} ${change.status}`)
-        // }
-        // overwrite old values in the store
-        this.values[field as keyof ValuesState['values']] = {
-          ...newValues[field as keyof ValuesState['values']],
-        }
-        // notify({
-        //   message: messages.join('\n') || `No changes for ${field}`,
-        //   actions: [{ icon: 'close' }],
-        //   timeout: messages.length > 0 ? 0 : 5000,
-        //   multiLine: true,
-        // })
+        this.values[fieldKey] = newValues[fieldKey]
         notify({ group: 'counters', message: `Built counters for ${field}` })
       })
 
