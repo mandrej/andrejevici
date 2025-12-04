@@ -57,7 +57,7 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
   return newValues
 }
 
-export const cronCounters = onSchedule('every day 00:00', async () => {
+export const cronCounters = onSchedule('every day 17:40', async () => {
   logger.log('Get new value')
   const newValues = await buildCounters()
 

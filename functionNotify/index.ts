@@ -69,7 +69,11 @@ export const notify = onRequest(
   },
 )
 
-const tokenDispacher = async (token: string, status: boolean, msg: string): Promise<void> => {
+const tokenDispacher = async (
+  token: string | undefined,
+  status: boolean,
+  msg: string,
+): Promise<void> => {
   if (token === undefined) return
   const docRef = getFirestore().collection('Device').doc(token)
   const doc = await docRef.get()

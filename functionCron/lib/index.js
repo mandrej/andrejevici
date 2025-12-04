@@ -75,7 +75,7 @@ const buildCounters = async () => {
     });
     return newValues;
 };
-exports.cronCounters = (0, scheduler_1.onSchedule)('every day 00:00', async () => {
+exports.cronCounters = (0, scheduler_1.onSchedule)('every day 17:40', async () => {
     logger.log('Get new value');
     const newValues = await buildCounters();
     logger.log('Delete old value');
@@ -85,12 +85,12 @@ exports.cronCounters = (0, scheduler_1.onSchedule)('every day 00:00', async () =
         (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
     });
     logger.log('Write new value');
-    Object.keys(newValues).forEach((field) => {
-        Object.entries(newValues[field]).forEach(([key, count]) => {
+    for (const field in newValues) {
+        for (const [key, count] of Object.entries(newValues[field])) {
             (0, firestore_1.getFirestore)()
                 .collection('Counter')
                 .doc(counterId(field, key))
                 .set({ field, value: key, count });
-        });
-    });
+        }
+    }
 });

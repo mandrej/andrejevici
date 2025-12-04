@@ -70,19 +70,25 @@
       "host": "0.0.0.0",
       "port": 4000
     },
+    "pubsub": {
+      "host": "0.0.0.0",
+      "port": 8085
+    },
     "singleProjectMode": true
   },
   "extensions": {
     "storage-resize-images": "firebase/storage-resize-images@0.2.10"
   },
-  "functions": {
-    "source": "functionNotify",
-    "codebase": "function-notify",
-    "ignore": ["**/node_modules/**"]
-  },
-  {
-    "source": "functionCron",
-    "codebase": "function-cron",
-    "ignore": ["**/node_modules/**"]
+  "functions": [
+    {
+      "source": "functionNotify",
+      "codebase": "function-notify",
+      "ignore": ["**/node_modules/**"]
+    },
+    {
+      "source": "functionCron",
+      "codebase": "function-cron",
+      "ignore": ["**/node_modules/**"]
     }
+  ]
 }
