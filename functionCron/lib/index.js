@@ -75,7 +75,7 @@ const buildCounters = async () => {
     });
     return newValues;
 };
-exports.cronCounters = (0, scheduler_1.onSchedule)('every day 10:35', async () => {
+exports.cronCounters = (0, scheduler_1.onSchedule)('every day 02:00', async () => {
     logger.log('Get new value');
     const newValues = await buildCounters();
     logger.log('Delete old value');
