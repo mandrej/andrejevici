@@ -8,7 +8,7 @@ function syntax {
   echo $"$0 icons  - Build icons"
   echo $"$0 build  - Build client"
   echo $"$0 deploy - Deploy"
-  # echo $"$0 functions - Deploy functions only"
+  echo $"$0 functions - Deploy functions only"
   echo $"$0 extensions - Deploy extensions only"
   exit 1
 }
@@ -35,12 +35,14 @@ else
     deploy)
       firebase deploy --except functions,extensions
       exit ;;
-    # functions)
-    #   cd functions
-    #   npm run build
-    #   cd ..
-    #   firebase deploy --only functions
-    #   exit ;;
+    functions)
+      cd functionCron
+      npm run build
+      cd ../functionNotify
+      npm run build
+      cd ..
+      firebase deploy --only functions
+      exit ;;
     extensions)
       # firebase ext:install firebase/storage-resize-images --local
       firebase deploy --only extensions
