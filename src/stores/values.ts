@@ -1,44 +1,48 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from 'src/lib/firebase'
-import { doc, query, where, getDoc, getDocs, writeBatch } from 'firebase/firestore'
+import { doc, query, where, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
 import { CONFIG, isEmpty, delimiter, counterId } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
-import { counterCollection } from 'src/helpers/collections'
+import { counterCollection, photoCollection } from 'src/helpers/collections'
+import notify from 'src/helpers/notify'
 import type { PhotoType, ValuesState } from 'src/helpers/models'
 import type { DiffResult } from 'src/helpers/diff'
 
-// const buildCounters = async (): Promise<ValuesState['values']> => {
-//   // Build new counters
-//   const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
-//   const newValues: ValuesState['values'] = {
-//     year: {},
-//     tags: {},
-//     model: {},
-//     lens: {},
-//     email: {},
-//     nick: {},
-//   }
+/**
+ * Builds counters for all photos in the database.
+ * @returns A promise that resolves to the new values.
+ */
+const buildCounters = async (): Promise<ValuesState['values']> => {
+  // Build new counters
+  const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+  const newValues: ValuesState['values'] = {
+    year: {},
+    tags: {},
+    model: {},
+    lens: {},
+    email: {},
+    nick: {},
+  }
 
-//   photoSnapshot.forEach((doc) => {
-//     const obj = doc.data() as Record<string, unknown>
-//     CONFIG.photo_filter.forEach((field) => {
-//       if (field === 'tags') {
-//         const tags = Array.isArray(obj.tags) ? obj.tags : []
-//         for (const tag of tags) {
-//           newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
-//         }
-//       } else {
-//         const val = obj[field]
-//         if (val !== undefined && val !== null && val !== '') {
-//           newValues[field as keyof ValuesState['values']][val as string] =
-//             (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
-//         }
-//       }
-//     })
-//   })
-
-//   return newValues
-// }
+  photoSnapshot.forEach((doc) => {
+    const obj = doc.data() as Record<string, unknown>
+    CONFIG.photo_filter.forEach((field) => {
+      if (field === 'tags') {
+        const tags = Array.isArray(obj.tags) ? obj.tags : []
+        for (const tag of tags) {
+          newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
+        }
+      } else {
+        const val = obj[field]
+        if (val !== undefined && val !== null && val !== '') {
+          newValues[field as keyof ValuesState['values']][val as string] =
+            (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
+        }
+      }
+    })
+  })
+  return newValues
+}
 
 /**
  * Returns an object with keys sorted by their value in descending order.
@@ -137,34 +141,34 @@ export const useValuesStore = defineStore('meta', {
       })
     },
 
-    // async countersBuild(): Promise<void> {
-    //   notify({ group: 'counters', message: `Please wait` })
+    async countersBuild(): Promise<void> {
+      notify({ group: 'counters', message: `Please wait` })
 
-    //   // Build new counters
-    //   const newValues = await buildCounters()
+      // Build new counters
+      const newValues = await buildCounters()
 
-    //   // Delete old counters
-    //   const countersToDelete = await getDocs(query(counterCollection))
-    //   const deleteBatch = writeBatch(db)
-    //   countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
-    //   await deleteBatch.commit()
-    //   notify({ group: 'counters', message: `Deleted old counters` })
+      // Delete old counters
+      const countersToDelete = await getDocs(query(counterCollection))
+      const deleteBatch = writeBatch(db)
+      countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
+      await deleteBatch.commit()
+      notify({ group: 'counters', message: `Deleted old counters` })
 
-    //   // Write new counters to database and store
-    //   const setBatch = writeBatch(db)
-    //   CONFIG.photo_filter.forEach((field) => {
-    //     const fieldKey = field as keyof ValuesState['values']
-    //     Object.entries(newValues[fieldKey]).forEach(([key, count]) => {
-    //       const counterRef = doc(counterCollection, counterId(field, key))
-    //       setBatch.set(counterRef, { count, field, value: key })
-    //     })
-    //     this.values[fieldKey] = newValues[fieldKey]
-    //     notify({ group: 'counters', message: `Built counters for ${field}` })
-    //   })
+      // Write new counters to database and store
+      const setBatch = writeBatch(db)
+      CONFIG.photo_filter.forEach((field) => {
+        const fieldKey = field as keyof ValuesState['values']
+        Object.entries(newValues[fieldKey]).forEach(([key, count]) => {
+          const counterRef = doc(counterCollection, counterId(field, key))
+          setBatch.set(counterRef, { count, field, value: key })
+        })
+        this.values[fieldKey] = newValues[fieldKey]
+        notify({ group: 'counters', message: `Built counters for ${field}` })
+      })
 
-    //   await setBatch.commit()
-    //   notify({ group: 'counters', message: `All done` })
-    // },
+      await setBatch.commit()
+      notify({ group: 'counters', message: `All done` })
+    },
 
     /**
      * Helper function to build counter map from photo data

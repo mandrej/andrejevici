@@ -121,24 +121,24 @@ export const useAppStore = defineStore('app', {
       return this.bucket
     },
 
-    // async bucketBuild(): Promise<BucketType> {
-    //   const res = {
-    //     count: 0,
-    //     size: 0,
-    //   }
-    //   const q = query(photoCollection, orderBy('date', 'desc'))
-    //   const querySnapshot = await getDocs(q)
-    //   if (!querySnapshot.empty) {
-    //     querySnapshot.forEach((d) => {
-    //       res.count++
-    //       res.size += d.data().size
-    //     })
-    //   }
-    //   this.bucket = { ...res }
-    //   await setDoc(bucketRef, this.bucket, { merge: true })
-    //   notify({ message: `Bucket size calculated` })
-    //   return this.bucket
-    // },
+    async bucketBuild(): Promise<BucketType> {
+      const res = {
+        count: 0,
+        size: 0,
+      }
+      const q = query(photoCollection, orderBy('date', 'desc'))
+      const querySnapshot = await getDocs(q)
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((d) => {
+          res.count++
+          res.size += d.data().size
+        })
+      }
+      this.bucket = { ...res }
+      await setDoc(bucketRef, this.bucket, { merge: true })
+      notify({ message: `Bucket size calculated` })
+      return this.bucket
+    },
 
     /**
      * Fetches a list of records based on the search criteria.
