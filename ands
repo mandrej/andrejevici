@@ -36,11 +36,8 @@ else
       firebase deploy --except functions,extensions
       exit ;;
     functions)
-      cd functionCron
-      npm run build
-      cd ../functionNotify
-      npm run build
-      cd ..
+      npm --prefix functionNotify run build
+      npm --prefix functionCron run build
       firebase deploy --only functions
       exit ;;
     extensions)

@@ -33,10 +33,10 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cronCounters = void 0;
+exports.cronBucket = exports.cronCounters = void 0;
 const app_1 = require("firebase-admin/app");
 const firestore_1 = require("firebase-admin/firestore");
-const scheduler_1 = require("firebase-functions/scheduler");
+const scheduler_1 = require("firebase-functions/v2/scheduler");
 // import PromisePool from 'es6-promise-pool'
 const logger = __importStar(require("firebase-functions/logger"));
 (0, app_1.initializeApp)();
@@ -75,7 +75,8 @@ const buildCounters = async () => {
     });
     return newValues;
 };
-exports.cronCounters = (0, scheduler_1.onSchedule)('every day 02:00', async () => {
+// every 3 days at 02:00
+exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 2 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
     logger.log('Get new value');
     const newValues = await buildCounters();
     logger.log('Delete old value');
@@ -93,4 +94,21 @@ exports.cronCounters = (0, scheduler_1.onSchedule)('every day 02:00', async () =
                 .set({ field, value: key, count });
         }
     }
+});
+// every 3 days at 03:00
+exports.cronBucket = (0, scheduler_1.onSchedule)({ schedule: '0 3 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
+    logger.log('Get new value');
+    const res = {
+        count: 0,
+        size: 0,
+    };
+    const query = (0, firestore_1.getFirestore)().collection('Photo').orderBy('date', 'desc');
+    const querySnapshot = await query.get();
+    querySnapshot.forEach((doc) => {
+        const obj = doc.data();
+        res.count++;
+        res.size += obj.size;
+    });
+    logger.log('Write new value');
+    (0, firestore_1.getFirestore)().collection('Bucket').doc('total').set(res);
 });

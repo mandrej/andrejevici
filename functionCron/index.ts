@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-import { onSchedule } from 'firebase-functions/scheduler'
+import { onSchedule } from 'firebase-functions/v2/scheduler'
 // import PromisePool from 'es6-promise-pool'
 import * as logger from 'firebase-functions/logger'
 
@@ -57,25 +57,52 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
   return newValues
 }
 
-export const cronCounters = onSchedule('every day 02:00', async () => {
-  logger.log('Get new value')
-  const newValues = await buildCounters()
+// every 3 days at 02:00
+export const cronCounters = onSchedule(
+  { schedule: '0 2 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  async () => {
+    logger.log('Get new value')
+    const newValues = await buildCounters()
 
-  logger.log('Delete old value')
-  const query = getFirestore().collection('Counter')
-  const querySnapshot = await query.get()
+    logger.log('Delete old value')
+    const query = getFirestore().collection('Counter')
+    const querySnapshot = await query.get()
 
-  querySnapshot.forEach((doc) => {
-    getFirestore().collection('Counter').doc(doc.id).delete()
-  })
+    querySnapshot.forEach((doc) => {
+      getFirestore().collection('Counter').doc(doc.id).delete()
+    })
 
-  logger.log('Write new value')
-  for (const field in newValues) {
-    for (const [key, count] of Object.entries(newValues[field as keyof ValuesState['values']])) {
-      getFirestore()
-        .collection('Counter')
-        .doc(counterId(field, key))
-        .set({ field, value: key, count })
+    logger.log('Write new value')
+    for (const field in newValues) {
+      for (const [key, count] of Object.entries(newValues[field as keyof ValuesState['values']])) {
+        getFirestore()
+          .collection('Counter')
+          .doc(counterId(field, key))
+          .set({ field, value: key, count })
+      }
     }
-  }
-})
+  },
+)
+
+// every 3 days at 03:00
+export const cronBucket = onSchedule(
+  { schedule: '0 3 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  async () => {
+    logger.log('Get new value')
+    const res = {
+      count: 0,
+      size: 0,
+    }
+    const query = getFirestore().collection('Photo').orderBy('date', 'desc')
+    const querySnapshot = await query.get()
+
+    querySnapshot.forEach((doc) => {
+      const obj = doc.data() as Record<string, unknown>
+      res.count++
+      res.size += obj.size as number
+    })
+
+    logger.log('Write new value')
+    getFirestore().collection('Bucket').doc('total').set(res)
+  },
+)

@@ -4,7 +4,7 @@
       <div class="q-pa-md text-h6">Rebuild / Repair</div>
 
       <q-list separator>
-        <q-item clickable>
+        <!-- <q-item clickable>
           <q-item-section>
             Recreate existing field values for
             {{ Object.keys(values).join(', ') }}
@@ -12,13 +12,13 @@
           <q-item-section side>
             <q-btn color="primary" label="rebuild" @click="meta.countersBuild" />
           </q-item-section>
-        </q-item>
-        <q-item clickable>
+        </q-item> -->
+        <!-- <q-item clickable>
           <q-item-section> Bucket count and size </q-item-section>
           <q-item-section side>
             <q-btn color="primary" label="Recalc" @click="app.bucketBuild" />
           </q-item-section>
-        </q-item>
+        </q-item> -->
         <q-item clickable>
           <q-item-section>
             {{ formatDatum('2025-10-24', 'DD.MM.YYYY') }} Merge users and subsribers
@@ -69,10 +69,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
+// import { useValuesStore } from 'src/stores/values'
 import { formatDatum } from 'src/helpers'
 import { mismatch, missingThumbnails } from 'src/helpers/remedy'
 
@@ -82,10 +82,10 @@ const UsersTab = defineAsyncComponent(() => import('src/components/tab/Users-Tab
 const MessagesTab = defineAsyncComponent(() => import('src/components/tab/Messages-Tab.vue'))
 
 const app = useAppStore()
-const meta = useValuesStore()
+// const meta = useValuesStore()
 
 const { adminTab } = storeToRefs(app)
-const values = computed(() => meta.values)
+// const values = computed(() => meta.values)
 
 // const show = () => {
 //   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external']
