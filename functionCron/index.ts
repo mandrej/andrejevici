@@ -19,8 +19,10 @@ interface ValuesState {
   }
 }
 
+const delimiter = '||' // for counter id
+
 const counterId = (field: string, value: string): string => {
-  return `${field}_${value}`
+  return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
 }
 
 // Build new counters

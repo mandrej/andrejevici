@@ -40,8 +40,9 @@ const scheduler_1 = require("firebase-functions/v2/scheduler");
 // import PromisePool from 'es6-promise-pool'
 const logger = __importStar(require("firebase-functions/logger"));
 (0, app_1.initializeApp)();
+const delimiter = '||'; // for counter id
 const counterId = (field, value) => {
-    return `${field}_${value}`;
+    return `Photo${delimiter}${field}${delimiter}${value}`; // FIXME Photo is hard coded
 };
 // Build new counters
 const buildCounters = async () => {
