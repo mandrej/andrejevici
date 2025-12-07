@@ -89,13 +89,8 @@ const onNewToken = () => {
 
 onMounted(async () => {
   await app.getLast()
-  await meta.fieldCount('year')
-  await meta.fieldCount('nick')
-  // in Index-Page
-  // await meta.fieldCount('tags')
-  // await meta.fieldCount('model')
-  // await meta.fieldCount('lens')
   await app.bucketRead()
+  await meta.readValues()
   // RESET
   busy.value = false
   error.value = ''

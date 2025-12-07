@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { version, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
@@ -39,13 +39,4 @@ const meta = useValuesStore()
 const nickWithCount = computed(() => meta.nickWithCount)
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket, find } = storeToRefs(app)
-
-onMounted(async () => {
-  // in App
-  // await meta.fieldCount('year')
-  // await meta.fieldCount('nick')
-  await meta.fieldCount('tags')
-  await meta.fieldCount('model')
-  await meta.fieldCount('lens')
-})
 </script>

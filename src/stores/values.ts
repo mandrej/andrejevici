@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from 'src/lib/firebase'
-import { doc, query, where, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
+import { doc, query, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
 import { CONFIG, isEmpty, delimiter, counterId } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'
 import { counterCollection, photoCollection } from 'src/helpers/collections'
@@ -123,13 +123,10 @@ export const useValuesStore = defineStore('meta', {
   },
   actions: {
     /**
-     * Gets the count of each value for a specific field.
-     *
-     * @param {keyof ValuesState['values']} field - The field to get the count for.
-     * @return {Promise<void>} A promise that resolves when the count is retrieved.
+     * Reads the values from the database.
      */
-    async fieldCount(field: keyof ValuesState['values']): Promise<void> {
-      const q = query(counterCollection, where('field', '==', field))
+    async readValues(): Promise<void> {
+      const q = query(counterCollection)
       const querySnapshot = await getDocs(q)
       querySnapshot.forEach((d) => {
         const obj = d.data() as {
@@ -137,7 +134,7 @@ export const useValuesStore = defineStore('meta', {
           field: string
           value: string
         }
-        this.values[field][obj.value] = obj.count
+        this.values[obj.field as keyof ValuesState['values']][obj.value] = obj.count
       })
     },
 
