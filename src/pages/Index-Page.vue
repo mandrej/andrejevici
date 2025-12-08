@@ -1,5 +1,12 @@
 <template>
-  <HistoryButton v-if="find && Object.keys(find).length" class="fixed-center z-max" size="2em" />
+  <q-btn
+    flat
+    round
+    size="2em"
+    icon="history"
+    @click="previousCollection"
+    class="fixed-center z-max history-button"
+  />
   <div class="text-body2">{{ version }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
@@ -31,12 +38,24 @@ import { storeToRefs } from 'pinia'
 import { version, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
-import HistoryButton from 'src/components/toolbar/History-Button.vue'
+import { useRouter } from 'vue-router'
 
 const app = useAppStore()
 const meta = useValuesStore()
+const router = useRouter()
+const { find } = storeToRefs(app)
 
 const nickWithCount = computed(() => meta.nickWithCount)
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
-const { bucket, find } = storeToRefs(app)
+const { bucket } = storeToRefs(app)
+
+const previousCollection = () => {
+  // app.fetchRecords(true, 'refresh')
+  if (find.value) {
+    void router.push({
+      path: '/list',
+      query: { ...find.value },
+    })
+  }
+}
 </script>
