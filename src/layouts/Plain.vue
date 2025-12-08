@@ -13,7 +13,7 @@
           v-if="user && user.isAuthorized"
           unelevated
           rounded
-          class="absolute-bottomtop-left q-ma-md bg-warning text-dark"
+          class="absolute-top-left q-ma-md bg-warning text-dark"
           :label="`Sign out ${user.name}`"
           @click="auth.signIn"
         />
