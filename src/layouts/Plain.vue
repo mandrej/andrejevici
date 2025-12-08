@@ -8,23 +8,22 @@
           :to="{ path: '/list' }"
           v-ripple.early="{ color: 'purple' }"
         >
-          <q-btn
-            v-if="user && user.isAuthorized"
-            fab
-            icon="add"
-            color="warning"
-            text-color="dark"
-            class="absolute-top-left q-ma-md bg-warning text-dark"
-            to="/add"
-          />
-          <q-btn
-            v-else
-            fab
-            icon="person"
-            class="absolute-top-left q-ma-md bg-warning text-dark"
-            @click="auth.signIn"
-          />
         </router-link>
+        <q-btn
+          v-if="user && user.isAuthorized"
+          unelevated
+          rounded
+          class="absolute-bottomtop-left q-ma-md bg-warning text-dark"
+          :label="`Sign out ${user.name}`"
+          @click="auth.signIn"
+        />
+        <q-btn
+          v-else
+          round
+          icon="person"
+          class="absolute-top-left q-ma-md bg-warning text-dark"
+          @click="auth.signIn"
+        />
 
         <div class="column col-xs-12 col-md-6 justify-center items-center" style="min-height: 50vh">
           <router-view />

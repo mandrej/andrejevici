@@ -16,15 +16,7 @@ import { onMessage, getToken } from 'firebase/messaging'
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
-// const messaging = getMessaging()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
-
-const messageListener = () =>
-  new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
-      resolve(payload)
-    })
-  })
 
 onMounted(async () => {
   await app.getLast()
@@ -90,24 +82,17 @@ onMounted(async () => {
    * @description
    * Listens for messages and shows a notification.
    */
-  messageListener()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .then((payload: any) => {
-      const params = {
+  onMessage(messaging, (payload) => {
+    if (payload.data?.body) {
+      notify({
         type: 'external',
         message: payload.data.body,
         icon: 'notifications',
         caption: payload.messageId,
-      }
-      notify(params)
-    })
-    .catch((err) => {
-      notify({
-        type: 'negative',
-        message: 'An error occurred while listening for messages.',
-        caption: err,
-        icon: 'error',
       })
-    })
+    } else {
+      if (process.env.DEV) console.log(payload)
+    }
+  })
 })
 </script>

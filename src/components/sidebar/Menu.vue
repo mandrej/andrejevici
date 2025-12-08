@@ -1,17 +1,29 @@
 <template>
   <q-list>
-    <q-item clickable @click="auth.signIn">
+    <!-- <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
       <q-item-section avatar>
-        <q-icon name="person" />
+        <q-icon name="home" />
       </q-item-section>
 
-      <q-item-section v-if="user && user.name">
-        <q-item-label>Sign out</q-item-label>
-        <q-item-label caption>{{ user.name }}</q-item-label>
+      <q-item-section>
+        <q-item-label>Start</q-item-label>
+        <q-item-label caption></q-item-label>
       </q-item-section>
-      <q-item-section v-else>
-        <q-item-label>Sign in</q-item-label>
-        <q-item-label caption>using your Google account</q-item-label>
+    </q-item> -->
+
+    <q-item
+      clickable
+      v-ripple
+      :to="{ name: 'list', query: { ...find } }"
+      :active="$route.name === 'list'"
+    >
+      <q-item-section avatar>
+        <q-icon name="grid_view" />
+      </q-item-section>
+
+      <q-item-section>
+        <q-item-label>Browse</q-item-label>
+        <q-item-label caption>You can filter results</q-item-label>
       </q-item-section>
     </q-item>
 
@@ -53,8 +65,11 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
 
+const app = useAppStore()
 const auth = useUserStore()
+const { find } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 </script>
