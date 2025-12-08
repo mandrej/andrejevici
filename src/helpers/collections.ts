@@ -1,4 +1,4 @@
-import { db } from 'src/lib/firebase'
+import { db } from 'src/boot/firebase'
 import { collection } from 'firebase/firestore'
 
 export const userCollection = collection(db, 'User')

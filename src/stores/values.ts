@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { db } from 'src/lib/firebase'
+import { db } from 'src/boot/firebase'
 import { doc, query, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
 import { CONFIG, isEmpty, delimiter, counterId } from 'src/helpers'
 import { deepDiffMap } from 'src/helpers/diff'

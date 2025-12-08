@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import uuid4 from 'uuid4'
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { storage } from 'src/lib/firebase'
+import { storage } from 'src/boot/firebase'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'

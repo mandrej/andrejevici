@@ -2,7 +2,7 @@ import uuid4 from 'uuid4'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import { CONFIG } from 'src/helpers'
-import { auth, db } from 'src/lib/firebase'
+import { auth, db } from 'src/boot/firebase'
 import {
   doc,
   setDoc,

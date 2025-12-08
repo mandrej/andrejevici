@@ -1,4 +1,4 @@
-import { db, storage } from 'src/lib/firebase'
+import { db, storage } from 'src/boot/firebase'
 import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
 import {
   doc,
