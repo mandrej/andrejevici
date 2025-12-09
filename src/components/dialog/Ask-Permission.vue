@@ -1,15 +1,17 @@
 <template>
   <q-dialog v-model="open" transition-show="slide-down" transition-hide="slide-up" persistent>
     <q-card flat>
+      <q-toolbar>
+        <q-toolbar-title>Notifications</q-toolbar-title>
+      </q-toolbar>
       <q-card-section class="row items-center">
         <q-icon name="camera" size="56px" color="primary" />
-        <span class="q-ml-md">Would you like to enable notifications?</span>
+        <span class="q-ml-md">Would you like to enable push notifications?</span>
         <q-linear-progress v-if="wait" indeterminate color="warning" class="q-mt-sm" />
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions class="justify-between q-pa-md">
         <q-btn flat label="Disable" @click="disableNotification" />
-        <q-btn flat label="Ask Later" @click="askLater" />
         <q-btn flat label="Enable" @click="enableNotifications" />
       </q-card-actions>
     </q-card>
@@ -38,13 +40,13 @@ const disableNotification = async () => {
   await auth.updateSubscriber()
   await auth.removeDevice()
 }
-const askLater = async () => {
-  // after loginDays ask again
-  open.value = false
-  auth.askPush = false
-  auth.allowPush = false
-  await auth.updateSubscriber()
-}
+// const askLater = async () => {
+//   // after loginDays ask again
+//   open.value = false
+//   auth.askPush = false
+//   auth.allowPush = false
+//   await auth.updateSubscriber()
+// }
 const enableNotifications = async () => {
   try {
     // after loginDays ask again

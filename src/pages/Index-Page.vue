@@ -5,7 +5,7 @@
     size="2em"
     icon="history"
     @click="previousCollection"
-    class="fixed-center z-max history-button"
+    class="fixed-center history-button"
   />
   <div class="text-body2">{{ version }}</div>
   <div class="text-h4 text-weight-thin">

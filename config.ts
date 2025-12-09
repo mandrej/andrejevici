@@ -1,6 +1,6 @@
 const CONFIG = {
   limit: process.env.DEV ? 12 : 100,
-  loginDays: 30,
+  loginDays: 60,
   firebase: {
     apiKey: 'AIzaSyBHV3J3GAEPiTU2MCrhuRI4F9mWzdjw6B0',
     authDomain: 'andrejevici.firebaseapp.com',

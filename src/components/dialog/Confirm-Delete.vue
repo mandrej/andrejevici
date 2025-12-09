@@ -6,33 +6,16 @@
     persistent
   >
     <q-card flat>
-      <template v-if="rec!.filename">
-        <q-toolbar class="row justify-between" bordered>
-          <q-toolbar-title>Confirm Delete</q-toolbar-title>
-        </q-toolbar>
-        <q-card-section
-          >Would you like to delete {{ formatBytes(rec!.size) }} image named "{{ rec!.headline }}"?
-        </q-card-section>
-        <q-card-actions class="row justify-between q-pa-md q-col-gutter-md">
-          <div class="col">
-            <q-btn color="primary" label="OK" @click="emit('confirm-ok', rec)" />
-          </div>
-          <div class="col text-right">
-            <q-btn flat label="Close" @click="onCancel" />
-          </div>
-        </q-card-actions>
-      </template>
-      <template v-else>
-        <q-toolbar class="row justify-between" bordered>
-          <q-toolbar-title>Confirm Delete</q-toolbar-title>
-        </q-toolbar>
-        <q-card-section>No selected image to delete</q-card-section>
-        <q-card-actions class="row justify-between q-pa-md q-col-gutter-md">
-          <div class="col text-right">
-            <q-btn color="primary" label="Close" @click="onCancel" />
-          </div>
-        </q-card-actions>
-      </template>
+      <q-toolbar>
+        <q-toolbar-title>Confirm Delete</q-toolbar-title>
+      </q-toolbar>
+      <q-card-section
+        >Would you like to delete {{ formatBytes(rec!.size) }} photo named "{{ rec!.headline }}"?
+      </q-card-section>
+      <q-card-actions class="justify-between q-pa-md">
+        <q-btn color="primary" label="OK" @click="emit('confirm-ok', rec)" />
+        <q-btn flat label="Close" @click="onCancel" />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
