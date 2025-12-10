@@ -32,12 +32,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cronBucket = exports.cronCounters = void 0;
 const app_1 = require("firebase-admin/app");
 const firestore_1 = require("firebase-admin/firestore");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
-// import PromisePool from 'es6-promise-pool'
+const es6_promise_pool_1 = __importDefault(require("es6-promise-pool"));
 const logger = __importStar(require("firebase-functions/logger"));
 (0, app_1.initializeApp)();
 const delimiter = '||'; // for counter id
@@ -76,28 +79,42 @@ const buildCounters = async () => {
     });
     return newValues;
 };
-// every 3 days at 02:00
-exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 2 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
-    logger.log('Get new value');
+// 5PM America/Los_Angeles = 2AM Europe/Paris
+exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
+    logger.log('cronCounters START');
     const newValues = await buildCounters();
-    logger.log('Delete old value');
     const query = (0, firestore_1.getFirestore)().collection('Counter');
     const querySnapshot = await query.get();
     querySnapshot.forEach((doc) => {
         (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
     });
-    logger.log('Write new value');
+    // Create an array of all write operations
+    const writeOperations = [];
     for (const field in newValues) {
         for (const [key, count] of Object.entries(newValues[field])) {
-            (0, firestore_1.getFirestore)()
-                .collection('Counter')
-                .doc(counterId(field, key))
-                .set({ field, value: key, count });
+            writeOperations.push({ field, key, count });
         }
     }
+    // Generator function to create promises for the pool
+    let operationIndex = 0;
+    const promiseProducer = () => {
+        if (operationIndex >= writeOperations.length) {
+            return undefined;
+        }
+        const { field, key, count } = writeOperations[operationIndex];
+        operationIndex++;
+        return (0, firestore_1.getFirestore)()
+            .collection('Counter')
+            .doc(counterId(field, key))
+            .set({ field, value: key, count });
+    };
+    // Create and execute the promise pool with concurrency of 5
+    const pool = new es6_promise_pool_1.default(promiseProducer, 5);
+    await pool.start();
+    logger.log(`cronCounters ${operationIndex} / ${writeOperations.length} operations`);
 });
-// every 3 days at 03:00
-exports.cronBucket = (0, scheduler_1.onSchedule)({ schedule: '0 3 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
+// 6PM America/Los_Angeles = 3AM Europe/Paris
+exports.cronBucket = (0, scheduler_1.onSchedule)({ schedule: '0 18 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
     logger.log('Get new value');
     const res = {
         count: 0,

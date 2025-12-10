@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
-// import PromisePool from 'es6-promise-pool'
+import PromisePool from 'es6-promise-pool'
 import * as logger from 'firebase-functions/logger'
 
 initializeApp()
@@ -55,18 +55,16 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
       }
     })
   })
-
   return newValues
 }
 
-// every 3 days at 02:00
+// 5PM America/Los_Angeles = 2AM Europe/Paris
 export const cronCounters = onSchedule(
-  { schedule: '0 2 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  { schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
-    logger.log('Get new value')
+    logger.log('cronCounters START')
     const newValues = await buildCounters()
 
-    logger.log('Delete old value')
     const query = getFirestore().collection('Counter')
     const querySnapshot = await query.get()
 
@@ -74,21 +72,41 @@ export const cronCounters = onSchedule(
       getFirestore().collection('Counter').doc(doc.id).delete()
     })
 
-    logger.log('Write new value')
+    // Create an array of all write operations
+    const writeOperations: Array<{ field: string; key: string; count: number }> = []
     for (const field in newValues) {
       for (const [key, count] of Object.entries(newValues[field as keyof ValuesState['values']])) {
-        getFirestore()
-          .collection('Counter')
-          .doc(counterId(field, key))
-          .set({ field, value: key, count })
+        writeOperations.push({ field, key, count })
       }
     }
+
+    // Generator function to create promises for the pool
+    let operationIndex = 0
+    const promiseProducer = (): Promise<FirebaseFirestore.WriteResult> | undefined => {
+      if (operationIndex >= writeOperations.length) {
+        return undefined
+      }
+
+      const { field, key, count } = writeOperations[operationIndex]
+      operationIndex++
+
+      return getFirestore()
+        .collection('Counter')
+        .doc(counterId(field, key))
+        .set({ field, value: key, count })
+    }
+
+    // Create and execute the promise pool with concurrency of 5
+    const pool = new PromisePool(promiseProducer, 5)
+    await pool.start()
+
+    logger.log(`cronCounters ${operationIndex} / ${writeOperations.length} operations`)
   },
 )
 
-// every 3 days at 03:00
+// 6PM America/Los_Angeles = 3AM Europe/Paris
 export const cronBucket = onSchedule(
-  { schedule: '0 3 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  { schedule: '0 18 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
     logger.log('Get new value')
     const res = {
