@@ -60,7 +60,7 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
 
 // 5PM America/Los_Angeles = 2AM Europe/Paris
 export const cronCounters = onSchedule(
-  { schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  { schedule: '0 17 * * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
     logger.log('cronCounters START')
     const newValues = await buildCounters()
@@ -68,9 +68,22 @@ export const cronCounters = onSchedule(
     const query = getFirestore().collection('Counter')
     const querySnapshot = await query.get()
 
-    querySnapshot.forEach((doc) => {
-      getFirestore().collection('Counter').doc(doc.id).delete()
-    })
+    // Delete existing counters using PromisePool
+    const docsToDelete = querySnapshot.docs
+    let deleteIndex = 0
+    const deleteProducer = (): Promise<FirebaseFirestore.WriteResult> | undefined => {
+      if (deleteIndex >= docsToDelete.length) {
+        return undefined
+      }
+      const doc = docsToDelete[deleteIndex]
+      deleteIndex++
+      return getFirestore().collection('Counter').doc(doc.id).delete()
+    }
+
+    const deletePool = new PromisePool(deleteProducer, 10)
+    await deletePool.start()
+
+    logger.log(`cronCounters deleted ${deleteIndex} existing counters`)
 
     // Create an array of all write operations
     const writeOperations: Array<{ field: string; key: string; count: number }> = []
@@ -100,7 +113,7 @@ export const cronCounters = onSchedule(
     const pool = new PromisePool(promiseProducer, 5)
     await pool.start()
 
-    logger.log(`cronCounters ${operationIndex} / ${writeOperations.length} operations`)
+    logger.log(`cronCounters created ${operationIndex} new counters`)
   },
 )
 

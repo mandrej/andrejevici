@@ -80,14 +80,25 @@ const buildCounters = async () => {
     return newValues;
 };
 // 5PM America/Los_Angeles = 2AM Europe/Paris
-exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
+exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 * * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
     logger.log('cronCounters START');
     const newValues = await buildCounters();
     const query = (0, firestore_1.getFirestore)().collection('Counter');
     const querySnapshot = await query.get();
-    querySnapshot.forEach((doc) => {
-        (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
-    });
+    // Delete existing counters using PromisePool
+    const docsToDelete = querySnapshot.docs;
+    let deleteIndex = 0;
+    const deleteProducer = () => {
+        if (deleteIndex >= docsToDelete.length) {
+            return undefined;
+        }
+        const doc = docsToDelete[deleteIndex];
+        deleteIndex++;
+        return (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
+    };
+    const deletePool = new es6_promise_pool_1.default(deleteProducer, 10);
+    await deletePool.start();
+    logger.log(`cronCounters deleted ${deleteIndex} existing counters`);
     // Create an array of all write operations
     const writeOperations = [];
     for (const field in newValues) {
@@ -111,7 +122,7 @@ exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 */3 * *', r
     // Create and execute the promise pool with concurrency of 5
     const pool = new es6_promise_pool_1.default(promiseProducer, 5);
     await pool.start();
-    logger.log(`cronCounters ${operationIndex} / ${writeOperations.length} operations`);
+    logger.log(`cronCounters created ${operationIndex} new counters`);
 });
 // 6PM America/Los_Angeles = 3AM Europe/Paris
 exports.cronBucket = (0, scheduler_1.onSchedule)({ schedule: '0 18 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
