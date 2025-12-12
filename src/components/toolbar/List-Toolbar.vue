@@ -10,9 +10,7 @@
   }}</q-btn>
   <span class="q-mx-md">{{ record.count }}</span>
 
-  <div class="row absolute-bottom">
-    <LinearProgress />
-  </div>
+  <LinearProgress class="absolute-bottom" />
 </template>
 
 <script setup lang="ts">
