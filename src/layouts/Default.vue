@@ -13,7 +13,7 @@
 
     <q-page-container>
       <q-page>
-        <Ask-Permission v-if="showConsent" />
+        <Ask-Permission />
         <router-view />
       </q-page>
     </q-page-container>
@@ -21,17 +21,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useUserStore } from 'src/stores/user'
+import { ref, defineAsyncComponent } from 'vue'
 
 const AskPermission = defineAsyncComponent(() => import('src/components/dialog/Ask-Permission.vue'))
 
-const auth = useUserStore()
 const drawer = ref(false)
-const { askPush } = storeToRefs(auth)
-
-const showConsent = computed(() => {
-  return Boolean('Notification' in window && askPush.value)
-})
 </script>

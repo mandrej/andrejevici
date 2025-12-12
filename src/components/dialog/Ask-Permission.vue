@@ -1,12 +1,16 @@
 <template>
-  <q-dialog v-model="open" transition-show="slide-down" transition-hide="slide-up" persistent>
+  <q-dialog
+    v-model="showConsent"
+    transition-show="slide-down"
+    transition-hide="slide-up"
+    persistent
+  >
     <q-card flat>
       <q-toolbar>
-        <q-toolbar-title>Notifications</q-toolbar-title>
+        <q-toolbar-title>Accept notifications</q-toolbar-title>
       </q-toolbar>
-      <q-card-section class="row items-center">
-        <q-icon name="camera" size="56px" color="primary" />
-        <span class="q-ml-md">Would you like to enable push notifications?</span>
+      <q-card-section>
+        Would you like to enable push notifications?
         <q-linear-progress v-if="wait" indeterminate color="warning" class="q-mt-sm" />
       </q-card-section>
 
@@ -19,7 +23,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { CONFIG } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import { useUserStore } from 'src/stores/user'
@@ -27,12 +32,11 @@ import { getMessaging, getToken } from 'firebase/messaging'
 
 const auth = useUserStore()
 const messaging = getMessaging()
-const open = ref(true)
-const wait = ref(false)
-
-defineProps({
-  model: Boolean,
+const { askPush } = storeToRefs(auth)
+const showConsent = computed(() => {
+  return Boolean('Notification' in window && askPush.value)
 })
+const wait = ref(false)
 
 const disableNotification = async () => {
   auth.askPush = false
@@ -40,18 +44,11 @@ const disableNotification = async () => {
   await auth.updateSubscriber()
   await auth.removeDevice()
 }
-// const askLater = async () => {
-//   // after loginDays ask again
-//   open.value = false
-//   auth.askPush = false
-//   auth.allowPush = false
-//   await auth.updateSubscriber()
-// }
+
 const enableNotifications = async () => {
   try {
     // after loginDays ask again
     const permission = await Notification.requestPermission()
-
     if (permission === 'granted') {
       wait.value = true
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
@@ -76,6 +73,7 @@ const enableNotifications = async () => {
       // Handle denied permission
       auth.askPush = false
       auth.allowPush = false
+      wait.value = false
       await auth.updateSubscriber()
       notify({
         type: 'warning',
