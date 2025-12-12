@@ -225,6 +225,11 @@ export const useAppStore = defineStore('app', {
         meta.updateCounters(oldDoc.data() as PhotoType, obj)
         notify({ message: `${obj.filename} updated` })
       } else {
+        // set find on new added image
+        this.find = Object.assign(
+          {},
+          { year: obj.year, month: obj.month, day: obj.day },
+        ) as FindType
         // set thumbnail url = publish
         if (process.env.DEV) {
           const thumbRef = storageRef(storage, thumbName(obj.filename))

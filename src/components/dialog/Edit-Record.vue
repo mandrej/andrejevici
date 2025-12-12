@@ -195,7 +195,7 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
-const { showEdit, find } = storeToRefs(app)
+const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user, emailNickMap } = storeToRefs(auth)
 
@@ -261,11 +261,6 @@ const onSubmit = async () => {
   }
 
   try {
-    // set find on new added image
-    if (!tmp.thumb) {
-      find.value = Object.assign({}, { year: tmp.year, month: tmp.month, day: tmp.day })
-    }
-
     await app.saveRecord(tmp)
     emit('edit-ok', U + tmp.filename)
     showEdit.value = false
