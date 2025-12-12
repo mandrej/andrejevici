@@ -60,7 +60,7 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
 
 // 5PM America/Los_Angeles = 2AM Europe/Paris
 export const cronCounters = onSchedule(
-  { schedule: '0 17 * * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
+  { schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
     logger.log('cronCounters START')
     const newValues = await buildCounters()
@@ -77,6 +77,11 @@ export const cronCounters = onSchedule(
       }
       const doc = docsToDelete[deleteIndex]
       deleteIndex++
+
+      if (!doc) {
+        return undefined
+      }
+
       return getFirestore().collection('Counter').doc(doc.id).delete()
     }
 
@@ -100,8 +105,14 @@ export const cronCounters = onSchedule(
         return undefined
       }
 
-      const { field, key, count } = writeOperations[operationIndex]
+      const operation = writeOperations[operationIndex]
       operationIndex++
+
+      if (!operation) {
+        return undefined
+      }
+
+      const { field, key, count } = operation
 
       return getFirestore()
         .collection('Counter')

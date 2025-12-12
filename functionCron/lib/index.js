@@ -80,7 +80,7 @@ const buildCounters = async () => {
     return newValues;
 };
 // 5PM America/Los_Angeles = 2AM Europe/Paris
-exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 * * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
+exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
     logger.log('cronCounters START');
     const newValues = await buildCounters();
     const query = (0, firestore_1.getFirestore)().collection('Counter');
@@ -94,6 +94,9 @@ exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 * * *', reg
         }
         const doc = docsToDelete[deleteIndex];
         deleteIndex++;
+        if (!doc) {
+            return undefined;
+        }
         return (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
     };
     const deletePool = new es6_promise_pool_1.default(deleteProducer, 10);
@@ -112,8 +115,12 @@ exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 * * *', reg
         if (operationIndex >= writeOperations.length) {
             return undefined;
         }
-        const { field, key, count } = writeOperations[operationIndex];
+        const operation = writeOperations[operationIndex];
         operationIndex++;
+        if (!operation) {
+            return undefined;
+        }
+        const { field, key, count } = operation;
         return (0, firestore_1.getFirestore)()
             .collection('Counter')
             .doc(counterId(field, key))
