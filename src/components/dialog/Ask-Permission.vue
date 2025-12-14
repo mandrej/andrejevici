@@ -32,11 +32,11 @@ watch(askPush, (newVal) => {
   showConsent.value = Boolean('Notification' in window && newVal)
 })
 
-const disableNotification = async () => {
+const disableNotification = () => {
   auth.askPush = false
   auth.allowPush = false
-  await auth.updateSubscriber()
-  await auth.removeDevice()
+  auth.updateSubscriber()
+  auth.removeDevice()
 }
 
 const enableNotifications = async () => {
@@ -53,8 +53,8 @@ const enableNotifications = async () => {
         auth.token = token
         auth.askPush = false
         auth.allowPush = true
-        await auth.updateSubscriber()
-        await auth.updateDevice(token)
+        auth.updateSubscriber()
+        auth.updateDevice(token)
       } else {
         notify({
           type: 'negative',
@@ -68,7 +68,7 @@ const enableNotifications = async () => {
       auth.askPush = false
       auth.allowPush = false
       wait.value = false
-      await auth.updateSubscriber()
+      auth.updateSubscriber()
       notify({
         type: 'warning',
         message: 'Notifications permission denied. You can enable it later in browser settings.',
@@ -79,7 +79,7 @@ const enableNotifications = async () => {
     wait.value = false
     auth.askPush = false
     auth.allowPush = false
-    await auth.updateSubscriber()
+    auth.updateSubscriber()
     notify({
       type: 'negative',
       message: 'Failed to enable notifications. Please try again.',

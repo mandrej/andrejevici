@@ -143,9 +143,9 @@ const fixQuery = (query: FindType): FindType => {
 
 watch(
   route,
-  async (to) => {
+  (to) => {
     tmp.value = find.value = fixQuery(to.query)
-    await app.fetchRecords(true)
+    app.fetchRecords(true)
   },
   { immediate: true },
 )

@@ -3,7 +3,9 @@
     <q-card flat>
       <q-toolbar>
         <q-toolbar-title>{{ title }}</q-toolbar-title>
-        <q-linear-progress class="absolute-bottom" v-if="progress" indeterminate color="warning" />
+        <div class="absolute-bottom">
+          <q-linear-progress v-if="progress" indeterminate color="warning" />
+        </div>
       </q-toolbar>
       <q-card-section class="q-px-md q-pt-md">
         {{ message }}

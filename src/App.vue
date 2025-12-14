@@ -18,10 +18,10 @@ const meta = useValuesStore()
 const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
-onMounted(async () => {
-  await app.getLast()
-  await app.bucketRead()
-  await meta.readValues()
+onMounted(() => {
+  app.getLast()
+  app.bucketRead()
+  meta.readValues()
   // RESET
   busy.value = false
   error.value = ''

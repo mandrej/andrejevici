@@ -117,7 +117,7 @@ export const useUserStore = defineStore('auth', {
           timestamp: Timestamp.fromDate(new Date()),
         }
       }
-      await setDoc(userRef, this.user, { merge: true })
+      setDoc(userRef, this.user, { merge: true })
     },
 
     /**
@@ -201,16 +201,9 @@ export const useUserStore = defineStore('auth', {
       return result
     },
 
-    /**
-     * Updates a user's field in the database.
-     *
-     * @param {UsersAndDevices} user - The user object to update.
-     * @param {string} field - The field to update.
-     * @return {Promise<void>} A promise that resolves when the user is updated.
-     */
-    async updateUser(user: UsersAndDevices, field: string): Promise<void> {
+    updateUser(user: UsersAndDevices, field: string): void {
       const docRef = doc(userCollection, user.uid)
-      await updateDoc(docRef, {
+      updateDoc(docRef, {
         [field]: user[field as keyof UsersAndDevices], // dynamc field
       })
 
@@ -231,7 +224,7 @@ export const useUserStore = defineStore('auth', {
       const docRef = doc(userCollection, this.user!.uid)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
-        await updateDoc(docRef, {
+        updateDoc(docRef, {
           allowPush: this.allowPush,
           timestamp: Timestamp.fromDate(new Date()),
         })
@@ -247,7 +240,7 @@ export const useUserStore = defineStore('auth', {
       const docRef = doc(deviceCollection, token)
       const snap = await getDoc(docRef)
       if (!snap.exists()) {
-        await setDoc(docRef, {
+        setDoc(docRef, {
           email: this.user!.email,
           timestamp: Timestamp.fromDate(new Date()),
         })

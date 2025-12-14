@@ -239,7 +239,7 @@ export const removeUnusedTags = async (): Promise<void> => {
       try {
         id = counterId('tags', value)
         counterRef = doc(counterCollection, id)
-        await deleteDoc(counterRef)
+        deleteDoc(counterRef)
       } finally {
         delete meta.values.tags[value]
       }
@@ -256,7 +256,7 @@ export const removeUnusedTags = async (): Promise<void> => {
       try {
         const id = counterId('tags', obj.value)
         const counterRef = doc(counterCollection, id)
-        await deleteDoc(counterRef)
+        deleteDoc(counterRef)
       } finally {
         delete meta.values.tags[obj.value]
       }
@@ -315,7 +315,7 @@ export const renameValue = async (
       },
       { merge: true },
     )
-    await deleteDoc(oldRef)
+    deleteDoc(oldRef)
 
     // Update store
     meta.values[field][newValue] = obj.count

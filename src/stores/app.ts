@@ -99,29 +99,26 @@ export const useAppStore = defineStore('app', {
         console.error('Failed to read bucket data')
       }
     },
-    /**
-     * Updates the bucket size and count by a given number.
-     *
-     * @param {number} num - The number to update the bucket size and count by. If positive, the size is increased and the count is incremented. If negative, the size is decreased and the count is decremented.
-     * @returns {Promise<BucketType>} A promise that resolves to the updated bucket object.
-     */
-    async bucketDiff(num: number): Promise<BucketType> {
-      if (num > 0) {
-        this.bucket.size += num
-        this.bucket.count++
-      } else {
-        this.bucket.size += num
-        this.bucket.count--
-      }
+
+    bucketDiff(num: number): void {
+      // Update size and count in a single operation
+      this.bucket.size += num
+      this.bucket.count += num > 0 ? 1 : -1
+
+      // Reset to zero if count becomes negative or zero
       if (this.bucket.count <= 0) {
         this.bucket.size = 0
         this.bucket.count = 0
       }
-      await setDoc(bucketRef, this.bucket, { merge: true })
-      return this.bucket
+
+      setDoc(bucketRef, this.bucket, { merge: true })
+      if (process.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
     },
 
-    async bucketBuild(): Promise<BucketType> {
+    /**
+     * Builds the bucket by calculating the total size and count of photos.
+     */
+    async bucketBuild(): Promise<void> {
       const res = {
         count: 0,
         size: 0,
@@ -135,9 +132,8 @@ export const useAppStore = defineStore('app', {
         })
       }
       this.bucket = { ...res }
-      await setDoc(bucketRef, this.bucket, { merge: true })
+      setDoc(bucketRef, this.bucket, { merge: true })
       notify({ message: `Bucket size calculated` })
-      return this.bucket
     },
 
     /**
@@ -219,7 +215,7 @@ export const useAppStore = defineStore('app', {
       const meta = useValuesStore()
       if (obj.thumb) {
         const oldDoc = await getDoc(docRef)
-        await setDoc(docRef, obj, { merge: true })
+        setDoc(docRef, obj, { merge: true })
         replaceInList(this.objects, obj)
 
         meta.updateCounters(oldDoc.data() as PhotoType, obj)
@@ -238,9 +234,9 @@ export const useAppStore = defineStore('app', {
           obj.thumb = thumbUrl(obj.filename)
         }
         // save everything
-        await setDoc(docRef, obj, { merge: true })
-        await this.getLast()
-        await this.bucketDiff(obj.size)
+        setDoc(docRef, obj, { merge: true })
+        this.getLast()
+        this.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
@@ -268,9 +264,9 @@ export const useAppStore = defineStore('app', {
       const thumbRef = storageRef(storage, thumbName(obj.filename))
 
       try {
-        await deleteDoc(docRef)
-        await deleteObject(stoRef)
-        await deleteObject(thumbRef)
+        deleteDoc(docRef)
+        deleteObject(stoRef)
+        deleteObject(thumbRef)
       } catch (err) {
         notify({
           type: 'error',
@@ -283,9 +279,9 @@ export const useAppStore = defineStore('app', {
         removeFromList(this.objects, obj)
 
         const meta = useValuesStore()
-        await this.bucketDiff(-data.size)
+        this.bucketDiff(-data.size)
         meta.updateCounters(data, null)
-        await this.getLast()
+        this.getLast()
       } else {
         removeFromList(this.uploaded, obj)
       }

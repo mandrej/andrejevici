@@ -238,7 +238,7 @@ window.onpopstate = function () {
 const onCancel = () => {
   showEdit.value = false
 }
-const onSubmit = async () => {
+const onSubmit = () => {
   // if change date
   const datum = new Date(Date.parse((tmp.date as string) || ''))
   tmp.year = datum.getFullYear()
@@ -261,7 +261,7 @@ const onSubmit = async () => {
   }
 
   try {
-    await app.saveRecord(tmp)
+    app.saveRecord(tmp)
     emit('edit-ok', U + tmp.filename)
     showEdit.value = false
   } catch (error) {

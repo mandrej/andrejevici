@@ -131,9 +131,9 @@ const findPhoto = (filename: string) => {
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const onLoad = async (index = 0, done: () => void) => {
+const onLoad = (index = 0, done: () => void) => {
   if (next.value !== '') {
-    await app.fetchRecords(false)
+    app.fetchRecords(false)
   }
   done()
 }
@@ -148,10 +148,10 @@ const tagsToApplyExist = (): boolean => {
   )
 }
 
-const mergeTags = async (rec: PhotoType) => {
+const mergeTags = (rec: PhotoType) => {
   rec.tags = Array.from(new Set([...(tagsToApply.value ?? []), ...(rec.tags ?? [])])).sort()
   try {
-    await app.saveRecord(rec)
+    app.saveRecord(rec)
     editOk(U + rec.filename)
   } catch (error) {
     console.error('Failed to save record:', error)
@@ -165,9 +165,9 @@ const confirmShow = (rec: PhotoType) => {
   fakeHistory()
   showConfirm.value = true
 }
-const confirmOk = async (rec: PhotoType) => {
+const confirmOk = (rec: PhotoType) => {
   showConfirm.value = false
-  await app.deleteRecord(rec)
+  app.deleteRecord(rec)
   if (objects.value.length === 0 && showCarousel.value) {
     showCarousel.value = false
     error.value = 'empty'

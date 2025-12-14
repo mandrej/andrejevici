@@ -82,9 +82,9 @@ const addTag = () => {
     newTagRef.value.resetValidation()
   }
 }
-const removeTags = async () => {
+const removeTags = () => {
   try {
-    await removeUnusedTags()
+    removeUnusedTags()
     notify({
       message: `Successfully removed unused tags`,
     })
@@ -95,7 +95,7 @@ const removeTags = async () => {
     })
   }
 }
-const rename = async (field: keyof ValuesState['values'], existing: string, changed: string) => {
+const rename = (field: keyof ValuesState['values'], existing: string, changed: string) => {
   if (existing !== '' && changed !== '') {
     if (field === 'tags' && existing === 'flash') {
       notify({
@@ -108,7 +108,7 @@ const rename = async (field: keyof ValuesState['values'], existing: string, chan
         message: `"${changed}" already exists"`,
       })
     } else {
-      await renameValue(field, existing, changed)
+      renameValue(field, existing, changed)
       notify({
         message: `${existing} successfully renamed to ${changed}`,
       })
