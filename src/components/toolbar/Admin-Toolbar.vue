@@ -15,15 +15,14 @@
   </q-tabs>
 
   <div class="row absolute-bottom">
-    <LinearProgress />
+    <q-linear-progress v-if="busy" color="warning" indeterminate />
   </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
-import LinearProgress from './Linear-Progress.vue'
 
 const app = useAppStore()
-const { adminTab } = storeToRefs(app)
+const { busy, adminTab } = storeToRefs(app)
 </script>

@@ -11,7 +11,7 @@
   <span class="q-mx-md">{{ record.count }}</span>
 
   <div class="absolute-bottom">
-    <LinearProgress />
+    <q-linear-progress v-if="busy" color="warning" indeterminate />
   </div>
 </template>
 
@@ -19,11 +19,10 @@
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
-import LinearProgress from './Linear-Progress.vue'
 
 const app = useAppStore()
 const auth = useUserStore()
-const { record, editMode } = storeToRefs(app)
+const { busy, record, editMode } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 
 const changeMode = (mode: boolean) => {
