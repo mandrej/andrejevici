@@ -1,15 +1,26 @@
 <template>
-  <SmallDialog
-    :trigger="showConsent"
-    title="Accept notifications"
-    message="Would you like to enable push notifications?"
-    :progress="wait"
+  <q-dialog
+    v-model="showConsent"
+    transition-show="slide-down"
+    transition-hide="slide-up"
+    persistent
   >
-    <template #action>
-      <q-btn flat label="Disable" @click="disableNotification" />
-      <q-btn flat label="Enable" @click="enableNotifications" />
-    </template>
-  </SmallDialog>
+    <q-card flat>
+      <q-toolbar>
+        <q-toolbar-title>Accept notifications</q-toolbar-title>
+        <div class="absolute-bottom">
+          <q-linear-progress v-if="wait" indeterminate color="warning" />
+        </div>
+      </q-toolbar>
+      <q-card-section class="q-px-md q-pt-md">
+        Would you like to enable push notifications?
+      </q-card-section>
+      <q-card-actions class="justify-between q-pa-md">
+        <q-btn flat label="Disable" @click="disableNotification" />
+        <q-btn flat label="Enable" @click="enableNotifications" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -19,7 +30,6 @@ import { CONFIG } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import { useUserStore } from 'src/stores/user'
 import { getMessaging, getToken } from 'firebase/messaging'
-import SmallDialog from 'src/layouts/Small-Dialog.vue'
 
 const auth = useUserStore()
 const messaging = getMessaging()

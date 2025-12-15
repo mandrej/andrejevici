@@ -1,21 +1,29 @@
 <template>
-  <SmallDialog
-    :trigger="showConfirm"
-    title="Confirm Delete"
-    :message="`Would you like to delete ${formatBytes(rec!.size)} photo named '${rec!.headline}'?`"
+  <q-dialog
+    v-model="showConfirm"
+    transition-show="slide-down"
+    transition-hide="slide-up"
+    persistent
   >
-    <template #action>
-      <q-btn color="primary" label="OK" @click="emit('confirm-ok', rec)" />
-      <q-btn flat label="Close" @click="onCancel" />
-    </template>
-  </SmallDialog>
+    <q-card flat>
+      <q-toolbar>
+        <q-toolbar-title>Confirm Delete</q-toolbar-title>
+      </q-toolbar>
+      <q-card-section class="q-px-md q-pt-md">
+        Would you like to delete {{ formatBytes(rec!.size) }} photo named '{{ rec!.headline }}'?
+      </q-card-section>
+      <q-card-actions class="justify-between q-pa-md">
+        <q-btn color="primary" label="OK" @click="emit('confirm-ok', rec)" />
+        <q-btn flat label="Close" @click="onCancel" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { formatBytes } from 'src/helpers'
-import SmallDialog from 'src/layouts/Small-Dialog.vue'
 
 const emit = defineEmits(['confirm-ok'])
 defineProps({
