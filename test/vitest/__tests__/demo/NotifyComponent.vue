@@ -2,7 +2,7 @@
   <q-btn @click="onClick"> Click me! </q-btn>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { Notify } from 'quasar';
 
 function onClick() {
