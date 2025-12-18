@@ -50,9 +50,6 @@ export default defineConfigWithVueTs(
       sourceType: 'module',
       // Enable type-aware linting for @typescript-eslint rules
       parserOptions: {
-        // Point to tsc project files so rules that require type information work.
-        // Keep both root tsconfig and the Quasar generated one which contains path mappings.
-        project: ['./tsconfig.json', './.quasar/tsconfig.json'],
         extraFileExtensions: ['.vue'],
       },
 
