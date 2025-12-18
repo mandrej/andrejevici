@@ -1,4 +1,4 @@
-import uuid4 from 'uuid4'
+import { v4 as uuidv4 } from 'uuid'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import { CONFIG } from 'src/helpers'
@@ -109,7 +109,7 @@ export const useUserStore = defineStore('auth', {
         this.user = {
           name: user.displayName || '',
           email: user.email || '',
-          nick: nick || uuid4().substring(0, 8),
+          nick: nick || uuidv4().substring(0, 8),
           uid: user.uid,
           isAuthorized: false,
           isAdmin: false,

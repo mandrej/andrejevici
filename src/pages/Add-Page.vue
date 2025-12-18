@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import uuid4 from 'uuid4'
+import { v4 as uuidv4 } from 'uuid'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { storage } from 'src/boot/firebase'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
@@ -183,7 +183,7 @@ const onSubmit = async (evt: Event): Promise<void> => {
 
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    const id: string = uuid4()
+    const id: string = uuidv4().substring(0, 8) // 4.3e9 Possibilities
     const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
 

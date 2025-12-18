@@ -7,8 +7,3 @@ declare namespace NodeJS {
     SERVICE_WORKER_FILE: 'sw.js'
   }
 }
-
-declare module 'uuid4' {
-  function uuid4(): string
-  export = uuid4
-}
