@@ -150,6 +150,7 @@ export {
   fakeHistory,
   removeFromList,
   replaceInList,
+  textSlug,
   sliceSlug,
   completePhoto,
 }
