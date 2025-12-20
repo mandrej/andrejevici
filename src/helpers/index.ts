@@ -60,21 +60,6 @@ const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
   if (idx > -1) arr.splice(idx, 1, obj)
 }
 
-const textSlug = (text: string): string => {
-  // return slugify(text, { replace: [[/[\.|\:|-]/g, ""]] });
-  return slugify(text, {
-    replace: [
-      ['ш', 'sh'],
-      ['đ', 'dj'],
-      ['џ', 'dz'],
-      ['ћ', 'c'],
-      ['ч', 'c'],
-      ['ж', 'z'],
-      [/[.-::^[0-9]]+/g, ''],
-    ],
-  })
-}
-
 /**
  * Slices a slug into an array of strings.
  *
@@ -82,7 +67,7 @@ const textSlug = (text: string): string => {
  * @return {string[]} An array of strings.
  */
 const sliceSlug = (text: string): string[] => {
-  const slug = textSlug(text) // 'hello-world-of-code'
+  const slug = slugify(text) // 'hello-world-of-code'
   const result: string[] = []
   for (const word of slug.split('-')) {
     for (let j = 3; j < word.length + 1; j++) {
@@ -130,7 +115,7 @@ const completePhoto = async (
   tmp.month = datum.getMonth() + 1
   tmp.day = datum.getDate()
   tmp.headline = headline
-  tmp.text = sliceSlug(textSlug(headline))
+  tmp.text = sliceSlug(slugify(headline))
   tmp.tags = tags
 
   const exif = await readExif(rec.url)
@@ -150,7 +135,6 @@ export {
   fakeHistory,
   removeFromList,
   replaceInList,
-  textSlug,
   sliceSlug,
   completePhoto,
 }

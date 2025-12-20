@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { slugify } from 'transliteration'
-import { textSlug, sliceSlug } from '../src/helpers/index'
+import { sliceSlug } from '../src/helpers/index'
 
 describe('slugify', () => {
   test('should return an empty string', () => {
@@ -13,17 +13,8 @@ describe('slugify', () => {
   test('should return slug with hyphens', () => {
     assert.equal(slugify('Шупаљ ђеврек'), 'shupalj-djevrek')
   })
-})
-
-describe('textSlug', () => {
-  test('should return an empty string', () => {
-    assert.equal(textSlug(''), '')
-  })
   test('should return an array of words when given a string with hyphens', () => {
-    assert.equal(textSlug('жиле žile'), 'zile-zile')
-  })
-  test('should return an array of words when given a string with hyphens', () => {
-    assert.equal(textSlug('Ђаво носи Pradu'), 'djavo-nosi-pradu')
+    assert.equal(slugify('{Ђ}аво.носи 39Pradu'), 'dj-avo.nosi-39pradu')
   })
 })
 

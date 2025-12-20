@@ -44,9 +44,13 @@ else
       # firebase ext:install firebase/storage-resize-images --local
       firebase deploy --only extensions
       exit ;;
+    test)
+      npm test test/slug.ts
+      exit ;;
     *)
       syntax
   esac
 fi
 
 # gsutil -m setmeta -h "Cache-Control:public, max-age=604800" gs://andrejevici.appspot.com/*.jpg
+
