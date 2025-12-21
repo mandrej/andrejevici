@@ -5,18 +5,18 @@
 
       <q-list separator>
         <q-item clickable>
+          <q-item-section> Bucket count and size </q-item-section>
+          <q-item-section side>
+            <q-btn label="Recalc" @click="app.bucketBuild" />
+          </q-item-section>
+        </q-item>
+        <q-item clickable>
           <q-item-section>
             Recreate existing field values for
             {{ Object.keys(values).join(', ') }}
           </q-item-section>
           <q-item-section side>
-            <q-btn color="primary" label="rebuild" @click="meta.countersBuild" />
-          </q-item-section>
-        </q-item>
-        <q-item clickable>
-          <q-item-section> Bucket count and size </q-item-section>
-          <q-item-section side>
-            <q-btn color="primary" label="Recalc" @click="app.bucketBuild" />
+            <q-btn label="rebuild" @click="meta.countersBuild" />
           </q-item-section>
         </q-item>
         <q-item clickable>
