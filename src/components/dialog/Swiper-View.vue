@@ -18,7 +18,10 @@
             class="absolute-top row no-wrap justify-between"
             style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
           >
-            <div v-html="caption(obj)" class="col q-my-sm text-white text-center ellipsis"></div>
+            <div
+              v-html="getCaption(obj, $q.screen.gt.sm)"
+              class="col q-my-sm text-white text-center ellipsis"
+            ></div>
             <q-btn
               flat
               round
@@ -34,7 +37,7 @@
           </div>
 
           <div v-show="!full" class="absolute-bottom-right row no-wrap">
-            <template v-if="isAuthorOrAdmin(obj) && editMode">
+            <template v-if="isAuthorOrAdmin(user, obj, editMode)">
               <q-btn
                 flat
                 round
@@ -71,7 +74,7 @@ import { storeToRefs } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
-import { fileBroken, U } from 'src/helpers'
+import { fileBroken, U, isAuthorOrAdmin } from 'src/helpers'
 import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
 import notify from 'src/helpers/notify'
@@ -102,23 +105,8 @@ const onSwiper = (e: { detail: Swiper[] }): void => {
   if (swiper) {
     Object.assign(swiper, { modules: [Keyboard, Zoom] })
     swiper.slideTo(props.index, 0)
-    // onSlideChange()
   }
 }
-// const onSlideChange = () => {
-//   let url = route.fullPath
-//   const slide = swiper!.slides[swiper!.activeIndex]
-//   if (slide) {
-//     hash.value = slide.dataset.hash ?? null
-//     const sufix = '#' + hash.value
-//     if (urlHash.test(url)) {
-//       url = url.replace(urlHash, sufix)
-//     } else {
-//       url += sufix
-//     }
-//     window.history.replaceState(history.state, '', url)
-//   }
-// }
 
 const onLoad = (e: Event): void => {
   const target = e.target as HTMLImageElement
@@ -138,17 +126,14 @@ const onError = (e: Event) => {
   }
 }
 
-const isAuthorOrAdmin = (rec: PhotoType) => {
-  return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
-}
-const caption = (rec: PhotoType) => {
+const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   let tmp = ''
   const { headline, aperture, shutter, iso, model, lens } = rec
-  tmp += headline + '<br/>'
+  tmp += (headline || '') + '<br/>'
   tmp += aperture ? ' f' + aperture : ''
   tmp += shutter ? ' ' + shutter + 's' : ''
   tmp += iso ? ' ' + iso + ' ASA' : ''
-  if ($q.screen.gt.sm) {
+  if (showExtra) {
     tmp += model ? ' ' + model : ''
     tmp += lens ? ' ' + lens : ''
   }

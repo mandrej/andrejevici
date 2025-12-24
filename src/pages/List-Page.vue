@@ -2,14 +2,6 @@
   <Edit-Record v-if="showEdit" :rec="currentEdit" @edit-ok="editOk" />
   <Confirm-Delete v-if="showConfirm" :rec="select2delete" @confirm-ok="confirmOk" />
 
-  <Swiper-View
-    v-if="showCarousel"
-    :index="index"
-    @confirm-delete="confirmShow"
-    @edit-record="editRecord"
-    @carousel-cancel="carouselCancel"
-  />
-
   <ErrorBanner :inquiry="!busy && error == 'empty'">
     <template #title>No data found</template>
     <template #detail>for current filter/ search</template>
@@ -19,6 +11,14 @@
     <template #title>Something went wrong ...</template>
     <template #detail>{{ error }}</template>
   </ErrorBanner>
+
+  <Swiper-View
+    v-if="showCarousel"
+    :index="index"
+    @confirm-delete="confirmShow"
+    @edit-record="editRecord"
+    @carousel-cancel="carouselCancel"
+  />
 
   <div class="q-pa-md q-mb-md">
     <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
@@ -36,7 +36,7 @@
           >
             <template #action>
               <q-card-actions
-                v-if="isAuthorOrAdmin(item) && editMode"
+                v-if="isAuthorOrAdmin(user, item, editMode)"
                 class="absolute-right column no-wrap"
               >
                 <q-btn flat round icon="delete" @click="confirmShow(item)" />
@@ -69,7 +69,7 @@ import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
 import { useValuesStore } from 'src/stores/values'
 import { useRoute } from 'vue-router'
-import { U, fakeHistory } from 'src/helpers'
+import { U, fakeHistory, isAuthorOrAdmin } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -136,10 +136,6 @@ const onLoad = (index = 0, done: () => void) => {
     app.fetchRecords(false)
   }
   done()
-}
-
-const isAuthorOrAdmin = (rec: PhotoType) => {
-  return Boolean(user.value && (user.value.isAdmin || user.value.email === rec.email) && editMode)
 }
 
 const tagsToApplyExist = (): boolean => {

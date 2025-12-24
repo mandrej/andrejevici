@@ -3,45 +3,67 @@ import { date, format } from 'quasar'
 import readExif from './exif'
 import { slugify } from 'transliteration'
 import { computed } from 'vue'
-import type { PhotoType } from 'src/helpers/models'
+import type { MyUserType, PhotoType } from 'src/helpers/models'
 
 const { humanStorageSize } = format
 const { formatDate } = date
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-const formatBytes = (bytes: number): string => {
-  return humanStorageSize(bytes)
+const modifiers = {
+  replace: {
+    ш: 's',
+    đ: 'dj',
+    џ: 'dz',
+    ћ: 'c',
+    ч: 'c',
+    ж: 'z',
+    š: 's',
+    dj: 'dj',
+    dž: 'dz',
+    ć: 'c',
+    č: 'c',
+    ž: 'z',
+  },
 }
 
-/**
- * Formats a date string, number, or Date object into a specified format.
- *
- * @param {Date | number | string} str - The date to be formatted. Can be a Date object, a numeric timestamp, or a string representation of a date.
- * @param {string} [format='YYYY-MM-DD'] - The format to be used for the output. Defaults to the value of `CONFIG.dateFormat`.
- * @return {string} The formatted date.
- */
-const formatDatum = (str: Date | number | string, format: string = CONFIG.dateFormat): string => {
+export const months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+
+export const formatBytes = (bytes: number): string => {
+  return humanStorageSize(bytes)
+}
+export const formatDatum = (
+  str: Date | number | string,
+  format: string = CONFIG.dateFormat,
+): string => {
   const date = new Date(str)
   return formatDate(date, format)
 }
-
 /**
  * Creates a fake history entry.
  *
  * @return {void} This function does not return anything.
  */
-const fakeHistory = () => {
+export const fakeHistory = () => {
   if (typeof window === 'undefined' || !window.history) return
   window.history.pushState(history.state, '', history.state.current)
 }
 
-const version = computed(() => {
+export const version = computed(() => {
   const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
   return 'ver. ' + ver
 })
-
-const isEmpty = (obj: object) => {
+export const isEmpty = (obj: object) => {
   for (const prop in obj) {
     if (Object.hasOwn(obj, prop)) {
       return false
@@ -50,43 +72,22 @@ const isEmpty = (obj: object) => {
   return true
 }
 
-const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
+export const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx > -1) arr.splice(idx, 1)
 }
-
-const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
+export const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
   if (idx > -1) arr.splice(idx, 1, obj)
 }
-
-const textSlug = (text: string): string => {
-  return slugify(text, {
-    replace: {
-      ш: 's',
-      đ: 'dj',
-      џ: 'dz',
-      ћ: 'c',
-      ч: 'c',
-      ж: 'z',
-      š: 's',
-      dj: 'dj',
-      dž: 'dz',
-      ć: 'c',
-      č: 'c',
-      ž: 'z',
-    },
-  })
-}
-
 /**
  * Slices a slug into an array of strings.
  *
  * @param {string} text - The text to be sliced.
  * @return {string[]} An array of strings.
  */
-const sliceSlug = (text: string): string[] => {
-  const slug = textSlug(text)
+export const sliceSlug = (text: string): string[] => {
+  const slug = slugify(text, modifiers)
   const result: string[] = []
   for (const word of slug.split('-')) {
     for (let j = 3; j < word.length + 1; j++) {
@@ -121,7 +122,15 @@ export const counterId = (field: string, value: string): string => {
   return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
 }
 
-const completePhoto = async (
+export const isAuthorOrAdmin = (
+  user: MyUserType | null | undefined, // Allow undefined for store refs that might be undefined
+  rec: PhotoType,
+  editMode: boolean,
+): boolean => {
+  return Boolean(user && (user.isAdmin || user.email === rec.email) && editMode)
+}
+
+export const completePhoto = async (
   rec: PhotoType,
   tags: string[],
   headline: string,
@@ -144,16 +153,4 @@ const completePhoto = async (
   }
   return tmp
 }
-export {
-  CONFIG,
-  months,
-  formatBytes,
-  formatDatum,
-  isEmpty,
-  version,
-  fakeHistory,
-  removeFromList,
-  replaceInList,
-  sliceSlug,
-  completePhoto,
-}
+export { CONFIG }
