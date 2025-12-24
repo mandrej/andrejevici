@@ -7,7 +7,8 @@
         }"
         :grab-cursor="true"
         :zoom="{
-          maxRatio: 2,
+          maxRatio: 3,
+          limitToOriginalSize: true,
         }"
         :lazy="true"
         @swiperinit="onSwiper"
@@ -32,7 +33,7 @@
           </div>
 
           <div class="swiper-zoom-container">
-            <img :src="obj.url" loading="lazy" @load="onLoad" @error="onError" />
+            <img :src="obj.url" loading="lazy" @error="onError" />
             <div class="swiper-lazy-preloader" />
           </div>
 
@@ -108,17 +109,18 @@ const onSwiper = (e: { detail: Swiper[] }): void => {
   }
 }
 
-const onLoad = (e: Event): void => {
-  const target = e.target as HTMLImageElement
-  // calculate image dimension
-  const dim1: [number, number] = [target.width, target.height]
-  const dim0: [number, number] = [target.naturalWidth, target.naturalHeight]
-  const wRatio = dim0[0] / dim1[0]
-  const hRatio = dim0[1] / dim1[1]
+// const onLoad = (e: Event): void => {
+//   const target = e.target as HTMLImageElement
+//   // calculate image dimension
+//   const dim1: [number, number] = [target.width, target.height]
+//   const dim0: [number, number] = [target.naturalWidth, target.naturalHeight]
+//   const wRatio = dim0[0] / dim1[0]
+//   const hRatio = dim0[1] / dim1[1]
 
-  const container = target.closest('.swiper-zoom-container') as HTMLElement
-  container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1).toString()
-}
+//   const container = target.closest('.swiper-zoom-container') as HTMLElement
+//   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1).toString()
+// }
+
 const onError = (e: Event) => {
   const target = e.target as HTMLImageElement | null
   if (target) {
