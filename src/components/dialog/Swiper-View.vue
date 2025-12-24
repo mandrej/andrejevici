@@ -81,8 +81,8 @@ import notify from 'src/helpers/notify'
 import type { Swiper } from 'swiper/types'
 import type { PhotoType } from 'src/helpers/models'
 
-import 'swiper/scss'
-import 'swiper/scss/zoom'
+import 'swiper/css'
+import 'swiper/css/zoom'
 
 const props = defineProps<{
   index: number
