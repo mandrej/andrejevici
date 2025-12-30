@@ -263,15 +263,14 @@ const deleteRec = (rec: PhotoType): void => {
  * See Edit-Record getExif
  */
 const publishSelected = async () => {
-  // Get selected records or all uploaded records
-  const selected =
-    selection.value.length === 0
-      ? app.uploaded
-      : app.uploaded.filter((item) => selection.value.includes(item.filename))
+  if (selection.value.length === 0) {
+    selection.value = app.uploaded.map((item) => item.filename)
+  }
 
-  // Create an array of promises for saving each record
   const promises: Promise<unknown>[] = []
-  for (const rec of selected) {
+  const targets = app.uploaded.filter((item) => selection.value.includes(item.filename))
+
+  for (const rec of targets) {
     const newRec: PhotoType = await completePhoto(
       rec,
       tagsToApply.value,
