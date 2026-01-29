@@ -6,6 +6,7 @@
         placeholder="Search: tags: milan, year: 2025, model: canon..."
         borderless
         clearable
+        standout
         class="search-input"
         @clear="clearSearch"
         @keydown.enter.prevent="handleKeyboardSelect"

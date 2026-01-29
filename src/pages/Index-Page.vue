@@ -7,6 +7,7 @@
     @click="previousCollection"
     class="fixed-center history-button"
   />
+  <q-img src="camera.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
   <div class="text-body2">{{ version }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
@@ -20,7 +21,7 @@
     To add some you need to sign-in with your Google account. Only registered users can add, delete
     or edit photos.
   </div>
-  <div v-else class="q-pa-lg text-h4 text-center" style="text-wrap: balance">
+  <!-- <div v-else class="q-pa-lg text-h4 text-center" style="text-wrap: balance">
     <router-link
       v-for="(count, value) in nickWithCount"
       :key="value"
@@ -29,7 +30,7 @@
       class="q-px-sm link"
       >{{ value }}</router-link
     >
-  </div>
+  </div> -->
 </template>
 
 <script setup lang="ts">

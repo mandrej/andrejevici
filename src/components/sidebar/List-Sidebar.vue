@@ -1,6 +1,14 @@
 <template>
   <Menu />
   <q-space />
+  <q-btn
+    v-if="user && user.isAuthorized"
+    @click="changeMode(editMode)"
+    class="q-ma-md"
+    flat
+    align="right"
+    >{{ editMode ? 'Edit mode' : 'View mode' }}</q-btn
+  >
   <q-input
     v-if="user?.isAdmin && editMode"
     v-model="headlineToApply"
@@ -15,6 +23,7 @@
     <q-btn
       v-if="tagsToApply && tagsToApply.length > 0"
       flat
+      align="right"
       label="Apply Tags"
       @click="applyTags"
       :loading="busy"
@@ -22,12 +31,19 @@
     <q-btn
       v-if="headlineToApply"
       flat
+      align="right"
       label="Apply Headline"
       @click="applyHeadline"
       :loading="busy"
     />
-    <q-btn color="negative" label="Delete Selected" @click="deleteSelected" :loading="busy" />
-    <q-btn flat label="Clear Selection" @click="clearSelected" />
+    <q-btn
+      color="negative"
+      align="right"
+      label="Delete Selected"
+      @click="deleteSelected"
+      :loading="busy"
+    />
+    <q-btn flat align="right" label="Clear Selection" @click="clearSelected" />
   </div>
 </template>
 
@@ -46,6 +62,11 @@ const meta = useValuesStore()
 const { editMode, selected, busy } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const { headlineToApply, tagsToApply } = storeToRefs(meta)
+
+const changeMode = (mode: boolean) => {
+  mode = !mode
+  editMode.value = mode
+}
 
 const applyTags = async () => {
   for (const item of selected.value) {

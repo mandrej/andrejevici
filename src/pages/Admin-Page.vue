@@ -5,15 +5,25 @@
 
       <q-list separator>
         <q-item clickable>
-          <q-item-section> Bucket count and size </q-item-section>
+          <q-item-section>
+            <q-item-label>Bucket count and size</q-item-label>
+            <q-item-label caption
+              >{{ bucket.count }} photographs / {{ formatBytes(bucket.size) }}</q-item-label
+            >
+          </q-item-section>
           <q-item-section side>
             <q-btn label="Recalc" @click="app.bucketBuild" />
           </q-item-section>
         </q-item>
+
         <q-item clickable>
           <q-item-section>
-            Recreate existing field values for
-            {{ Object.keys(values).join(', ') }}
+            <q-item-label>Recreate existing field values</q-item-label>
+            <q-item-label caption>
+              <span v-for="(val, key) in values" :key="key">
+                {{ key }}: {{ Object.keys(val).length }};
+              </span>
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn label="rebuild" @click="meta.countersBuild" />
@@ -74,6 +84,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { formatDatum } from 'src/helpers'
+import { formatBytes } from 'src/helpers'
 import { mismatch, missingThumbnails } from 'src/helpers/remedy'
 
 const TagsTab = defineAsyncComponent(() => import('src/components/tab/Tags-Tab.vue'))
@@ -83,6 +94,7 @@ const MessagesTab = defineAsyncComponent(() => import('src/components/tab/Messag
 
 const app = useAppStore()
 const meta = useValuesStore()
+const { bucket } = storeToRefs(app)
 
 const { adminTab } = storeToRefs(app)
 const values = computed(() => meta.values)
