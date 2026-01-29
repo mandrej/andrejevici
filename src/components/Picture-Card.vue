@@ -17,25 +17,7 @@
     </q-img>
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
-      <span>
-        <router-link :to="{ path: '/list', query: { nick: rec.nick } }" class="link"
-          >{{ rec.nick }}
-        </router-link>
-        ,
-        <router-link
-          :to="{
-            path: '/list',
-            query: {
-              year: rec.year,
-              month: rec.month,
-              day: rec.day,
-            },
-          }"
-          class="link"
-          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY') : '' }}</router-link
-        >
-        {{ rec.date ? rec.date.substring(11) : '' }}
-      </span>
+      <span>{{ rec.nick }}, {{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY') : '' }}</span>
       <q-icon
         v-if="rec.loc"
         name="my_location"

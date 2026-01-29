@@ -1,6 +1,6 @@
 <template>
   <q-list>
-    <!-- <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
+    <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
       <q-item-section avatar>
         <q-icon name="home" />
       </q-item-section>
@@ -9,7 +9,7 @@
         <q-item-label>Start</q-item-label>
         <q-item-label caption></q-item-label>
       </q-item-section>
-    </q-item> -->
+    </q-item>
 
     <q-item
       clickable

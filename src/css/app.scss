@@ -10,6 +10,7 @@ body,
 }
 .q-toolbar,
 .card {
+  position: relative;
   color: var(--q-my-text);
   background-color: var(--q-my-toolbar-bg);
 }

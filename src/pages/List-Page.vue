@@ -39,15 +39,8 @@
                 v-if="isAuthorOrAdmin(user, item, editMode)"
                 class="absolute-right column no-wrap"
               >
-                <q-btn flat round icon="delete" @click="confirmShow(item)" />
+                <q-checkbox v-model="selected" :val="item" />
                 <q-btn flat round icon="edit" @click="editRecord(item)" />
-                <q-btn
-                  v-if="tagsToApplyExist"
-                  flat
-                  round
-                  icon="content_paste"
-                  @click="mergeTags(item)"
-                />
               </q-card-actions>
             </template>
           </Picture-Card>
@@ -67,9 +60,8 @@ import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
-import { useValuesStore } from 'src/stores/values'
 import { useRoute } from 'vue-router'
-import { U, fakeHistory, isAuthorOrAdmin } from 'src/helpers'
+import { fakeHistory, isAuthorOrAdmin } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import type { PhotoType } from 'src/helpers/models'
 
@@ -81,14 +73,22 @@ const ConfirmDelete = defineAsyncComponent(() => import('src/components/dialog/C
 
 const app = useAppStore()
 const auth = useUserStore()
-const meta = useValuesStore()
 const route = useRoute()
 const index = ref(-1)
 
-const { objects, busy, error, next, showCarousel, showConfirm, editMode, showEdit, currentEdit } =
-  storeToRefs(app)
+const {
+  objects,
+  busy,
+  error,
+  next,
+  showCarousel,
+  showConfirm,
+  editMode,
+  showEdit,
+  currentEdit,
+  selected,
+} = storeToRefs(app)
 const select2delete = ref({})
-const { tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 const { getScrollTarget, setVerticalScrollPosition } = scroll
 
@@ -136,24 +136,6 @@ const onLoad = (index = 0, done: () => void) => {
     app.fetchRecords(false)
   }
   done()
-}
-
-const tagsToApplyExist = (): boolean => {
-  return Boolean(
-    tagsToApply.value && tagsToApply.value.length > 0 && user.value && user.value.isAdmin,
-  )
-}
-
-const mergeTags = (rec: PhotoType) => {
-  rec.tags = Array.from(new Set([...(tagsToApply.value ?? []), ...(rec.tags ?? [])])).sort()
-  try {
-    app.saveRecord(rec)
-    editOk(U + rec.filename)
-  } catch (error) {
-    console.error('Failed to save record:', error)
-    // Optionally show error notification to user
-    // notify.error('Failed to save changes')
-  }
 }
 
 const confirmShow = (rec: PhotoType) => {

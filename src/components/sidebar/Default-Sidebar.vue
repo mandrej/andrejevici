@@ -1,8 +1,8 @@
 <template>
-  <Stat />
+  <Menu />
   <SendMessage />
   <q-space />
-  <Menu />
+  <Stat />
 </template>
 
 <script setup lang="ts">
