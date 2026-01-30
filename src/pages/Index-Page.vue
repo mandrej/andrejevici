@@ -21,26 +21,46 @@
     To add some you need to sign-in with your Google account. Only registered users can add, delete
     or edit photos.
   </div>
-  <!-- <div v-else class="q-pa-lg text-h4 text-center" style="text-wrap: balance">
-    <router-link
-      v-for="(count, value) in nickWithCount"
-      :key="value"
-      :title="`${value}: ${count}`"
-      :to="{ path: '/list', query: { nick: value } }"
-      class="q-px-sm link"
-      >{{ value }}</router-link
+
+  <div class="fixed-bottom-right q-pa-md z-max">
+    <q-btn-toggle
+      v-model="theme"
+      flat
+      dense
+      rounded
+      toggle-color="primary"
+      color="grey-7"
+      size="sm"
+      padding="4px"
+      :options="[
+        { icon: 'light_mode', value: 'light', slot: 'light' },
+        { icon: 'dark_mode', value: 'dark', slot: 'dark' },
+        { icon: 'brightness_6', value: 'auto', slot: 'auto' },
+      ]"
     >
-  </div> -->
+      <template v-slot:light>
+        <q-tooltip>Light Mode</q-tooltip>
+      </template>
+      <template v-slot:dark>
+        <q-tooltip>Dark Mode</q-tooltip>
+      </template>
+      <template v-slot:auto>
+        <q-tooltip>System Mode</q-tooltip>
+      </template>
+    </q-btn-toggle>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useQuasar } from 'quasar'
 import { version, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { useRouter } from 'vue-router'
 
+const $q = useQuasar()
 const app = useAppStore()
 const meta = useValuesStore()
 const router = useRouter()
@@ -49,6 +69,13 @@ const { find } = storeToRefs(app)
 const nickWithCount = computed(() => meta.nickWithCount)
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket } = storeToRefs(app)
+
+const theme = computed({
+  get: () => ($q.dark.mode === 'auto' ? 'auto' : $q.dark.isActive ? 'dark' : 'light'),
+  set: (val: 'light' | 'dark' | 'auto') => {
+    $q.dark.set(val === 'auto' ? 'auto' : val === 'dark')
+  },
+})
 
 const previousCollection = () => {
   // app.fetchRecords(true, 'refresh')
