@@ -1,5 +1,5 @@
 <template>
-  <q-toolbar class="q-pr-none">
+  <q-toolbar>
     <Global-Search />
 
     <div class="absolute-bottom">

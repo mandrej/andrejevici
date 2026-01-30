@@ -36,10 +36,22 @@
           >
             <template #action>
               <q-card-actions
-                v-if="isAuthorOrAdmin(user, item, editMode)"
+                v-if="isAuthorOrAdmin(user, item)"
                 class="absolute-right column no-wrap"
               >
-                <q-checkbox v-model="selected" :val="item" />
+                <!-- Admin can select for batch actions -->
+                <q-checkbox v-if="user?.isAdmin" v-model="selected" :val="item" />
+
+                <!-- If author but not admin, show delete button instead of checkbox -->
+                <q-btn
+                  v-if="!user?.isAdmin && user?.email === item.email"
+                  flat
+                  round
+                  icon="delete"
+                  @click="confirmShow(item)"
+                />
+
+                <!-- Both admin and author can edit -->
                 <q-btn flat round icon="edit" @click="editRecord(item)" />
               </q-card-actions>
             </template>
@@ -76,18 +88,8 @@ const auth = useUserStore()
 const route = useRoute()
 const index = ref(-1)
 
-const {
-  objects,
-  busy,
-  error,
-  next,
-  showCarousel,
-  showConfirm,
-  editMode,
-  showEdit,
-  currentEdit,
-  selected,
-} = storeToRefs(app)
+const { objects, busy, error, next, showCarousel, showConfirm, showEdit, currentEdit, selected } =
+  storeToRefs(app)
 const select2delete = ref({})
 const { user } = storeToRefs(auth)
 const { getScrollTarget, setVerticalScrollPosition } = scroll

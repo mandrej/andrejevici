@@ -125,9 +125,8 @@ export const counterId = (field: string, value: string): string => {
 export const isAuthorOrAdmin = (
   user: MyUserType | null | undefined, // Allow undefined for store refs that might be undefined
   rec: PhotoType,
-  editMode: boolean,
 ): boolean => {
-  return Boolean(user && (user.isAdmin || user.email === rec.email) && editMode)
+  return Boolean(user && (user.isAdmin || user.email === rec.email))
 }
 
 export const completePhoto = async (

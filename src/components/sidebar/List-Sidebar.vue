@@ -1,24 +1,17 @@
 <template>
   <Menu />
   <q-space />
-  <q-btn
-    v-if="user && user.isAuthorized"
-    @click="changeMode(editMode)"
-    class="q-ma-md"
-    flat
-    align="right"
-    >{{ editMode ? 'Edit mode' : 'View mode' }}</q-btn
-  >
+
   <q-input
-    v-if="user?.isAdmin && editMode"
+    v-if="user?.isAdmin"
     v-model="headlineToApply"
     label="Headline to apply"
     class="q-px-md q-mb-md"
     clearable
   />
-  <TagsMerge v-if="user?.isAdmin && editMode" class="q-px-md q-mb-md" :label="`Tags to apply`" />
+  <TagsMerge v-if="user?.isAdmin" class="q-px-md q-mb-md" :label="`Tags to apply`" />
 
-  <div v-if="user?.isAdmin && editMode && selected.length > 0" class="q-px-md column q-gutter-sm">
+  <div v-if="user?.isAdmin && selected.length > 0" class="q-px-md column q-gutter-sm">
     <div class="text-caption text-center">{{ selected.length }} items selected</div>
     <q-btn
       v-if="tagsToApply && tagsToApply.length > 0"
@@ -59,14 +52,9 @@ const app = useAppStore()
 const auth = useUserStore()
 const meta = useValuesStore()
 
-const { editMode, selected, busy } = storeToRefs(app)
+const { selected, busy } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const { headlineToApply, tagsToApply } = storeToRefs(meta)
-
-const changeMode = (mode: boolean) => {
-  mode = !mode
-  editMode.value = mode
-}
 
 const applyTags = async () => {
   for (const item of selected.value) {

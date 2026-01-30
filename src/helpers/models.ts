@@ -107,7 +107,6 @@ export interface AppStoreState {
   showEdit: boolean
   showConfirm: boolean
   showCarousel: boolean
-  editMode: boolean
   adminTab: string
   selected: PhotoType[]
 }

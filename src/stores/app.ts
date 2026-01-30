@@ -77,7 +77,6 @@ export const useAppStore = defineStore('app', {
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
-    editMode: false,
     adminTab: 'repair',
     selected: [] as PhotoType[],
   }),

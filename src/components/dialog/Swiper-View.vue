@@ -38,7 +38,7 @@
           </div>
 
           <div v-show="!full" class="absolute-bottom-right row no-wrap">
-            <template v-if="isAuthorOrAdmin(user, obj, editMode)">
+            <template v-if="isAuthorOrAdmin(user, obj)">
               <q-btn
                 flat
                 round
@@ -93,7 +93,7 @@ const emit = defineEmits(['confirm-delete', 'edit-record', 'carousel-cancel'])
 const $q = useQuasar()
 const app = useAppStore()
 const auth = useUserStore()
-const { objects, showCarousel, editMode } = storeToRefs(app)
+const { objects, showCarousel } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const hash = ref<string | null>(null)
 const full = ref(false)
