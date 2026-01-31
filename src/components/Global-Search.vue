@@ -38,6 +38,10 @@
               {{ getMonthName(tmp.month) }}
             </q-chip>
 
+            <q-chip v-if="tmp.day" removable @remove="removeFilter('day')">
+              {{ tmp.day }}
+            </q-chip>
+
             <q-chip v-if="tmp.model" removable @remove="removeFilter('model')">
               {{ tmp.model }}
             </q-chip>
@@ -152,6 +156,15 @@ const allSuggestions = computed(() => {
     })
   })
 
+  // Add days
+  for (let i = 1; i <= 31; i++) {
+    suggestions.push({
+      key: `day-${i}`,
+      field: 'day',
+      value: i.toString(),
+    })
+  }
+
   // Add models
   modelValues.value.forEach((model) => {
     const count = meta.values.model[model]
@@ -179,7 +192,7 @@ const allSuggestions = computed(() => {
 
 const onFilter = (val: string, update: (callback: () => void) => void) => {
   update(() => {
-    if (!val || val.length < 2) {
+    if (!val || val.length < 1) {
       filteredSuggestions.value = []
       return
     }
@@ -242,6 +255,8 @@ const onSelect = (val: Suggestion[]) => {
     if (monthIndex !== -1) {
       tmp.value.month = monthIndex + 1
     }
+  } else if (field === 'day') {
+    tmp.value.day = parseInt(suggestion.value)
   } else if (field === 'year') {
     tmp.value.year = parseInt(suggestion.value)
   } else if (field === 'title') {
