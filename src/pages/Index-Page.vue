@@ -54,13 +54,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useQuasar } from 'quasar'
 import { version, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { useRouter } from 'vue-router'
 
-const $q = useQuasar()
 const app = useAppStore()
 const meta = useValuesStore()
 const router = useRouter()
@@ -68,12 +66,12 @@ const { find } = storeToRefs(app)
 
 const nickWithCount = computed(() => meta.nickWithCount)
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
-const { bucket } = storeToRefs(app)
+const { bucket, theme: appTheme } = storeToRefs(app)
 
 const theme = computed({
-  get: () => ($q.dark.mode === 'auto' ? 'auto' : $q.dark.isActive ? 'dark' : 'light'),
+  get: () => appTheme.value,
   set: (val: 'light' | 'dark' | 'auto') => {
-    $q.dark.set(val === 'auto' ? 'auto' : val === 'dark')
+    app.setTheme(val)
   },
 })
 

@@ -19,6 +19,7 @@ const auth = useUserStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
 onMounted(() => {
+  app.initTheme()
   app.getLast()
   app.bucketRead()
   meta.readValues()

@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { storage } from 'src/boot/firebase'
+import { LocalStorage, Dark } from 'quasar'
 import {
   doc,
   query,
@@ -79,6 +80,7 @@ export const useAppStore = defineStore('app', {
     showCarousel: false,
     adminTab: 'repair',
     selected: [] as PhotoType[],
+    theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
   }),
   getters: {
     record: (state) => {
@@ -347,6 +349,23 @@ export const useAppStore = defineStore('app', {
       })
       await Promise.all(deletePromises)
       notify({ message: `Deleted ${keys.length} messages` })
+    },
+
+    /**
+     * Sets the application theme and persists it to local storage.
+     * @param theme The theme to set ('light', 'dark', or 'auto').
+     */
+    setTheme(theme: 'light' | 'dark' | 'auto') {
+      this.theme = theme
+      LocalStorage.set('theme', theme)
+      Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
+    },
+
+    /**
+     * Initializes the theme from local storage.
+     */
+    initTheme() {
+      Dark.set(this.theme === 'auto' ? 'auto' : this.theme === 'dark')
     },
   },
 })

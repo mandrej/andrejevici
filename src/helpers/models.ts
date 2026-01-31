@@ -109,4 +109,5 @@ export interface AppStoreState {
   showCarousel: boolean
   adminTab: string
   selected: PhotoType[]
+  theme: 'light' | 'dark' | 'auto'
 }
