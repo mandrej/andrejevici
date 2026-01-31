@@ -13,16 +13,18 @@
           v-if="user && user.isAuthorized"
           unelevated
           rounded
-          class="absolute-top-left q-ma-md bg-white text-dark"
+          size="md"
+          class="absolute-top-left q-ma-md bg-primary text-white"
           :label="`Sign out ${user.name}`"
           @click="auth.signIn"
         />
         <q-btn
           v-else
           unelevated
+          size="md"
           rounded
           icon="person"
-          class="absolute-top-left q-ma-md bg-white text-dark"
+          class="absolute-top-left q-ma-md bg-primary text-white"
           label="Sign in"
           @click="auth.signIn"
         />

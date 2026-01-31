@@ -376,7 +376,7 @@ const hasActiveFilters = computed(() => {
     font-weight: 500;
     height: auto;
     min-height: 32px;
-    color: white;
+    color: var(--q-dark);
     background-color: var(--q-secondary);
   }
 

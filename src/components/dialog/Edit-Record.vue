@@ -9,7 +9,7 @@
     <q-card class="full-width" style="max-width: 800px" flat>
       <q-toolbar class="row justify-between">
         <div>
-          <q-btn flat type="submit" label="Save" @click="onSubmit" />
+          <q-btn type="submit" color="primary" label="Save" @click="onSubmit" />
           <q-btn
             v-if="user!.isAdmin"
             class="q-ml-sm gt-sm"

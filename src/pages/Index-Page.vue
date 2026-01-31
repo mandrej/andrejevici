@@ -7,7 +7,7 @@
     @click="previousCollection"
     class="fixed-center history-button"
   />
-  <q-img src="camera.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
+  <q-img src="apperture.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
   <div class="text-body2">{{ version }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
