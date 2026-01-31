@@ -8,7 +8,7 @@
   <q-list separator dense>
     <q-item v-for="item in result" :key="item.uid" clickable>
       <q-item-section avatar>
-        <q-badge class="text-body1 text-black" color="warning">{{
+        <q-badge class="text-body1" color="warning" text-color="black">{{
           contribution(item.nick)
         }}</q-badge>
       </q-item-section>
@@ -33,11 +33,16 @@
       </q-item-section>
       <q-item-section side v-if="$q.screen.gt.xs">
         <q-item-label>
-          <q-badge color="secondary">
+          <q-badge color="secondary" text-color="black">
             {{ countTokens(item.timestamps) }}
           </q-badge>
           <template v-for="(timestamp, index) in item.timestamps" :key="index">
-            <q-badge v-if="index < item.timestamps.length" color="secondary" class="q-ml-xs">
+            <q-badge
+              v-if="index < item.timestamps.length"
+              color="secondary"
+              class="q-ml-xs"
+              text-color="black"
+            >
               {{ ageDays(timestamp) }}
             </q-badge>
             <span v-else> days old </span>

@@ -7,9 +7,16 @@
         <q-item clickable>
           <q-item-section>
             <q-item-label>Bucket count and size</q-item-label>
-            <q-item-label caption
-              >{{ bucket.count }} photographs / {{ formatBytes(bucket.size) }}</q-item-label
+            <q-item-label caption class="text-h6"
+              ><q-badge transparent align="middle" color="warning" text-color="black">
+                {{ bucket.count }}</q-badge
+              >
+              photographs /
+              <q-badge transparent align="middle" color="warning" text-color="black">{{
+                formatBytes(bucket.size)
+              }}</q-badge></q-item-label
             >
+            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn label="Recalc" @click="app.bucketBuild" />
@@ -20,18 +27,26 @@
           <q-item-section>
             <q-item-label>Recreate existing field values</q-item-label>
             <q-item-label caption>
-              <span v-for="(val, key) in values" :key="key">
-                {{ key }}: {{ Object.keys(val).length }};
+              <span v-for="(val, key) in values" :key="key" class="text-h6">
+                {{ key }}:
+                <q-badge transparent align="middle" color="warning" text-color="black">
+                  {{ Object.keys(val).length }}</q-badge
+                >&nbsp;
               </span>
             </q-item-label>
+            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn label="rebuild" @click="meta.countersBuild" />
           </q-item-section>
         </q-item>
+
         <q-item clickable>
           <q-item-section>
-            {{ formatDatum('2025-10-24', 'DD.MM.YYYY') }} Merge users and subsribers
+            <q-item-label>Merge users and subsribers</q-item-label>
+            <q-item-label caption class="text-h6">{{
+              formatDatum('2025-10-24', 'DD.MM.YYYY')
+            }}</q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn color="primary" :disable="true" label="Fix" />

@@ -38,15 +38,6 @@
         { icon: 'brightness_6', value: 'auto', slot: 'auto' },
       ]"
     >
-      <template v-slot:light>
-        <q-tooltip>Light Mode</q-tooltip>
-      </template>
-      <template v-slot:dark>
-        <q-tooltip>Dark Mode</q-tooltip>
-      </template>
-      <template v-slot:auto>
-        <q-tooltip>System Mode</q-tooltip>
-      </template>
     </q-btn-toggle>
   </div>
 </template>
