@@ -139,6 +139,22 @@ export const useAppStore = defineStore('app', {
     },
 
     /**
+     * Fetches a single photo record by filename.
+     * @param {string} filename - The filename of the photo to fetch.
+     * @return {Promise<PhotoType | null>} The photo record if found, otherwise null.
+     */
+    async fetchPhoto(filename: string): Promise<PhotoType | null> {
+      try {
+        const docRef = doc(photoCollection, filename)
+        const docSnap = await getDoc(docRef)
+        return docSnap.exists() ? (docSnap.data() as PhotoType) : null
+      } catch (err) {
+        console.error('Failed to fetch photo:', err)
+        return null
+      }
+    },
+
+    /**
      * Fetches a list of records based on the search criteria.
      *
      * @param {boolean} reset - If true, resets the list of records to an empty array before fetching.
@@ -228,6 +244,7 @@ export const useAppStore = defineStore('app', {
           {},
           { year: obj.year, month: obj.month, day: obj.day },
         ) as FindType
+        await this.fetchRecords(true)
         // set thumbnail url = publish
         if (process.env.DEV) {
           const thumbRef = storageRef(storage, thumbName(obj.filename))

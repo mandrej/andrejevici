@@ -82,14 +82,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { months } from 'src/helpers'
 import type { FindType } from 'src/helpers/models'
-import type { LocationQueryRaw } from 'vue-router'
 
 interface Suggestion {
   key: string
@@ -307,21 +306,14 @@ const fixQuery = (query: FindType): FindType => {
   return sanitizedQuery
 }
 
-watch(
-  route,
-  (to) => {
-    tmp.value = find.value = fixQuery(to.query)
-    app.fetchRecords(true)
-  },
-  { immediate: true },
-)
+// watch removed
 
 const submit = () => {
   tmp.value = find.value = fixQuery(tmp.value)
-  void router.push({
-    path: '/list',
-    query: tmp.value as LocationQueryRaw,
-  })
+  app.fetchRecords(true)
+  if (route.path !== '/list') {
+    void router.push('/list')
+  }
 }
 
 const removeFilter = (field: keyof FindType) => {

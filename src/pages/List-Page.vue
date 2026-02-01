@@ -104,7 +104,7 @@ onMounted(() => {
   }
 })
 
-const findPhoto = (filename: string) => {
+const findPhoto = async (filename: string) => {
   // TODO Secure site
   // if (!user.value) {
   //   notify({
@@ -121,15 +121,24 @@ const findPhoto = (filename: string) => {
   //   })
   //   return
   // }
-  index.value = objects.value.findIndex((x) => x.filename === filename)
-  switch (index.value) {
-    case -1:
-      notify({ type: 'warning', message: 'Photo not found' })
-      break
-    default:
-      // removeHash
-      window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
-      showCarousel.value = true
+  let idx = objects.value.findIndex((x) => x.filename === filename)
+
+  if (idx === -1) {
+    const rec = await app.fetchPhoto(filename)
+    if (rec && rec.year && rec.month) {
+      app.find = { year: rec.year, month: rec.month }
+      await app.fetchRecords(true)
+      idx = objects.value.findIndex((x) => x.filename === filename)
+    }
+  }
+
+  index.value = idx
+  if (index.value !== -1) {
+    // removeHash
+    window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
+    showCarousel.value = true
+  } else {
+    notify({ type: 'warning', message: 'Photo not found' })
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
