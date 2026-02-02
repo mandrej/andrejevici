@@ -298,7 +298,6 @@ const publishSelected = async () => {
     }
   })
 
-  // Remove selected records from uploaded records
   app.uploaded = app.uploaded.filter((item) => !selection.value.includes(item.filename))
   // Clear selection
   selection.value = []

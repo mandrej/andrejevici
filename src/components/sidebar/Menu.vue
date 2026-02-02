@@ -11,12 +11,7 @@
       </q-item-section>
     </q-item>
 
-    <q-item
-      clickable
-      v-ripple
-      :to="{ name: 'list', query: { ...find } }"
-      :active="$route.name === 'list'"
-    >
+    <q-item clickable v-ripple :to="{ name: 'list' }" :active="$route.name === 'list'">
       <q-item-section avatar>
         <q-icon name="grid_view" />
       </q-item-section>
@@ -65,11 +60,8 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
 
-const app = useAppStore()
 const auth = useUserStore()
-const { find } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 </script>

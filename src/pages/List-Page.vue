@@ -95,40 +95,25 @@ const { user } = storeToRefs(auth)
 const { getScrollTarget, setVerticalScrollPosition } = scroll
 
 onMounted(() => {
-  const hash = route.hash
-  if (hash) {
-    const marker = hash.substring(2)
+  if (route.hash) {
+    const filename = route.hash.substring(2)
     debounce(() => {
-      findPhoto(marker)
-    }, 2000)()
+      findPhoto(filename)
+    }, 1000)()
+  } else if (objects.value.length === 0) {
+    app.fetchRecords(true)
   }
 })
 
-const findPhoto = async (filename: string) => {
-  // TODO Secure site
-  // if (!user.value) {
-  //   notify({
-  //     type: 'warning',
-  //     message: 'Please sign in to view details',
-  //     position: 'center',
-  //     multiLine: true,
-  //     actions: [
-  //       {
-  //         label: 'Sign In',
-  //         handler: auth.signIn,
-  //       },
-  //     ],
-  //   })
-  //   return
-  // }
-  let idx = objects.value.findIndex((x) => x.filename === filename)
+const findPhoto = async (c: string) => {
+  let idx = objects.value.findIndex((x) => x.filename === c)
 
   if (idx === -1) {
-    const rec = await app.fetchPhoto(filename)
+    const rec = await app.fetchPhoto(c)
     if (rec && rec.year && rec.month) {
       app.find = { year: rec.year, month: rec.month }
       await app.fetchRecords(true)
-      idx = objects.value.findIndex((x) => x.filename === filename)
+      idx = objects.value.findIndex((x) => x.filename === c)
     }
   }
 

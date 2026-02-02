@@ -239,12 +239,6 @@ export const useAppStore = defineStore('app', {
         meta.updateCounters(oldDoc.data() as PhotoType, obj)
         notify({ message: `${obj.filename} updated` })
       } else {
-        // set find on new added image
-        this.find = Object.assign(
-          {},
-          { year: obj.year, month: obj.month, day: obj.day },
-        ) as FindType
-        await this.fetchRecords(true)
         // set thumbnail url = publish
         if (process.env.DEV) {
           const thumbRef = storageRef(storage, thumbName(obj.filename))
@@ -253,12 +247,20 @@ export const useAppStore = defineStore('app', {
           obj.thumb = thumbUrl(obj.filename)
         }
         // save everything
-        setDoc(docRef, obj, { merge: true })
+        await setDoc(docRef, obj, { merge: true })
         this.getLast()
         this.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
+
+        // set find on new added image and fetch
+        this.find = Object.assign(
+          {},
+          { year: obj.year, month: obj.month, day: obj.day },
+        ) as FindType
+        await this.fetchRecords(true)
+
         notify({ message: `${obj.filename} published` })
       }
       this.currentEdit = obj
@@ -324,9 +326,7 @@ export const useAppStore = defineStore('app', {
         const rec = getRec(querySnapshot) as LastPhoto
         if (rec) {
           // Set the href property to the URL of the last month it was taken
-          rec.href =
-            '/list?' +
-            new URLSearchParams({ year: String(rec.year), month: String(rec.month) }).toString()
+          rec.href = '/list'
         }
         this.lastRecord = rec
         return rec
