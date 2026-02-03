@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { scroll, debounce } from 'quasar'
-import { ref, onMounted, nextTick, defineAsyncComponent } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
@@ -106,18 +106,18 @@ onMounted(() => {
 })
 
 const findPhoto = async (c: string) => {
-  let idx = objects.value.findIndex((x) => x.filename === c)
+  let rec: PhotoType | null | undefined = objects.value.find((x) => x.filename === c)
 
-  if (idx === -1) {
-    const rec = await app.fetchPhoto(c)
-    if (rec && rec.year && rec.month) {
-      app.find = { year: rec.year, month: rec.month }
-      await app.fetchRecords(true)
-      idx = objects.value.findIndex((x) => x.filename === c)
-    }
+  if (!rec) {
+    rec = await app.fetchPhoto(c)
   }
 
-  index.value = idx
+  if (rec && rec.year && rec.month) {
+    app.find = { year: rec.year, month: rec.month }
+    await app.fetchRecords(true)
+  }
+
+  index.value = objects.value.findIndex((x) => x.filename === c)
   if (index.value !== -1) {
     // removeHash
     window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
@@ -127,11 +127,11 @@ const findPhoto = async (c: string) => {
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const onLoad = (index = 0, done: () => void) => {
+const onLoad = async (index = 0, done: (stop?: boolean) => void) => {
   if (next.value !== '') {
-    app.fetchRecords(false)
+    await app.fetchRecords(false)
   }
-  done()
+  done(next.value === '')
 }
 
 const confirmShow = (rec: PhotoType) => {
@@ -165,10 +165,15 @@ const editOk = (filename: string) => {
   }, 2000)
 }
 
-const carouselShow = async (filename: string) => {
-  fakeHistory()
-  await nextTick()
-  findPhoto(filename)
+const carouselShow = (c: string) => {
+  index.value = objects.value.findIndex((x) => x.filename === c)
+  if (index.value !== -1) {
+    fakeHistory()
+    window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
+    showCarousel.value = true
+  } else {
+    notify({ type: 'warning', message: 'Photo not found' })
+  }
 }
 const carouselCancel = (hash: string) => {
   showCarousel.value = false

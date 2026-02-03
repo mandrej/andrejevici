@@ -307,6 +307,14 @@ const fixQuery = (query: FindType): FindType => {
 }
 
 // watch removed
+import { watch } from 'vue'
+watch(
+  find,
+  (val) => {
+    tmp.value = { ...(val as FindType) }
+  },
+  { deep: true },
+)
 
 const submit = () => {
   tmp.value = find.value = fixQuery(tmp.value)

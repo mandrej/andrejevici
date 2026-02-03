@@ -192,7 +192,10 @@ export const useAppStore = defineStore('app', {
         const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
         if (reset) this.objects.length = 0
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
-          this.objects.push(d.data() as PhotoType)
+          const data = d.data() as PhotoType
+          if (!this.objects.find((x) => x.filename === data.filename)) {
+            this.objects.push(data)
+          }
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
         this.next = next && next.id !== this.next ? next.id : ''

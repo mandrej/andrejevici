@@ -143,16 +143,12 @@ const getCaption = (rec: PhotoType, showExtra: boolean): string => {
 }
 
 const onShare = () => {
-  let url = window.location.href
-  const urlHash = new RegExp(/#(.*)?/) // matching string hash
   const slide = swiper!.slides[swiper!.activeIndex]
   if (slide) {
-    hash.value = slide.dataset.hash ?? null
-    if (urlHash.test(url)) {
-      url = url.replace(urlHash, hash.value ? '#' + hash.value : '')
-    } else {
-      url += hash.value ? '#' + hash.value : ''
-    }
+    const slideHash = slide.dataset.hash
+    // Build URL without modifying window.location or the local hash ref
+    const url =
+      window.location.origin + window.location.pathname + (slideHash ? '#' + slideHash : '')
 
     copyToClipboard(url)
       .then(() => {

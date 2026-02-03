@@ -11,7 +11,7 @@
       </q-item-section>
     </q-item>
 
-    <q-item clickable v-ripple :to="{ name: 'list' }" :active="$route.name === 'list'">
+    <q-item clickable v-ripple to="/list" :active="$route.name === 'list'">
       <q-item-section avatar>
         <q-icon name="grid_view" />
       </q-item-section>
