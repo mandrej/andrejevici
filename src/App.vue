@@ -51,7 +51,6 @@ onMounted(() => {
       auth.askPush = false
       auth.allowPush = false
     }
-    auth.getEmailNickMap()
   })
 
   /**

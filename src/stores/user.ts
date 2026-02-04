@@ -15,8 +15,7 @@ import {
   Timestamp,
   orderBy,
 } from 'firebase/firestore'
-import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
-import { useValuesStore } from './values'
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from 'src/router'
 import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from 'src/helpers/models'
@@ -28,16 +27,16 @@ const provider = new GoogleAuthProvider()
 provider.addScope('profile')
 provider.addScope('email')
 
-// const familyMember = (email: string): boolean => {
-//   return nickInsteadEmail(email) != undefined
-// }
-// const adminMember = (email: string, uid: string): boolean => {
-//   if (process.env.DEV) {
-//     return CONFIG.adminMap.get(email) != undefined
-//   } else {
-//     return CONFIG.adminMap.get(email) === uid
-//   }
-// }
+const familyMember = (email: string): boolean => {
+  return CONFIG.familyMap.get(email) != undefined
+}
+const adminMember = (email: string, uid: string): boolean => {
+  if (process.env.DEV) {
+    return CONFIG.adminMap.get(email) != undefined
+  } else {
+    return CONFIG.adminMap.get(email) === uid
+  }
+}
 
 export const useUserStore = defineStore('auth', {
   state(): {
@@ -45,41 +44,15 @@ export const useUserStore = defineStore('auth', {
     token: string | null
     allowPush: boolean
     askPush: boolean
-    emailNickMap: Map<string, string>
   } {
     return {
       user: null,
       token: null,
-      allowPush: false,
-      askPush: false,
-      emailNickMap: new Map<string, string>(),
+      allowPush: false, // from db and state
+      askPush: false, // from state
     }
   },
   actions: {
-    // TODO remove this when all users have uid
-    getEmailNickMap(): void {
-      this.emailNickMap = CONFIG.familyMap
-    },
-    // async getEmailNickMap(): Promise<void> {
-    //   const users = await this.fetchUsers()
-    //   // The persisted state plugin serializes Maps to plain objects. Ensure we
-    //   // have a real Map instance before calling .set on it.
-    //   if (!(this.emailNickMap instanceof Map)) {
-    //     try {
-    //       // Convert plain object to Map; if it's null/undefined, start fresh
-    //       const obj = this.emailNickMap as unknown as Record<string, string> | null
-    //       this.emailNickMap = obj ? new Map(Object.entries(obj)) : new Map<string, string>()
-    //     } catch {
-    //       // Fallback: create a new Map
-    //       this.emailNickMap = new Map<string, string>()
-    //     }
-    //   }
-
-    //   users.forEach((user) => {
-    //     this.emailNickMap.set(user.email, user.nick)
-    //   })
-    // },
-
     /**
      * Stores a user in the database.
      *
@@ -87,37 +60,41 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<void>} A promise that resolves when the user is stored.
      */
     async storeUser(user: User): Promise<void> {
-      const meta = useValuesStore()
       const userRef = doc(userCollection, user.uid)
       const userSnap = await getDoc(userRef)
+      const email = user.email || ''
+      const now = new Date()
+
       if (userSnap.exists()) {
         const data = userSnap.data() as MyUserType
         this.allowPush = data.allowPush
-        const diff =
-          Date.now() - (data?.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0)
-        if (diff > CONFIG.loginDays * 86400000) {
-          this.askPush = true
-        }
-        this.askPush = false
+
+        // If last login (timestamp) is older than loginDays, ask for push again
+        const lastLogin = data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0
+        this.askPush = Date.now() - lastLogin > CONFIG.loginDays * 86400000
+
+        data.isAuthorized = familyMember(email)
+        data.isAdmin = adminMember(email, user.uid)
+        data.timestamp = Timestamp.fromDate(now)
         this.user = data
       } else {
-        // TODO if user had contributions
-        const nick = meta.emailValues.includes(user.email || '')
-          ? this.emailNickMap.get(user.email || '')
-          : user.email?.match(/[^.@]+/)?.[0] || 'anonymous'
+        const nick = CONFIG.familyMap.get(email) || uuidv4().substring(0, 8)
         this.allowPush = false
+        this.askPush = false
         this.user = {
           name: user.displayName || '',
-          email: user.email || '',
-          nick: nick || uuidv4().substring(0, 8),
+          email,
+          nick,
           uid: user.uid,
-          isAuthorized: false,
-          isAdmin: false,
+          isAuthorized: familyMember(email),
+          isAdmin: adminMember(email, user.uid),
           allowPush: false,
-          timestamp: Timestamp.fromDate(new Date()),
+          timestamp: Timestamp.fromDate(now),
         }
       }
-      setDoc(userRef, this.user, { merge: true })
+      if (this.user) {
+        await setDoc(userRef, this.user, { merge: true })
+      }
     },
 
     /**
@@ -134,7 +111,7 @@ export const useUserStore = defineStore('auth', {
         void router.push({ name: 'home' })
       } else {
         try {
-          const result = await signInWithPopup(getAuth(), provider)
+          const result = await signInWithPopup(auth, provider)
           if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
         } catch (err) {
           notify({
@@ -186,33 +163,37 @@ export const useUserStore = defineStore('auth', {
      * @return {Promise<UsersAndDevices[]>} A promise that resolves to an array of user and device objects.
      */
     async fetchUsersAndDevices() {
-      const result: UsersAndDevices[] = []
-      const devices: DeviceType[] = await this.fetchDevices()
-      const users: MyUserType[] = await this.fetchUsers()
+      const [devices, users] = await Promise.all([this.fetchDevices(), this.fetchUsers()])
 
-      users.forEach((user) => {
-        result.push({
-          ...user,
-          timestamps: devices
-            .filter((dev) => dev.email === user.email)
-            .map((dev) => dev.timestamp as Timestamp),
-        })
+      const deviceMap: Record<string, Timestamp[]> = {}
+      devices.forEach((dev) => {
+        if (!deviceMap[dev.email]) deviceMap[dev.email] = []
+        deviceMap[dev.email]!.push(dev.timestamp as Timestamp)
       })
-      return result
+
+      return users.map((user) => ({
+        ...user,
+        timestamps: deviceMap[user.email] || [],
+      }))
     },
 
-    updateUser(user: UsersAndDevices, field: string): void {
+    async updateUser(user: UsersAndDevices, field: keyof UsersAndDevices): Promise<void> {
       const docRef = doc(userCollection, user.uid)
-      updateDoc(docRef, {
-        [field]: user[field as keyof UsersAndDevices], // dynamc field
-      })
-
-      const value = user[field as keyof UsersAndDevices] as string | boolean
-      const message = `User ${user.email} has updated ${field} to ${value}`
-      notify({
-        message: message,
-        icon: 'check',
-      })
+      try {
+        await updateDoc(docRef, {
+          [field]: user[field],
+        })
+        const value = user[field] as string | boolean
+        notify({
+          message: `Updated ${field} to ${value}`,
+          icon: 'check',
+        })
+      } catch (err) {
+        notify({
+          type: 'negative',
+          message: `Failed to update ${field}: ${String(err)}`,
+        })
+      }
     },
 
     /**
@@ -271,23 +252,21 @@ export const useUserStore = defineStore('auth', {
      */
     async deleteQueryBatch(db: Firestore, query: Query, resolve: () => void): Promise<void> {
       const querySnapshot = await getDocs(query)
-      const batchSize = querySnapshot.size
-      if (batchSize === 0) {
+      if (querySnapshot.empty) {
         resolve()
         return
       }
 
       const batch = writeBatch(db)
-      querySnapshot.forEach((doc) => {
-        batch.delete(doc.ref)
-      })
+      querySnapshot.forEach((doc) => batch.delete(doc.ref))
       await batch.commit()
 
-      // Recurse on the next process tick, to avoid
-      // exploding the stack.
-      nextTick(() => {
-        void this.deleteQueryBatch(db, query, resolve)
-      })
+      // If there might be more, continue in next tick
+      if (querySnapshot.size >= 500) {
+        nextTick(() => void this.deleteQueryBatch(db, query, resolve))
+      } else {
+        resolve()
+      }
     },
   },
 })

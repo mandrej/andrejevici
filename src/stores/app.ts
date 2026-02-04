@@ -83,11 +83,8 @@ export const useAppStore = defineStore('app', {
     theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
   }),
   getters: {
-    record: (state) => {
-      return {
-        count: state.objects.length,
-      }
-    },
+    // TODO not used
+    recordCount: (state) => state.objects.length,
   },
   actions: {
     /**

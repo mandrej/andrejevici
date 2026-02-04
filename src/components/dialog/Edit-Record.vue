@@ -197,7 +197,7 @@ const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
-const { user, emailNickMap } = storeToRefs(auth)
+const { user } = storeToRefs(auth)
 
 const getExif = async () => {
   /**
@@ -251,7 +251,7 @@ const onSubmit = () => {
   tmp.tags = tmp.tags ? tmp.tags : []
   // if change email by admin
   if (tmp.email !== user.value!.email && user.value!.isAdmin) {
-    tmp.nick = emailNickMap.value.get(tmp.email) || 'unknown'
+    tmp.nick = CONFIG.familyMap.get(tmp.email) || 'unknown'
   } else {
     tmp.email = user.value!.email
     tmp.nick = user.value!.nick

@@ -18,9 +18,9 @@ const CONFIG = {
     : 'https://notify-hq2yjfmwca-uc.a.run.app',
   thumbnails: 'thumbnails',
   photo_filter: ['year', 'tags', 'model', 'lens', 'email', 'nick'],
-  // adminMap: new Map<string, string>()
-  //   .set('milan.andrejevic@gmail.com', 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
-  //   .set('mihailo.genije@gmail.com', 'HG9VdF9syLNxHYbdQcU7kspLZ9H2'),
+  adminMap: new Map<string, string>()
+    .set('milan.andrejevic@gmail.com', 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
+    .set('mihailo.genije@gmail.com', 'HG9VdF9syLNxHYbdQcU7kspLZ9H2'),
   familyMap: new Map<string, string>()
     .set('milan.andrejevic@gmail.com', 'milan') // email.match(/[^.@]+/)
     .set('mihailo.genije@gmail.com', 'mihailo')
