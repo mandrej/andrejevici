@@ -10,6 +10,12 @@ export interface FindType {
   lens?: string
   nick?: string
 }
+export interface Suggestion {
+  key: string
+  field: string
+  value: string
+  count?: number
+}
 export interface BucketType {
   size: number
   count: number

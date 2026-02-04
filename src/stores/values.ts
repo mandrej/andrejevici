@@ -1,12 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from 'src/boot/firebase'
-import { doc, query, orderBy, getDoc, getDocs, writeBatch } from 'firebase/firestore'
-import { CONFIG, isEmpty, delimiter, counterId } from 'src/helpers'
-import { deepDiffMap } from 'src/helpers/diff'
+import { doc, query, orderBy, getDocs, writeBatch, increment } from 'firebase/firestore'
+import { CONFIG, isEmpty, delimiter, counterId, months } from 'src/helpers'
 import { counterCollection, photoCollection } from 'src/helpers/collections'
 import notify from 'src/helpers/notify'
-import type { PhotoType, ValuesState } from 'src/helpers/models'
-import type { DiffResult } from 'src/helpers/diff'
+import type { PhotoType, ValuesState, Suggestion } from 'src/helpers/models'
 
 /**
  * Builds counters for all photos in the database.
@@ -54,9 +52,11 @@ const byCountReverse = <T extends keyof ValuesState['values']>(
   state: ValuesState,
   field: T,
 ): { [key: string]: number } => {
-  return Object.entries(state.values[field])
-    .sort(([, a], [, b]) => b - a)
-    .reduce((r, [k, v]) => ({ ...r, [k]: v }), {}) as { [key: string]: number }
+  return Object.fromEntries(
+    Object.entries(state.values[field])
+      .sort(([, a], [, b]) => b - a)
+      .filter(([, v]) => v > 0),
+  )
 }
 
 export const useValuesStore = defineStore('meta', {
@@ -94,31 +94,92 @@ export const useValuesStore = defineStore('meta', {
       return ret
     },
     nickWithCount: (state: ValuesState): { [key: string]: number } => {
-      const emails = byCountReverse(state, 'nick')
-      return Object.keys(emails)
-        .filter((key): key is string => emails[key]! > 0)
-        .reduce(
-          (obj, key): { [key: string]: number } => {
-            obj[key] = emails[key]!
-            return obj
-          },
-          {} as { [key: string]: number },
-        )
+      return byCountReverse(state, 'nick')
     },
     tagsWithCount: (state: ValuesState): { [key: string]: number } => {
-      return Object.keys(state.values.tags)
-        .sort()
-        .filter((key): key is string => state.values.tags[key]! > 0)
-        .reduce(
-          (obj, key): { [key: string]: number } => {
-            const count = state.values.tags[key]
-            if (count !== undefined) {
-              obj[key] = count
-            }
-            return obj
-          },
-          {} as { [key: string]: number },
-        )
+      return Object.fromEntries(
+        Object.entries(state.values.tags)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .filter(([, v]) => v > 0),
+      )
+    },
+    allSuggestions(): Suggestion[] {
+      const suggestions: Suggestion[] = []
+
+      // Add authors
+      this.nickValues.forEach((nick) => {
+        const count = this.values.nick[nick]
+        suggestions.push({
+          key: `nick-${nick}`,
+          field: 'author',
+          value: nick,
+          ...(count !== undefined && { count }),
+        })
+      })
+
+      // Add tags
+      this.tagsValues.forEach((tag) => {
+        const count = this.values.tags[tag]
+        suggestions.push({
+          key: `tags-${tag}`,
+          field: 'tags',
+          value: tag,
+          ...(count !== undefined && { count }),
+        })
+      })
+
+      // Add years
+      this.yearValues.forEach((year) => {
+        const count = this.values.year[year]
+        suggestions.push({
+          key: `year-${year}`,
+          field: 'year',
+          value: year,
+          ...(count !== undefined && { count }),
+        })
+      })
+
+      // Add months (case-insensitive autocomplete)
+      months.forEach((month, index) => {
+        suggestions.push({
+          key: `month-${index + 1}`,
+          field: 'month',
+          value: month,
+        })
+      })
+
+      // Add days
+      for (let i = 1; i <= 31; i++) {
+        suggestions.push({
+          key: `day-${i}`,
+          field: 'day',
+          value: i.toString(),
+        })
+      }
+
+      // Add models
+      this.modelValues.forEach((model) => {
+        const count = this.values.model[model]
+        suggestions.push({
+          key: `model-${model}`,
+          field: 'model',
+          value: model,
+          ...(count !== undefined && { count }),
+        })
+      })
+
+      // Add lenses
+      this.lensValues.forEach((lens) => {
+        const count = this.values.lens[lens]
+        suggestions.push({
+          key: `lens-${lens}`,
+          field: 'lens',
+          value: lens,
+          ...(count !== undefined && { count }),
+        })
+      })
+
+      return suggestions
     },
   },
   actions: {
@@ -193,8 +254,7 @@ export const useValuesStore = defineStore('meta', {
 
     /**
      * Updates the counters in the database and store based on the old and new data.
-     * It builds a diff of the counters that have changed, and then calls batchUpdateCounters
-     * with the diff.
+     * It compares both data sets, finds the changed fields, and performs a batch update.
      *
      * @param {PhotoType | null} oldData - The old data to update counters from.
      * @param {PhotoType | null} newData - The new data to update counters from.
@@ -206,78 +266,71 @@ export const useValuesStore = defineStore('meta', {
       // Early return if both are empty
       if (isEmpty(oldObj) && isEmpty(newObj)) return
 
-      let diff: DiffResult[]
+      const toAdd: string[] = []
+      const toRemove: string[] = []
 
-      if (!isEmpty(oldObj) && !isEmpty(newObj)) {
-        // Both exist: compute diff
-        diff = deepDiffMap(oldObj, newObj)
-      } else if (!isEmpty(newObj)) {
-        // Only new data: all created
-        diff = Object.entries(newObj).map(([key, val]) => ({
-          key,
-          status: 'created',
-          value: val,
-        }))
-      } else {
-        // Only old data: all deleted
-        diff = Object.entries(oldObj).map(([key, val]) => ({
-          key,
-          status: 'deleted',
-          value: val,
-        }))
+      // Keys in new but not in old: increments
+      for (const key in newObj) {
+        if (!(key in oldObj)) toAdd.push(key)
       }
-      this.batchUpdateCounters(diff)
+      // Keys in old but not in new: decrements
+      for (const key in oldObj) {
+        if (!(key in newObj)) toRemove.push(key)
+      }
+
+      if (toAdd.length > 0 || toRemove.length > 0) {
+        this.batchUpdateCounters(toAdd, toRemove)
+      }
     },
 
     /**
-     * Updates the counters in the database and store based on the results of the deep diff.
-     * It commits a batch write to the database and updates the store with the new values.
+     * Updates the counters in the database and store based on the calculated changes.
+     * It commits a batch write to the database using increments and updates the local store.
      *
-     * @param {DiffResult[]} results - The results of the deep diff.
+     * @param {string[]} toAdd - List of counter IDs to increment.
+     * @param {string[]} toRemove - List of counter IDs to decrement.
      * @return {Promise<void>} A promise that resolves when the batch has been committed.
      */
-    async batchUpdateCounters(results: DiffResult[]): Promise<void> {
+    async batchUpdateCounters(toAdd: string[], toRemove: string[]): Promise<void> {
       const batch = writeBatch(db)
 
-      for (const todo of results) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_, field, value] = todo.key.split(delimiter)
-        const counterRef = doc(counterCollection, todo.key)
-        const findDoc = await getDoc(counterRef)
-        if (todo.status === 'created') {
-          if (findDoc.exists()) {
-            const findCount = findDoc.data().count
-            this.values[field as keyof ValuesState['values']][value as string] = findCount + 1
-            batch.update(counterRef, {
-              count: findCount + 1,
-            })
-            if (process.env.DEV) console.log('inrcease existing', todo.key, findCount + 1)
-          } else {
-            this.values[field as keyof ValuesState['values']][value as string] = 1
-            batch.set(counterRef, { count: 1, field: field, value: value })
-            if (process.env.DEV) console.log('inrcease new', todo.key, 1)
-          }
+      for (const key of toAdd) {
+        const parts = key.split(delimiter)
+        const field = parts[1] as keyof ValuesState['values']
+        const value = parts[2] as string
+        const currentCount = this.values[field][value] || 0
+        const newCount = currentCount + 1
+
+        this.values[field][value] = newCount
+
+        const counterRef = doc(counterCollection, key)
+        if (currentCount === 0) {
+          batch.set(counterRef, { count: 1, field, value })
+        } else {
+          batch.update(counterRef, { count: increment(1) })
         }
-        if (todo.status === 'deleted') {
-          if (findDoc.exists()) {
-            const findCount = findDoc.data().count
-            if (findCount - 1 <= 0) {
-              delete this.values[field as keyof ValuesState['values']][value as string]
-              batch.delete(counterRef)
-              if (process.env.DEV) console.log('decrese and delete', todo.key, 0)
-            } else {
-              this.values[field as keyof ValuesState['values']][value as string] = findCount - 1
-              batch.update(counterRef, {
-                count: findCount - 1,
-              })
-              if (process.env.DEV) console.log('decrese existing', todo.key, findCount - 1)
-            }
-          } else {
-            this.values[field as keyof ValuesState['values']][value as string] = 1
-            batch.set(counterRef, { count: 1, field: field, value: value })
-          }
+        if (process.env.DEV) console.log('increase', key, newCount)
+      }
+
+      for (const key of toRemove) {
+        const parts = key.split(delimiter)
+        const field = parts[1] as keyof ValuesState['values']
+        const value = parts[2] as string
+        const currentCount = this.values[field][value] || 0
+        const newCount = currentCount - 1
+
+        const counterRef = doc(counterCollection, key)
+        if (newCount <= 0) {
+          delete this.values[field][value]
+          batch.delete(counterRef)
+          if (process.env.DEV) console.log('decrease and delete', key, 0)
+        } else {
+          this.values[field][value] = newCount
+          batch.update(counterRef, { count: increment(-1) })
+          if (process.env.DEV) console.log('decrease', key, newCount)
         }
       }
+
       await batch.commit()
     },
 

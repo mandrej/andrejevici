@@ -88,14 +88,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { months } from 'src/helpers'
-import type { FindType } from 'src/helpers/models'
-
-interface Suggestion {
-  key: string
-  field: string
-  value: string
-  count?: number
-}
+import type { FindType, Suggestion } from 'src/helpers/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -103,91 +96,11 @@ const route = useRoute()
 const router = useRouter()
 
 const { find } = storeToRefs(app)
-const { tagsValues, yearValues, modelValues, lensValues, nickValues } = storeToRefs(meta)
+const { allSuggestions } = storeToRefs(meta)
 const tmp = ref({ ...(find.value as FindType) })
 const searchInput = ref('')
 const dummySelect = ref<Suggestion[]>([])
 const filteredSuggestions = ref<Suggestion[]>([])
-
-// Build all available suggestions from valuesStore
-const allSuggestions = computed(() => {
-  const suggestions: Suggestion[] = []
-
-  // Add authors
-  nickValues.value.forEach((nick) => {
-    const count = meta.values.nick[nick]
-    suggestions.push({
-      key: `nick-${nick}`,
-      field: 'author',
-      value: nick,
-      ...(count !== undefined && { count }),
-    })
-  })
-
-  // Add tags
-  tagsValues.value.forEach((tag) => {
-    const count = meta.values.tags[tag]
-    suggestions.push({
-      key: `tags-${tag}`,
-      field: 'tags',
-      value: tag,
-      ...(count !== undefined && { count }),
-    })
-  })
-
-  // Add years
-  yearValues.value.forEach((year) => {
-    const count = meta.values.year[year]
-    suggestions.push({
-      key: `year-${year}`,
-      field: 'year',
-      value: year,
-      ...(count !== undefined && { count }),
-    })
-  })
-
-  // Add months (case-insensitive autocomplete)
-  months.forEach((month, index) => {
-    suggestions.push({
-      key: `month-${index + 1}`,
-      field: 'month',
-      value: month,
-    })
-  })
-
-  // Add days
-  for (let i = 1; i <= 31; i++) {
-    suggestions.push({
-      key: `day-${i}`,
-      field: 'day',
-      value: i.toString(),
-    })
-  }
-
-  // Add models
-  modelValues.value.forEach((model) => {
-    const count = meta.values.model[model]
-    suggestions.push({
-      key: `model-${model}`,
-      field: 'model',
-      value: model,
-      ...(count !== undefined && { count }),
-    })
-  })
-
-  // Add lenses
-  lensValues.value.forEach((lens) => {
-    const count = meta.values.lens[lens]
-    suggestions.push({
-      key: `lens-${lens}`,
-      field: 'lens',
-      value: lens,
-      ...(count !== undefined && { count }),
-    })
-  })
-
-  return suggestions
-})
 
 const onFilter = (val: string, update: (callback: () => void) => void) => {
   update(() => {
