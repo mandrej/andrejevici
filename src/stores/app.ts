@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { storage } from 'src/boot/firebase'
+import { storage, db } from 'src/boot/firebase'
 import { LocalStorage, Dark } from 'quasar'
 import {
   doc,
@@ -12,6 +12,7 @@ import {
   setDoc,
   deleteDoc,
   startAfter,
+  writeBatch,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import { CONFIG, thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from 'src/helpers'
@@ -29,7 +30,6 @@ import type {
   FindType,
   BucketType,
   PhotoType,
-  LastPhoto,
   AppStoreState,
   FileProgress,
   MessageType,
@@ -71,7 +71,7 @@ export const useAppStore = defineStore('app', {
     objects: [] as PhotoType[],
     next: '',
     currentEdit: {} as PhotoType,
-    lastRecord: {} as PhotoType | null,
+    lastRecord: null as PhotoType | null,
     busy: false,
     progressInfo: {} as FileProgress,
     error: '',
@@ -144,6 +144,9 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<PhotoType | null>} The photo record if found, otherwise null.
      */
     async fetchPhoto(filename: string): Promise<PhotoType | null> {
+      const existing = this.objects.find((x) => x.filename === filename)
+      if (existing) return existing
+
       try {
         const docRef = doc(photoCollection, filename)
         const docSnap = await getDoc(docRef)
@@ -191,9 +194,10 @@ export const useAppStore = defineStore('app', {
       try {
         const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
         if (reset) this.objects.length = 0
+        const existingIds = new Set(this.objects.map((x) => x.filename))
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
           const data = d.data() as PhotoType
-          if (!this.objects.find((x) => x.filename === data.filename)) {
+          if (!existingIds.has(data.filename)) {
             this.objects.push(data)
           }
         })
@@ -235,11 +239,11 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       if (obj.thumb) {
-        const oldDoc = await getDoc(docRef)
-        setDoc(docRef, obj, { merge: true })
+        const oldDoc = this.objects.find((x) => x.filename === obj.filename)
+        await setDoc(docRef, obj, { merge: true })
         replaceInList(this.objects, obj)
 
-        meta.updateCounters(oldDoc.data() as PhotoType, obj)
+        meta.updateCounters(oldDoc || obj, obj)
         notify({ message: `${obj.filename} updated` })
       } else {
         // set thumbnail url = publish
@@ -251,7 +255,7 @@ export const useAppStore = defineStore('app', {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true })
-        this.getLast()
+        this.lastRecord = { ...obj }
         this.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
@@ -282,15 +286,11 @@ export const useAppStore = defineStore('app', {
      */
     async deleteRecord(obj: PhotoType) {
       const docRef = doc(photoCollection, obj.filename)
-      const docSnap = await getDoc(docRef)
-      const data = docSnap.data() as PhotoType
       const stoRef = storageRef(storage, obj.filename)
       const thumbRef = storageRef(storage, thumbName(obj.filename))
 
       try {
-        deleteDoc(docRef)
-        deleteObject(stoRef)
-        deleteObject(thumbRef)
+        await Promise.all([deleteDoc(docRef), deleteObject(stoRef), deleteObject(thumbRef)])
       } catch (err) {
         notify({
           type: 'error',
@@ -303,8 +303,8 @@ export const useAppStore = defineStore('app', {
         removeFromList(this.objects, obj)
 
         const meta = useValuesStore()
-        this.bucketDiff(-data.size)
-        meta.updateCounters(data, null)
+        this.bucketDiff(-obj.size)
+        meta.updateCounters(obj, null)
         this.getLast()
       } else {
         removeFromList(this.uploaded, obj)
@@ -317,20 +317,15 @@ export const useAppStore = defineStore('app', {
     /**
      * Retrieves the most recent photo from the Firestore database.
      *
-     * @return {Promise<LastPhoto | null>} A promise that resolves to the last photo
-     * taken, or null if no photos are found. The href property of the returned photo
-     * is set to the URL of the last month it was taken.
+     * @return {Promise<PhotoType | null>} A promise that resolves to the last photo
+     * taken, or null if no photos are found.
      */
-    async getLast(): Promise<LastPhoto | null> {
+    async getLast(): Promise<PhotoType | null> {
       try {
         const querySnapshot = await getDocs(
           query(photoCollection, orderBy('date', 'desc'), limit(1)),
         )
-        const rec = getRec(querySnapshot) as LastPhoto
-        if (rec) {
-          // Set the href property to the URL of the last month it was taken
-          rec.href = '/list'
-        }
+        const rec = getRec(querySnapshot) as PhotoType
         this.lastRecord = rec
         return rec
       } catch (error) {
@@ -363,11 +358,12 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<void>} A promise that resolves when the messages are deleted.
      */
     async deleteMessages(keys: string[]): Promise<void> {
-      const deletePromises = keys.map(async (key) => {
+      const batch = writeBatch(db)
+      keys.forEach((key) => {
         const docRef = doc(messageCollection, key)
-        await deleteDoc(docRef)
+        batch.delete(docRef)
       })
-      await Promise.all(deletePromises)
+      await batch.commit()
       notify({ message: `Deleted ${keys.length} messages` })
     },
 

@@ -47,9 +47,6 @@ export interface PhotoType extends ExifType {
   text?: string[]
   thumb?: string
 }
-export interface LastPhoto extends PhotoType {
-  href: string
-}
 export interface CounterRecord {
   count: number
   field: 'year' | 'tags' | 'model' | 'lens' | 'nick'

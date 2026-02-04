@@ -7,25 +7,13 @@
           :style="imageStyle(lastRecord)"
           :to="{ path: '/list' }"
           v-ripple.early="{ color: 'purple' }"
-        >
-        </router-link>
-        <q-btn
-          v-if="user && user.isAuthorized"
-          unelevated
-          rounded
-          size="md"
-          class="absolute-top-left q-ma-md bg-primary text-white"
-          :label="`Sign out ${user.name}`"
-          @click="auth.signIn"
         />
+
         <q-btn
-          v-else
           unelevated
-          size="md"
           rounded
-          icon="person"
           class="absolute-top-left q-ma-md bg-primary text-white"
-          label="Sign in"
+          :label="user && user.isAuthorized ? `Sign out ${user.name}` : 'Sign in'"
           @click="auth.signIn"
         />
 
@@ -42,12 +30,12 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
-import type { LastPhoto } from 'src/helpers/models'
+import type { PhotoType } from 'src/helpers/models'
 
 const app = useAppStore()
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
-const lastRecord = computed(() => app.lastRecord as LastPhoto)
+const lastRecord = computed(() => app.lastRecord as PhotoType)
 
 const common = {
   display: 'block',
@@ -57,11 +45,9 @@ const common = {
   transition: 'background-image 0.2s ease-in-out',
   minHeight: '50vh',
 }
-const imageStyle = (rec: LastPhoto) => {
+const imageStyle = (rec: PhotoType) => {
   if (rec && rec.thumb) {
     return { ...common, backgroundImage: `url(${rec.url}), url(${rec.thumb})` }
-  } else {
-    return { ...common, backgroundImage: `url(camera.svg)`, backgroundSize: '65%' }
   }
 }
 </script>
