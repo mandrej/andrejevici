@@ -252,7 +252,13 @@ export const useAppStore = defineStore('app', {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true })
-        this.lastRecord = { ...obj }
+        // update lastRecord only if it's newer than the current lastRecord
+        if (
+          !this.lastRecord ||
+          (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
+        ) {
+          this.lastRecord = { ...obj }
+        }
         this.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
