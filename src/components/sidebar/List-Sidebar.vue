@@ -17,7 +17,7 @@
       v-if="tagsToApply && tagsToApply.length > 0"
       flat
       align="right"
-      label="Apply Tags"
+      label="Merge Tags"
       @click="applyTags"
       :loading="busy"
     />
