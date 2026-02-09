@@ -308,7 +308,9 @@ export const useAppStore = defineStore('app', {
         const meta = useValuesStore()
         this.bucketDiff(-obj.size)
         meta.updateCounters(obj, null)
-        this.getLast()
+        if (obj.date === this.lastRecord?.date) {
+          this.getLast()
+        }
       } else {
         removeFromList(this.uploaded, obj)
       }

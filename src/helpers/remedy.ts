@@ -12,7 +12,7 @@ import {
   setDoc,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import { CONFIG } from './index'
+import { CONFIG, thumbSuffix } from './index'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
@@ -100,7 +100,7 @@ export const missingThumbnails = async () => {
   })
 
   const thumbRefs = await listAll(storageRef(storage, CONFIG.thumbnails))
-  thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace('_400x400.jpeg', '')))
+  thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace(thumbSuffix, '')))
 
   photoNames.sort()
   thumbNames.sort()
@@ -108,11 +108,11 @@ export const missingThumbnails = async () => {
   const thumbSet = new Set(thumbNames)
   const missing = photoNames.filter((x) => !thumbSet.has(x))
 
+  // TODO only for jpg, jpeg, JPG, png, PNG
   const promises: Array<Promise<DocumentSnapshot>> = []
   missing.forEach((name) => {
-    let docRef
-    ;['jpg', 'jpeg', 'JPG'].forEach((ext) => {
-      docRef = doc(photoCollection, `${name}.${ext}`)
+    ;['jpg', 'jpeg', 'JPG', 'png', 'PNG'].forEach((ext) => {
+      const docRef = doc(photoCollection, `${name}.${ext}`)
       promises.push(getDoc(docRef))
     })
   })

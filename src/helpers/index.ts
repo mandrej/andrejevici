@@ -104,11 +104,12 @@ export const delimiter = '||' // for counter id
 export const fileBroken = CONFIG.fileBroken
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
 
+export const thumbSuffix = '_400x400.jpeg'
 export const thumbName = (filename: string) => {
   const match = filename.match(reFilename)
   if (!match) return ''
   const [, name] = match
-  return [CONFIG.thumbnails, name + '_400x400.jpeg'].join('/')
+  return [CONFIG.thumbnails, name + thumbSuffix].join('/')
 }
 export const thumbUrl = (filename: string) => {
   return [
