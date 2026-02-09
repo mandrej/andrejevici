@@ -88,31 +88,34 @@ export const missingThumbnails = async () => {
     message: `Please wait`,
   })
 
-  const photoNames: string[] = []
-  const thumbNames: string[] = []
+  const photoMap = new Map<string, string[]>()
+  const thumbSet = new Set<string>()
+  const allowedExts = ['.jpg', '.jpeg', '.png']
 
   const photoRefs = await listAll(storageRef(storage, ''))
   photoRefs.items.forEach((r) => {
     const match = r.name.match(reFilename)
-    if (!match) return ''
-    const [, name] = match
-    if (name) photoNames.push(name)
+    if (!match) return
+    const [, name, ext] = match
+    if (name && ext && allowedExts.includes(ext.toLowerCase())) {
+      const list = photoMap.get(name) || []
+      list.push(r.name)
+      photoMap.set(name, list)
+    }
   })
 
   const thumbRefs = await listAll(storageRef(storage, CONFIG.thumbnails))
-  thumbRefs.items.forEach((r) => thumbNames.push(r.name.replace(thumbSuffix, '')))
+  thumbRefs.items.forEach((r) => thumbSet.add(r.name.replace(thumbSuffix, '')))
 
-  photoNames.sort()
-  thumbNames.sort()
+  const missing = Array.from(photoMap.keys())
+    .filter((x) => !thumbSet.has(x))
+    .sort()
 
-  const thumbSet = new Set(thumbNames)
-  const missing = photoNames.filter((x) => !thumbSet.has(x))
-
-  // TODO only for jpg, jpeg, JPG, png, PNG
   const promises: Array<Promise<DocumentSnapshot>> = []
   missing.forEach((name) => {
-    ;['jpg', 'jpeg', 'JPG', 'png', 'PNG'].forEach((ext) => {
-      const docRef = doc(photoCollection, `${name}.${ext}`)
+    const filenames = photoMap.get(name)
+    filenames?.forEach((filename) => {
+      const docRef = doc(photoCollection, filename)
       promises.push(getDoc(docRef))
     })
   })
@@ -125,7 +128,7 @@ export const missingThumbnails = async () => {
       if (it.value.exists()) {
         const data = it.value.data()
         const filename = it.value.id.replace(/\.[^.]+$/, '')
-        message += `${data.date} ${filename}<br/>`
+        message += `${data?.date} ${filename}<br/>`
         hit++
       }
     } else {
@@ -166,63 +169,60 @@ export const mismatch = async () => {
     group: 'mismatch',
   })
 
-  const bucketNames: string[] = []
-  const storageNames: string[] = []
-  const uploadedFilenames = uploaded.value.length ? uploaded.value.map((it) => it.filename) : []
-  const refs = await listAll(storageRef(storage, ''))
+  const [storageResult, firestoreResult] = await Promise.all([
+    listAll(storageRef(storage, '')),
+    getDocs(query(photoCollection)),
+  ])
 
-  refs.items.forEach((r) => bucketNames.push(r.name))
+  const bucketNames = new Set(storageResult.items.map((r) => r.name))
+  const storageNames = new Set(firestoreResult.docs.map((d) => d.id))
+  const uploadedFilenames = new Set(uploaded.value.map((it) => it.filename))
 
-  const q = query(photoCollection)
-  const snapshot = await getDocs(q)
-  snapshot.forEach((doc) => storageNames.push(doc.id))
+  // Files in storage but not in firestore (orphaned files)
+  const missingRecords = Array.from(bucketNames).filter(
+    (name) => !storageNames.has(name) && !uploadedFilenames.has(name),
+  )
 
-  bucketNames.sort()
-  storageNames.sort()
+  // Records in firestore but not in storage (broken links)
+  const missingFiles = Array.from(storageNames).filter((name) => !bucketNames.has(name))
 
-  const storageSet = new Set(storageNames)
-  const bucketSet = new Set(bucketNames)
-  const missing =
-    bucketNames.length >= storageNames.length
-      ? bucketNames.filter((x) => !storageSet.has(x))
-      : storageNames.filter((x) => !bucketSet.has(x))
-
-  if (bucketNames.length >= storageNames.length) {
-    const promises = missing
-      .filter((name) => !uploadedFilenames.includes(name))
-      .map((name) => getStorageData(name))
-
-    if (promises.length > 0) {
-      const results = await Promise.all(promises)
-      results.forEach((it) => uploaded.value.push(it as PhotoType))
-
-      notify({
-        type: 'negative',
-        message: `${promises.length} files uploaded to bucket, but doesn't have record in firestore.<br>
-        Resolve mismatched files either by publish or delete.`,
-        actions: [
-          {
-            label: 'Resolve',
-            handler: () => {
-              void router.push({ path: '/add' })
-            },
-          },
-        ],
-        multiLine: true,
-        html: true,
-        timeout: 0,
-        group: 'mismatch',
-      })
-    } else {
-      notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
-    }
-  } else {
-    await Promise.all(missing.map((name) => deleteDoc(doc(photoCollection, name))))
+  if (missingFiles.length > 0) {
+    await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection, name))))
     notify({
-      message: `${missing.length} records deleted from firestore that doesn't have image reference`,
+      message: `${missingFiles.length} records deleted from firestore that doesn't have image reference`,
       type: 'negative',
       group: 'mismatch',
     })
+  }
+
+  if (missingRecords.length > 0) {
+    const promises = missingRecords.map((name) => getStorageData(name))
+    const results = await Promise.all(promises)
+    results.forEach((it) => {
+      uploaded.value.push(it as PhotoType)
+    })
+
+    notify({
+      type: 'negative',
+      message: `${missingRecords.length} files uploaded to bucket, but doesn't have record in firestore.<br>
+      Resolve mismatched files either by publish or delete.`,
+      actions: [
+        {
+          label: 'Resolve',
+          handler: () => {
+            void router.push({ path: '/add' })
+          },
+        },
+      ],
+      multiLine: true,
+      html: true,
+      timeout: 0,
+      group: missingFiles.length > 0 ? 'mismatch-add' : 'mismatch',
+    })
+  }
+
+  if (missingRecords.length === 0 && missingFiles.length === 0) {
+    notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
   }
 }
 
