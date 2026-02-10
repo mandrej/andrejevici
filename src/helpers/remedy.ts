@@ -1,16 +1,6 @@
 import { db, storage } from 'src/boot/firebase'
 import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
-import {
-  doc,
-  query,
-  getDocs,
-  deleteDoc,
-  getDoc,
-  writeBatch,
-  where,
-  orderBy,
-  setDoc,
-} from 'firebase/firestore'
+import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { CONFIG, thumbSuffix } from './index'
 import { storeToRefs } from 'pinia'
@@ -277,36 +267,61 @@ export const renameValue = async (
   oldValue: string,
   newValue: string,
 ): Promise<void> => {
-  // Prepare batch for photo updates
-  const batch = writeBatch(db)
+  const batchLimit = 498
+  const operations: Promise<void>[] = []
+  let batch = writeBatch(db)
+  let count = 0
+
+  const commitBatch = () => {
+    operations.push(batch.commit())
+    batch = writeBatch(db)
+    count = 0
+  }
+
+  // Parallelize reads
   const filter =
     field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
-  const q = query(photoCollection, filter, orderBy('date', 'desc'))
-  const querySnapshot = await getDocs(q)
+  const q = query(photoCollection, filter)
+  const oldRef = doc(counterCollection, counterId(field, oldValue))
 
+  const [querySnapshot, counterSnapshot] = await Promise.all([getDocs(q), getDoc(oldRef)])
+
+  // Update photos
   querySnapshot.forEach((d) => {
     const photoRef = doc(photoCollection, d.id)
+
     if (field === 'tags') {
       const obj = d.data()
-      const idx = obj.tags.indexOf(oldValue)
-      obj.tags.splice(idx, 1, newValue)
-      batch.update(photoRef, { [field]: obj.tags })
+      // Ensure tags exists and is an array
+      if (Array.isArray(obj.tags)) {
+        const idx = obj.tags.indexOf(oldValue)
+        if (idx > -1) {
+          obj.tags.splice(idx, 1, newValue)
+          batch.update(photoRef, { [field]: obj.tags })
+          count++
+        }
+      }
     } else {
       batch.update(photoRef, { [field]: newValue })
+      count++
+    }
+
+    if (count >= batchLimit) {
+      commitBatch()
     }
   })
 
-  // Commit batch for photos
-  await batch.commit()
-
   // Update counters
-  const oldRef = doc(counterCollection, counterId(field, oldValue))
-  const newRef = doc(counterCollection, counterId(field, newValue))
-  const counter = await getDoc(oldRef)
-  const obj = counter.data()
+  if (counterSnapshot.exists()) {
+    const newRef = doc(counterCollection, counterId(field, newValue))
+    const obj = counterSnapshot.data()
 
-  if (obj) {
-    await setDoc(
+    // Ensure we have space for counter operations
+    if (count >= batchLimit - 2) {
+      commitBatch()
+    }
+
+    batch.set(
       newRef,
       {
         count: obj.count,
@@ -315,10 +330,19 @@ export const renameValue = async (
       },
       { merge: true },
     )
-    deleteDoc(oldRef)
+    batch.delete(oldRef)
+    count += 2
 
     // Update store
-    meta.values[field][newValue] = obj.count
-    delete meta.values[field][oldValue]
+    if (meta.values[field]) {
+      meta.values[field][newValue] = obj.count
+      delete meta.values[field][oldValue]
+    }
   }
+
+  if (count > 0) {
+    commitBatch()
+  }
+
+  await Promise.all(operations)
 }

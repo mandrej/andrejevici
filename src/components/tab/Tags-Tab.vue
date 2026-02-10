@@ -46,7 +46,8 @@
         v-for="(count, value) in tagsWithCount"
         :key="value"
         :title="`${value}: ${count}`"
-        :to="{ path: '/list', query: { tags: value } }"
+        @click="searchByTag(value)"
+        to="/list"
         class="q-pr-sm link"
         >{{ value }},</router-link
       >
@@ -57,6 +58,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import AutoComplete from 'src/components/Auto-Complete.vue'
 import { removeUnusedTags, renameValue } from 'src/helpers/remedy'
@@ -65,6 +67,7 @@ import type { QInput } from 'quasar'
 import type { ValuesState } from 'src/helpers/models'
 
 const meta = useValuesStore()
+const app = useAppStore()
 const { tagsValues, tagsWithCount } = storeToRefs(meta)
 
 const values = computed(() => meta.values)
@@ -72,6 +75,12 @@ const newTagRef = ref<InstanceType<typeof QInput> | null>(null),
   newTag = ref(''),
   existingTag = ref(''),
   changedTag = ref('')
+
+const searchByTag = async (tag: string) => {
+  app.find = { tags: [tag] }
+  await app.fetchRecords(true)
+  // router.push('/list')
+}
 
 const addTag = () => {
   if (newTag.value !== '' && tagsValues.value.indexOf(newTag.value) === -1) {
@@ -102,11 +111,11 @@ const rename = (field: keyof ValuesState['values'], existing: string, changed: s
         type: 'warning',
         message: `Cannot change "${existing}"`,
       })
-    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
-      notify({
-        type: 'warning',
-        message: `"${changed}" already exists"`,
-      })
+      // } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
+      //   notify({
+      //     type: 'warning',
+      //     message: `"${changed}" already exists"`,
+      //   })
     } else {
       renameValue(field, existing, changed)
       notify({
