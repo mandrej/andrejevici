@@ -17,7 +17,12 @@
     </q-img>
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
-      <span>{{ rec.nick }}, {{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY') : '' }}</span>
+      <span
+        >{{ rec.nick }},
+        <router-link to="/list" @click="searchByDate(rec.date)" class="link">{{
+          rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : ''
+        }}</router-link>
+      </span>
       <q-icon
         v-if="rec.loc"
         name="my_location"
@@ -42,15 +47,23 @@
 <script setup lang="ts">
 import { U, formatDatum } from 'src/helpers'
 import type { PhotoType } from 'src/helpers/models'
+import { useAppStore } from 'src/stores/app'
 import FileBroken from 'src/components/File-Broken.vue'
 
 defineProps<{
   rec: PhotoType
 }>()
 const emit = defineEmits(['carousel-show'])
+const app = useAppStore()
 
 const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
+}
+const searchByDate = (date: string | undefined) => {
+  if (!date) return
+  const datum: Date = new Date(date)
+  app.find = { year: datum.getFullYear(), month: datum.getMonth() + 1, day: datum.getDate() }
+  app.fetchRecords(true)
 }
 </script>
