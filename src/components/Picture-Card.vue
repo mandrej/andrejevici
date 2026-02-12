@@ -17,12 +17,17 @@
     </q-img>
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
-      <span
-        >{{ rec.nick }},
-        <router-link to="/list" @click="searchByDate(rec.date)" class="link">{{
-          rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : ''
-        }}</router-link>
+      <span>
+        <a href="/list" @click="app.searchBy({ nick: rec.nick })" class="link">{{ rec.nick }}</a
+        >,
+        <a
+          href="/list"
+          @click="app.searchBy({ year: rec.year, month: rec.month, day: rec.day })"
+          class="link"
+          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</a
+        >
       </span>
+
       <q-icon
         v-if="rec.loc"
         name="my_location"
@@ -59,11 +64,5 @@ const app = useAppStore()
 const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
-}
-const searchByDate = (date: string | undefined) => {
-  if (!date) return
-  const datum: Date = new Date(date)
-  app.find = { year: datum.getFullYear(), month: datum.getMonth() + 1, day: datum.getDate() }
-  app.fetchRecords(true)
 }
 </script>

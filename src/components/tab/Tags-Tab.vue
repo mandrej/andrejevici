@@ -42,14 +42,14 @@
 
   <q-scroll-area class="gt-xs q-pa-md" style="height: 50vh">
     <div class="text-subtitle1">
-      <router-link
+      <a
         v-for="(count, value) in tagsWithCount"
         :key="value"
         :title="`${value}: ${count}`"
-        @click="searchByTag(value)"
-        to="/list"
+        @click="app.searchBy({ tags: [value] })"
+        href="/list"
         class="q-pr-sm link"
-        >{{ value }},</router-link
+        >{{ value }},</a
       >
     </div>
   </q-scroll-area>
@@ -75,12 +75,6 @@ const newTagRef = ref<InstanceType<typeof QInput> | null>(null),
   newTag = ref(''),
   existingTag = ref(''),
   changedTag = ref('')
-
-const searchByTag = async (tag: string) => {
-  app.find = { tags: [tag] }
-  await app.fetchRecords(true)
-  // router.push('/list')
-}
 
 const addTag = () => {
   if (newTag.value !== '' && tagsValues.value.indexOf(newTag.value) === -1) {

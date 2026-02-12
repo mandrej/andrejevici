@@ -1,14 +1,14 @@
 import type { Timestamp } from '@google-cloud/firestore'
 
 export interface FindType {
-  year?: number
-  month?: number
-  day?: number
-  text?: string
-  tags?: string[]
-  model?: string
-  lens?: string
-  nick?: string
+  year?: number | undefined
+  month?: number | undefined
+  day?: number | undefined
+  text?: string | undefined
+  tags?: string[] | undefined
+  model?: string | undefined
+  lens?: string | undefined
+  nick?: string | undefined
 }
 export interface Suggestion {
   key: string

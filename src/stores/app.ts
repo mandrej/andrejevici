@@ -88,6 +88,15 @@ export const useAppStore = defineStore('app', {
   },
   actions: {
     /**
+     * Searches for records based on multiple field-value pairs.
+     *  @param criteria An object containing the search criteria.
+     */
+    searchBy(criteria: FindType) {
+      this.find = criteria
+      this.fetchRecords(true)
+    },
+
+    /**
      * Reads the bucket data from the database and updates the store state.
      */
     async bucketRead() {

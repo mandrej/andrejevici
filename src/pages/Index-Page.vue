@@ -21,7 +21,8 @@
       rounded
       color="secondary"
       text-color="black"
-      @click="searchByNick(nick)"
+      @click="app.searchBy({ nick })"
+      to="/list"
     />
   </div>
 
@@ -47,7 +48,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { build, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
@@ -55,18 +55,11 @@ import { useValuesStore } from 'src/stores/values'
 
 const app = useAppStore()
 const meta = useValuesStore()
-const router = useRouter()
 
 const nickWithCount = computed(() => meta.nickWithCount)
 const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket, theme: appTheme } = storeToRefs(app)
-
-const searchByNick = async (nick: string) => {
-  app.find = { nick }
-  await app.fetchRecords(true)
-  router.push('/list')
-}
 
 const theme = computed({
   get: () => appTheme.value,
