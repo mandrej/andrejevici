@@ -26,7 +26,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { CONFIG } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import { useUserStore } from 'src/stores/user'
 import { getMessaging, getToken } from 'firebase/messaging'
@@ -57,7 +56,7 @@ const enableNotifications = async () => {
       wait.value = true
       // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
       const token = await getToken(messaging, {
-        vapidKey: CONFIG.firebase.vapidKey,
+        ...(process.env.FIREBASE_VAPID_KEY ? { vapidKey: process.env.FIREBASE_VAPID_KEY } : {}),
       })
       if (token) {
         auth.token = token

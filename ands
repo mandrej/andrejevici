@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 proj_id=andrejevici
-version=`date +%Y%m%d%H%M`
+version=`date +%d.%m.%Y\ %H:%M`
 
 function syntax {
   echo $"Usage:"
@@ -29,7 +29,7 @@ else
       exit ;;
     build)
       # MacPorts, sudo port install gsed
-      gsed -i -E "/ANDREJEVICI_VERSION/s/[[:digit:]]{12}/$version/g" .env
+      gsed -i "s/^ANDREJEVICI_BUILD=.*/ANDREJEVICI_BUILD='$version'/" .env
       quasar build -m pwa
       exit ;;
     deploy)

@@ -1,6 +1,6 @@
 <template>
   <q-img src="apperture.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
-  <div class="text-body2">{{ version }}</div>
+  <div class="text-caption">Build {{ build }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
   </div>
@@ -49,7 +49,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { version, isEmpty } from 'src/helpers'
+import { build, isEmpty } from 'src/helpers'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 

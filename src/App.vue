@@ -8,7 +8,6 @@ import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { useUserStore } from 'src/stores/user'
 import { messaging } from 'src/boot/firebase'
-import { CONFIG } from 'src/helpers'
 import notify from 'src/helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { onMessage, getToken } from 'firebase/messaging'
@@ -58,7 +57,9 @@ onMounted(() => {
    * Gets a new token and updates the device.
    */
   const onNewToken = () => {
-    getToken(messaging, { vapidKey: CONFIG.firebase.vapidKey })
+    getToken(messaging, {
+      ...(process.env.FIREBASE_VAPID_KEY ? { vapidKey: process.env.FIREBASE_VAPID_KEY } : {}),
+    })
       .then((token) => {
         if (token) {
           auth.updateDevice(token).catch((err) => {

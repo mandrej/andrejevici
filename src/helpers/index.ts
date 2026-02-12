@@ -59,9 +59,8 @@ export const fakeHistory = () => {
   window.history.pushState(history.state, '', history.state.current)
 }
 
-export const version = computed(() => {
-  const ver = process.env.ANDREJEVICI_VERSION?.match(/.{1,4}/g)?.join('.') || ''
-  return 'ver. ' + ver
+export const build = computed(() => {
+  return process.env.ANDREJEVICI_BUILD || ''
 })
 export const isEmpty = (obj: object) => {
   for (const prop in obj) {
@@ -114,7 +113,7 @@ export const thumbName = (filename: string) => {
 export const thumbUrl = (filename: string) => {
   return [
     'https://storage.googleapis.com',
-    CONFIG.firebase.storageBucket,
+    process.env.FIREBASE_STORAGE_BUCKET,
     thumbName(filename),
   ].join('/')
 }
