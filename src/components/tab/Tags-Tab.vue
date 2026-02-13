@@ -42,14 +42,14 @@
 
   <q-scroll-area class="gt-xs q-pa-md" style="height: 50vh">
     <div class="text-subtitle1">
-      <a
+      <router-link
         v-for="(count, value) in tagsWithCount"
         :key="value"
         :title="`${value}: ${count}`"
         @click="app.searchBy({ tags: [value] })"
-        href="/list"
+        to="/list"
         class="q-pr-sm link"
-        >{{ value }},</a
+        >{{ value }},</router-link
       >
     </div>
   </q-scroll-area>

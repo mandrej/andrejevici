@@ -2,7 +2,7 @@ import { db, storage } from 'src/boot/firebase'
 import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
 import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import { CONFIG, thumbSuffix } from './index'
+import CONFIG from 'app/config'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
@@ -95,7 +95,7 @@ export const missingThumbnails = async () => {
   })
 
   const thumbRefs = await listAll(storageRef(storage, CONFIG.thumbnails))
-  thumbRefs.items.forEach((r) => thumbSet.add(r.name.replace(thumbSuffix, '')))
+  thumbRefs.items.forEach((r) => thumbSet.add(r.name.replace(CONFIG.thumbSuffix, '')))
 
   const missing = Array.from(photoMap.keys())
     .filter((x) => !thumbSet.has(x))

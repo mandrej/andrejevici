@@ -1,9 +1,9 @@
 <template>
   <div class="absolute-full flex flex-center">
-    <img :src="fileBroken" />
+    <img :src="CONFIG.fileBroken" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { fileBroken } from 'src/helpers'
+import CONFIG from 'app/config'
 </script>

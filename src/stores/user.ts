@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
-import { CONFIG } from 'src/helpers'
+import CONFIG from 'app/config'
 import { auth, db } from 'src/boot/firebase'
 import {
   doc,

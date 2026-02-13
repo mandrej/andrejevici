@@ -18,13 +18,15 @@
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
       <span>
-        <a href="/list" @click="app.searchBy({ nick: rec.nick })" class="link">{{ rec.nick }}</a
+        <router-link to="/list" class="link" @click="app.searchBy({ nick: rec.nick })">{{
+          rec.nick
+        }}</router-link
         >,
-        <a
-          href="/list"
+        <router-link
+          to="/list"
           @click="app.searchBy({ year: rec.year, month: rec.month, day: rec.day })"
           class="link"
-          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</a
+          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</router-link
         >
       </span>
 

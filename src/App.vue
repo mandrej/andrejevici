@@ -11,6 +11,7 @@ import { messaging } from 'src/boot/firebase'
 import notify from 'src/helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { onMessage, getToken } from 'firebase/messaging'
+import CONFIG from 'app/config'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -58,7 +59,7 @@ onMounted(() => {
    */
   const onNewToken = () => {
     getToken(messaging, {
-      ...(process.env.FIREBASE_VAPID_KEY ? { vapidKey: process.env.FIREBASE_VAPID_KEY } : {}),
+      vapidKey: CONFIG.firebase.vapidKey,
     })
       .then((token) => {
         if (token) {

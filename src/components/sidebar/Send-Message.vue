@@ -15,7 +15,7 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from 'src/stores/user'
 // import { db } from 'src/boot/firebase'
 // import { query, where, orderBy, collection, onSnapshot, Timestamp } from 'firebase/firestore'
-import { CONFIG } from 'src/helpers'
+import CONFIG from 'app/config'
 import notify from 'src/helpers/notify'
 // import type { MessageType } from 'src/helpers/models'
 

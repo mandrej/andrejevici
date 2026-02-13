@@ -1,4 +1,4 @@
-import CONFIG from '../../config'
+import CONFIG from 'app/config'
 import { date, format } from 'quasar'
 import readExif from './exif'
 import { slugify } from 'transliteration'
@@ -100,20 +100,18 @@ export const sliceSlug = (text: string): string[] => {
 
 export const U = '_'
 export const delimiter = '||' // for counter id
-export const fileBroken = CONFIG.fileBroken
 export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
 
-export const thumbSuffix = '_400x400.jpeg'
 export const thumbName = (filename: string) => {
   const match = filename.match(reFilename)
   if (!match) return ''
   const [, name] = match
-  return [CONFIG.thumbnails, name + thumbSuffix].join('/')
+  return [CONFIG.thumbnails, name + CONFIG.thumbSuffix].join('/')
 }
 export const thumbUrl = (filename: string) => {
   return [
     'https://storage.googleapis.com',
-    process.env.FIREBASE_STORAGE_BUCKET,
+    CONFIG.firebase.storageBucket,
     thumbName(filename),
   ].join('/')
 }
@@ -152,4 +150,3 @@ export const completePhoto = async (
   }
   return tmp
 }
-export { CONFIG }

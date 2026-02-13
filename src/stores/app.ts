@@ -15,7 +15,8 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
-import { CONFIG, thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from 'src/helpers'
+import { thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from 'src/helpers'
+import CONFIG from 'app/config'
 import notify from 'src/helpers/notify'
 import { useValuesStore } from './values'
 import type {

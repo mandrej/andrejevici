@@ -1,4 +1,4 @@
-import { CONFIG } from 'src/helpers'
+import CONFIG from 'app/config'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [

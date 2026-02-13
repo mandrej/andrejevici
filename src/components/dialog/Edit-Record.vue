@@ -176,7 +176,8 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { CONFIG, U, formatBytes, sliceSlug } from 'src/helpers'
+import { U, formatBytes, sliceSlug } from 'src/helpers'
+import CONFIG from 'app/config'
 import readExif from 'src/helpers/exif'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'

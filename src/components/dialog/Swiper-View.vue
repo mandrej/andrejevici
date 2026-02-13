@@ -75,7 +75,8 @@ import { storeToRefs } from 'pinia'
 import { ref, watchEffect } from 'vue'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
-import { fileBroken, U, isAuthorOrAdmin } from 'src/helpers'
+import { U, isAuthorOrAdmin } from 'src/helpers'
+import CONFIG from 'app/config'
 import { register } from 'swiper/element/bundle'
 import { Keyboard, Zoom } from 'swiper/modules'
 import notify from 'src/helpers/notify'
@@ -124,7 +125,7 @@ const onSwiper = (e: { detail: Swiper[] }): void => {
 const onError = (e: Event) => {
   const target = e.target as HTMLImageElement | null
   if (target) {
-    target.src = fileBroken
+    target.src = CONFIG.fileBroken
   }
 }
 
