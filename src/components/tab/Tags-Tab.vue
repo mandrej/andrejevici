@@ -46,7 +46,7 @@
         v-for="(count, value) in tagsWithCount"
         :key="value"
         :title="`${value}: ${count}`"
-        @click="app.searchBy({ tags: [value] })"
+        @click.prevent="app.searchBy({ tags: [value] })"
         to="/list"
         class="q-pr-sm link"
         >{{ value }},</router-link
