@@ -21,7 +21,7 @@
       rounded
       color="secondary"
       text-color="black"
-      @click.prevent="app.searchBy({ nick })"
+      @click="app.searchBy({ nick })"
       to="/list"
     />
   </div>
