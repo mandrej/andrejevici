@@ -73,3 +73,11 @@ body,
 .firebase-emulator-warning {
   display: none;
 }
+
+body.swiper-view-active {
+  .q-dialog,
+  .q-notifications__list,
+  .q-notifications {
+    z-index: 100000 !important;
+  }
+}

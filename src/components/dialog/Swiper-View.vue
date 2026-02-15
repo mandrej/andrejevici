@@ -1,90 +1,20 @@
 <template>
-  <q-dialog v-model="showCarousel" :maximized="true" persistent>
-    <q-card flat>
-      <swiper-container
-        :keyboard="{
-          enabled: true,
-        }"
-        :grab-cursor="true"
-        :zoom="{
-          maxRatio: 3,
-          limitToOriginalSize: true,
-        }"
-        :lazy="true"
-        @swiperinit="onSwiper"
-      >
-        <swiper-slide v-for="obj in objects" :key="obj.filename" :data-hash="U + obj.filename">
-          <div
-            v-show="!full"
-            class="absolute-top row no-wrap justify-between"
-            style="z-index: 3000; background-color: rgba(0, 0, 0, 0.5)"
-          >
-            <div
-              v-html="getCaption(obj, $q.screen.gt.sm)"
-              class="col q-my-sm text-white text-center ellipsis"
-            ></div>
-            <q-btn
-              flat
-              round
-              class="text-white q-pa-sm"
-              icon="close"
-              @click="onCancel(U + obj.filename)"
-            />
-          </div>
-
-          <div class="swiper-zoom-container">
-            <img :src="obj.url" loading="lazy" @error="onError" />
-            <div class="swiper-lazy-preloader" />
-          </div>
-
-          <div v-show="!full" class="absolute-bottom-right row no-wrap">
-            <template v-if="isAuthorOrAdmin(user, obj)">
-              <q-btn
-                flat
-                round
-                class="text-white q-pa-sm"
-                icon="delete"
-                @click="emit('confirm-delete', obj)"
-              />
-              <q-btn
-                flat
-                round
-                class="text-white q-pa-sm"
-                icon="edit"
-                @click="emit('edit-record', obj)"
-              />
-            </template>
-            <q-btn flat round class="text-white q-pa-sm" @click="onShare()" icon="share" />
-            <q-btn
-              flat
-              round
-              class="text-white q-pa-sm"
-              @click="$q.fullscreen.toggle()"
-              :icon="full ? 'fullscreen_exit' : 'fullscreen'"
-            />
-          </div>
-        </swiper-slide>
-      </swiper-container>
-    </q-card>
-  </q-dialog>
+  <!-- PhotoSwipe appends its own DOM elements to the body, so we don't need to render anything here. -->
+  <div style="display: none"></div>
 </template>
 
 <script setup lang="ts">
-import { useQuasar, copyToClipboard } from 'quasar'
+import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { ref, watchEffect } from 'vue'
 import { useAppStore } from 'src/stores/app'
 import { useUserStore } from 'src/stores/user'
 import { U, isAuthorOrAdmin } from 'src/helpers'
 import CONFIG from 'app/config'
-import { register } from 'swiper/element/bundle'
-import { Keyboard, Zoom } from 'swiper/modules'
+import { useQuasar, copyToClipboard } from 'quasar'
 import notify from 'src/helpers/notify'
-import type { Swiper } from 'swiper/types'
+import PhotoSwipeLightbox from 'photoswipe/lightbox'
+import 'photoswipe/style.css'
 import type { PhotoType } from 'src/helpers/models'
-
-import 'swiper/css'
-import 'swiper/css/zoom'
 
 const props = defineProps<{
   index: number
@@ -96,38 +26,8 @@ const app = useAppStore()
 const auth = useUserStore()
 const { objects, showCarousel } = storeToRefs(app)
 const { user } = storeToRefs(auth)
-const hash = ref<string | null>(null)
-const full = ref(false)
 
-register()
-let swiper: Swiper | null = null
-
-const onSwiper = (e: { detail: Swiper[] }): void => {
-  swiper = e.detail[0] ?? null // instance
-  if (swiper) {
-    Object.assign(swiper, { modules: [Keyboard, Zoom] })
-    swiper.slideTo(props.index, 0)
-  }
-}
-
-// const onLoad = (e: Event): void => {
-//   const target = e.target as HTMLImageElement
-//   // calculate image dimension
-//   const dim1: [number, number] = [target.width, target.height]
-//   const dim0: [number, number] = [target.naturalWidth, target.naturalHeight]
-//   const wRatio = dim0[0] / dim1[0]
-//   const hRatio = dim0[1] / dim1[1]
-
-//   const container = target.closest('.swiper-zoom-container') as HTMLElement
-//   container.dataset.swiperZoom = Math.max(wRatio, hRatio, 1).toString()
-// }
-
-const onError = (e: Event) => {
-  const target = e.target as HTMLImageElement | null
-  if (target) {
-    target.src = CONFIG.fileBroken
-  }
-}
+let lightbox: PhotoSwipeLightbox | null = null
 
 const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   let tmp = ''
@@ -144,12 +44,12 @@ const getCaption = (rec: PhotoType, showExtra: boolean): string => {
 }
 
 const onShare = () => {
-  const slide = swiper!.slides[swiper!.activeIndex]
-  if (slide) {
-    const slideHash = slide.dataset.hash
-    // Build URL without modifying window.location or the local hash ref
-    const url =
-      window.location.origin + window.location.pathname + (slideHash ? '#' + slideHash : '')
+  if (!lightbox || !lightbox.pswp) return
+  const currSlide = lightbox.pswp.currSlide
+  if (currSlide && currSlide.data.obj) {
+    const obj = currSlide.data.obj as PhotoType
+    const hash = U + obj.filename
+    const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
     copyToClipboard(url)
       .then(() => {
@@ -161,40 +61,222 @@ const onShare = () => {
   }
 }
 
-window.onpopstate = function () {
-  showCarousel.value = false
-  emit('carousel-cancel', hash.value)
-}
-const onCancel = (hsh: string) => {
-  showCarousel.value = false
-  if (!hash.value) hash.value = hsh ?? null
-  emit('carousel-cancel', hash.value)
+const initLightbox = () => {
+  const dataSource = objects.value.map((obj) => {
+    // PhotoSwipe v5 requires width/height.
+    // We try to use obj.dim if available, otherwise default to 0 and update on load.
+    // Assuming obj.dim is [width, height]
+    const w = obj.dim ? obj.dim[0] : 0
+    const h = obj.dim ? obj.dim[1] : 0
+    return {
+      src: obj.url,
+      width: w,
+      height: h,
+      alt: obj.headline || '',
+      obj: obj, // Pass the whole object for custom UI access
+    }
+  })
+
+  lightbox = new PhotoSwipeLightbox({
+    dataSource,
+    index: props.index,
+    closeOnVerticalDrag: false,
+    wheelToZoom: true,
+    bgOpacity: 0.9,
+    // Dynamic import for the core module
+    pswpModule: () => import('photoswipe'),
+  })
+
+  // Register custom UI elements
+  lightbox.on('uiRegister', () => {
+    const pswp = lightbox?.pswp
+    if (!pswp) return
+
+    // Caption
+    pswp.ui?.registerElement({
+      name: 'custom-caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      html: '',
+      onInit: (el) => {
+        pswp.on('change', () => {
+          const currSlide = pswp.currSlide
+          if (currSlide && currSlide.data.obj) {
+            const obj = currSlide.data.obj as PhotoType
+            el.innerHTML = `<div class="text-white text-center q-pa-sm ellipsis" style="background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000;">${getCaption(obj, $q.screen.gt.sm)}</div>`
+          }
+        })
+      },
+    })
+
+    // Close Button (replacing default or adding extra? Default close button exists top-right)
+    // The original had a close button in the top bar. PhotoSwipe has one by default.
+    // We will rely on PhotoSwipe's default close button, unless requested otherwise.
+    // But we need the other buttons.
+
+    // Edit Button
+    pswp.ui?.registerElement({
+      name: 'edit-btn',
+      order: 8,
+      isButton: true,
+      tagName: 'button',
+      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">edit</i>',
+      onClick: () => {
+        const obj = pswp.currSlide?.data.obj as PhotoType
+        if (obj) emit('edit-record', obj)
+      },
+      onInit: (el) => {
+        // Style the button
+        el.style.background = 'none'
+        el.style.padding = '10px'
+
+        const checkVisibility = () => {
+          const obj = pswp.currSlide?.data.obj as PhotoType
+          if (obj && isAuthorOrAdmin(user.value, obj)) {
+            el.style.display = 'block'
+          } else {
+            el.style.display = 'none'
+          }
+        }
+        pswp.on('change', checkVisibility)
+        checkVisibility() // initial check
+      },
+    })
+
+    // Delete Button
+    pswp.ui?.registerElement({
+      name: 'delete-btn',
+      order: 7,
+      isButton: true,
+      tagName: 'button',
+      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">delete</i>',
+      onClick: () => {
+        const obj = pswp.currSlide?.data.obj as PhotoType
+        if (obj) emit('confirm-delete', obj)
+      },
+      onInit: (el) => {
+        el.style.background = 'none'
+        el.style.padding = '10px'
+
+        const checkVisibility = () => {
+          const obj = pswp.currSlide?.data.obj as PhotoType
+          if (obj && isAuthorOrAdmin(user.value, obj)) {
+            el.style.display = 'block'
+          } else {
+            el.style.display = 'none'
+          }
+        }
+        pswp.on('change', checkVisibility)
+        checkVisibility()
+      },
+    })
+
+    // Share Button
+    pswp.ui?.registerElement({
+      name: 'share-btn',
+      order: 6,
+      isButton: true,
+      tagName: 'button',
+      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">share</i>',
+      onClick: () => {
+        onShare()
+      },
+      onInit: (el) => {
+        el.style.background = 'none'
+        el.style.padding = '10px'
+      },
+    })
+
+    // Fullscreen generic toggle is handled by browser usually, but PhotoSwipe handles fullscreen API?
+    // Original had q-btn calling $q.fullscreen.toggle().
+    // We can add a button for that.
+    pswp.ui?.registerElement({
+      name: 'fs-btn',
+      order: 5,
+      isButton: true,
+      tagName: 'button',
+      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">fullscreen</i>',
+      onClick: () => {
+        $q.fullscreen.toggle()
+      },
+      onInit: (el) => {
+        el.style.background = 'none'
+        el.style.padding = '10px'
+      },
+    })
+  })
+
+  // Handle Close
+  lightbox.on('close', () => {
+    const curr = lightbox?.pswp?.currSlide?.data.obj as PhotoType | undefined
+    const hash = curr ? U + curr.filename : null
+    // We need to defer this slightly or ensure it doesn't conflict with unmount
+    emit('carousel-cancel', hash)
+    showCarousel.value = false
+  })
+
+  // Handle images with unknown dimensions
+  lightbox.on('contentLoad', (e) => {
+    const { content } = e
+    const width = content.data.width
+    const height = content.data.height
+
+    if ((!width || !height) && content.data.src) {
+      // if we don't have dimensions, load the image to find them
+      const img = new Image()
+      img.onload = () => {
+        content.data.width = img.width
+        content.data.height = img.height
+        // We need to update the slide if it is currently active or invalidating it
+        // PhotoSwipe doesn't have a direct 'update' on content easily without reloading
+        // But setting data properties works for next accesses.
+        // To force update:
+        if (lightbox?.pswp) {
+          lightbox.pswp.refreshSlideContent(content.index)
+        }
+      }
+      img.src = content.data.src
+    }
+  })
+
+  // Custom Error Handling
+  lightbox.on('contentLoadImage', (e) => {
+    const { content } = e
+    const img = content.element as HTMLImageElement
+    if (img) {
+      img.onerror = () => {
+        img.src = CONFIG.fileBroken
+        e.preventDefault()
+      }
+    }
+  })
+
+  lightbox.init()
+  lightbox.loadAndOpen(props.index)
 }
 
-watchEffect(() => (full.value = $q.fullscreen.isActive))
+onMounted(() => {
+  document.body.classList.add('swiper-view-active')
+  initLightbox()
+})
+
+onUnmounted(() => {
+  document.body.classList.remove('swiper-view-active')
+  if (lightbox) {
+    lightbox.destroy()
+    lightbox = null
+  }
+})
 </script>
 
-<style scoped>
-swiper-container {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  z-index: 2000;
-  border-radius: 0 !important;
-  max-width: 100vw;
-  max-height: 100vh;
-}
-
-swiper-slide {
-  text-align: center;
-  background: #000;
-}
-swiper-slide img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+<style>
+/* Ensure custom buttons are positioned nicely if needed,
+   though PhotoSwipe puts them in the bar by default with order. */
+.pswp__button--edit-btn,
+.pswp__button--delete-btn,
+.pswp__button--share-btn,
+.pswp__button--fs-btn {
+  background: none !important;
 }
 </style>

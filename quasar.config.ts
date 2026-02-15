@@ -61,9 +61,7 @@ export default defineConfig(() => {
       // extendViteConf (viteConf) {},
       viteVuePluginOptions: {
         template: {
-          compilerOptions: {
-            isCustomElement: (tag) => tag.startsWith('swiper-'),
-          },
+          compilerOptions: {},
         },
       },
 
