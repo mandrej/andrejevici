@@ -2,12 +2,28 @@
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page class="row">
-        <router-link
-          class="col-xs-12 col-md-6"
-          :style="imageStyle(lastRecord)"
-          :to="{ path: '/list' }"
-          v-ripple.early="{ color: 'purple' }"
-        />
+        <div
+          class="col-xs-12 col-md-6 relative-position"
+          :style="{ minHeight: $q.screen.gt.sm ? '100vh' : '50vh' }"
+        >
+          <router-link
+            :style="{ ...imageStyle(lastRecord), height: '100%' }"
+            :to="{ path: '/list' }"
+            v-ripple.early="{ color: 'purple' }"
+          />
+
+          <q-btn
+            v-if="user?.isAuthorized"
+            to="/add"
+            icon="add"
+            size="lg"
+            round
+            unelevated
+            color="warning"
+            text-color="black"
+            :class="['q-ma-md', $q.screen.gt.sm ? 'absolute-bottom-left' : 'absolute-bottom-right']"
+          />
+        </div>
 
         <q-btn
           unelevated
@@ -17,7 +33,10 @@
           @click="auth.signIn"
         />
 
-        <div class="column col-xs-12 col-md-6 justify-center items-center" style="min-height: 50vh">
+        <div
+          class="column col-xs-12 col-md-6 justify-center items-center"
+          :style="{ minHeight: $q.screen.gt.sm ? '100vh' : '50vh' }"
+        >
           <router-view />
         </div>
       </q-page>
