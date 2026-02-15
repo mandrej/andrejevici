@@ -43,7 +43,7 @@ const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   return tmp
 }
 
-const onShare = () => {
+const onShare = async () => {
   if (!lightbox || !lightbox.pswp) return
   const currSlide = lightbox.pswp.currSlide
   if (currSlide && currSlide.data.obj) {
@@ -51,13 +51,13 @@ const onShare = () => {
     const hash = U + obj.filename
     const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
-    copyToClipboard(url)
-      .then(() => {
-        notify({ message: 'URL copied to clipboard' })
-      })
-      .catch(() => {
-        notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-      })
+    try {
+      await copyToClipboard(url)
+      notify({ message: 'URL copied to clipboard', icon: 'check' })
+    } catch (e) {
+      console.error('Share error:', e)
+      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+    }
   }
 }
 
@@ -83,6 +83,8 @@ const initLightbox = () => {
     closeOnVerticalDrag: false,
     wheelToZoom: true,
     bgOpacity: 0.9,
+    counter: false,
+    zoom: false,
     // Dynamic import for the core module
     pswpModule: () => import('photoswipe'),
   })
@@ -126,10 +128,16 @@ const initLightbox = () => {
         const obj = pswp.currSlide?.data.obj as PhotoType
         if (obj) emit('edit-record', obj)
       },
+      appendTo: 'root',
       onInit: (el) => {
+        el.classList.add('pswp__custom-bottom-btn')
+        el.style.right = '120px'
         // Style the button
         el.style.background = 'none'
         el.style.padding = '10px'
+        el.style.position = 'absolute'
+        el.style.bottom = '20px'
+        el.style.zIndex = '2000'
 
         const checkVisibility = () => {
           const obj = pswp.currSlide?.data.obj as PhotoType
@@ -155,9 +163,15 @@ const initLightbox = () => {
         const obj = pswp.currSlide?.data.obj as PhotoType
         if (obj) emit('confirm-delete', obj)
       },
+      appendTo: 'root',
       onInit: (el) => {
+        el.classList.add('pswp__custom-bottom-btn')
+        el.style.right = '170px'
         el.style.background = 'none'
         el.style.padding = '10px'
+        el.style.position = 'absolute'
+        el.style.bottom = '20px'
+        el.style.zIndex = '2000'
 
         const checkVisibility = () => {
           const obj = pswp.currSlide?.data.obj as PhotoType
@@ -182,9 +196,15 @@ const initLightbox = () => {
       onClick: () => {
         onShare()
       },
+      appendTo: 'root',
       onInit: (el) => {
+        el.classList.add('pswp__custom-bottom-btn')
+        el.style.right = '70px'
         el.style.background = 'none'
         el.style.padding = '10px'
+        el.style.position = 'absolute'
+        el.style.bottom = '20px'
+        el.style.zIndex = '2000'
       },
     })
 
@@ -200,9 +220,15 @@ const initLightbox = () => {
       onClick: () => {
         $q.fullscreen.toggle()
       },
+      appendTo: 'root',
       onInit: (el) => {
+        el.classList.add('pswp__custom-bottom-btn')
+        el.style.right = '20px'
         el.style.background = 'none'
         el.style.padding = '10px'
+        el.style.position = 'absolute'
+        el.style.bottom = '20px'
+        el.style.zIndex = '2000'
       },
     })
   })
@@ -276,7 +302,13 @@ onUnmounted(() => {
 .pswp__button--edit-btn,
 .pswp__button--delete-btn,
 .pswp__button--share-btn,
-.pswp__button--fs-btn {
+.pswp__button--fs-btn,
+.pswp__custom-bottom-btn {
   background: none !important;
+  width: 44px;
+  height: 44px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 </style>

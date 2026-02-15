@@ -74,10 +74,17 @@ body,
   display: none;
 }
 
+// Ensure notifications are always on top of everything, including PhotoSwipe and Fullscreen overlays
+.q-notifications,
+.q-notifications__list,
+.q-notification {
+  z-index: 10000000 !important;
+}
+
 body.swiper-view-active {
   .q-dialog,
-  .q-notifications__list,
-  .q-notifications {
+  .q-menu,
+  .q-tooltip {
     z-index: 100000 !important;
   }
 }
