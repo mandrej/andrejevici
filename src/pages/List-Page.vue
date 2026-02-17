@@ -12,13 +12,7 @@
     <template #detail>{{ error }}</template>
   </ErrorBanner>
 
-  <Swiper-View
-    v-if="showCarousel"
-    :index="index"
-    @confirm-delete="confirmShow"
-    @edit-record="editRecord"
-    @carousel-cancel="carouselCancel"
-  />
+  <Swiper-View v-if="showCarousel" :index="index" @carousel-cancel="carouselCancel" />
 
   <div class="q-pa-md q-mb-md">
     <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">

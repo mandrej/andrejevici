@@ -7,8 +7,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from 'src/stores/app'
-import { useUserStore } from 'src/stores/user'
-import { U, isAuthorOrAdmin } from 'src/helpers'
+import { U } from 'src/helpers'
 import CONFIG from 'app/config'
 import { useQuasar, copyToClipboard } from 'quasar'
 import notify from 'src/helpers/notify'
@@ -19,13 +18,11 @@ import type { PhotoType } from 'src/helpers/models'
 const props = defineProps<{
   index: number
 }>()
-const emit = defineEmits(['confirm-delete', 'edit-record', 'carousel-cancel'])
+const emit = defineEmits(['carousel-cancel'])
 
 const $q = useQuasar()
 const app = useAppStore()
-const auth = useUserStore()
 const { objects, showCarousel } = storeToRefs(app)
-const { user } = storeToRefs(auth)
 
 let lightbox: PhotoSwipeLightbox | null = null
 
@@ -116,75 +113,6 @@ const initLightbox = () => {
     // The original had a close button in the top bar. PhotoSwipe has one by default.
     // We will rely on PhotoSwipe's default close button, unless requested otherwise.
     // But we need the other buttons.
-
-    // Edit Button
-    pswp.ui?.registerElement({
-      name: 'edit-btn',
-      order: 8,
-      isButton: true,
-      tagName: 'button',
-      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">edit</i>',
-      onClick: () => {
-        const obj = pswp.currSlide?.data.obj as PhotoType
-        if (obj) emit('edit-record', obj)
-      },
-      appendTo: 'root',
-      onInit: (el) => {
-        el.classList.add('pswp__custom-bottom-btn')
-        el.style.right = '120px'
-        // Style the button
-        el.style.background = 'none'
-        el.style.padding = '10px'
-        el.style.position = 'absolute'
-        el.style.bottom = '20px'
-        el.style.zIndex = '2000'
-
-        const checkVisibility = () => {
-          const obj = pswp.currSlide?.data.obj as PhotoType
-          if (obj && isAuthorOrAdmin(user.value, obj)) {
-            el.style.display = 'block'
-          } else {
-            el.style.display = 'none'
-          }
-        }
-        pswp.on('change', checkVisibility)
-        checkVisibility() // initial check
-      },
-    })
-
-    // Delete Button
-    pswp.ui?.registerElement({
-      name: 'delete-btn',
-      order: 7,
-      isButton: true,
-      tagName: 'button',
-      html: '<i class="q-icon material-icons" style="font-size: 24px; color: white;">delete</i>',
-      onClick: () => {
-        const obj = pswp.currSlide?.data.obj as PhotoType
-        if (obj) emit('confirm-delete', obj)
-      },
-      appendTo: 'root',
-      onInit: (el) => {
-        el.classList.add('pswp__custom-bottom-btn')
-        el.style.right = '170px'
-        el.style.background = 'none'
-        el.style.padding = '10px'
-        el.style.position = 'absolute'
-        el.style.bottom = '20px'
-        el.style.zIndex = '2000'
-
-        const checkVisibility = () => {
-          const obj = pswp.currSlide?.data.obj as PhotoType
-          if (obj && isAuthorOrAdmin(user.value, obj)) {
-            el.style.display = 'block'
-          } else {
-            el.style.display = 'none'
-          }
-        }
-        pswp.on('change', checkVisibility)
-        checkVisibility()
-      },
-    })
 
     // Share Button
     pswp.ui?.registerElement({
@@ -299,8 +227,6 @@ onUnmounted(() => {
 <style>
 /* Ensure custom buttons are positioned nicely if needed,
    though PhotoSwipe puts them in the bar by default with order. */
-.pswp__button--edit-btn,
-.pswp__button--delete-btn,
 .pswp__button--share-btn,
 .pswp__button--fs-btn,
 .pswp__custom-bottom-btn {
