@@ -22,14 +22,16 @@ const message = ref('TEST')
 
 const send = () => {
   const msg = message.value.trim()
-  if (msg === '') notify({ type: 'warning', message: 'No message provided' })
+  if (msg === '') {
+    notify({ type: 'warning', message: 'No message provided' })
+    return
+  }
 
   fetch(CONFIG.notifyUrl, {
     method: 'POST',
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
     },
     body: JSON.stringify({ text: msg }),
   })
@@ -40,7 +42,14 @@ const send = () => {
       return response.text()
     })
     .then((text) => {
-      notify({ message: `${text}` })
+      console.log(text)
+
+      // Use 'positive' type (green) and a fallback message if text is empty
+      notify({
+        type: 'positive',
+        message: text || 'Notification sent successfully',
+        icon: 'check',
+      })
     })
     .catch((error) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'

@@ -106,8 +106,10 @@ export const useUserStore = defineStore('auth', {
      */
     async refreshToken(): Promise<void> {
       try {
+        const registration = await navigator.serviceWorker?.getRegistration()
         const token = await getToken(messaging, {
           vapidKey: CONFIG.firebase.vapidKey,
+          ...(registration ? { serviceWorkerRegistration: registration } : {}),
         })
         if (token) {
           this.token = token
@@ -253,11 +255,11 @@ export const useUserStore = defineStore('auth', {
       try {
         await updateDoc(docRef, { [field]: user[field] })
         const value = user[field] as string | boolean
-        notify({ message: `Updated ${field} to ${value}`, icon: 'check' })
+        notify({ message: `Updated ${String(field)} to ${value}`, icon: 'check' })
       } catch (err) {
         notify({
           type: 'negative',
-          message: `Failed to update ${field}: ${String(err)}`,
+          message: `Failed to update ${String(field)}: ${String(err)}`,
         })
       }
     },

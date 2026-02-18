@@ -156,9 +156,19 @@ export default defineConfig(() => {
       // injectPwaMetaTags: false,
       extendGenerateSWOptions(cfg) {
         // Merge Firebase Messaging into the Workbox-generated SW.
-        // Both share the same scope (/), avoiding the "unable to register
-        // default service worker" conflict from two competing SW registrations.
         cfg.importScripts = ['firebase-messaging-sw.js']
+
+        cfg.skipWaiting = true
+        cfg.clientsClaim = true
+        cfg.cleanupOutdatedCaches = true
+
+        // Fix "non-precached-url" error:
+        cfg.navigateFallback = '/index.html'
+        cfg.navigateFallbackDenylist = [
+          /firebase-messaging-sw\.js$/,
+          /workbox-(.)*\.js$/,
+          /sw\.js$/,
+        ]
       },
     },
 
