@@ -152,12 +152,14 @@ export default defineConfig(() => {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       // swFilename: 'sw.js',
       // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
       // useCredentialsForManifestTag: true,
       // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      extendGenerateSWOptions(cfg) {
+        // Merge Firebase Messaging into the Workbox-generated SW.
+        // Both share the same scope (/), avoiding the "unable to register
+        // default service worker" conflict from two competing SW registrations.
+        cfg.importScripts = ['firebase-messaging-sw.js']
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova

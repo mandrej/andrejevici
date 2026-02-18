@@ -78,7 +78,7 @@ const initLightbox = () => {
     dataSource,
     index: props.index,
     closeOnVerticalDrag: false,
-    wheelToZoom: true,
+    wheelToZoom: false,
     bgOpacity: 0.9,
     counter: false,
     zoom: false,

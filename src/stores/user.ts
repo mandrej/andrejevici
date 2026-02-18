@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { nextTick } from 'vue'
 import CONFIG from 'app/config'
-import { auth, db } from 'src/boot/firebase'
+import { auth, db, messaging } from 'src/boot/firebase'
 import {
   doc,
   setDoc,
@@ -15,6 +15,7 @@ import {
   Timestamp,
   orderBy,
 } from 'firebase/firestore'
+import { getToken } from 'firebase/messaging'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from 'src/router'
 import type { User } from 'firebase/auth'
@@ -30,6 +31,7 @@ provider.addScope('email')
 const familyMember = (email: string): boolean => {
   return CONFIG.familyMap.get(email) != undefined
 }
+
 const adminMember = (email: string, uid: string): boolean => {
   if (process.env.DEV) {
     return CONFIG.adminMap.get(email) != undefined
@@ -48,33 +50,34 @@ export const useUserStore = defineStore('auth', {
     return {
       user: null,
       token: null,
-      allowPush: false, // from db and state
-      askPush: false, // from state
+      allowPush: false, // persisted in db
+      askPush: false, // ephemeral — show consent dialog
     }
   },
+
   actions: {
     /**
-     * Stores a user in the database.
-     *
-     * @param {User} user - The user object to store.
-     * @return {Promise<void>} A promise that resolves when the user is stored.
+     * Stores a user in Firestore after sign-in or token refresh.
+     * Sets allowPush and askPush from the stored user record.
      */
     async storeUser(user: User): Promise<void> {
       const userRef = doc(userCollection, user.uid)
       const userSnap = await getDoc(userRef)
       const email = user.email || ''
       const now = new Date()
+      const isAuthorized = familyMember(email)
+      const isAdmin = adminMember(email, user.uid)
 
       if (userSnap.exists()) {
         const data = userSnap.data() as MyUserType
         this.allowPush = data.allowPush
 
-        // If last login (timestamp) is older than loginDays, ask for push again
+        // If last login is older than loginDays, prompt for push consent again
         const lastLogin = data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0
         this.askPush = Date.now() - lastLogin > CONFIG.loginDays * 86400000
 
-        data.isAuthorized = familyMember(email)
-        data.isAdmin = adminMember(email, user.uid)
+        data.isAuthorized = isAuthorized
+        data.isAdmin = isAdmin
         data.timestamp = Timestamp.fromDate(now)
         this.user = data
       } else {
@@ -86,26 +89,101 @@ export const useUserStore = defineStore('auth', {
           email,
           nick,
           uid: user.uid,
-          isAuthorized: familyMember(email),
-          isAdmin: adminMember(email, user.uid),
+          isAuthorized,
+          isAdmin,
           allowPush: false,
           timestamp: Timestamp.fromDate(now),
         }
       }
-      if (this.user) {
-        await setDoc(userRef, this.user, { merge: true })
+
+      await setDoc(userRef, this.user, { merge: true })
+    },
+
+    /**
+     * Silently retrieves the FCM token for an already-consented user.
+     * Called after sign-in when allowPush is already true.
+     * Sets askPush = true if no token is available (e.g. token expired).
+     */
+    async refreshToken(): Promise<void> {
+      try {
+        const token = await getToken(messaging, {
+          vapidKey: CONFIG.firebase.vapidKey,
+        })
+        if (token) {
+          this.token = token
+          await this.updateDevice(token)
+        } else {
+          // Token not available — prompt the user again
+          this.askPush = true
+        }
+      } catch (err) {
+        if (process.env.DEV) console.warn('FCM token refresh failed:', err)
+        // Don't surface this as an error to the user — it's a background operation
       }
     },
 
     /**
-     * Signs in the user.
-     *
-     * @return {Promise<void>} A promise that resolves when the user is signed in.
+     * Requests notification permission from the browser and registers the FCM token.
+     */
+    async enableNotifications(): Promise<void> {
+      try {
+        const permission = await Notification.requestPermission()
+
+        if (permission === 'granted') {
+          const token = await getToken(messaging, {
+            vapidKey: CONFIG.firebase.vapidKey,
+          })
+
+          if (token) {
+            this.token = token
+            this.askPush = false
+            this.allowPush = true
+            await Promise.all([this.updateSubscriber(), this.updateDevice(token)])
+          } else {
+            notify({
+              type: 'negative',
+              multiLine: true,
+              message: 'Unable to retrieve notification token. Please try again.',
+            })
+          }
+        } else if (permission === 'denied') {
+          this.askPush = false
+          this.allowPush = false
+          await this.updateSubscriber()
+          notify({
+            type: 'warning',
+            message: 'Notifications denied. You can enable them later in browser settings.',
+          })
+        }
+      } catch (err) {
+        console.error('Error enabling notifications:', err)
+        this.askPush = false
+        this.allowPush = false
+        await this.updateSubscriber()
+        notify({
+          type: 'negative',
+          message: 'Failed to enable notifications. Please try again.',
+        })
+      }
+    },
+
+    /**
+     * Disables push notifications for this user and removes their device token.
+     */
+    async disableNotifications(): Promise<void> {
+      this.askPush = false
+      this.allowPush = false
+      await Promise.all([this.updateSubscriber(), this.removeDevice()])
+    },
+
+    /**
+     * Signs the user in via Google popup, or signs them out if already signed in.
      */
     async signIn(): Promise<void> {
-      if (this.user && this.user.uid) {
+      if (this.user?.uid) {
         await auth.signOut()
         this.user = null
+        this.token = null
         this.askPush = false
         this.allowPush = false
         void router.push({ name: 'home' })
@@ -124,45 +202,35 @@ export const useUserStore = defineStore('auth', {
     },
 
     /**
-     * Retrieves the list of users from the database.
-     *
-     * @return {Promise<MyUserType[]>} A promise that resolves to an array of user objects.
+     * Retrieves all users from Firestore, ordered by email.
      */
     async fetchUsers(): Promise<MyUserType[]> {
       const users: MyUserType[] = []
       const q = query(userCollection, orderBy('email', 'asc'))
       const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        snapshot.forEach((d) => {
-          users.push({ ...(d.data() as MyUserType) })
-        })
-      }
+      snapshot.forEach((d) => {
+        users.push({ ...(d.data() as MyUserType) })
+      })
       return users
     },
 
     /**
-     * Retrieves the list of devices from the database.
-     *
-     * @return {Promise<DeviceType[]>} A promise that resolves to an array of device objects.
+     * Retrieves all registered devices from Firestore, ordered by timestamp descending.
      */
     async fetchDevices(): Promise<DeviceType[]> {
       const devices: DeviceType[] = []
       const q = query(deviceCollection, orderBy('timestamp', 'desc'))
       const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        snapshot.forEach((d) => {
-          devices.push({ ...(d.data() as DeviceType), key: d.id })
-        })
-      }
+      snapshot.forEach((d) => {
+        devices.push({ ...(d.data() as DeviceType), key: d.id })
+      })
       return devices
     },
 
     /**
-     * Retrieves the list of users and their associated devices from the database.
-     *
-     * @return {Promise<UsersAndDevices[]>} A promise that resolves to an array of user and device objects.
+     * Retrieves all users joined with their registered device timestamps.
      */
-    async fetchUsersAndDevices() {
+    async fetchUsersAndDevices(): Promise<UsersAndDevices[]> {
       const [devices, users] = await Promise.all([this.fetchDevices(), this.fetchUsers()])
 
       const deviceMap: Record<string, Timestamp[]> = {}
@@ -177,17 +245,15 @@ export const useUserStore = defineStore('auth', {
       }))
     },
 
+    /**
+     * Updates a single field on a user document in Firestore.
+     */
     async updateUser(user: UsersAndDevices, field: keyof UsersAndDevices): Promise<void> {
       const docRef = doc(userCollection, user.uid)
       try {
-        await updateDoc(docRef, {
-          [field]: user[field],
-        })
+        await updateDoc(docRef, { [field]: user[field] })
         const value = user[field] as string | boolean
-        notify({
-          message: `Updated ${field} to ${value}`,
-          icon: 'check',
-        })
+        notify({ message: `Updated ${field} to ${value}`, icon: 'check' })
       } catch (err) {
         notify({
           type: 'negative',
@@ -197,41 +263,38 @@ export const useUserStore = defineStore('auth', {
     },
 
     /**
-     * Updates a user's subscription status in the database.
-     *
-     * @return {Promise<void>} A promise that resolves when the user's subscription status is updated.
+     * Persists the current allowPush state to the user's Firestore document.
      */
     async updateSubscriber(): Promise<void> {
-      const docRef = doc(userCollection, this.user!.uid)
+      if (!this.user?.uid) return
+      const docRef = doc(userCollection, this.user.uid)
       const snap = await getDoc(docRef)
       if (snap.exists()) {
-        updateDoc(docRef, {
+        await updateDoc(docRef, {
           allowPush: this.allowPush,
-          timestamp: Timestamp.fromDate(new Date()),
-        })
-      }
-    },
-    /**
-     * Updates a device in the database.
-     *
-     * @param {string} token - The token of the device to update.
-     * @return {Promise<void>} A promise that resolves when the device is updated.
-     */
-    async updateDevice(token: string): Promise<void> {
-      const docRef = doc(deviceCollection, token)
-      const snap = await getDoc(docRef)
-      if (!snap.exists()) {
-        setDoc(docRef, {
-          email: this.user!.email,
           timestamp: Timestamp.fromDate(new Date()),
         })
       }
     },
 
     /**
-     * Removes a device from the database.
-     *
-     * @return {Promise<void>} A promise that resolves when the device is removed.
+     * Upserts a device token in Firestore.
+     * Creates the document if it doesn't exist, otherwise refreshes its timestamp.
+     */
+    async updateDevice(token: string): Promise<void> {
+      if (!this.user?.email) return
+      const docRef = doc(deviceCollection, token)
+      const snap = await getDoc(docRef)
+      if (!snap.exists()) {
+        await setDoc(docRef, {
+          email: this.user.email,
+          timestamp: Timestamp.fromDate(new Date()),
+        })
+      }
+    },
+
+    /**
+     * Removes all device tokens associated with the current user from Firestore.
      */
     removeDevice(): Promise<void> {
       const q = query(deviceCollection, where('email', '==', this.user?.email || ''))
@@ -241,14 +304,7 @@ export const useUserStore = defineStore('auth', {
     },
 
     /**
-     * Delete documents matching a query in batches.
-     *
-     * Delete documents matching a query in batches, to avoid exploding the stack.
-     *
-     * @param {Firestore} db - The Firestore database.
-     * @param {Query} query - The query to match documents with.
-     * @param {() => void} resolve - The function to call when all documents are deleted.
-     * @return {Promise<void>} A promise that resolves when all documents are deleted.
+     * Deletes documents matching a query in batches of up to 500.
      */
     async deleteQueryBatch(db: Firestore, query: Query, resolve: () => void): Promise<void> {
       const querySnapshot = await getDocs(query)
@@ -261,7 +317,6 @@ export const useUserStore = defineStore('auth', {
       querySnapshot.forEach((doc) => batch.delete(doc.ref))
       await batch.commit()
 
-      // If there might be more, continue in next tick
       if (querySnapshot.size >= 500) {
         nextTick(() => void this.deleteQueryBatch(db, query, resolve))
       } else {

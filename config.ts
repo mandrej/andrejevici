@@ -11,7 +11,7 @@ const CONFIG = {
     appId: '1:183441678976:web:3f87f36ff673545d3fbc65',
     measurementId: 'G-4HF1XHQ8Y6',
     vapidKey:
-      'BJi0xbkOqVvlYglggQz_g2fWv_RToySqLr7__rX_aEX8b4uElfTzNNcBA9rHhaB8jJB7IGfhT5LDj_OocJ2e23g',
+      'BPIR1gLRoeWczGpm1nepXFFnm_tE0MsRkYTqRIHWK61N9F0C9c8zG5xQMFdFquUzlldWHAlpp5fBSvsBRjRmT4Y',
   },
   notifyUrl: process.env.DEV
     ? 'http://localhost:5001/andrejevici/us-central1/notify'
