@@ -50,7 +50,7 @@ const onShare = async () => {
 
     try {
       await copyToClipboard(url)
-      notify({ message: 'URL copied to clipboard', icon: 'check' })
+      notify({ type: 'positive', message: 'URL copied to clipboard', icon: 'check' })
     } catch (e) {
       console.error('Share error:', e)
       notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
@@ -236,5 +236,14 @@ onUnmounted(() => {
   display: flex !important;
   align-items: center;
   justify-content: center;
+}
+
+.pswp {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pswp::-webkit-scrollbar {
+  display: none;
 }
 </style>

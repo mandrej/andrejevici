@@ -163,7 +163,6 @@ const carouselShow = (c: string) => {
   index.value = objects.value.findIndex((x) => x.filename === c)
   if (index.value !== -1) {
     fakeHistory()
-    window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
     showCarousel.value = true
   } else {
     notify({ type: 'warning', message: 'Photo not found' })

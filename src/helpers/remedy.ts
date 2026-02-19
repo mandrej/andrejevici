@@ -37,7 +37,9 @@ export const fix = async () => {
 
   await setBatch.commit()
   notify({
+    type: 'positive',
     message: `All users fixed`,
+    icon: 'check',
   })
 }
 
@@ -141,7 +143,9 @@ export const missingThumbnails = async () => {
     })
   } else {
     notify({
+      type: 'positive',
       message: 'No missing thumbnails',
+      icon: 'check',
     })
   }
 }
@@ -212,7 +216,12 @@ export const mismatch = async () => {
   }
 
   if (missingRecords.length === 0 && missingFiles.length === 0) {
-    notify({ message: `All good. Nothing to resolve`, group: 'mismatch' })
+    notify({
+      type: 'positive',
+      message: `All good. Nothing to resolve`,
+      group: 'mismatch',
+      icon: 'check',
+    })
   }
 }
 

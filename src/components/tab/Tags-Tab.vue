@@ -89,7 +89,9 @@ const removeTags = () => {
   try {
     removeUnusedTags()
     notify({
+      type: 'positive',
       message: `Successfully removed unused tags`,
+      icon: 'check',
     })
   } catch (error) {
     notify({
@@ -113,7 +115,9 @@ const rename = (field: keyof ValuesState['values'], existing: string, changed: s
     } else {
       renameValue(field, existing, changed)
       notify({
+        type: 'positive',
         message: `${existing} successfully renamed to ${changed}`,
+        icon: 'check',
       })
     }
   }

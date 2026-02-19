@@ -82,6 +82,14 @@ body,
 }
 
 body.swiper-view-active {
+  overflow: hidden !important;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
   .q-dialog,
   .q-menu,
   .q-tooltip {

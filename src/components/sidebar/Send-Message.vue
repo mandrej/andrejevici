@@ -42,8 +42,6 @@ const send = () => {
       return response.text()
     })
     .then((text) => {
-      console.log(text)
-
       // Use 'positive' type (green) and a fallback message if text is empty
       notify({
         type: 'positive',
