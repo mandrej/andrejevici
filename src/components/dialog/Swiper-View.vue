@@ -86,6 +86,9 @@ const initLightbox = () => {
     bgOpacity: 0.9,
     counter: false,
     zoom: false,
+    initialZoomLevel: 'fit',
+    secondaryZoomLevel: 1,
+    // maxZoomLevel: 1,
     // Dynamic import for the core module
     pswpModule: () => import('photoswipe'),
   })
