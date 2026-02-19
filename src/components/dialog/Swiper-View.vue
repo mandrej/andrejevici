@@ -26,6 +26,10 @@ const { objects, showCarousel } = storeToRefs(app)
 
 let lightbox: PhotoSwipeLightbox | null = null
 
+window.onpopstate = function () {
+  emit('carousel-cancel', null)
+}
+
 const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   let tmp = ''
   const { headline, aperture, shutter, iso, model, lens } = rec
