@@ -16,8 +16,8 @@
         Would you like to enable push notifications?
       </q-card-section>
       <q-card-actions class="justify-between q-pa-md">
-        <q-btn flat label="Disable" @click="disableNotification" />
-        <q-btn flat label="Enable" @click="enableNotifications" />
+        <q-btn flat label="Disable" :disable="wait" @click="onDisable" />
+        <q-btn flat label="Enable" :disable="wait" @click="onEnable" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -26,74 +26,29 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import notify from 'src/helpers/notify'
 import { useUserStore } from 'src/stores/user'
-import { getMessaging, getToken } from 'firebase/messaging'
-import CONFIG from 'app/config'
 
 const auth = useUserStore()
-const messaging = getMessaging()
 const { askPush } = storeToRefs(auth)
-const showConsent = ref(Boolean('Notification' in window && askPush.value))
+
 const wait = ref(false)
 
-// Keep showConsent in sync with askPush
+// Show the dialog whenever askPush becomes true (and the browser supports Notification)
+const showConsent = ref('Notification' in window && askPush.value)
+
 watch(askPush, (newVal) => {
-  showConsent.value = Boolean('Notification' in window && newVal)
+  showConsent.value = 'Notification' in window && newVal
 })
 
-const disableNotification = () => {
-  auth.askPush = false
-  auth.allowPush = false
-  auth.updateSubscriber()
-  auth.removeDevice()
+const onEnable = async () => {
+  wait.value = true
+  await auth.enableNotifications()
+  wait.value = false
 }
 
-const enableNotifications = async () => {
-  try {
-    // after loginDays ask again
-    const permission = await Notification.requestPermission()
-    if (permission === 'granted') {
-      wait.value = true
-      // When stale tokens reach 270 days of inactivity, FCM will consider them expired tokens.
-      const token = await getToken(messaging, {
-        vapidKey: CONFIG.firebase.vapidKey,
-      })
-      if (token) {
-        auth.token = token
-        auth.askPush = false
-        auth.allowPush = true
-        auth.updateSubscriber()
-        auth.updateDevice(token)
-      } else {
-        notify({
-          type: 'negative',
-          multiLine: true,
-          message: `Unable to retrieve token`,
-        })
-      }
-      wait.value = false
-    } else if (permission === 'denied') {
-      // Handle denied permission
-      auth.askPush = false
-      auth.allowPush = false
-      wait.value = false
-      auth.updateSubscriber()
-      notify({
-        type: 'warning',
-        message: 'Notifications permission denied. You can enable it later in browser settings.',
-      })
-    }
-  } catch (error) {
-    console.error('Error enabling notifications:', error)
-    wait.value = false
-    auth.askPush = false
-    auth.allowPush = false
-    auth.updateSubscriber()
-    notify({
-      type: 'negative',
-      message: 'Failed to enable notifications. Please try again.',
-    })
-  }
+const onDisable = async () => {
+  wait.value = true
+  await auth.disableNotifications()
+  wait.value = false
 }
 </script>

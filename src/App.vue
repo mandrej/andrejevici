@@ -1,6 +1,7 @@
 <template>
   <router-view />
 </template>
+
 <script lang="ts" setup>
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -10,8 +11,7 @@ import { useUserStore } from 'src/stores/user'
 import { messaging } from 'src/boot/firebase'
 import notify from 'src/helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { onMessage, getToken } from 'firebase/messaging'
-import CONFIG from 'app/config'
+import { onMessage } from 'firebase/messaging'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -23,78 +23,56 @@ onMounted(() => {
   app.getLast()
   app.bucketRead()
   meta.readValues()
-  // RESET
+  // Reset transient UI state on mount
   busy.value = false
   error.value = ''
   showEdit.value = false
   showConfirm.value = false
+})
 
-  /**
-   * @description
-   * Listens for authentication state changes and stores the user.
-   */
-  onAuthStateChanged(getAuth(), (usr) => {
-    // onAuthStateChanged was always triggered after 1 hour and the user was disconnected.
-    if (usr) {
-      auth
-        .storeUser(usr)
-        .then(() => {
-          if (auth.allowPush) {
-            onNewToken()
-          }
-        })
-        .catch((err) => {
-          console.error('Error storing user:', err)
-        })
-    } else {
-      auth.user = null
-      auth.askPush = false
-      auth.allowPush = false
-    }
-  })
-
-  /**
-   * @description
-   * Gets a new token and updates the device.
-   */
-  const onNewToken = () => {
-    getToken(messaging, {
-      vapidKey: CONFIG.firebase.vapidKey,
-    })
-      .then((token) => {
-        if (token) {
-          auth.updateDevice(token).catch((err) => {
-            console.error('Error updating device token:', err)
-          })
-        } else {
-          auth.askPush = true
+/**
+ * Reacts to Firebase auth state changes.
+ * - On sign-in: stores the user, then silently refreshes the FCM token if push is allowed,
+ *   or prompts for consent if the login interval has elapsed.
+ * - On sign-out: clears all user and push state.
+ */
+onAuthStateChanged(getAuth(), (usr) => {
+  if (usr) {
+    auth
+      .storeUser(usr)
+      .then(() => {
+        if (auth.allowPush) {
+          // User already consented — silently refresh the FCM token.
+          // refreshToken() guards itself if swRegistration isn't set yet.
+          void auth.refreshToken()
         }
+        // If auth.askPush is true after storeUser, the Ask-Permission dialog
+        // will appear automatically via its watcher on the askPush store ref.
       })
       .catch((err) => {
-        notify({
-          type: 'negative',
-          message: 'An error occurred while retrieving token.',
-          caption: err,
-          icon: 'error',
-        })
+        console.error('Error storing user:', err)
       })
+  } else {
+    auth.user = null
+    auth.token = null
+    auth.askPush = false
+    auth.allowPush = false
   }
+})
 
-  /**
-   * @description
-   * Listens for messages and shows a notification.
-   */
-  onMessage(messaging, (payload) => {
-    if (payload.data?.body) {
-      notify({
-        type: 'external',
-        message: payload.data.body,
-        icon: 'notifications',
-        caption: payload.messageId,
-      })
-    } else {
-      if (process.env.DEV) console.log(payload)
-    }
-  })
+/**
+ * Handles foreground FCM messages and surfaces them as in-app notifications.
+ */
+onMessage(messaging, (payload) => {
+  if (payload.data?.body) {
+    notify({
+      type: 'external',
+      message: payload.data.body,
+      icon: 'notifications',
+      caption: payload.messageId,
+    })
+  } else {
+    if (process.env.DEV) console.log('FCM message received:', payload)
+  }
 })
 </script>

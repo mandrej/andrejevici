@@ -12,13 +12,7 @@
     <template #detail>{{ error }}</template>
   </ErrorBanner>
 
-  <Swiper-View
-    v-if="showCarousel"
-    :index="index"
-    @confirm-delete="confirmShow"
-    @edit-record="editRecord"
-    @carousel-cancel="carouselCancel"
-  />
+  <Swiper-View v-if="showCarousel" :index="index" @carousel-cancel="carouselCancel" />
 
   <div class="q-pa-md q-mb-md">
     <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
@@ -169,7 +163,6 @@ const carouselShow = (c: string) => {
   index.value = objects.value.findIndex((x) => x.filename === c)
   if (index.value !== -1) {
     fakeHistory()
-    window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
     showCarousel.value = true
   } else {
     notify({ type: 'warning', message: 'Photo not found' })

@@ -142,7 +142,7 @@ export const useAppStore = defineStore('app', {
       }
       this.bucket = { ...res }
       setDoc(bucketRef, this.bucket, { merge: true })
-      notify({ message: `Bucket size calculated` })
+      notify({ type: 'positive', message: `Bucket size calculated`, icon: 'check' })
     },
 
     /**
@@ -251,7 +251,7 @@ export const useAppStore = defineStore('app', {
         replaceInList(this.objects, obj)
 
         meta.updateCounters(oldDoc || obj, obj)
-        notify({ message: `${obj.filename} updated` })
+        notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'check' })
       } else {
         // set thumbnail url = publish
         if (process.env.DEV) {
@@ -281,7 +281,7 @@ export const useAppStore = defineStore('app', {
         ) as FindType
         await this.fetchRecords(true)
 
-        notify({ message: `${obj.filename} published` })
+        notify({ type: 'positive', message: `${obj.filename} published`, icon: 'check' })
       }
       this.currentEdit = obj
       // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
@@ -325,7 +325,9 @@ export const useAppStore = defineStore('app', {
         removeFromList(this.uploaded, obj)
       }
       notify({
+        type: 'positive',
         message: `${obj.filename} deleted`,
+        icon: 'check',
       })
     },
 
@@ -379,7 +381,7 @@ export const useAppStore = defineStore('app', {
         batch.delete(docRef)
       })
       await batch.commit()
-      notify({ message: `Deleted ${keys.length} messages` })
+      notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'check' })
     },
 
     /**

@@ -1,6 +1,10 @@
 /* eslint-disable no-undef */
-importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js')
-importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js')
+// This file is imported into the Workbox-generated service worker via
+// extendGenerateSWOptions > importScripts in quasar.config.ts.
+// It must use importScripts (compat SDK) since ES module syntax is not
+// supported in importScripts context.
+importScripts('https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/11.3.1/firebase-messaging-compat.js')
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBHV3J3GAEPiTU2MCrhuRI4F9mWzdjw6B0',
@@ -16,17 +20,33 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig)
 const messaging = firebase.messaging()
 
+// Handle background push messages and show a notification.
 messaging.onBackgroundMessage((payload) => {
-  // Customize notification here
-  const title = payload.data.title
+  const title = payload.data?.title || 'ANDрејевићи'
   const options = {
-    body: payload.data.body,
+    body: payload.data?.body || '',
     icon: '/icons/favicon-32x32.png',
+    data: { link: payload.data?.link || '/' },
   }
-
   self.registration.showNotification(title, options)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  self.addEventListener('notificationclick', function (event) {
-    clients.openWindow(payload.data.link)
-  })
+})
+
+// Handle notification clicks — must be top-level, not nested inside onBackgroundMessage.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const link = event.notification.data?.link || '/'
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus existing window if already open
+      for (const client of clientList) {
+        if (client.url === link && 'focus' in client) {
+          return client.focus()
+        }
+      }
+      // Otherwise open a new window
+      if (clients.openWindow) {
+        return clients.openWindow(link)
+      }
+    }),
+  )
 })

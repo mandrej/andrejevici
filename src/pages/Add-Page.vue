@@ -171,7 +171,7 @@ const onSubmit = async (evt: Event): Promise<void> => {
         delete app.progressInfo[it.reason]
       }
     } else if (it.status === 'fulfilled') {
-      notify({ message: `Uploaded ${it.value as string}.` })
+      notify({ type: 'positive', message: `Uploaded ${it.value as string}.`, icon: 'check' })
       // Fix: Properly handle unknown type for fulfilled promise value
       if (typeof it.value === 'string') {
         delete task[it.value]

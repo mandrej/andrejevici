@@ -14,54 +14,66 @@ export const notify = onRequest(
   {
     timeoutSeconds: 540,
     region: ['us-central1'],
-    cors: ['https://andrejevici.web.app', 'http://localhost:9200'],
+    cors: [
+      'https://andrejevici.web.app',
+      'http://localhost:9200',
+      'http://localhost:9000',
+      'http://localhost:8080',
+    ],
   },
   async (req: Request, res: Response) => {
-    const registrationTokens: string[] = []
-    const text: string = req.body.text
-
-    const query: CollectionReference<DocumentData> = getFirestore().collection('Device')
-    const querySnapshot = await query.get()
-
-    querySnapshot.forEach((docSnap) => {
-      registrationTokens.push(docSnap.id)
-    })
-
-    if (registrationTokens.length === 0) {
-      res.status(200).send('No subscribers found error')
-      return
-    }
-
-    const message = {
-      tokens: registrationTokens,
-      data: {
-        title: 'Andrejevici',
-        body: text,
-        link: 'https://andrejevici.web.app/',
-      },
-    }
-
+    logger.info('Notify request received', { body: req.body })
     try {
-      getMessaging()
-        .sendEachForMulticast(message)
-        .then(async (response) => {
-          const promises: Promise<void>[] = []
-          response.responses.forEach((resp, idx) => {
-            if (resp && idx < registrationTokens.length) {
-              if (!resp.success) {
-                promises.push(tokenDispacher(registrationTokens[idx], false, 'n/a'))
-              } else {
-                promises.push(tokenDispacher(registrationTokens[idx], true, text))
-              }
-            }
-          })
-          if (promises.length === 0) {
-            res.status(200).send('No active subscribers found')
-            logger.info(`No active subscribers found. No message sent`)
-            return
+      const registrationTokens: string[] = []
+      const text: string = req.body.text
+
+      if (!text) {
+        res.status(400).send('No message text provided')
+        return
+      }
+
+      const query: CollectionReference<DocumentData> = getFirestore().collection('Device')
+      const querySnapshot = await query.get()
+
+      querySnapshot.forEach((docSnap) => {
+        registrationTokens.push(docSnap.id)
+      })
+
+      if (registrationTokens.length === 0) {
+        res.status(200).send('No subscribers found')
+        return
+      }
+
+      const message = {
+        tokens: registrationTokens,
+        data: {
+          title: 'Andrejevici',
+          body: text,
+          link: 'https://andrejevici.web.app/',
+        },
+      }
+
+      const response = await getMessaging().sendEachForMulticast(message)
+      const promises: Promise<void>[] = []
+
+      response.responses.forEach((resp, idx) => {
+        if (resp && idx < registrationTokens.length) {
+          if (!resp.success) {
+            promises.push(tokenDispacher(registrationTokens[idx], false, 'n/a'))
+          } else {
+            promises.push(tokenDispacher(registrationTokens[idx], true, text))
           }
-          await Promise.all(promises)
-        })
+        }
+      })
+
+      if (promises.length === 0) {
+        res.status(200).send('No active subscribers found')
+        logger.info(`No active subscribers found. No message sent`)
+        return
+      }
+
+      await Promise.all(promises)
+      res.status(200).send(`Message sent successfully to ${promises.length} devices`)
     } catch (error) {
       logger.error('Error sending multicast message:', error)
       res.status(500).json({ error: (error as Error).message })

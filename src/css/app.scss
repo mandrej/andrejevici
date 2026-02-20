@@ -73,3 +73,26 @@ body,
 .firebase-emulator-warning {
   display: none;
 }
+
+// Ensure notifications are always on top of everything, including PhotoSwipe and Fullscreen overlays
+.q-notifications,
+.q-notifications__list,
+.q-notification {
+  z-index: 10000000 !important;
+}
+
+body.swiper-view-active {
+  overflow: hidden !important;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
+  .q-dialog,
+  .q-menu,
+  .q-tooltip {
+    z-index: 100000 !important;
+  }
+}

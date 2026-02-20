@@ -61,9 +61,7 @@ export default defineConfig(() => {
       // extendViteConf (viteConf) {},
       viteVuePluginOptions: {
         template: {
-          compilerOptions: {
-            isCustomElement: (tag) => tag.startsWith('swiper-'),
-          },
+          compilerOptions: {},
         },
       },
 
@@ -154,12 +152,24 @@ export default defineConfig(() => {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       // swFilename: 'sw.js',
       // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
       // useCredentialsForManifestTag: true,
       // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      extendGenerateSWOptions(cfg) {
+        // Merge Firebase Messaging into the Workbox-generated SW.
+        cfg.importScripts = ['firebase-messaging-sw.js']
+
+        cfg.skipWaiting = true
+        cfg.clientsClaim = true
+        cfg.cleanupOutdatedCaches = true
+
+        // Fix "non-precached-url" error:
+        cfg.navigateFallback = '/index.html'
+        cfg.navigateFallbackDenylist = [
+          /firebase-messaging-sw\.js$/,
+          /workbox-(.)*\.js$/,
+          /sw\.js$/,
+        ]
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova

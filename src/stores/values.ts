@@ -222,11 +222,16 @@ export const useValuesStore = defineStore('meta', {
           setBatch.set(counterRef, { count, field, value: key })
         })
         this.values[fieldKey] = newValues[fieldKey]
-        notify({ group: 'counters', message: `Built counters for ${field}` })
+        notify({
+          type: 'positive',
+          group: 'counters',
+          message: `Built counters for ${field}`,
+          icon: 'check',
+        })
       })
 
       await setBatch.commit()
-      notify({ group: 'counters', message: `All done` })
+      notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'check' })
     },
 
     /**
