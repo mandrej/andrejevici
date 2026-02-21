@@ -1,5 +1,11 @@
 <template>
   <Menu />
+  <div
+    class="q-ml-md q-pa-sm text-h4 text-right"
+    :style="{ color: 'color-mix(in srgb, var(--q-my-text), transparent 70%)' }"
+  >
+    {{ counter }}
+  </div>
   <q-space />
 
   <q-input
@@ -47,6 +53,7 @@ import { useUserStore } from 'src/stores/user'
 import { useValuesStore } from 'src/stores/values'
 import Menu from './Menu.vue'
 import TagsMerge from './Tags-Merge.vue'
+import { computed } from 'vue'
 
 const app = useAppStore()
 const auth = useUserStore()
@@ -83,6 +90,10 @@ const deleteSelected = async () => {
   }
   clearSelected()
 }
+
+const counter = computed(() => {
+  return app.objects.length
+})
 
 const clearSelected = () => {
   selected.value = []
