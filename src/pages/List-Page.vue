@@ -34,7 +34,13 @@
                 class="absolute-right column no-wrap"
               >
                 <!-- Admin can select for batch actions -->
-                <q-checkbox v-if="user?.isAdmin" v-model="selected" :val="item" />
+                <q-checkbox
+                  v-if="user?.isAdmin"
+                  v-model="selected"
+                  :val="item"
+                  color="secondary"
+                  keep-color
+                />
 
                 <!-- If author but not admin, show delete button instead of checkbox -->
                 <q-btn
@@ -42,11 +48,12 @@
                   flat
                   round
                   icon="delete"
+                  color="secondary"
                   @click="confirmShow(item)"
                 />
 
                 <!-- Both admin and author can edit -->
-                <q-btn flat round icon="edit" @click="editRecord(item)" />
+                <q-btn flat round icon="edit" color="secondary" @click="editRecord(item)" />
               </q-card-actions>
             </template>
           </Picture-Card>
