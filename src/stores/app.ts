@@ -175,8 +175,9 @@ export const useAppStore = defineStore('app', {
 
       const max =
         CONFIG.limit *
-        (this.find?.tags?.length || 1) *
+        (this.find?.tags ? this.find.tags.length + 2 : 1) *
         (this.find?.text ? sliceSlug(this.find.text).length : 1)
+
       const filters: QueryFieldFilterConstraint[] = Object.entries(this.find || {}).map(
         ([key, val]) => {
           if (key === 'tags') {
