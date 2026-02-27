@@ -9,10 +9,12 @@ import { useValuesStore } from 'src/stores/values'
 import { useUserStore } from 'src/stores/user'
 import { reFilename, counterId } from 'src/helpers'
 import router from 'src/router'
-import { counterCollection, photoCollection, userCollection } from 'src/helpers/collections'
+import { counterCollection, photoCollection } from 'src/helpers/collections'
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
+
+import readExif from './exif'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -21,26 +23,96 @@ const { uploaded } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 
 /**
- * Fixes the users in the database.
+ * Fixes photos in the database by populating missing dimensions.
  *
- * @return {Promise<void>} A promise that resolves when the users are fixed.
+ * @return {Promise<void>} A promise that resolves when the photos are fixed.
  */
 export const fix = async () => {
-  const setBatch = writeBatch(db)
-  const q = query(userCollection)
-  const usersSnap = await getDocs(q)
-  usersSnap.forEach((it) => {
-    const user = it.data()
-    const docRef = doc(userCollection, user.uid)
-    setBatch.set(docRef, user, { merge: true })
+  notify({
+    message: 'Finding records missing dimensions...',
+    timeout: 0,
+    spinner: true,
+    group: 'fix-dim',
   })
 
-  await setBatch.commit()
-  notify({
-    type: 'positive',
-    message: `All users fixed`,
-    icon: 'check',
-  })
+  try {
+    const q = query(photoCollection)
+    const querySnapshot = await getDocs(q)
+
+    const toFix = querySnapshot.docs.filter((doc) => {
+      const data = doc.data()
+      // Check if dim is missing, null, or an empty array
+      return !data.dim || (Array.isArray(data.dim) && data.dim.length === 0)
+    })
+
+    if (toFix.length === 0) {
+      notify({
+        type: 'positive',
+        message: 'No records missing dimensions',
+        icon: 'check',
+        group: 'fix-dim',
+      })
+      return
+    }
+
+    notify({
+      message: `Found ${toFix.length} records to fix. Processing...`,
+      timeout: 0,
+      spinner: true,
+      group: 'fix-dim',
+    })
+
+    let fixedCount = 0
+    let errorCount = 0
+    const batchLimit = 400
+    let batch = writeBatch(db)
+    let count = 0
+
+    for (const docSnap of toFix) {
+      const filename = docSnap.id
+      try {
+        const _ref = storageRef(storage, filename)
+        const url = await getDownloadURL(_ref)
+        const exif = await readExif(url)
+
+        if (exif && exif.dim) {
+          batch.update(docSnap.ref, { dim: exif.dim })
+          count++
+          fixedCount++
+
+          if (count >= batchLimit) {
+            await batch.commit()
+            batch = writeBatch(db)
+            count = 0
+          }
+        } else {
+          console.warn(`Could not find dimensions for ${filename}`)
+          errorCount++
+        }
+      } catch (e) {
+        console.error(`Failed to process ${filename}:`, e)
+        errorCount++
+      }
+    }
+
+    if (count > 0) {
+      await batch.commit()
+    }
+
+    notify({
+      type: fixedCount > 0 ? 'positive' : 'warning',
+      message: `Fixed ${fixedCount} records. ${errorCount > 0 ? `Errors: ${errorCount}` : ''}`,
+      icon: fixedCount > 0 ? 'check' : 'warning',
+      timeout: 5000,
+      group: 'fix-dim',
+    })
+  } catch (error) {
+    notify({
+      type: 'negative',
+      message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
+      group: 'fix-dim',
+    })
+  }
 }
 
 /**

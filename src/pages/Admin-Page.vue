@@ -43,13 +43,15 @@
 
         <q-item clickable>
           <q-item-section>
-            <q-item-label>Merge users and subsribers</q-item-label>
+            <q-item-label
+              >Fixes photos in the database by populating missing dimensions.</q-item-label
+            >
             <q-item-label caption class="text-h6">{{
-              formatDatum('2025-10-24', 'DD.MM.YYYY')
+              formatDatum('2026-02-27', 'DD.MM.YYYY')
             }}</q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn color="primary" :disable="true" label="Fix" />
+            <q-btn color="primary" label="Fix" @click="fix" />
           </q-item-section>
         </q-item>
         <q-item clickable>
@@ -100,7 +102,7 @@ import { useAppStore } from 'src/stores/app'
 import { useValuesStore } from 'src/stores/values'
 import { formatDatum } from 'src/helpers'
 import { formatBytes } from 'src/helpers'
-import { mismatch, missingThumbnails } from 'src/helpers/remedy'
+import { mismatch, missingThumbnails, fix } from 'src/helpers/remedy'
 
 const TagsTab = defineAsyncComponent(() => import('src/components/tab/Tags-Tab.vue'))
 // const CameraTab = defineAsyncComponent(() => import('src/components/tab/Camera-Tab.vue'))
