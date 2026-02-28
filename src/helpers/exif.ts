@@ -50,7 +50,6 @@ const readExif = async (url: string): Promise<ExifType | null> => {
   if (exif && 'DateTimeOriginal' in exif) {
     const rex = /(\d{4}):(\d{2}):(\d{2})/i
     const date = exif.DateTimeOriginal.description.replace(rex, '$1-$2-$3')
-    if (process.env.DEV) console.log('EXIF DATE ' + date)
     const datum = new Date(Date.parse(date))
     result.date = formatDatum(datum)
     result.year = datum.getFullYear()
@@ -69,6 +68,25 @@ const readExif = async (url: string): Promise<ExifType | null> => {
 
   if (tags.file && 'Image Height' in tags.file && 'Image Width' in tags.file) {
     result.dim = [tags.file['Image Width'].value, tags.file['Image Height'].value]
+  }
+
+  // Fallback if dimensions are missing
+  if (!result.dim || result.dim[0] === 0 || result.dim[1] === 0) {
+    try {
+      const img = document.createElement('img')
+      img.crossOrigin = 'anonymous'
+      img.src = url
+      const promise = new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+      })
+      await promise
+      if (img.naturalWidth && img.naturalHeight) {
+        result.dim = [img.naturalWidth, img.naturalHeight]
+      }
+    } catch (e) {
+      if (process.env.DEV) console.warn('Failed to get original image size via Image object', e)
+    }
   }
 
   if (tags.gps && 'Latitude' in tags.gps && 'Longitude' in tags.gps) {
