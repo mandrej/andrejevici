@@ -201,7 +201,7 @@ export const useValuesStore = defineStore('meta', {
     },
 
     async countersBuild(): Promise<void> {
-      notify({ group: 'counters', message: `Please wait` })
+      notify({ group: 'counters', message: `Please wait`, timeout: 0 })
 
       // Build new counters
       const newValues = await buildCounters()
@@ -211,7 +211,7 @@ export const useValuesStore = defineStore('meta', {
       const deleteBatch = writeBatch(db)
       countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
       await deleteBatch.commit()
-      notify({ group: 'counters', message: `Deleted old counters` })
+      notify({ group: 'counters', message: `Deleted old counters`, timeout: 0 })
 
       // Write new counters to database and store
       const setBatch = writeBatch(db)

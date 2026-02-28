@@ -40,7 +40,6 @@
             <q-btn label="rebuild" @click="meta.countersBuild" />
           </q-item-section>
         </q-item>
-
         <q-item clickable>
           <q-item-section>
             <q-item-label
@@ -51,7 +50,7 @@
             }}</q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn color="primary" label="Fix" @click="fix" />
+            <q-btn color="primary" :disable="true" label="Fix" @click="fix" />
           </q-item-section>
         </q-item>
         <q-item clickable>

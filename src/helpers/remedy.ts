@@ -149,7 +149,10 @@ const getStorageData = async (filename: string) => {
  */
 export const missingThumbnails = async () => {
   notify({
+    group: 'thumbnails',
     message: `Please wait`,
+    spinner: true,
+    timeout: 0,
   })
 
   const photoMap = new Map<string, string[]>()
@@ -197,6 +200,7 @@ export const missingThumbnails = async () => {
       }
     } else {
       notify({
+        group: 'thumbnails',
         type: 'negative',
         message: `Rejected ${it.reason}.`,
         actions: [{ icon: 'close' }],
@@ -207,6 +211,7 @@ export const missingThumbnails = async () => {
 
   if (hit > 0) {
     notify({
+      group: 'thumbnails',
       message: message,
       timeout: 0,
       actions: [{ icon: 'close' }],
@@ -215,6 +220,7 @@ export const missingThumbnails = async () => {
     })
   } else {
     notify({
+      group: 'thumbnails',
       type: 'positive',
       message: 'No missing thumbnails',
       icon: 'check',
@@ -229,10 +235,10 @@ export const missingThumbnails = async () => {
  */
 export const mismatch = async () => {
   notify({
+    group: 'mismatch',
     message: `Please wait`,
     timeout: 0,
-    actions: [{ icon: 'close' }],
-    group: 'mismatch',
+    spinner: true,
   })
 
   const [storageResult, firestoreResult] = await Promise.all([
@@ -255,9 +261,9 @@ export const mismatch = async () => {
   if (missingFiles.length > 0) {
     await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection, name))))
     notify({
+      group: 'mismatch',
       message: `${missingFiles.length} records deleted from firestore that doesn't have image reference`,
       type: 'negative',
-      group: 'mismatch',
     })
   }
 
@@ -269,6 +275,7 @@ export const mismatch = async () => {
     })
 
     notify({
+      group: 'mismatch',
       type: 'negative',
       message: `${missingRecords.length} files uploaded to bucket, but doesn't have record in firestore.<br>
       Resolve mismatched files either by publish or delete.`,
@@ -283,15 +290,14 @@ export const mismatch = async () => {
       multiLine: true,
       html: true,
       timeout: 0,
-      group: missingFiles.length > 0 ? 'mismatch-add' : 'mismatch',
     })
   }
 
   if (missingRecords.length === 0 && missingFiles.length === 0) {
     notify({
+      group: 'mismatch',
       type: 'positive',
       message: `All good. Nothing to resolve`,
-      group: 'mismatch',
       icon: 'check',
     })
   }
