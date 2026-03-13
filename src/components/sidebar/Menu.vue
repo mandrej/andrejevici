@@ -59,9 +59,9 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useUserStore } from 'src/stores/user'
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../../stores/user";
 
-const auth = useUserStore()
-const { user } = storeToRefs(auth)
+const auth = useUserStore();
+const { user } = storeToRefs(auth);
 </script>

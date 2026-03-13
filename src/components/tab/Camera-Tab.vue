@@ -20,7 +20,10 @@
       </div>
     </q-item-section>
     <q-item-section side
-      ><q-btn label="Rename" @click="rename('model', existingModel, changedModel)" color="primary"
+      ><q-btn
+        label="Rename"
+        @click="rename('model', existingModel, changedModel)"
+        color="primary"
     /></q-item-section>
   </q-item>
 
@@ -44,7 +47,11 @@
       </div>
     </q-item-section>
     <q-item-section side>
-      <q-btn label="Rename" @click="rename('lens', existingLens, changedLens)" color="primary" />
+      <q-btn
+        label="Rename"
+        @click="rename('lens', existingLens, changedLens)"
+        color="primary"
+      />
     </q-item-section>
   </q-item>
 
@@ -70,40 +77,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { renameValue } from 'src/helpers/remedy'
-import { storeToRefs } from 'pinia'
-import { useValuesStore } from 'src/stores/values'
-import AutoComplete from 'src/components/Auto-Complete.vue'
-import type { ValuesState } from 'src/helpers/models'
-import notify from 'src/helpers/notify'
+import { ref } from "vue";
+import { renameValue } from "../../helpers/remedy";
+import { storeToRefs } from "pinia";
+import { useValuesStore } from "../../stores/values";
+import AutoComplete from "../../components/Auto-Complete.vue";
+import type { ValuesState } from "../../helpers/models";
+import notify from "../../helpers/notify";
 
-const meta = useValuesStore()
-const { modelValues, lensValues } = storeToRefs(meta)
+const meta = useValuesStore();
+const { modelValues, lensValues } = storeToRefs(meta);
 
-const existingModel = ref(''),
-  changedModel = ref(''),
-  existingLens = ref(''),
-  changedLens = ref('')
+const existingModel = ref(""),
+  changedModel = ref(""),
+  existingLens = ref(""),
+  changedLens = ref("");
 
-const rename = async (field: keyof ValuesState['values'], existing: string, changed: string) => {
-  if (existing !== '' && changed !== '') {
-    if (field === 'model' && existing === 'UNKNOWN') {
+const rename = async (
+  field: keyof ValuesState["values"],
+  existing: string,
+  changed: string,
+) => {
+  if (existing !== "" && changed !== "") {
+    if (field === "model" && existing === "UNKNOWN") {
       notify({
-        type: 'warning',
+        type: "warning",
         message: `Cannot change "${existing}"`,
-      })
+      });
     } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
       notify({
-        type: 'warning',
+        type: "warning",
         message: `"${changed}" already exists"`,
-      })
+      });
     } else {
-      await renameValue(field, existing, changed)
+      await renameValue(field, existing, changed);
       notify({
         message: `${existing} successfully renamed to ${changed}`,
-      })
+      });
     }
   }
-}
+};
 </script>

@@ -1,84 +1,84 @@
-import CONFIG from 'app/config'
-import { date, format } from 'quasar'
-import readExif from './exif'
-import { slugify } from 'transliteration'
-import { computed } from 'vue'
-import type { MyUserType, PhotoType } from 'src/helpers/models'
+import CONFIG from "../../config";
+import { date, format } from "quasar";
+import readExif from "./exif";
+import { slugify } from "transliteration";
+import { computed } from "vue";
+import type { MyUserType, PhotoType } from "./models";
 
-const { humanStorageSize } = format
-const { formatDate } = date
+const { humanStorageSize } = format;
+const { formatDate } = date;
 const modifiers = {
   replace: {
-    ш: 's',
-    đ: 'dj',
-    џ: 'dz',
-    ћ: 'c',
-    ч: 'c',
-    ж: 'z',
-    š: 's',
-    dj: 'dj',
-    dž: 'dz',
-    ć: 'c',
-    č: 'c',
-    ž: 'z',
+    ш: "s",
+    đ: "dj",
+    џ: "dz",
+    ћ: "c",
+    ч: "c",
+    ж: "z",
+    š: "s",
+    dj: "dj",
+    dž: "dz",
+    ć: "c",
+    č: "c",
+    ž: "z",
   },
-}
+};
 
 export const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 export const formatBytes = (bytes: number): string => {
-  return humanStorageSize(bytes)
-}
+  return humanStorageSize(bytes);
+};
 export const formatDatum = (
   str: Date | number | string,
   format: string = CONFIG.dateFormat,
 ): string => {
-  const date = new Date(str)
-  return formatDate(date, format)
-}
+  const date = new Date(str);
+  return formatDate(date, format);
+};
 /**
  * Creates a fake history entry.
  *
  * @return {void} This function does not return anything.
  */
 export const fakeHistory = () => {
-  if (typeof window === 'undefined' || !window.history) return
-  window.history.pushState(history.state, '', history.state.current)
-}
+  if (typeof window === "undefined" || !window.history) return;
+  window.history.pushState(history.state, "", history.state.current);
+};
 
 export const build = computed(() => {
-  return process.env.ANDREJEVICI_BUILD || ''
-})
+  return import.meta.env.VITE_ANDREJEVICI_BUILD || "";
+});
 export const isEmpty = (obj: object) => {
   for (const prop in obj) {
     if (Object.hasOwn(obj, prop)) {
-      return false
+      return false;
     }
   }
-  return true
-}
+  return true;
+};
 
 export const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
-  const idx = arr.findIndex((it) => it.filename === obj.filename)
-  if (idx > -1) arr.splice(idx, 1)
-}
+  const idx = arr.findIndex((it) => it.filename === obj.filename);
+  if (idx > -1) arr.splice(idx, 1);
+};
 export const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
-  const idx = arr.findIndex((it) => it.filename === obj.filename)
-  if (idx > -1) arr.splice(idx, 1, obj)
-}
+  const idx = arr.findIndex((it) => it.filename === obj.filename);
+  if (idx > -1) arr.splice(idx, 1, obj);
+};
 /**
  * Slices a slug into an array of strings.
  *
@@ -86,67 +86,67 @@ export const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
  * @return {string[]} An array of strings.
  */
 export const sliceSlug = (text: string): string[] => {
-  const slug = slugify(text, modifiers)
-  const result: string[] = []
-  for (const word of slug.split('-')) {
+  const slug = slugify(text, modifiers);
+  const result: string[] = [];
+  for (const word of slug.split("-")) {
     for (let j = 3; j < word.length + 1; j++) {
-      const part = word.slice(0, j)
-      if (part.length > 8) break
-      result.push(part)
+      const part = word.slice(0, j);
+      if (part.length > 8) break;
+      result.push(part);
     }
   }
-  return result
-}
+  return result;
+};
 
-export const U = '_'
-export const delimiter = '||' // for counter id
-export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
+export const U = "_";
+export const delimiter = "||"; // for counter id
+export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/);
 
 export const thumbName = (filename: string) => {
-  const match = filename.match(reFilename)
-  if (!match) return ''
-  const [, name] = match
-  return [CONFIG.thumbnails, name + CONFIG.thumbSuffix].join('/')
-}
+  const match = filename.match(reFilename);
+  if (!match) return "";
+  const [, name] = match;
+  return [CONFIG.thumbnails, name + CONFIG.thumbSuffix].join("/");
+};
 export const thumbUrl = (filename: string) => {
   return [
-    'https://storage.googleapis.com',
+    "https://storage.googleapis.com",
     CONFIG.firebase.storageBucket,
     thumbName(filename),
-  ].join('/')
-}
+  ].join("/");
+};
 
 export const counterId = (field: string, value: string): string => {
-  return `Photo${delimiter}${field}${delimiter}${value}` // FIXME Photo is hard coded
-}
+  return `Photo${delimiter}${field}${delimiter}${value}`; // FIXME Photo is hard coded
+};
 
 export const isAuthorOrAdmin = (
   user: MyUserType | null | undefined, // Allow undefined for store refs that might be undefined
   rec: PhotoType,
 ): boolean => {
-  return Boolean(user && (user.isAdmin || user.email === rec.email))
-}
+  return Boolean(user && (user.isAdmin || user.email === rec.email));
+};
 
 export const completePhoto = async (
   rec: PhotoType,
   tags: string[],
   headline: string,
 ): Promise<PhotoType> => {
-  let tmp = { ...rec }
+  let tmp = { ...rec };
   // url, filename, size, email, nick exist from uploadTask
-  const datum = new Date()
-  tmp.date = formatDatum(datum, CONFIG.dateFormat)
-  tmp.year = datum.getFullYear()
-  tmp.month = datum.getMonth() + 1
-  tmp.day = datum.getDate()
-  tmp.headline = headline
-  tmp.text = sliceSlug(headline)
-  tmp.tags = tags
+  const datum = new Date();
+  tmp.date = formatDatum(datum, CONFIG.dateFormat);
+  tmp.year = datum.getFullYear();
+  tmp.month = datum.getMonth() + 1;
+  tmp.day = datum.getDate();
+  tmp.headline = headline;
+  tmp.text = sliceSlug(headline);
+  tmp.tags = tags;
 
-  const exif = await readExif(rec.url)
-  tmp = { ...tmp, ...exif }
-  if (tmp.flash && tags.indexOf('flash') === -1) {
-    tags.push('flash')
+  const exif = await readExif(rec.url);
+  tmp = { ...tmp, ...exif };
+  if (tmp.flash && tags.indexOf("flash") === -1) {
+    tags.push("flash");
   }
-  return tmp
-}
+  return tmp;
+};

@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/f3195621_DSC_5872-21-12-08-206_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1772295701296,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "f9a11b11-d574-47e3-ba0b-df8f7f048e5c"
+  ],
+  "etag": "ZhWHdsRwdDduGVG7KyLbmyBlmYY",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2026-02-28T16:21:41.296Z",
+  "updated": "2026-02-28T16:21:41.299Z",
+  "size": 39770,
+  "md5Hash": "+y5SoUJWfLpx104G2vNSfQ==",
+  "crc32c": "2613463743"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/9c5ca12a-264f-4456-850c-f2fcea3edbd5_04_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1755942015903,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "438eef8a-9bb9-4e6d-a07d-b59ca64f8fdf"
+  ],
+  "etag": "DWxdw/VhFl8wOWXT4Fcw/hYAlqA",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2025-08-23T09:40:15.903Z",
+  "updated": "2025-08-23T09:40:15.907Z",
+  "size": 45224,
+  "md5Hash": "6rScLq2gpwbMfFCOx0jWTQ==",
+  "crc32c": "1370390070"
+}

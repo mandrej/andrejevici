@@ -18,15 +18,21 @@
     <slot name="action"></slot>
     <q-card-section class="row justify-between">
       <span>
-        <router-link to="/list" class="link" @click.prevent="app.searchBy({ nick: rec.nick })">{{
-          rec.nick
-        }}</router-link
+        <router-link
+          to="/list"
+          class="link"
+          @click.prevent="app.searchBy({ nick: rec.nick })"
+          >{{ rec.nick }}</router-link
         >,
         <router-link
           to="/list"
-          @click.prevent="app.searchBy({ year: rec.year, month: rec.month, day: rec.day })"
+          @click.prevent="
+            app.searchBy({ year: rec.year, month: rec.month, day: rec.day })
+          "
           class="link"
-          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</router-link
+          >{{
+            rec.date ? formatDatum(rec.date, "DD.MM.YYYY HH:mm") : ""
+          }}</router-link
         >
       </span>
 
@@ -52,19 +58,19 @@
 </template>
 
 <script setup lang="ts">
-import { U, formatDatum } from 'src/helpers'
-import type { PhotoType } from 'src/helpers/models'
-import { useAppStore } from 'src/stores/app'
-import FileBroken from 'src/components/File-Broken.vue'
+import { U, formatDatum } from "../helpers";
+import type { PhotoType } from "../helpers/models";
+import { useAppStore } from "../stores/app";
+import FileBroken from "../components/File-Broken.vue";
 
 defineProps<{
-  rec: PhotoType
-}>()
-const emit = defineEmits(['carousel-show'])
-const app = useAppStore()
+  rec: PhotoType;
+}>();
+const emit = defineEmits(["carousel-show"]);
+const app = useAppStore();
 
 const openMaps = (loc: string) => {
-  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
-  window.open(url, '_blank')
-}
+  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`;
+  window.open(url, "_blank");
+};
 </script>

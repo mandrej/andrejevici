@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/SDIM4881-23-01-03-2_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1721724324954,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "02dd2595-67db-474a-870c-64e85e9a5611"
+  ],
+  "etag": "QhGa2+6NBivzx51FbrHFwB+Rc3c",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-07-23T08:45:24.954Z",
+  "updated": "2024-07-23T08:45:24.959Z",
+  "size": 17170,
+  "md5Hash": "ahqbvIzf++cdDXpl14ha5Q==",
+  "crc32c": "340825544"
+}

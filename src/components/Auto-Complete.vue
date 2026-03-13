@@ -20,13 +20,13 @@
 
 <script setup lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const props = defineProps({
   model: {
     type: [String, Number, Array],
     required: false,
-    default: '',
+    default: "",
   },
   options: { type: Array, required: true },
   // tagging
@@ -35,33 +35,35 @@ const props = defineProps({
   // label and value
   autocomplete: {
     type: String, // 'label'
-    default: '',
+    default: "",
   },
   label: { type: String, required: true },
-  hint: { type: String, required: false, default: '' },
-})
+  hint: { type: String, required: false, default: "" },
+});
 
-const model = ref(props.model)
-const options = ref(props.options)
-const field = ref(props.autocomplete) // label
-const debounce = 300
+const model = ref(props.model);
+const options = ref(props.options);
+const field = ref(props.autocomplete); // label
+const debounce = 300;
 
 const filter = (val: string, update: (callback: () => void) => void) => {
-  if (val === '') {
+  if (val === "") {
     update(() => {
-      options.value = props.options
-    })
-    return
+      options.value = props.options;
+    });
+    return;
   }
   update(() => {
-    const needle = val.toLowerCase()
+    const needle = val.toLowerCase();
     if (field.value) {
       options.value = props.options.filter(
         (v: any) => v[field.value].toLowerCase().indexOf(needle) > -1,
-      )
+      );
     } else {
-      options.value = props.options.filter((v: any) => v.toLowerCase().indexOf(needle) > -1)
+      options.value = props.options.filter(
+        (v: any) => v.toLowerCase().indexOf(needle) > -1,
+      );
     }
-  })
-}
+  });
+};
 </script>

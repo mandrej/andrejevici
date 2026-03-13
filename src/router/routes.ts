@@ -1,87 +1,93 @@
-import CONFIG from 'app/config'
-import type { RouteRecordRaw } from 'vue-router'
+import CONFIG from "../../config";
+import type { RouteRecordRaw } from "vue-router";
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
-    component: () => import('src/layouts/Plain.vue'),
-    meta: { title: CONFIG.title },
-    children: [{ path: '', name: 'home', component: () => import('src/pages/Index-Page.vue') }],
-  },
-  {
-    path: '/list',
-    component: () => import('src/layouts/Default.vue'),
+    path: "/",
+    component: () => import("../layouts/Plain.vue"),
     meta: { title: CONFIG.title },
     children: [
       {
-        path: '',
-        name: 'list',
+        path: "",
+        name: "home",
+        component: () => import("../pages/Index-Page.vue"),
+      },
+    ],
+  },
+  {
+    path: "/list",
+    component: () => import("../layouts/Default.vue"),
+    meta: { title: CONFIG.title },
+    children: [
+      {
+        path: "",
+        name: "list",
         components: {
-          default: () => import('src/pages/List-Page.vue'),
-          sidebar: () => import('src/components/sidebar/List-Sidebar.vue'),
-          toolbar: () => import('src/components//toolbar/List-Toolbar.vue'),
+          default: () => import("../pages/List-Page.vue"),
+          sidebar: () => import("../components/sidebar/List-Sidebar.vue"),
+          toolbar: () => import("../components//toolbar/List-Toolbar.vue"),
         },
       },
     ],
   },
   {
-    path: '/add',
-    component: () => import('src/layouts/Default.vue'),
-    meta: { title: 'Add', requiresAuth: true },
+    path: "/add",
+    component: () => import("../layouts/Default.vue"),
+    meta: { title: "Add", requiresAuth: true },
     children: [
       {
-        path: '',
-        name: 'add',
+        path: "",
+        name: "add",
         components: {
-          default: () => import('src/pages/Add-Page.vue'),
-          sidebar: () => import('src/components/sidebar/Default-Sidebar.vue'),
-          toolbar: () => import('src/components/toolbar/Add-Toolbar.vue'),
+          default: () => import("../pages/Add-Page.vue"),
+          sidebar: () => import("../components/sidebar/Default-Sidebar.vue"),
+          toolbar: () => import("../components/toolbar/Add-Toolbar.vue"),
         },
       },
     ],
   },
   {
-    path: '/admin',
-    component: () => import('src/layouts/Default.vue'),
-    meta: { title: 'Administration', requiresAdmin: true },
+    path: "/admin",
+    component: () => import("../layouts/Default.vue"),
+    meta: { title: "Administration", requiresAdmin: true },
     children: [
       {
-        path: '',
-        name: 'admin',
+        path: "",
+        name: "admin",
         components: {
-          default: () => import('src/pages/Admin-Page.vue'),
-          sidebar: () => import('src/components/sidebar/Default-Sidebar.vue'),
-          toolbar: () => import('src/components/toolbar/Admin-Toolbar.vue'),
+          default: () => import("../pages/Admin-Page.vue"),
+          sidebar: () => import("../components/sidebar/Default-Sidebar.vue"),
+          toolbar: () => import("../components/toolbar/Admin-Toolbar.vue"),
         },
       },
     ],
   },
   {
-    path: '/401',
-    component: () => import('src/layouts/Plain.vue'),
+    path: "/401",
+    component: () => import("../layouts/Plain.vue"),
     meta: { title: CONFIG.title },
     children: [
       {
-        path: '',
-        name: '401',
-        component: () => import('src/pages/Error-Page.vue'),
+        path: "",
+        name: "401",
+        component: () => import("../pages/Error-Page.vue"),
         props: { code: 401 },
       },
     ],
   },
   {
-    path: '/:pathMatch(.*)*',
-    component: () => import('src/layouts/Plain.vue'),
+    path: "/:pathMatch(.*)*",
+    component: () => import("../layouts/Plain.vue"),
     meta: { title: CONFIG.title },
     children: [
       {
-        path: '',
-        name: '404',
-        component: () => import('src/pages/Error-Page.vue'),
+        path: "",
+        name: "404",
+        component: () => import("../pages/Error-Page.vue"),
         props: { code: 404 },
       },
     ],
   },
-]
+];
 
-export default routes
+export default routes;

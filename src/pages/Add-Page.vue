@@ -91,117 +91,128 @@
 </template>
 
 <script setup lang="ts">
-import { v4 as uuidv4 } from 'uuid'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
-import { storage } from 'src/boot/firebase'
-import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
-import { useUserStore } from 'src/stores/user'
-import { fakeHistory, completePhoto } from 'src/helpers'
-import CONFIG from 'app/config'
-import notify from 'src/helpers/notify'
-import PictureCard from 'src/components/Picture-Card.vue'
-import TagsMerge from 'src/components/sidebar/Tags-Merge.vue'
-import type { UploadTaskSnapshot } from 'firebase/storage'
-import type { PhotoType } from 'src/helpers/models'
+import { v4 as uuidv4 } from "uuid";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
+import { storage } from "../firebase";
+import {
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../stores/app";
+import { useValuesStore } from "../stores/values";
+import { useUserStore } from "../stores/user";
+import { fakeHistory, completePhoto } from "../helpers";
+import CONFIG from "../../config";
+import notify from "../helpers/notify";
+import PictureCard from "../components/Picture-Card.vue";
+import TagsMerge from "../components/sidebar/Tags-Merge.vue";
+import type { UploadTaskSnapshot } from "firebase/storage";
+import type { PhotoType } from "../helpers/models";
 
-const EditRecord = defineAsyncComponent(() => import('src/components/dialog/Edit-Record.vue'))
+const EditRecord = defineAsyncComponent(
+  () => import("../components/dialog/Edit-Record.vue"),
+);
 
-const app = useAppStore()
-const meta = useValuesStore()
-const auth = useUserStore()
-const uploaded = computed(() => app.uploaded)
-const { showEdit, currentEdit } = storeToRefs(app)
-const { headlineToApply, tagsToApply } = storeToRefs(meta)
-const { user } = storeToRefs(auth)
-const selection = ref<string[]>([])
+const app = useAppStore();
+const meta = useValuesStore();
+const auth = useUserStore();
+const uploaded = computed(() => app.uploaded);
+const { showEdit, currentEdit } = storeToRefs(app);
+const { headlineToApply, tagsToApply } = storeToRefs(meta);
+const { user } = storeToRefs(auth);
+const selection = ref<string[]>([]);
 
 interface Task {
-  [key: string]: ReturnType<typeof uploadBytesResumable>
+  [key: string]: ReturnType<typeof uploadBytesResumable>;
 }
 interface ValidationErrors {
-  file: File
-  failedPropValidation: string
+  file: File;
+  failedPropValidation: string;
 }
 
 onMounted(() => {
-  app.progressInfo = {}
-})
+  app.progressInfo = {};
+});
 
-const files = ref([])
-const task: Task = {}
-const morphModel = ref('upload')
+const files = ref([]);
+const task: Task = {};
+const morphModel = ref("upload");
 
 const cancelAll = (): void => {
   Object.keys(app.progressInfo).forEach((key: string) => {
     if (task[key]) {
-      task[key].cancel()
+      task[key].cancel();
     }
-  })
-  morphModel.value = 'upload'
-}
+  });
+  morphModel.value = "upload";
+};
 const onSubmit = async (evt: Event): Promise<void> => {
-  const promises: Promise<unknown>[] = []
-  const formData = new FormData(evt.target as HTMLFormElement)
+  const promises: Promise<unknown>[] = [];
+  const formData = new FormData(evt.target as HTMLFormElement);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const [name, file] of formData.entries()) {
     // name = 'photos'
     if (file instanceof File) {
-      promises.push(uploadTask(file))
+      promises.push(uploadTask(file));
     }
   }
 
-  morphModel.value = 'cancel'
-  files.value = []
-  const results = await Promise.allSettled(promises)
+  morphModel.value = "cancel";
+  files.value = [];
+  const results = await Promise.allSettled(promises);
   results.forEach((it) => {
-    if (it.status === 'rejected') {
+    if (it.status === "rejected") {
       notify({
-        type: 'negative',
+        type: "negative",
         message: `Rejected ${it.reason}.`,
-        actions: [{ icon: 'close' }],
+        actions: [{ icon: "close" }],
         timeout: 0,
-      })
+      });
       // Fix: Properly handle unknown type for rejected promise reason
-      if (typeof it.reason === 'string') {
-        delete task[it.reason]
-        delete app.progressInfo[it.reason]
+      if (typeof it.reason === "string") {
+        delete task[it.reason];
+        delete app.progressInfo[it.reason];
       }
-    } else if (it.status === 'fulfilled') {
-      notify({ type: 'positive', message: `Uploaded ${it.value as string}.`, icon: 'check' })
+    } else if (it.status === "fulfilled") {
+      notify({
+        type: "positive",
+        message: `Uploaded ${it.value as string}.`,
+        icon: "check",
+      });
       // Fix: Properly handle unknown type for fulfilled promise value
-      if (typeof it.value === 'string') {
-        delete task[it.value]
-        delete app.progressInfo[it.value]
+      if (typeof it.value === "string") {
+        delete task[it.value];
+        delete app.progressInfo[it.value];
       }
     }
-  })
-  morphModel.value = 'upload'
-}
+  });
+  morphModel.value = "upload";
+};
 
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    const id: string = uuidv4().substring(0, 8) // 4.3e9 Possibilities
-    const filename = `${id}_${file.name}`
-    const _ref = storageRef(storage, filename)
+    const id: string = uuidv4().substring(0, 8); // 4.3e9 Possibilities
+    const filename = `${id}_${file.name}`;
+    const _ref = storageRef(storage, filename);
 
-    app.progressInfo[file.name] = 0
+    app.progressInfo[file.name] = 0;
     task[file.name] = uploadBytesResumable(_ref, file, {
       contentType: file.type,
-      cacheControl: 'public, max-age=604800',
-    })
+      cacheControl: "public, max-age=604800",
+    });
     task[file.name]?.on(
-      'state_changed',
+      "state_changed",
       (snapshot: UploadTaskSnapshot) => {
-        app.progressInfo[file.name] = snapshot.bytesTransferred / snapshot.totalBytes
+        app.progressInfo[file.name] =
+          snapshot.bytesTransferred / snapshot.totalBytes;
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (error: Error) => {
-        app.progressInfo[file.name] = 0
-        reject(new Error(file.name))
+        app.progressInfo[file.name] = 0;
+        reject(new Error(file.name));
       },
       () => {
         getDownloadURL(task[file.name]!.snapshot.ref)
@@ -212,29 +223,29 @@ const uploadTask = (file: File): Promise<string> => {
               size: file.size,
               email: user.value!.email,
               nick: user.value!.nick,
-            }
-            uploaded.value.push(data)
-            resolve(file.name)
-            if (process.env.DEV) console.log('uploaded', file.name)
+            };
+            uploaded.value.push(data);
+            resolve(file.name);
+            if (import.meta.env.DEV) console.log("uploaded", file.name);
           })
           .catch(() => {
-            reject(new Error(`Failed to get download URL: ${file.name}`))
-          })
+            reject(new Error(`Failed to get download URL: ${file.name}`));
+          });
       },
-    )
-  })
-}
+    );
+  });
+};
 
 const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   rejectedEntries.forEach((it) => {
     notify({
-      type: 'warning',
+      type: "warning",
       message: `${it.file.name}: ${it.failedPropValidation} validation error`,
-      actions: [{ icon: 'close' }],
+      actions: [{ icon: "close" }],
       timeout: 0,
-    })
-  })
-}
+    });
+  });
+};
 
 /**
  * Edit a record.
@@ -247,16 +258,16 @@ const editRecord = async (rec: PhotoType): Promise<void> => {
     rec,
     tagsToApply.value,
     headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle,
-  )
-  fakeHistory()
-  showEdit.value = true
-  currentEdit.value = newRec
-}
+  );
+  fakeHistory();
+  showEdit.value = true;
+  currentEdit.value = newRec;
+};
 
 const deleteRec = (rec: PhotoType): void => {
-  selection.value = selection.value.filter((item) => item !== rec.filename)
-  app.deleteRecord(rec)
-}
+  selection.value = selection.value.filter((item) => item !== rec.filename);
+  app.deleteRecord(rec);
+};
 
 /**
  * Publish selected records
@@ -265,42 +276,46 @@ const deleteRec = (rec: PhotoType): void => {
  */
 const publishSelected = async () => {
   if (selection.value.length === 0) {
-    selection.value = app.uploaded.map((item) => item.filename)
+    selection.value = app.uploaded.map((item) => item.filename);
   }
 
-  const promises: Promise<unknown>[] = []
-  const targets = app.uploaded.filter((item) => selection.value.includes(item.filename))
+  const promises: Promise<unknown>[] = [];
+  const targets = app.uploaded.filter((item) =>
+    selection.value.includes(item.filename),
+  );
 
   for (const rec of targets) {
     const newRec: PhotoType = await completePhoto(
       rec,
       tagsToApply.value,
       headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle,
-    )
-    promises.push(app.saveRecord(newRec))
+    );
+    promises.push(app.saveRecord(newRec));
   }
 
   // Wait for all promises to settle
-  const results = await Promise.allSettled(promises)
+  const results = await Promise.allSettled(promises);
 
   // Process the results
   results.forEach((it) => {
     // If promise is rejected, display error message
-    if (it.status === 'rejected') {
+    if (it.status === "rejected") {
       notify({
-        type: 'negative',
+        type: "negative",
         message: `Rejected ${it.reason}.`,
-        actions: [{ icon: 'close' }],
+        actions: [{ icon: "close" }],
         timeout: 0,
-      })
+      });
     } else {
       // If promise is fulfilled, update current edit record
-      currentEdit.value = it.value as PhotoType
+      currentEdit.value = it.value as PhotoType;
     }
-  })
+  });
 
-  app.uploaded = app.uploaded.filter((item) => !selection.value.includes(item.filename))
+  app.uploaded = app.uploaded.filter(
+    (item) => !selection.value.includes(item.filename),
+  );
   // Clear selection
-  selection.value = []
-}
+  selection.value = [];
+};
 </script>

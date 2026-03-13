@@ -24,31 +24,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useUserStore } from 'src/stores/user'
+import { ref, watch } from "vue";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../../stores/user";
 
-const auth = useUserStore()
-const { askPush } = storeToRefs(auth)
+const auth = useUserStore();
+const { askPush } = storeToRefs(auth);
 
-const wait = ref(false)
+const wait = ref(false);
 
 // Show the dialog whenever askPush becomes true (and the browser supports Notification)
-const showConsent = ref('Notification' in window && askPush.value)
+const showConsent = ref("Notification" in window && askPush.value);
 
 watch(askPush, (newVal) => {
-  showConsent.value = 'Notification' in window && newVal
-})
+  showConsent.value = "Notification" in window && newVal;
+});
 
 const onEnable = async () => {
-  wait.value = true
-  await auth.enableNotifications()
-  wait.value = false
-}
+  wait.value = true;
+  await auth.enableNotifications();
+  wait.value = false;
+};
 
 const onDisable = async () => {
-  wait.value = true
-  await auth.disableNotifications()
-  wait.value = false
-}
+  wait.value = true;
+  await auth.disableNotifications();
+  wait.value = false;
+};
 </script>

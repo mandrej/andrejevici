@@ -1,8 +1,11 @@
 <template>
   <q-toolbar-title>
-    <router-link to="/" v-if="$q.screen.gt.xs" style="color: inherit; text-decoration: none">{{
-      $route.meta.title
-    }}</router-link>
+    <router-link
+      to="/"
+      v-if="$q.screen.gt.xs"
+      style="color: inherit; text-decoration: none"
+      >{{ $route.meta.title }}</router-link
+    >
   </q-toolbar-title>
 
   <q-space />
@@ -20,9 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
 
-const app = useAppStore()
-const { busy, adminTab } = storeToRefs(app)
+const app = useAppStore();
+const { busy, adminTab } = storeToRefs(app);
 </script>

@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/20240930-DSC_9776-Enhanced-NR_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1729961704247,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "dafdb0f0-a8d2-4787-a9a8-13b94994e1cd"
+  ],
+  "etag": "xIsje2SBby3zjM3FtfhR8IGCc0s",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-10-26T16:55:04.247Z",
+  "updated": "2024-10-26T16:55:04.250Z",
+  "size": 27532,
+  "md5Hash": "7HL7fDn237q1hrr68W7/Bg==",
+  "crc32c": "3592265166"
+}

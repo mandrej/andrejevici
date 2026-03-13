@@ -22,9 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
 
-const app = useAppStore()
-const { progressInfo } = storeToRefs(app)
+const app = useAppStore();
+const { progressInfo } = storeToRefs(app);
 </script>

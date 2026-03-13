@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/2M9A4980-Enhanced-NR_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1729963591537,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "83993106-24de-4caf-8f40-641c0c135aa5"
+  ],
+  "etag": "4Zkh8ciN+XTysRZJu1iu3Zr4jDM",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-10-26T17:26:31.537Z",
+  "updated": "2024-10-26T17:26:31.539Z",
+  "size": 26361,
+  "md5Hash": "BiV7JFfhS8wxTGvqCt4+rA==",
+  "crc32c": "3857429728"
+}

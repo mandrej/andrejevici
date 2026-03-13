@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/kajganaP3_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1703416562671,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "7f58408f-71b7-4e37-af59-598aa0351dcb"
+  ],
+  "etag": "nEW9q4bSriwlWgpZ5rLdQulmGJo",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2023-12-24T11:16:02.671Z",
+  "updated": "2023-12-24T11:16:02.675Z",
+  "size": 31166,
+  "md5Hash": "ZQFoi4d6j5ukcJSskq9XXQ==",
+  "crc32c": "755897344"
+}

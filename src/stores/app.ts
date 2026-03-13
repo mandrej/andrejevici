@@ -1,6 +1,6 @@
-import { defineStore, acceptHMRUpdate } from 'pinia'
-import { storage, db } from 'src/boot/firebase'
-import { LocalStorage, Dark } from 'quasar'
+import { defineStore, acceptHMRUpdate } from "pinia";
+import { storage, db } from "../firebase";
+import { LocalStorage, Dark } from "quasar";
 import {
   doc,
   query,
@@ -13,12 +13,22 @@ import {
   deleteDoc,
   startAfter,
   writeBatch,
-} from 'firebase/firestore'
-import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
-import { thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from 'src/helpers'
-import CONFIG from 'app/config'
-import notify from 'src/helpers/notify'
-import { useValuesStore } from './values'
+} from "firebase/firestore";
+import {
+  ref as storageRef,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import {
+  thumbName,
+  thumbUrl,
+  removeFromList,
+  replaceInList,
+  sliceSlug,
+} from "../helpers";
+import CONFIG from "../../config";
+import notify from "../helpers/notify";
+import { useValuesStore } from "./values";
 import type {
   QuerySnapshot,
   DocumentSnapshot,
@@ -26,7 +36,7 @@ import type {
   QueryConstraint,
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
-} from '@firebase/firestore'
+} from "@firebase/firestore";
 import type {
   FindType,
   BucketType,
@@ -34,10 +44,14 @@ import type {
   AppStoreState,
   FileProgress,
   MessageType,
-} from 'src/helpers/models'
-import { photoCollection, messageCollection, bucketCollection } from 'src/helpers/collections'
+} from "../helpers/models";
+import {
+  photoCollection,
+  messageCollection,
+  bucketCollection,
+} from "../helpers/collections";
 
-const bucketRef = doc(bucketCollection, 'total')
+const bucketRef = doc(bucketCollection, "total");
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -45,7 +59,7 @@ const bucketRef = doc(bucketCollection, 'total')
  * @returns The data of the first document in the snapshot, or null if no documents are present.
  */
 const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
-  snapshot.docs.length ? snapshot.docs[0]?.data() : null
+  snapshot.docs.length ? snapshot.docs[0]?.data() : null;
 
 /**
  * Checks if all elements of a target array are present in a source array.
@@ -54,13 +68,14 @@ const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
  * @param target The target array to check for presence in the source array.
  * @returns True if all elements of the target array are present in the source array, false otherwise.
  */
-const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
+const includeSub = <T>(arr: T[], target: T[]): boolean =>
+  target.every((v) => arr.includes(v));
 
 /**
  * Creates a Pinia store for the application.
  * @returns The application store instance.
  */
-export const useAppStore = defineStore('app', {
+export const useAppStore = defineStore("app", {
   state: (): AppStoreState => ({
     bucket: {
       size: 0,
@@ -70,18 +85,19 @@ export const useAppStore = defineStore('app', {
     find: {} as FindType | null,
     uploaded: [] as PhotoType[],
     objects: [] as PhotoType[],
-    next: '',
+    next: "",
     currentEdit: {} as PhotoType,
     lastRecord: null as PhotoType | null,
     busy: false,
     progressInfo: {} as FileProgress,
-    error: '',
+    error: "",
     showEdit: false,
     showConfirm: false,
     showCarousel: false,
-    adminTab: 'repair',
+    adminTab: "repair",
     selected: [] as PhotoType[],
-    theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
+    theme:
+      (LocalStorage.getItem("theme") as "light" | "dark" | "auto") || "auto",
   }),
   getters: {
     // TODO not used
@@ -93,35 +109,36 @@ export const useAppStore = defineStore('app', {
      *  @param criteria An object containing the search criteria.
      */
     searchBy(criteria: FindType) {
-      this.find = criteria
-      this.fetchRecords(true)
+      this.find = criteria;
+      this.fetchRecords(true);
     },
 
     /**
      * Reads the bucket data from the database and updates the store state.
      */
     async bucketRead() {
-      const docSnap = await getDoc(bucketRef)
+      const docSnap = await getDoc(bucketRef);
       if (docSnap.exists()) {
-        this.bucket = docSnap.data() as BucketType
+        this.bucket = docSnap.data() as BucketType;
       } else {
-        console.error('Failed to read bucket data')
+        console.error("Failed to read bucket data");
       }
     },
 
     bucketDiff(num: number): void {
       // Update size and count in a single operation
-      this.bucket.size += num
-      this.bucket.count += num > 0 ? 1 : -1
+      this.bucket.size += num;
+      this.bucket.count += num > 0 ? 1 : -1;
 
       // Reset to zero if count becomes negative or zero
       if (this.bucket.count <= 0) {
-        this.bucket.size = 0
-        this.bucket.count = 0
+        this.bucket.size = 0;
+        this.bucket.count = 0;
       }
 
-      setDoc(bucketRef, this.bucket, { merge: true })
-      if (process.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
+      setDoc(bucketRef, this.bucket, { merge: true });
+      if (import.meta.env.DEV)
+        console.log("BUCKET: " + JSON.stringify(this.bucket, null, 2));
     },
 
     /**
@@ -131,18 +148,22 @@ export const useAppStore = defineStore('app', {
       const res = {
         count: 0,
         size: 0,
-      }
-      const q = query(photoCollection, orderBy('date', 'desc'))
-      const querySnapshot = await getDocs(q)
+      };
+      const q = query(photoCollection, orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         querySnapshot.forEach((d) => {
-          res.count++
-          res.size += d.data().size
-        })
+          res.count++;
+          res.size += d.data().size;
+        });
       }
-      this.bucket = { ...res }
-      setDoc(bucketRef, this.bucket, { merge: true })
-      notify({ type: 'positive', message: `Bucket size calculated`, icon: 'check' })
+      this.bucket = { ...res };
+      setDoc(bucketRef, this.bucket, { merge: true });
+      notify({
+        type: "positive",
+        message: `Bucket size calculated`,
+        icon: "check",
+      });
     },
 
     /**
@@ -151,16 +172,16 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<PhotoType | null>} The photo record if found, otherwise null.
      */
     async fetchPhoto(filename: string): Promise<PhotoType | null> {
-      const existing = this.objects.find((x) => x.filename === filename)
-      if (existing) return existing
+      const existing = this.objects.find((x) => x.filename === filename);
+      if (existing) return existing;
 
       try {
-        const docRef = doc(photoCollection, filename)
-        const docSnap = await getDoc(docRef)
-        return docSnap.exists() ? (docSnap.data() as PhotoType) : null
+        const docRef = doc(photoCollection, filename);
+        const docSnap = await getDoc(docRef);
+        return docSnap.exists() ? (docSnap.data() as PhotoType) : null;
       } catch (err) {
-        console.error('Failed to fetch photo:', err)
-        return null
+        console.error("Failed to fetch photo:", err);
+        return null;
       }
     },
 
@@ -171,67 +192,83 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<{ objects: PhotoType[], error: string | null, next: string | null }>} A promise that resolves to an object containing the fetched records, an error message (if any), and the ID of the next record (if any).
      */
     async fetchRecords(reset = false) {
-      if (this.busy) return
+      if (this.busy) return;
 
       const max =
         CONFIG.limit *
         (this.find?.tags ? this.find.tags.length + 2 : 1) *
-        (this.find?.text ? sliceSlug(this.find.text).length : 1)
+        (this.find?.text ? sliceSlug(this.find.text).length : 1);
 
-      const filters: QueryFieldFilterConstraint[] = Object.entries(this.find || {}).map(
-        ([key, val]) => {
-          if (key === 'tags') {
-            return where(key, 'array-contains-any', val)
-          } else if (key === 'text') {
-            return where(key, 'array-contains-any', sliceSlug(val as string))
-          } else {
-            return where(key, '==', val)
-          }
-        },
-      )
+      const filters: QueryFieldFilterConstraint[] = Object.entries(
+        this.find || {},
+      ).map(([key, val]) => {
+        if (key === "tags") {
+          return where(key, "array-contains-any", val);
+        } else if (key === "text") {
+          return where(key, "array-contains-any", sliceSlug(val as string));
+        } else {
+          return where(key, "==", val);
+        }
+      });
 
-      const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
-      if (reset) this.next = ''
-      if (this.next != '') {
-        const cursor: DocumentSnapshot = await getDoc(doc(photoCollection, this.next))
-        constraints.push(startAfter(cursor))
+      const constraints: Array<QueryConstraint> = [
+        ...filters,
+        orderBy("date", "desc"),
+      ];
+      if (reset) this.next = "";
+      if (this.next != "") {
+        const cursor: DocumentSnapshot = await getDoc(
+          doc(photoCollection, this.next),
+        );
+        constraints.push(startAfter(cursor));
       }
-      constraints.push(limit(max))
+      constraints.push(limit(max));
 
-      this.busy = true
+      this.busy = true;
       try {
-        const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
-        if (reset) this.objects.length = 0
-        const existingIds = new Set(this.objects.map((x) => x.filename))
+        const querySnapshot: QuerySnapshot = await getDocs(
+          query(photoCollection, ...constraints),
+        );
+        if (reset) this.objects.length = 0;
+        const existingIds = new Set(this.objects.map((x) => x.filename));
         querySnapshot.forEach((d: QueryDocumentSnapshot) => {
-          const data = d.data() as PhotoType
+          const data = d.data() as PhotoType;
           if (!existingIds.has(data.filename)) {
-            this.objects.push(data)
+            this.objects.push(data);
           }
-        })
-        const next = querySnapshot.docs[querySnapshot.docs.length - 1]
-        this.next = next && next.id !== this.next ? next.id : ''
+        });
+        const next = querySnapshot.docs[querySnapshot.docs.length - 1];
+        this.next = next && next.id !== this.next ? next.id : "";
       } catch (err) {
-        this.error = (err as Error).message
-        this.busy = false
-        return { objects: [] as PhotoType[], error: (err as Error).message, next: '' }
+        this.error = (err as Error).message;
+        this.busy = false;
+        return {
+          objects: [] as PhotoType[],
+          error: (err as Error).message,
+          next: "",
+        };
       }
 
       if (this.find?.tags) {
         this.objects = this.objects.filter((d) =>
           includeSub(d.tags as string[], this.find?.tags as string[]),
-        )
+        );
       }
       if (this.find?.text) {
         this.objects = this.objects.filter((d) =>
-          includeSub(d.text as string[], sliceSlug(this.find?.text || '')),
-        )
+          includeSub(d.text as string[], sliceSlug(this.find?.text || "")),
+        );
       }
 
-      this.error = this.objects.length === 0 ? 'empty' : ''
-      this.busy = false
-      if (process.env.DEV)
-        console.log('FETCH ' + JSON.stringify(this.find, null, 2) + ' with next: ' + this.next)
+      this.error = this.objects.length === 0 ? "empty" : "";
+      this.busy = false;
+      if (import.meta.env.DEV)
+        console.log(
+          "FETCH " +
+            JSON.stringify(this.find, null, 2) +
+            " with next: " +
+            this.next,
+        );
     },
 
     /**
@@ -244,49 +281,58 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<PhotoType>} The saved photo record.
      */
     async saveRecord(obj: PhotoType): Promise<PhotoType> {
-      const docRef = doc(photoCollection, obj.filename)
-      const meta = useValuesStore()
+      const docRef = doc(photoCollection, obj.filename);
+      const meta = useValuesStore();
       if (obj.thumb) {
-        const oldDoc = this.objects.find((x) => x.filename === obj.filename)
-        await setDoc(docRef, obj, { merge: true })
-        replaceInList(this.objects, obj)
+        const oldDoc = this.objects.find((x) => x.filename === obj.filename);
+        await setDoc(docRef, obj, { merge: true });
+        replaceInList(this.objects, obj);
 
-        meta.updateCounters(oldDoc || obj, obj)
-        notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'check' })
+        meta.updateCounters(oldDoc || obj, obj);
+        notify({
+          type: "positive",
+          message: `${obj.filename} updated`,
+          icon: "check",
+        });
       } else {
         // set thumbnail url = publish
-        if (process.env.DEV) {
-          const thumbRef = storageRef(storage, thumbName(obj.filename))
-          obj.thumb = await getDownloadURL(thumbRef)
+        if (import.meta.env.DEV) {
+          const thumbRef = storageRef(storage, thumbName(obj.filename));
+          obj.thumb = await getDownloadURL(thumbRef);
         } else {
-          obj.thumb = thumbUrl(obj.filename)
+          obj.thumb = thumbUrl(obj.filename);
         }
         // save everything
-        await setDoc(docRef, obj, { merge: true })
+        await setDoc(docRef, obj, { merge: true });
         // update lastRecord only if it's newer than the current lastRecord
         if (
           !this.lastRecord ||
-          (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
+          (obj.date &&
+            (!this.lastRecord.date || obj.date > this.lastRecord.date))
         ) {
-          this.lastRecord = { ...obj }
+          this.lastRecord = { ...obj };
         }
-        this.bucketDiff(obj.size)
-        meta.updateCounters(null, obj)
+        this.bucketDiff(obj.size);
+        meta.updateCounters(null, obj);
         // delete uploaded
-        removeFromList(this.uploaded, obj)
+        removeFromList(this.uploaded, obj);
 
         // set find on new added image and fetch
         this.find = Object.assign(
           {},
           { year: obj.year, month: obj.month, day: obj.day },
-        ) as FindType
-        await this.fetchRecords(true)
+        ) as FindType;
+        await this.fetchRecords(true);
 
-        notify({ type: 'positive', message: `${obj.filename} published`, icon: 'check' })
+        notify({
+          type: "positive",
+          message: `${obj.filename} published`,
+          icon: "check",
+        });
       }
-      this.currentEdit = obj
-      // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
-      return obj
+      this.currentEdit = obj;
+      // if (import.meta.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
+      return obj;
     },
 
     /**
@@ -299,37 +345,41 @@ export const useAppStore = defineStore('app', {
      * complete.
      */
     async deleteRecord(obj: PhotoType) {
-      const docRef = doc(photoCollection, obj.filename)
-      const stoRef = storageRef(storage, obj.filename)
-      const thumbRef = storageRef(storage, thumbName(obj.filename))
+      const docRef = doc(photoCollection, obj.filename);
+      const stoRef = storageRef(storage, obj.filename);
+      const thumbRef = storageRef(storage, thumbName(obj.filename));
 
       try {
-        await Promise.all([deleteDoc(docRef), deleteObject(stoRef), deleteObject(thumbRef)])
+        await Promise.all([
+          deleteDoc(docRef),
+          deleteObject(stoRef),
+          deleteObject(thumbRef),
+        ]);
       } catch (err) {
         notify({
-          type: 'error',
+          type: "error",
           group: obj.filename,
           message: `${obj.filename} ${String(err)}`,
-        })
+        });
       }
 
       if (obj.thumb) {
-        removeFromList(this.objects, obj)
+        removeFromList(this.objects, obj);
 
-        const meta = useValuesStore()
-        this.bucketDiff(-obj.size)
-        meta.updateCounters(obj, null)
+        const meta = useValuesStore();
+        this.bucketDiff(-obj.size);
+        meta.updateCounters(obj, null);
         if (obj.date === this.lastRecord?.date) {
-          this.getLast()
+          this.getLast();
         }
       } else {
-        removeFromList(this.uploaded, obj)
+        removeFromList(this.uploaded, obj);
       }
       notify({
-        type: 'positive',
+        type: "positive",
         message: `${obj.filename} deleted`,
-        icon: 'check',
-      })
+        icon: "check",
+      });
     },
 
     /**
@@ -341,14 +391,14 @@ export const useAppStore = defineStore('app', {
     async getLast(): Promise<PhotoType | null> {
       try {
         const querySnapshot = await getDocs(
-          query(photoCollection, orderBy('date', 'desc'), limit(1)),
-        )
-        const rec = getRec(querySnapshot) as PhotoType
-        this.lastRecord = rec
-        return rec
+          query(photoCollection, orderBy("date", "desc"), limit(1)),
+        );
+        const rec = getRec(querySnapshot) as PhotoType;
+        this.lastRecord = rec;
+        return rec;
       } catch (error) {
-        console.error('Failed to get last record:', error)
-        return null
+        console.error("Failed to get last record:", error);
+        return null;
       }
     },
 
@@ -358,15 +408,19 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<MessageType[]>} A promise that resolves to an array of the most recent messages.
      */
     async fetchMessages(): Promise<MessageType[]> {
-      const messages: MessageType[] = []
-      const q = query(messageCollection, orderBy('timestamp', 'desc'), limit(50))
-      const snapshot = await getDocs(q)
+      const messages: MessageType[] = [];
+      const q = query(
+        messageCollection,
+        orderBy("timestamp", "desc"),
+        limit(50),
+      );
+      const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         snapshot.forEach((d) => {
-          messages.push({ ...(d.data() as MessageType), key: d.id })
-        })
+          messages.push({ ...(d.data() as MessageType), key: d.id });
+        });
       }
-      return messages
+      return messages;
     },
 
     /**
@@ -376,34 +430,38 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<void>} A promise that resolves when the messages are deleted.
      */
     async deleteMessages(keys: string[]): Promise<void> {
-      const batch = writeBatch(db)
+      const batch = writeBatch(db);
       keys.forEach((key) => {
-        const docRef = doc(messageCollection, key)
-        batch.delete(docRef)
-      })
-      await batch.commit()
-      notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'check' })
+        const docRef = doc(messageCollection, key);
+        batch.delete(docRef);
+      });
+      await batch.commit();
+      notify({
+        type: "positive",
+        message: `Deleted ${keys.length} messages`,
+        icon: "check",
+      });
     },
 
     /**
      * Sets the application theme and persists it to local storage.
      * @param theme The theme to set ('light', 'dark', or 'auto').
      */
-    setTheme(theme: 'light' | 'dark' | 'auto') {
-      this.theme = theme
-      LocalStorage.set('theme', theme)
-      Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
+    setTheme(theme: "light" | "dark" | "auto") {
+      this.theme = theme;
+      LocalStorage.set("theme", theme);
+      Dark.set(theme === "auto" ? "auto" : theme === "dark");
     },
 
     /**
      * Initializes the theme from local storage.
      */
     initTheme() {
-      Dark.set(this.theme === 'auto' ? 'auto' : this.theme === 'dark')
+      Dark.set(this.theme === "auto" ? "auto" : this.theme === "dark");
     },
   },
-})
+});
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useAppStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useAppStore, import.meta.hot));
 }

@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/DSC_5310-22-12-30-BW_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1708683018809,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "c500443b-724f-4d0b-9c67-0cfe5b001699"
+  ],
+  "etag": "o/Wyujlw/+Y3pxd7A913rbJMb68",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-02-23T10:10:18.809Z",
+  "updated": "2024-02-23T10:10:18.813Z",
+  "size": 35880,
+  "md5Hash": "94nvQRaZz/CjQIkeM1lI3w==",
+  "crc32c": "3661129884"
+}

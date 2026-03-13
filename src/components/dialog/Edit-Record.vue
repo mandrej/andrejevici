@@ -62,10 +62,19 @@
               <q-input v-model="tmp.date" label="Date taken">
                 <template #prepend>
                   <q-icon name="event" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
                       <q-date v-model="tmp.date" :mask="CONFIG.dateFormat">
                         <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat />
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
                         </div>
                       </q-date>
                     </q-popup-proxy>
@@ -73,10 +82,23 @@
                 </template>
                 <template #append>
                   <q-icon name="access_time" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <q-time v-model="tmp.date" :mask="CONFIG.dateFormat" format24h>
+                    <q-popup-proxy
+                      cover
+                      transition-show="scale"
+                      transition-hide="scale"
+                    >
+                      <q-time
+                        v-model="tmp.date"
+                        :mask="CONFIG.dateFormat"
+                        format24h
+                      >
                         <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat />
+                          <q-btn
+                            v-close-popup
+                            label="Close"
+                            color="primary"
+                            flat
+                          />
                         </div>
                       </q-time>
                     </q-popup-proxy>
@@ -94,7 +116,11 @@
                   multiple
                   clearable
                   class="col-auto"
-                  :hint="tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply : ''"
+                  :hint="
+                    tagsToApply && tagsToApply.length
+                      ? 'merge with ' + tagsToApply
+                      : ''
+                  "
                   @new-value="
                     (value: string, done: (value: string) => void) =>
                       meta.addNewValue(value, 'tags', done)
@@ -148,21 +174,34 @@
               />
             </div>
             <div class="col-xs-6 col-sm-4">
-              <q-input v-model="tmp.focal_length" type="number" label="Focal length [mm]" />
+              <q-input
+                v-model="tmp.focal_length"
+                type="number"
+                label="Focal length [mm]"
+              />
             </div>
 
             <div class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.iso" type="number" label="ISO [ASA]" />
             </div>
             <div class="col-xs-6 col-sm-4">
-              <q-input v-model="tmp.aperture" type="number" step="0.1" label="Aperture" />
+              <q-input
+                v-model="tmp.aperture"
+                type="number"
+                step="0.1"
+                label="Aperture"
+              />
             </div>
             <div class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.shutter" label="Shutter [s]" />
             </div>
 
             <div class="col-xs-6 col-sm-4">
-              <q-input v-model="tmp.loc" label="Location [latitude, longitude]" clearable />
+              <q-input
+                v-model="tmp.loc"
+                label="Location [latitude, longitude]"
+                clearable
+              />
             </div>
             <div class="col-xs-6 col-sm-4 col-4 q-mt-sm">
               <q-checkbox v-model="tmp.flash" label="Flash fired?" />
@@ -175,100 +214,101 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { U, formatBytes, sliceSlug } from 'src/helpers'
-import CONFIG from 'app/config'
-import readExif from 'src/helpers/exif'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
-import { useUserStore } from 'src/stores/user'
-import AutoComplete from 'src/components/Auto-Complete.vue'
-import FileBroken from 'src/components/File-Broken.vue'
-import type { PhotoType } from 'src/helpers/models'
+import { reactive } from "vue";
+import { U, formatBytes, sliceSlug } from "../../helpers";
+import CONFIG from "../../../config";
+import readExif from "../../helpers/exif";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
+import { useValuesStore } from "../../stores/values";
+import { useUserStore } from "../../stores/user";
+import AutoComplete from "../Auto-Complete.vue";
+import FileBroken from "../File-Broken.vue";
+import type { PhotoType } from "../../helpers/models";
 
-const emit = defineEmits(['edit-ok'])
+const emit = defineEmits(["edit-ok"]);
 const props = defineProps({
   rec: Object,
-})
+});
 
-const app = useAppStore()
-const meta = useValuesStore()
-const auth = useUserStore()
-const tmp = reactive({ ...props.rec }) as PhotoType
-const { showEdit } = storeToRefs(app)
-const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
-const { user } = storeToRefs(auth)
+const app = useAppStore();
+const meta = useValuesStore();
+const auth = useUserStore();
+const tmp = reactive({ ...props.rec }) as PhotoType;
+const { showEdit } = storeToRefs(app);
+const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } =
+  storeToRefs(meta);
+const { user } = storeToRefs(auth);
 
 const getExif = async () => {
   /**
    * Reread exif
    * See Add edit
    */
-  const exif = await readExif(tmp.url)
+  const exif = await readExif(tmp.url);
   if (exif) {
-    const tags = tmp.tags || []
-    Object.assign(tmp, exif)
+    const tags = tmp.tags || [];
+    Object.assign(tmp, exif);
     // add flash tag if exif flash true
-    if (tmp.flash && tags.indexOf('flash') === -1) {
-      tags.push('flash')
+    if (tmp.flash && tags.indexOf("flash") === -1) {
+      tags.push("flash");
     }
-    tmp.tags = tags
+    tmp.tags = tags;
   }
-}
+};
 const isValidEmail = (val: string) => {
   const emailPattern =
-    /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
-  return emailPattern.test(val) || 'Invalid email'
-}
+    /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
+  return emailPattern.test(val) || "Invalid email";
+};
 
 const copyTags = (source: string[]) => {
-  tagsToApply.value = source
-}
+  tagsToApply.value = source;
+};
 const mergeTags = (source: string[]) => {
   if (Array.isArray(source)) {
-    tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort()
+    tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort();
   } else {
-    tmp.tags = tagsToApply.value
+    tmp.tags = tagsToApply.value;
   }
-}
+};
 
 window.onpopstate = function () {
-  showEdit.value = false
-}
+  showEdit.value = false;
+};
 const onCancel = () => {
-  showEdit.value = false
-}
+  showEdit.value = false;
+};
 const onSubmit = () => {
   // if change date
-  const datum = new Date(Date.parse((tmp.date as string) || ''))
-  tmp.year = datum.getFullYear()
-  tmp.month = datum.getMonth() + 1
-  tmp.day = datum.getDate()
+  const datum = new Date(Date.parse((tmp.date as string) || ""));
+  tmp.year = datum.getFullYear();
+  tmp.month = datum.getMonth() + 1;
+  tmp.day = datum.getDate();
   // if change headline
-  tmp.headline = tmp.headline?.trim() || CONFIG.noTitle
-  tmp.text = sliceSlug(tmp.headline)
+  tmp.headline = tmp.headline?.trim() || CONFIG.noTitle;
+  tmp.text = sliceSlug(tmp.headline);
   // if change tags
-  tmp.tags = tmp.tags ? tmp.tags : []
+  tmp.tags = tmp.tags ? tmp.tags : [];
   // if change email by admin
   if (tmp.email !== user.value!.email && user.value!.isAdmin) {
-    tmp.nick = CONFIG.familyMap.get(tmp.email) || 'unknown'
+    tmp.nick = CONFIG.familyMap.get(tmp.email) || "unknown";
   } else {
-    tmp.email = user.value!.email
-    tmp.nick = user.value!.nick
+    tmp.email = user.value!.email;
+    tmp.nick = user.value!.nick;
   }
-  if (tmp.flash && tmp.tags.indexOf('flash') === -1) {
-    tmp.tags.push('flash')
+  if (tmp.flash && tmp.tags.indexOf("flash") === -1) {
+    tmp.tags.push("flash");
   }
 
   try {
-    app.saveRecord(tmp)
-    emit('edit-ok', U + tmp.filename)
-    showEdit.value = false
+    app.saveRecord(tmp);
+    emit("edit-ok", U + tmp.filename);
+    showEdit.value = false;
   } catch (error) {
-    console.error('Failed to save record:', error)
+    console.error("Failed to save record:", error);
     // Optionally show error notification to user
     // notify.error('Failed to save changes')
   }
-}
+};
 </script>

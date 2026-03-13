@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/20241026-SDIM5652_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1729963346717,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "36eaefe8-9878-4848-b735-bfcd5d90129f"
+  ],
+  "etag": "yju7F0/gKFIHTMbQ1ZXLuCRvBis",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-10-26T17:22:26.717Z",
+  "updated": "2024-10-26T17:22:26.720Z",
+  "size": 48708,
+  "md5Hash": "YGjeP0yfvAPNyqTfuT0VgA==",
+  "crc32c": "3310487498"
+}

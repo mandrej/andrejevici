@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/20240125-DSC_9803-2_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1706353390349,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "0c144983-53b2-4912-a60f-4d6bedd44329"
+  ],
+  "etag": "OPEITkbKNxSnzCFa2XX0//4eJ+M",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2024-01-27T11:03:10.349Z",
+  "updated": "2024-01-27T11:03:10.353Z",
+  "size": 30849,
+  "md5Hash": "yEUER96B32X+XV0Yu8FYlw==",
+  "crc32c": "2867296925"
+}

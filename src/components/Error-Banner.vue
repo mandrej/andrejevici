@@ -14,5 +14,5 @@
 <script setup lang="ts">
 defineProps({
   inquiry: Boolean,
-})
+});
 </script>

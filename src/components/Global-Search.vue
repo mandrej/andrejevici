@@ -9,7 +9,9 @@
         hide-selected
         input-debounce="0"
         :options="filteredSuggestions"
-        :placeholder="hasActiveFilters ? '' : 'Search by tag: beograd year: 2022 etc...'"
+        :placeholder="
+          hasActiveFilters ? '' : 'Search by tag: beograd year: 2022 etc...'
+        "
         borderless
         standout
         hide-dropdown-icon
@@ -26,7 +28,12 @@
               {{ tmp.text }}
             </q-chip>
 
-            <q-chip v-for="tag in tmp.tags" :key="tag" removable @remove="removeTag(tag)">
+            <q-chip
+              v-for="tag in tmp.tags"
+              :key="tag"
+              removable
+              @remove="removeTag(tag)"
+            >
               {{ tag }}
             </q-chip>
 
@@ -82,178 +89,182 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
-import { months } from 'src/helpers'
-import type { FindType, Suggestion } from 'src/helpers/models'
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useRouter, useRoute } from "vue-router";
+import { useAppStore } from "../stores/app";
+import { useValuesStore } from "../stores/values";
+import { months } from "../helpers";
+import type { FindType, Suggestion } from "../helpers/models";
 
-const app = useAppStore()
-const meta = useValuesStore()
-const route = useRoute()
-const router = useRouter()
+const app = useAppStore();
+const meta = useValuesStore();
+const route = useRoute();
+const router = useRouter();
 
-const { find } = storeToRefs(app)
-const { allSuggestions } = storeToRefs(meta)
-const tmp = ref({ ...(find.value as FindType) })
-const searchInput = ref('')
-const dummySelect = ref<Suggestion[]>([])
-const filteredSuggestions = ref<Suggestion[]>([])
+const { find } = storeToRefs(app);
+const { allSuggestions } = storeToRefs(meta);
+const tmp = ref({ ...(find.value as FindType) });
+const searchInput = ref("");
+const dummySelect = ref<Suggestion[]>([]);
+const filteredSuggestions = ref<Suggestion[]>([]);
 
 const onFilter = (val: string, update: (callback: () => void) => void) => {
   update(() => {
     if (!val || val.length < 1) {
-      filteredSuggestions.value = []
-      return
+      filteredSuggestions.value = [];
+      return;
     }
 
-    const lowerValue = val.toLowerCase()
-    const colonIndex = lowerValue.indexOf(':')
+    const lowerValue = val.toLowerCase();
+    const colonIndex = lowerValue.indexOf(":");
 
     if (colonIndex > 0) {
-      const fieldPart = lowerValue.substring(0, colonIndex).trim()
-      const valuePart = lowerValue.substring(colonIndex + 1).trim()
+      const fieldPart = lowerValue.substring(0, colonIndex).trim();
+      const valuePart = lowerValue.substring(colonIndex + 1).trim();
 
       filteredSuggestions.value = allSuggestions.value
         .filter((s) => {
           const fieldMatch =
             s.field.toLowerCase().startsWith(fieldPart) ||
-            (s.field === 'author' && 'nick'.startsWith(fieldPart))
-          const valueMatch = valuePart === '' || s.value.toLowerCase().includes(valuePart)
-          return fieldMatch && valueMatch
+            (s.field === "author" && "nick".startsWith(fieldPart));
+          const valueMatch =
+            valuePart === "" || s.value.toLowerCase().includes(valuePart);
+          return fieldMatch && valueMatch;
         })
-        .slice(0, 20)
+        .slice(0, 20);
     } else {
       filteredSuggestions.value = allSuggestions.value
         .filter((s) => {
           return (
-            s.field.toLowerCase().includes(lowerValue) || s.value.toLowerCase().includes(lowerValue)
-          )
+            s.field.toLowerCase().includes(lowerValue) ||
+            s.value.toLowerCase().includes(lowerValue)
+          );
         })
-        .slice(0, 20)
+        .slice(0, 20);
     }
 
     // Add explicit text search option if typed enough
     if (filteredSuggestions.value.length === 0 && lowerValue.length >= 3) {
       filteredSuggestions.value.push({
-        key: 'text-search',
-        field: 'title',
+        key: "text-search",
+        field: "title",
         value: val,
-      })
+      });
     }
-  })
-}
+  });
+};
 
 const onSelect = (val: Suggestion[]) => {
-  if (!val || val.length === 0) return
+  if (!val || val.length === 0) return;
 
   // Get the last suggestion selected
-  const suggestion = val[val.length - 1]
-  if (!suggestion) return
+  const suggestion = val[val.length - 1];
+  if (!suggestion) return;
 
-  const field = suggestion.field === 'author' ? 'nick' : suggestion.field
+  const field = suggestion.field === "author" ? "nick" : suggestion.field;
 
-  if (field === 'tags') {
+  if (field === "tags") {
     if (!tmp.value.tags) {
-      tmp.value.tags = []
+      tmp.value.tags = [];
     }
     if (!tmp.value.tags.includes(suggestion.value)) {
-      tmp.value.tags.push(suggestion.value)
+      tmp.value.tags.push(suggestion.value);
     }
-  } else if (field === 'month') {
-    const monthIndex = months.findIndex((m) => m.toLowerCase() === suggestion.value.toLowerCase())
+  } else if (field === "month") {
+    const monthIndex = months.findIndex(
+      (m) => m.toLowerCase() === suggestion.value.toLowerCase(),
+    );
     if (monthIndex !== -1) {
-      tmp.value.month = monthIndex + 1
+      tmp.value.month = monthIndex + 1;
     }
-  } else if (field === 'day') {
-    tmp.value.day = parseInt(suggestion.value)
-  } else if (field === 'year') {
-    tmp.value.year = parseInt(suggestion.value)
-  } else if (field === 'title') {
-    tmp.value.text = suggestion.value
+  } else if (field === "day") {
+    tmp.value.day = parseInt(suggestion.value);
+  } else if (field === "year") {
+    tmp.value.year = parseInt(suggestion.value);
+  } else if (field === "title") {
+    tmp.value.text = suggestion.value;
   } else {
-    tmp.value[field as keyof FindType] = suggestion.value as never
+    tmp.value[field as keyof FindType] = suggestion.value as never;
   }
 
-  searchInput.value = ''
-  dummySelect.value = [] // clear current selections
-  submit()
-}
+  searchInput.value = "";
+  dummySelect.value = []; // clear current selections
+  submit();
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleKeyDownEnter = (e: KeyboardEvent) => {
   // If no suggestions are visible, we search in headlines
   if (filteredSuggestions.value.length === 0 && searchInput.value.length >= 3) {
-    searchInHeadline()
+    searchInHeadline();
   }
   // Otherwise, QSelect will handle it natively
-}
+};
 
 const searchInHeadline = () => {
   if (searchInput.value && searchInput.value.length >= 3) {
-    tmp.value.text = searchInput.value
-    searchInput.value = ''
-    submit()
+    tmp.value.text = searchInput.value;
+    searchInput.value = "";
+    submit();
   }
-}
+};
 
 const getMonthName = (monthNum: number): string => {
-  return months[monthNum - 1] || ''
-}
+  return months[monthNum - 1] || "";
+};
 
 const fixQuery = (query: FindType): FindType => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)
-      .filter(([, value]) => value !== null && value !== '')
+      .filter(([, value]) => value !== null && value !== "")
       .map(([key, value]) => {
-        if (['year', 'month', 'day'].includes(key)) {
-          return [key, +value]
-        } else if (key === 'tags' && typeof value === 'string') {
-          return [key, [value]]
+        if (["year", "month", "day"].includes(key)) {
+          return [key, +value];
+        } else if (key === "tags" && typeof value === "string") {
+          return [key, [value]];
         }
-        return [key, value]
+        return [key, value];
       }),
-  )
-  return sanitizedQuery
-}
+  );
+  return sanitizedQuery;
+};
 
 // watch removed
-import { watch } from 'vue'
+import { watch } from "vue";
 watch(
   find,
   (val) => {
-    tmp.value = { ...(val as FindType) }
+    tmp.value = { ...(val as FindType) };
   },
   { deep: true },
-)
+);
 
 const submit = () => {
-  tmp.value = find.value = fixQuery(tmp.value)
-  app.fetchRecords(true)
-  if (route.path !== '/list') {
-    void router.push('/list')
+  tmp.value = find.value = fixQuery(tmp.value);
+  app.fetchRecords(true);
+  if (route.path !== "/list") {
+    void router.push("/list");
   }
-}
+};
 
 const removeFilter = (field: keyof FindType) => {
-  delete tmp.value[field]
-  submit()
-}
+  delete tmp.value[field];
+  submit();
+};
 
 const removeTag = (tag: string) => {
   if (tmp.value.tags) {
-    tmp.value.tags = tmp.value.tags.filter((t) => t !== tag)
+    tmp.value.tags = tmp.value.tags.filter((t) => t !== tag);
     if (tmp.value.tags.length === 0) {
-      delete tmp.value.tags
+      delete tmp.value.tags;
     }
-    submit()
+    submit();
   }
-}
+};
 const hasActiveFilters = computed(() => {
-  return Object.keys(tmp.value).length > 0
-})
+  return Object.keys(tmp.value).length > 0;
+});
 </script>
 
 <style scoped lang="scss">

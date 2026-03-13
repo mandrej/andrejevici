@@ -25,11 +25,19 @@
             :label="`Use nickname for ${item.email}`"
           >
             <template v-if="!nickValues.includes(item.nick)" v-slot:after>
-              <q-btn round dense flat icon="edit" @click="auth.updateUser(item, 'nick')" />
+              <q-btn
+                round
+                dense
+                flat
+                icon="edit"
+                @click="auth.updateUser(item, 'nick')"
+              />
             </template>
           </q-input>
         </q-item-label>
-        <q-item-label>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
+        <q-item-label
+          >subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label
+        >
       </q-item-section>
       <q-item-section side v-if="$q.screen.gt.xs">
         <q-item-label>
@@ -56,7 +64,11 @@
             :disable="user?.email === item.email"
             color="negative"
             label="Admin"
-            @click="user?.email !== item.email ? auth.updateUser(item, 'isAdmin') : null"
+            @click="
+              user?.email !== item.email
+                ? auth.updateUser(item, 'isAdmin')
+                : null
+            "
           />
           <q-checkbox
             v-model="item.isAuthorized"
@@ -77,45 +89,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
-import { useUserStore } from 'src/stores/user'
+import { ref, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
+import { useValuesStore } from "../../stores/values";
+import { useUserStore } from "../../stores/user";
 
-import ErrorBanner from 'src/components/Error-Banner.vue'
-import type { UsersAndDevices } from 'src/helpers/models'
-import type { Timestamp } from '@google-cloud/firestore'
+import ErrorBanner from "../../components/Error-Banner.vue";
+import type { UsersAndDevices } from "../../helpers/models";
+import type { Timestamp } from "@google-cloud/firestore";
 
-const app = useAppStore()
-const meta = useValuesStore()
-const auth = useUserStore()
+const app = useAppStore();
+const meta = useValuesStore();
+const auth = useUserStore();
 
-const { busy, error } = storeToRefs(app)
-const { user } = storeToRefs(auth)
-const { nickValues, nickWithCount } = storeToRefs(meta)
-const result = ref<UsersAndDevices[]>([])
+const { busy, error } = storeToRefs(app);
+const { user } = storeToRefs(auth);
+const { nickValues, nickWithCount } = storeToRefs(meta);
+const result = ref<UsersAndDevices[]>([]);
 
 const fetchList = async () => {
-  busy.value = true
-  error.value = ''
-  const subscribersAndDevices = await auth.fetchUsersAndDevices()
-  result.value = subscribersAndDevices ?? []
-  busy.value = false
-  error.value = result.value.length === 0 ? 'No subscribers found' : ''
-}
+  busy.value = true;
+  error.value = "";
+  const subscribersAndDevices = await auth.fetchUsersAndDevices();
+  result.value = subscribersAndDevices ?? [];
+  busy.value = false;
+  error.value = result.value.length === 0 ? "No subscribers found" : "";
+};
 
-onMounted(fetchList)
+onMounted(fetchList);
 
 const ageDays = (timestamp: Timestamp) => {
-  const diff = Date.now() - timestamp.toMillis()
-  return Math.floor(diff / 86400000)
-}
+  const diff = Date.now() - timestamp.toMillis();
+  return Math.floor(diff / 86400000);
+};
 const countTokens = (timestamps: { toMillis: () => number }[]) => {
-  return timestamps.length > 0 ? `${timestamps.length} tokens` : 'No tokens'
-}
+  return timestamps.length > 0 ? `${timestamps.length} tokens` : "No tokens";
+};
 const contribution = (nick: string) => {
-  const entry = nickWithCount.value[nick]
-  return entry ? entry : 0
-}
+  const entry = nickWithCount.value[nick];
+  return entry ? entry : 0;
+};
 </script>

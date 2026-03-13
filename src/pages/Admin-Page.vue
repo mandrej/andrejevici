@@ -8,15 +8,26 @@
           <q-item-section>
             <q-item-label>Bucket count and size</q-item-label>
             <q-item-label caption class="text-h6"
-              ><q-badge transparent align="middle" color="warning" text-color="black">
+              ><q-badge
+                transparent
+                align="middle"
+                color="warning"
+                text-color="black"
+              >
                 {{ bucket.count }}</q-badge
               >
               photographs /
-              <q-badge transparent align="middle" color="warning" text-color="black">{{
-                formatBytes(bucket.size)
-              }}</q-badge></q-item-label
+              <q-badge
+                transparent
+                align="middle"
+                color="warning"
+                text-color="black"
+                >{{ formatBytes(bucket.size) }}</q-badge
+              ></q-item-label
             >
-            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
+            <q-item-label caption>
+              Automatic cron job every 3 days
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn label="Recalc" @click="app.bucketBuild" />
@@ -29,12 +40,19 @@
             <q-item-label caption>
               <span v-for="(val, key) in values" :key="key" class="text-h6">
                 {{ key }}:
-                <q-badge transparent align="middle" color="warning" text-color="black">
+                <q-badge
+                  transparent
+                  align="middle"
+                  color="warning"
+                  text-color="black"
+                >
                   {{ Object.keys(val).length }}</q-badge
                 >&nbsp;
               </span>
             </q-item-label>
-            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
+            <q-item-label caption>
+              Automatic cron job every 3 days
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn label="rebuild" @click="meta.countersBuild" />
@@ -43,10 +61,11 @@
         <q-item clickable>
           <q-item-section>
             <q-item-label
-              >Fixes photos in the database by populating missing dimensions.</q-item-label
+              >Fixes photos in the database by populating missing
+              dimensions.</q-item-label
             >
             <q-item-label caption class="text-h6">{{
-              formatDatum('2026-02-27', 'DD.MM.YYYY')
+              formatDatum("2026-02-27", "DD.MM.YYYY")
             }}</q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -60,7 +79,9 @@
           </q-item-section>
         </q-item>
         <q-item clickable>
-          <q-item-section> Resolve Cloud storage and datastore mismatch </q-item-section>
+          <q-item-section>
+            Resolve Cloud storage and datastore mismatch
+          </q-item-section>
           <q-item-section side>
             <q-btn color="negative" label="Resolve" @click="mismatch" />
           </q-item-section>
@@ -95,25 +116,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
-import { formatDatum } from 'src/helpers'
-import { formatBytes } from 'src/helpers'
-import { mismatch, missingThumbnails, fix } from 'src/helpers/remedy'
+import { computed, defineAsyncComponent } from "vue";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../stores/app";
+import { useValuesStore } from "../stores/values";
+import { formatDatum } from "../helpers";
+import { formatBytes } from "../helpers";
+import { mismatch, missingThumbnails, fix } from "../helpers/remedy";
 
-const TagsTab = defineAsyncComponent(() => import('src/components/tab/Tags-Tab.vue'))
+const TagsTab = defineAsyncComponent(
+  () => import("../components/tab/Tags-Tab.vue"),
+);
 // const CameraTab = defineAsyncComponent(() => import('src/components/tab/Camera-Tab.vue'))
-const UsersTab = defineAsyncComponent(() => import('src/components/tab/Users-Tab.vue'))
-const MessagesTab = defineAsyncComponent(() => import('src/components/tab/Messages-Tab.vue'))
+const UsersTab = defineAsyncComponent(
+  () => import("../components/tab/Users-Tab.vue"),
+);
+const MessagesTab = defineAsyncComponent(
+  () => import("../components/tab/Messages-Tab.vue"),
+);
 
-const app = useAppStore()
-const meta = useValuesStore()
-const { bucket } = storeToRefs(app)
+const app = useAppStore();
+const meta = useValuesStore();
+const { bucket } = storeToRefs(app);
 
-const { adminTab } = storeToRefs(app)
-const values = computed(() => meta.values)
+const { adminTab } = storeToRefs(app);
+const values = computed(() => meta.values);
 
 // const show = () => {
 //   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external']

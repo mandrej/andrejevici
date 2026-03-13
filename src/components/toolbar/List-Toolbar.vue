@@ -9,10 +9,10 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import GlobalSearch from 'src/components/Global-Search.vue'
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
+import GlobalSearch from "../../components/Global-Search.vue";
 
-const app = useAppStore()
-const { busy } = storeToRefs(app)
+const app = useAppStore();
+const { busy } = storeToRefs(app);
 </script>

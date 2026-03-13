@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/ponta_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1701340452208,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: max-age=604800",
+  "downloadTokens": [
+    "ce92705b-abf1-42a2-bd75-6a52e27f75a2"
+  ],
+  "etag": "agCOJDHHXFaeQOZM6cdXvKdTgWs",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2023-11-30T10:34:12.208Z",
+  "updated": "2023-11-30T10:34:12.210Z",
+  "size": 20544,
+  "md5Hash": "gEh2CKVRDDPOFu1aRH3gSg==",
+  "crc32c": "955333585"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "thumbnails/20fca934_20241229-DSC_3634-Pano_400x400.jpeg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 2,
+  "generation": 1772295655687,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "",
+  "cacheControl": "Cache-Control: public, max-age=604800",
+  "downloadTokens": [
+    "192485d8-175d-4315-abc6-23e00f9b19a9"
+  ],
+  "etag": "Yc6K1VNME1W0UJJCoP6xiTrPcI4",
+  "customMetadata": {
+    "resizedImage": "true"
+  },
+  "timeCreated": "2026-02-28T16:20:55.687Z",
+  "updated": "2026-02-28T16:20:55.689Z",
+  "size": 33918,
+  "md5Hash": "YlhLeWnSMXnbjH+uv97X4A==",
+  "crc32c": "1160760034"
+}

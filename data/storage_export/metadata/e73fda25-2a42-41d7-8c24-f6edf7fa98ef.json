@@ -1,0 +1,20 @@
+{
+  "name": "DSC_5310-22-12-30-BW.jpg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 1,
+  "generation": 1708683017906,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=604800",
+  "downloadTokens": [
+    "78bac7bf-8d40-4e90-94c6-117c384c8ca0"
+  ],
+  "etag": "7OPyn6Gl60Nu1/eL1c/2nD6l0j4",
+  "customMetadata": {},
+  "timeCreated": "2024-02-23T10:10:17.906Z",
+  "updated": "2024-02-23T10:10:17.906Z",
+  "size": 1279877,
+  "md5Hash": "B2XG5oLiie+0d84kQv8Q3Q==",
+  "crc32c": "1301761523"
+}

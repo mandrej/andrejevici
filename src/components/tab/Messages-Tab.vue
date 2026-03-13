@@ -27,7 +27,9 @@
         }}</q-item-label>
         <q-item-label
           >{{ item.email }} -
-          {{ formatDatum(item.timestamp.toDate(), 'DD.MM.YYYY HH:mm') }}</q-item-label
+          {{
+            formatDatum(item.timestamp.toDate(), "DD.MM.YYYY HH:mm")
+          }}</q-item-label
         >
       </q-item-section>
       <q-item-section side>
@@ -38,28 +40,28 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from 'src/stores/app'
-import { formatDatum } from 'src/helpers'
-const result = ref<MessageType[]>([])
-import ErrorBanner from 'src/components//Error-Banner.vue'
-import type { MessageType } from 'src/helpers/models'
+import { ref, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app";
+import { formatDatum } from "../../helpers";
+const result = ref<MessageType[]>([]);
+import ErrorBanner from "../../components//Error-Banner.vue";
+import type { MessageType } from "../../helpers/models";
 
-const app = useAppStore()
-const { busy, error } = storeToRefs(app)
-const selectedItems = ref<string[]>([])
+const app = useAppStore();
+const { busy, error } = storeToRefs(app);
+const selectedItems = ref<string[]>([]);
 
 const fetchList = async () => {
-  busy.value = true
-  error.value = ''
-  result.value = await app.fetchMessages()
-  busy.value = false
-  error.value = result.value.length === 0 ? 'No messages found' : ''
-  selectedItems.value = []
-}
+  busy.value = true;
+  error.value = "";
+  result.value = await app.fetchMessages();
+  busy.value = false;
+  error.value = result.value.length === 0 ? "No messages found" : "";
+  selectedItems.value = [];
+};
 
-onMounted(fetchList)
+onMounted(fetchList);
 </script>
 
 <style scoped></style>

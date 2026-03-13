@@ -1,0 +1,20 @@
+{
+  "name": "1000013527.jpg",
+  "bucket": "andrejevici.appspot.com",
+  "metageneration": 1,
+  "generation": 1721724324036,
+  "contentType": "image/jpeg",
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=604800",
+  "downloadTokens": [
+    "7025e540-6710-42f2-aaa8-c1b25d57cc0b"
+  ],
+  "etag": "n88+xm/B6xOGzMdNp2smPntROjY",
+  "customMetadata": {},
+  "timeCreated": "2024-07-23T08:45:24.037Z",
+  "updated": "2024-07-23T08:45:24.037Z",
+  "size": 261880,
+  "md5Hash": "M+moySRaF0MGm1u5QS9Lfw==",
+  "crc32c": "2436790864"
+}

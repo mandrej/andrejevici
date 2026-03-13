@@ -1,61 +1,39 @@
 {
   "name": "andrejevici",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Andrejevici photo album",
   "productName": "Andrejevici",
   "author": "mandrej <milan.andrejevic@gmail.com>",
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
-    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "dev": "quasar dev -m pwa",
-    "build": "quasar build -m pwa",
-    "test": "tsx --test",
-    "postinstall": "quasar prepare"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
   },
   "dependencies": {
-    "@quasar/extras": "^1.16.4",
+    "@quasar/extras": "^1.17.0",
     "exifreader": "^4.26.0",
     "firebase": "^11.2.0",
     "photoswipe": "^5.4.4",
     "pinia": "^2.0.11",
     "pinia-plugin-persistedstate-2": "^2.0.28",
-    "quasar": "^2.16.0",
-    "register-service-worker": "^1.7.2",
+    "quasar": "^2.18.6",
     "transliteration": "^2.3.5",
     "uuid": "^13.0.0",
-    "vue": "^3.5.22",
-    "vue-router": "^4.0.12"
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.14.0",
-    "@quasar/app-vite": "^2.4.0",
     "@quasar/vite-plugin": "^1.10.0",
-    "@types/node": "^20.5.9",
-    "@vue/eslint-config-prettier": "^10.1.0",
-    "@vue/eslint-config-typescript": "^14.4.0",
-    "autoprefixer": "^10.4.2",
-    "eslint": "^9.14.0",
-    "eslint-plugin-vue": "^10.4.0",
-    "globals": "^16.4.0",
-    "prettier": "^3.3.3",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.2",
-    "vite-plugin-checker": "^0.11.0",
-    "vue-eslint-parser": "^10.2.0",
-    "vue-tsc": "^3.0.7",
-    "workbox-build": "^7.0.0",
-    "workbox-cacheable-response": "^7.0.0",
-    "workbox-core": "^7.0.0",
-    "workbox-expiration": "^7.0.0",
-    "workbox-precaching": "^7.0.0",
-    "workbox-routing": "^7.0.0",
-    "workbox-strategies": "^7.0.0"
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "sass-embedded": "^1.98.0",
+    "vite": "^8.0.0-beta.13",
+    "vite-plugin-pwa": "^1.2.0"
   },
-  "engines": {
-    "node": "^22 || ^20 || ^18",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+  "overrides": {
+    "vite": "^8.0.0-beta.13"
   }
 }

@@ -1,10 +1,10 @@
-import { nextTick } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from 'src/stores/user'
-import routes from './routes'
-import type { RouteLocationNormalized } from 'vue-router'
-import type { MyUserType } from 'src/helpers/models'
-import CONFIG from 'app/config'
+import { nextTick } from "vue";
+import { createRouter, createWebHistory } from "vue-router";
+import { useUserStore } from "../stores/user";
+import routes from "./routes";
+import type { RouteLocationNormalized } from "vue-router";
+import type { MyUserType } from "../helpers/models";
+import CONFIG from "../../config";
 
 /*
  * If not building with SSR mode, you can
@@ -17,24 +17,24 @@ import CONFIG from 'app/config'
 const router = createRouter({
   scrollBehavior: () => ({ left: 0, top: 0 }),
   routes,
-  history: createWebHistory(process.env.VUE_ROUTER_BASE),
-})
+  history: createWebHistory(import.meta.env.VITE_ROUTER_BASE),
+});
 
 router.beforeEach((to: RouteLocationNormalized) => {
-  const auth = useUserStore()
-  const user = (auth.user as MyUserType) || null
+  const auth = useUserStore();
+  const user = (auth.user as MyUserType) || null;
 
   if (to.meta.requiresAuth && !(user && user.isAuthorized)) {
-    return { name: '401', replace: true }
+    return { name: "401", replace: true };
   } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
-    return { name: '401', replace: true }
+    return { name: "401", replace: true };
   }
-})
+});
 router.afterEach((to: RouteLocationNormalized) => {
   // Use next tick to handle router history correctly
   void nextTick(() => {
-    document.title = (to.meta.title as string) || CONFIG.title
-  })
-})
+    document.title = (to.meta.title as string) || CONFIG.title;
+  });
+});
 
-export default router
+export default router;

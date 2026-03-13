@@ -1,5 +1,9 @@
 <template>
-  <q-img src="apperture.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
+  <q-img
+    src="apperture.svg"
+    style="width: 25vw; height: 25vw"
+    class="q-ma-md"
+  />
   <div class="text-caption">Build {{ build }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
@@ -10,8 +14,8 @@
 
   <div v-if="isEmpty(nickWithCount)" class="text-center text-body2">
     There are no photos posted yet...<br />
-    To add some you need to sign-in with your Google account. Only registered users can add, delete
-    or edit photos.
+    To add some you need to sign-in with your Google account. Only registered
+    users can add, delete or edit photos.
   </div>
   <div v-else class="text-center text-body2 q-mt-md q-gutter-sm">
     <q-btn
@@ -47,24 +51,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { build, isEmpty } from 'src/helpers'
-import { useAppStore } from 'src/stores/app'
-import { useValuesStore } from 'src/stores/values'
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import { build, isEmpty } from "../helpers";
+import { useAppStore } from "../stores/app";
+import { useValuesStore } from "../stores/values";
 
-const app = useAppStore()
-const meta = useValuesStore()
+const app = useAppStore();
+const meta = useValuesStore();
 
-const nickWithCount = computed(() => meta.nickWithCount)
-const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
-const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
-const { bucket, theme: appTheme } = storeToRefs(app)
+const nickWithCount = computed(() => meta.nickWithCount);
+const topNicks = computed(() =>
+  Object.entries(nickWithCount.value).slice(0, 2),
+);
+const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1]);
+const { bucket, theme: appTheme } = storeToRefs(app);
 
 const theme = computed({
   get: () => appTheme.value,
-  set: (val: 'light' | 'dark' | 'auto') => {
-    app.setTheme(val)
+  set: (val: "light" | "dark" | "auto") => {
+    app.setTheme(val);
   },
-})
+});
 </script>
