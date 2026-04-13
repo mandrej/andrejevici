@@ -52,42 +52,48 @@
 
         <q-item-section side v-if="$q.screen.gt.xs">
           <q-item-label>
-            <q-badge color="secondary" text-color="black">
-              {{ countTokens(item.timestamps) }}
-            </q-badge>
-            <template v-for="(timestamp, index) in item.timestamps" :key="index">
+            <template v-if="item.timestamps?.length">
               <q-badge
-                v-if="index < item.timestamps.length"
+                v-for="(timestamp, index) in item.timestamps"
+                :key="index"
                 color="secondary"
-                class="q-ml-xs"
                 text-color="black"
+                class="q-ml-xs"
               >
                 {{ ageDays(timestamp) }}
               </q-badge>
             </template>
+            <q-badge v-else color="grey-3" text-color="grey-7">no tokens</q-badge>
           </q-item-label>
         </q-item-section>
 
-        <q-item-section side v-if="$q.screen.gt.xs">
-          <div class="row no-wrap">
+        <q-item-section side>
+          <div class="column">
             <q-checkbox
+              dense
               v-model="item.isAdmin"
-              :disable="user?.email === item.email"
+              :disable="user?.email === item.email || !item.nick"
               color="negative"
               label="Admin"
-              @click="user?.email !== item.email ? auth.updateUser(item, 'isAdmin') : null"
+              @click="
+                user?.email !== item.email && item.nick ? auth.updateUser(item, 'isAdmin') : null
+              "
             />
             <q-checkbox
+              dense
               v-model="item.isAuthorized"
+              :disable="!item.nick"
               color="primary"
               label="Editor"
-              @click="auth.updateUser(item, 'isAuthorized')"
+              @click="item.nick ? auth.updateUser(item, 'isAuthorized') : null"
             />
             <q-checkbox
+              dense
               v-model="item.allowPush"
+              :disable="!item.nick"
               color="secondary"
               label="Push"
-              @click="auth.updateUser(item, 'allowPush')"
+              @click="item.nick ? auth.updateUser(item, 'allowPush') : null"
             />
           </div>
         </q-item-section>
@@ -225,9 +231,6 @@ onMounted(fetchList)
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
-}
-const countTokens = (timestamps: { toMillis: () => number }[]) => {
-  return timestamps.length > 0 ? `${timestamps.length} tokens` : 'No tokens'
 }
 const contribution = (nick: string) => {
   const entry = nickWithCount.value[nick]
