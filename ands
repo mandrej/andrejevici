@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+proj_id=andrejevici
+version=`date +%d.%m.%Y\ %H:%M`
+
+function syntax {
+  echo $"Usage:"
+  echo $"$0 run    - Run development server"
+  echo $"$0 icons  - Build icons"
+  echo $"$0 build  - Build client"
+  echo $"$0 deploy - Deploy"
+  echo $"$0 functions - Deploy functions only"
+  # echo $"$0 extensions - Deploy extensions only"
+  exit 1
+}
+
+if [ $# -eq 0 ]
+  then
+    syntax
+else
+  # gcloud config set project $proj_id
+  case $1 in
+    run)
+      firebase emulators:start --import ./data --export-on-exit ./data
+      # quasar dev -m pwa
+      exit ;;
+    icons)
+      inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
+      icongenie g -i AppIcon.png --skip-trim
+      exit ;;
+    build)
+      # MacPorts, sudo port install gsed
+      gsed -i "s/^ANDREJEVICI_BUILD=.*/ANDREJEVICI_BUILD='$version'/" .env
+      quasar build -m pwa
+      exit ;;
+    deploy)
+      firebase deploy --except functions,extensions
+      exit ;;
+    functions)
+      npm --prefix functionNotify run build
+      npm --prefix functionCron run build
+      npm --prefix functionThumb run build
+      firebase deploy --only functions
+      exit ;;
+    # extensions)
+      # firebase ext:install firebase/storage-resize-images --local
+      # firebase deploy --only extensions
+      # exit ;;
+    test)
+      npm test test/slug.ts
+      exit ;;
+    *)
+      syntax
+  esac
+fi
+
+# gsutil -m setmeta -h "Cache-Control:public, max-age=604800" gs://andrejevici.appspot.com/*.jpg
+

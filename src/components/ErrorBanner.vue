@@ -1,0 +1,18 @@
+<template>
+  <q-banner
+    v-if="inquiry"
+    class="fixed-center text-center bg-warning q-pa-md"
+    style="z-index: 100"
+    rounded
+  >
+    <q-icon name="sym_r_error_outline" size="4em" />
+    <div class="text-h6"><slot name="title"></slot></div>
+    <div><slot name="detail"></slot></div>
+  </q-banner>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  inquiry: boolean
+}>()
+</script>

@@ -1,0 +1,103 @@
+body,
+.body {
+  background-color: var(--q-my-page-bg);
+}
+// .q-header {
+//   border-bottom: 1px solid #c00;
+// }
+.q-dark {
+  background-color: var(--q-my-page-bg);
+}
+// .q-toolbar {
+//   position: relative;
+//   color: var(--q-my-text);
+//   background-color: var(--q-my-page-bg);
+// }
+.q-toolbar,
+.card {
+  position: relative;
+  color: var(--q-my-text);
+  background-color: var(--q-my-toolbar-bg);
+}
+.q-drawer,
+.history-button {
+  color: var(--q-my-text);
+  background-color: var(--q-my-page-bg);
+}
+// Index-Page, Admin-Page
+.link {
+  color: inherit;
+  display: inline-block;
+  text-decoration: none;
+}
+// app global css in SCSS form
+/* 1. declare transition */
+.fade-move,
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+/* 2. declare enter from and leave to state */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scale(0.3) translateY(100px);
+}
+/* 3. ensure leaving items are taken out of layout flow so that moving
+      animations can be calculated correctly. */
+.fade-leave-active {
+  position: absolute;
+}
+/* bounce effect */
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+.bounce {
+  animation-name: bounce;
+  animation-duration: 0.75s;
+  animation-fill-mode: both;
+}
+
+.q-card .headline {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.firebase-emulator-warning {
+  display: none;
+}
+
+// Ensure notifications are always on top of everything, including PhotoSwipe and Fullscreen overlays
+.q-notifications,
+.q-notifications__list,
+.q-notification {
+  z-index: 10000000 !important;
+}
+
+body.swiper-view-active {
+  overflow: hidden !important;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
+  .q-dialog,
+  .q-menu,
+  .q-tooltip {
+    z-index: 100000 !important;
+  }
+}
