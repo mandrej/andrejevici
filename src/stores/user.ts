@@ -54,9 +54,9 @@ export const useUserStore = defineStore('auth', {
     }
   },
   persist: {
-    pick: ['user.email', 'token'],
+    pick: ['user.uid', 'token'],
     omit: [
-      'user.uid',
+      'user.email',
       'user.name',
       'user.nick',
       'user.isAuthorized',
