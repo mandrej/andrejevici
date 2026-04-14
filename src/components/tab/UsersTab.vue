@@ -11,7 +11,36 @@
 
   <q-scroll-area class="q-pa-md" style="height: 65vh">
     <q-list separator :dense="$q.screen.xs">
-      <q-item v-for="item in filteredResult" :key="item.uid">
+      <template v-if="busy">
+        <q-item v-for="n in 5" :key="n">
+          <q-item-section avatar>
+            <q-skeleton type="QBadge" />
+          </q-item-section>
+
+          <q-item-section>
+            <q-item-label>
+              <q-skeleton type="text" width="35%" />
+            </q-item-label>
+            <q-item-label caption>
+              <q-skeleton type="text" width="65%" />
+            </q-item-label>
+          </q-item-section>
+
+          <q-item-section side v-if="$q.screen.gt.xs">
+            <div class="row no-wrap">
+              <q-skeleton type="QBadge" v-for="i in 2" :key="i" class="q-ml-xs" />
+            </div>
+          </q-item-section>
+
+          <q-item-section side>
+            <div :class="$q.screen.xs ? 'column' : 'row'">
+              <q-skeleton type="QCheckbox" v-for="i in 3" :key="i" />
+            </div>
+          </q-item-section>
+        </q-item>
+      </template>
+
+      <q-item v-for="item in filteredResult" :key="item.uid" v-else>
         <q-item-section avatar>
           <q-badge class="text-body1" color="warning" text-color="black">
             {{ contribution(item.nick) }}
@@ -68,9 +97,9 @@
         </q-item-section>
 
         <q-item-section side>
-          <div class="column">
+          <div :class="$q.screen.xs ? 'column' : 'row'">
             <q-checkbox
-              dense
+              :dense="$q.screen.xs"
               v-model="item.isAdmin"
               :disable="user?.email === item.email || !item.nick"
               color="negative"
@@ -80,7 +109,7 @@
               "
             />
             <q-checkbox
-              dense
+              :dense="$q.screen.xs"
               v-model="item.isAuthorized"
               :disable="!item.nick"
               color="primary"
@@ -88,7 +117,7 @@
               @click="item.nick ? auth.updateUser(item, 'isAuthorized') : null"
             />
             <q-checkbox
-              dense
+              :dense="$q.screen.xs"
               v-model="item.allowPush"
               :disable="!item.nick"
               color="secondary"

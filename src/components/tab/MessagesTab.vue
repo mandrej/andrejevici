@@ -22,7 +22,29 @@
 
   <q-scroll-area class="q-pa-md" style="height: 65vh">
     <q-list separator>
-      <q-item v-for="item in filteredResult" :key="item.key" clickable>
+      <template v-if="busy">
+        <q-item v-for="n in 5" :key="n">
+          <q-item-section avatar>
+            <q-skeleton type="circle" size="24px" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>
+              <q-skeleton type="text" width="60%" />
+            </q-item-label>
+            <q-item-label caption>
+              <q-skeleton type="text" width="90%" />
+            </q-item-label>
+            <q-item-label caption>
+              <q-skeleton type="text" width="40%" />
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-skeleton type="QCheckbox" />
+          </q-item-section>
+        </q-item>
+      </template>
+
+      <q-item v-for="item in filteredResult" :key="item.key" clickable v-else>
         <q-item-section avatar v-if="item.status">
           <q-icon color="positive" name="sym_r_check" />
         </q-item-section>
@@ -64,7 +86,6 @@ const options = computed(() => {
   const allMessages = result.value.map((item) => item.message)
   return [...new Set(allMessages)].sort()
 })
-
 
 const filteredResult = computed(() => {
   if (!search.value) return result.value
