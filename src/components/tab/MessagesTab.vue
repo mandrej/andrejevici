@@ -105,5 +105,3 @@ const fetchList = async () => {
 
 onMounted(fetchList)
 </script>
-
-<style scoped></style>
