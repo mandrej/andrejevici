@@ -150,3 +150,25 @@ export const completePhoto = async (
   }
   return tmp
 }
+
+/**
+ * Sanitizes and normalizes the search query criteria.
+ * @param query The search query criteria to fix.
+ * @returns The sanitized and normalized search query criteria.
+ */
+import type { FindType } from './models'
+export const fixQuery = (query: FindType): FindType => {
+  const sanitizedQuery = Object.fromEntries(
+    Object.entries(query)
+      .filter(([, value]) => value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true))
+      .map(([key, value]) => {
+        if (['year', 'month', 'day'].includes(key)) {
+          return [key, Number(value)]
+        } else if (key === 'tags' && typeof value === 'string') {
+          return [key, [value]]
+        }
+        return [key, value]
+      }),
+  )
+  return sanitizedQuery as FindType
+}

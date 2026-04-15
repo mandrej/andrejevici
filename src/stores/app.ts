@@ -15,10 +15,11 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
-import { thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug } from '../helpers'
+import { thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug, fixQuery } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import { useValuesStore } from './values'
+import router from '../router'
 import type {
   QuerySnapshot,
   DocumentSnapshot,
@@ -98,12 +99,13 @@ export const useAppStore = defineStore('app', {
   },
   actions: {
     /**
-     * Searches for records based on multiple field-value pairs.
+     * Searches for records based on multiple field-value pairs and opens the list page.
      *  @param criteria An object containing the search criteria.
      */
     searchBy(criteria: FindType) {
-      this.find = criteria
-      this.fetchRecords(true)
+      this.find = fixQuery(criteria)
+      void this.fetchRecords(true)
+      void router.push({ name: 'list' })
     },
 
     /**

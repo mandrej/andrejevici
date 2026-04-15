@@ -84,7 +84,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { months } from '../helpers'
@@ -92,8 +91,6 @@ import type { FindType, Suggestion } from '../helpers/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
-const route = useRoute()
-const router = useRouter()
 
 const { find } = storeToRefs(app)
 const { allSuggestions } = storeToRefs(meta)
@@ -203,22 +200,6 @@ const getMonthName = (monthNum: number): string => {
   return months[monthNum - 1] || ''
 }
 
-const fixQuery = (query: FindType): FindType => {
-  const sanitizedQuery = Object.fromEntries(
-    Object.entries(query)
-      .filter(([, value]) => value !== null && value !== '')
-      .map(([key, value]) => {
-        if (['year', 'month', 'day'].includes(key)) {
-          return [key, +value]
-        } else if (key === 'tags' && typeof value === 'string') {
-          return [key, [value]]
-        }
-        return [key, value]
-      }),
-  )
-  return sanitizedQuery
-}
-
 // watch removed
 import { watch } from 'vue'
 watch(
@@ -230,11 +211,7 @@ watch(
 )
 
 const submit = () => {
-  tmp.value = find.value = fixQuery(tmp.value)
-  app.fetchRecords(true)
-  if (route.path !== '/list') {
-    void router.push('/list')
-  }
+  app.searchBy(tmp.value)
 }
 
 const removeFilter = (field: keyof FindType) => {
