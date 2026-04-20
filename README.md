@@ -64,9 +64,9 @@ RESIZED_IMAGES_PATH=thumbnails
 https://github.com/AndreySenov/firebase-tools-docker/blob/main/doc/guide/running_firebase_emulators.md
 
 ```bash
-docker pull andreysenov/firebase-tools
+docker pull andreysenov/firebase-tools:latest-node-22
 
-docker run -dit --name firebase-login andreysenov/firebase-tools bash
+docker run -dit --name firebase-login andreysenov/firebase-tools:latest-node-22 bash
 # firebase login
 
 docker run -dit \
@@ -75,8 +75,8 @@ docker run -dit \
   -v /Users/milan/work/andrejevici/data:/data \
   -w /project \
   --name firebase-tools \
-  andreysenov/firebase-tools \
-  firebase emulators:start --import /data --export-on-exit /data
-
+  andreysenov/firebase-tools:latest-node-22 \
+  firebase emulators:start --import /data #--export-on-exit /data
+  
 quasar dev -m pwa
 ```
