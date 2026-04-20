@@ -75,9 +75,9 @@
     <q-list separator :dense="$q.screen.xs">
       <q-item v-for="tag in filteredTags" :key="tag" class="q-px-none">
         <q-item-section @click="app.searchBy({ tags: [tag] })" class="cursor-pointer text-body1">
-          <div class="row items-center">
-            <span class="text-weight-medium">{{ tag }}</span>
-            <q-badge color="secondary" text-color="black" class="q-ml-sm">
+          <div class="row items-center text-body1">
+            {{ tag }}
+            <q-badge align="middle" class="bg-secondary text-body2 text-black q-ml-sm">
               {{ values.tags[tag] || 0 }}
             </q-badge>
           </div>
