@@ -145,9 +145,11 @@ export const completePhoto = async (
 
   const exif = await readExif(rec.url)
   tmp = { ...tmp, ...exif }
-  if (tmp.flash && tags.indexOf('flash') === -1) {
-    tags.push('flash')
-  }
+  // Sync 'flash' tag with EXIF data
+  const updatedTags = new Set(tmp.tags)
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  tmp.flash ? updatedTags.add('flash') : updatedTags.delete('flash')
+  tmp.tags = [...updatedTags]
   return tmp
 }
 
@@ -160,7 +162,10 @@ import type { FindType } from './models'
 export const fixQuery = (query: FindType): FindType => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)
-      .filter(([, value]) => value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true))
+      .filter(
+        ([, value]) =>
+          value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true),
+      )
       .map(([key, value]) => {
         if (['year', 'month', 'day'].includes(key)) {
           return [key, Number(value)]
@@ -171,4 +176,8 @@ export const fixQuery = (query: FindType): FindType => {
       }),
   )
   return sanitizedQuery as FindType
+}
+export const openMaps = (loc: string) => {
+  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
+  window.open(url, '_blank')
 }

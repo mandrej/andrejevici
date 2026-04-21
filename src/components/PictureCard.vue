@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { U, formatDatum } from '../helpers'
+import { U, formatDatum, openMaps } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 import { useAppStore } from '../stores/app'
 import FileBroken from './FileBroken.vue'
@@ -62,9 +62,4 @@ defineProps<{
 }>()
 const emit = defineEmits(['carouselShow'])
 const app = useAppStore()
-
-const openMaps = (loc: string) => {
-  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
-  window.open(url, '_blank')
-}
 </script>

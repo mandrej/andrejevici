@@ -318,6 +318,7 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const stoRef = storageRef(storage, obj.filename)
       const thumbRef = storageRef(storage, thumbName(obj.filename))
+      const meta = useValuesStore()
 
       try {
         await Promise.all([deleteDoc(docRef), deleteObject(stoRef), deleteObject(thumbRef)])
@@ -332,7 +333,6 @@ export const useAppStore = defineStore('app', {
       if (obj.thumb) {
         removeFromList(this.objects, obj)
 
-        const meta = useValuesStore()
         this.bucketDiff(-obj.size)
         meta.updateCounters(obj, null)
         if (obj.date === this.lastRecord?.date) {

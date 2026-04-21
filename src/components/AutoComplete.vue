@@ -48,7 +48,7 @@ const emit = defineEmits<{
 
 const val = computed({
   get: () => props.modelValue,
-  set: (v) => emit('update:modelValue', v),
+  set: (v) => emit('update:modelValue', v === null ? (props.multiple ? [] : '') : v),
 })
 
 const options = ref(props.options)
