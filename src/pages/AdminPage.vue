@@ -23,13 +23,12 @@
           <q-item-section>
             <q-item-label>Recreate existing field values</q-item-label>
             <q-item-label caption>
-              <q-badge
-                v-for="(val, key) in values"
-                :key="key"
-                class="q-mr-sm bg-secondary text-black text-body2"
-              >
-                {{ key }} {{ Object.keys(val).length }}</q-badge
-              >
+              <template v-for="(val, key) in values" :key="key">
+                <span class="text-body1">{{ key }}</span>
+                <q-badge class="q-mx-xs bg-secondary text-black text-body2">
+                  {{ Object.keys(val).length }}
+                </q-badge>
+              </template>
             </q-item-label>
             <q-item-label caption> Automatic cron job every 3 days </q-item-label>
           </q-item-section>

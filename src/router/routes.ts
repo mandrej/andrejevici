@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/list',
     component: () => import('../layouts/Default.vue'),
-    meta: { title: 'Filter' },
+    meta: { title: 'Album' },
     children: [
       {
         path: '',
