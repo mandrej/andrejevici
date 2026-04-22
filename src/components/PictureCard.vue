@@ -2,7 +2,7 @@
   <q-card v-if="rec.thumb" :id="U + rec.filename" class="card" flat>
     <q-img
       loading="lazy"
-      :ratio="5 / 4"
+      :ratio="4 / 3"
       :src="rec.thumb"
       @click="emit('carouselShow', rec.filename)"
       class="col cursor-pointer"
@@ -11,12 +11,12 @@
       <template #error>
         <FileBroken />
       </template>
-      <div class="absolute-bottom headline ellipsis">
-        {{ rec.headline }}
-      </div>
     </q-img>
     <slot name="action"></slot>
-    <q-card-section class="row justify-between">
+    <q-card-section class="text-body1 ellipsis q-pb-none">
+      {{ rec.headline }}
+    </q-card-section>
+    <q-card-section class="row justify-between q-pt-none">
       <span>
         <router-link to="/list" class="link" @click.prevent="app.searchBy({ nick: rec.nick })">{{
           rec.nick

@@ -8,16 +8,16 @@ body,
 .q-dark {
   background-color: var(--q-my-page-bg);
 }
-// .q-toolbar {
-//   position: relative;
-//   color: var(--q-my-text);
-//   background-color: var(--q-my-page-bg);
-// }
-.q-toolbar,
-.card {
+.q-toolbar {
   position: relative;
   color: var(--q-my-text);
   background-color: var(--q-my-toolbar-bg);
+}
+.card {
+  position: relative;
+  color: var(--q-my-text);
+  background-color: var(--q-my-page-bg);
+  outline: 1px solid var(--q-my-toolbar-bg);
 }
 .q-drawer,
 .history-button {
@@ -68,11 +68,6 @@ body,
   animation-name: bounce;
   animation-duration: 0.75s;
   animation-fill-mode: both;
-}
-
-.q-card .headline {
-  color: white;
-  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .firebase-emulator-warning {
