@@ -1,6 +1,6 @@
 import { db, storage } from '../firebase'
 import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
-import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where } from 'firebase/firestore'
+import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, increment } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
 import { storeToRefs } from 'pinia'
@@ -426,7 +426,12 @@ export const renameValue = async (
       if (Array.isArray(obj.tags)) {
         const idx = obj.tags.indexOf(oldValue)
         if (idx > -1) {
-          obj.tags.splice(idx, 1, newValue)
+          // If the new tag already exists, just remove the old one. Otherwise, replace it.
+          if (obj.tags.includes(newValue)) {
+            obj.tags.splice(idx, 1)
+          } else {
+            obj.tags.splice(idx, 1, newValue)
+          }
           batch.update(photoRef, { [field]: obj.tags })
           count++
         }
@@ -454,7 +459,7 @@ export const renameValue = async (
     batch.set(
       newRef,
       {
-        count: obj.count,
+        count: increment(obj.count),
         field: field,
         value: newValue,
       },
@@ -465,7 +470,7 @@ export const renameValue = async (
 
     // Update store
     if (meta.values[field]) {
-      meta.values[field][newValue] = obj.count
+      meta.values[field][newValue] = (meta.values[field][newValue] || 0) + obj.count
       delete meta.values[field][oldValue]
     }
   }

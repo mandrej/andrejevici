@@ -117,7 +117,7 @@
         >
           <template v-slot:hint>
             <span :class="isNewTagInUse ? 'text-negative' : 'text-positive'">
-              {{ isNewTagInUse ? 'Tag already in use' : 'Tag name available' }}
+              {{ isNewTagInUse ? 'Tag name exists (will merge)' : 'Tag name available' }}
             </span>
           </template>
         </q-input>
@@ -125,7 +125,12 @@
 
       <q-card-actions align="right" class="text-primary">
         <q-btn flat label="Cancel" v-close-popup />
-        <q-btn flat label="Rename" @click="performRename" :disable="!newTagName || isNewTagInUse" />
+        <q-btn
+          flat
+          :label="isNewTagInUse ? 'Merge' : 'Rename'"
+          @click="performRename"
+          :disable="!newTagName"
+        />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -276,7 +281,6 @@ const performRename = async () => {
     showRenameDialog.value = false
     return
   }
-  if (isNewTagInUse.value) return
 
   if (tagToRename.value === 'flash') {
     notify({

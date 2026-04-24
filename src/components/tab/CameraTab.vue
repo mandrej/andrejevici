@@ -94,15 +94,12 @@ const rename = async (field: keyof ValuesState['values'], existing: string, chan
         type: 'warning',
         message: `Cannot change "${existing}"`,
       })
-    } else if (Object.keys(meta.values[field]).indexOf(changed) !== -1) {
-      notify({
-        type: 'warning',
-        message: `"${changed}" already exists"`,
-      })
     } else {
       await renameValue(field, existing, changed)
       notify({
         message: `${existing} successfully renamed to ${changed}`,
+        type: 'positive',
+        icon: 'sym_r_check',
       })
     }
   }
