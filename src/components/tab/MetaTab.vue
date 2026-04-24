@@ -1,5 +1,5 @@
 <template>
-  <q-banner class="q-pa-none q-pl-md">
+  <q-banner class="q-pa-none q-px-md">
     <template v-slot:avatar>
       <q-icon :name="activeTabIcon" class="q-py-md" />
     </template>
@@ -11,6 +11,9 @@
       borderless
       class="text-h6"
     >
+      <template v-slot:selected>
+        {{ activeTabLabel }}
+      </template>
       <template v-slot:option="scope">
         <q-item v-bind="scope.itemProps">
           <q-item-section avatar>
@@ -60,7 +63,7 @@
   <div class="q-px-md row items-center no-wrap">
     <LocalSearch
       v-model="search"
-      :label="`Search ${activeTabLabel.toLowerCase()}`"
+      :label="`Search ${activeTabShort.toLowerCase()}`"
       :options="currentValueList"
       class="col"
     />
@@ -175,12 +178,11 @@
   <q-dialog v-model="showDeleteDialog" persistent>
     <q-card style="min-width: 350px">
       <q-card-section>
-        <div class="text-h6">Remove {{ valueToDelete }}</div>
+        <div class="text-h6">Remove "{{ valueToDelete }}"</div>
       </q-card-section>
       <q-card-section class="q-pt-none">
         Are you sure you want to remove {{ activeTabShort.toLowerCase() }}
-        <strong>"{{ valueToDelete }}"</strong>?<br />This will remove it everywhere. Operation can't
-        be undone.
+        <strong>"{{ valueToDelete }}"</strong>?<br />Operation can't be undone.
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" v-close-popup />
@@ -361,3 +363,9 @@ const performRename = async () => {
   }
 }
 </script>
+
+<style scoped>
+:deep(.q-field__native) {
+  overflow: visible !important;
+}
+</style>
