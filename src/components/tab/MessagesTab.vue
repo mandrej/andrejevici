@@ -3,8 +3,12 @@
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
-  <PageTitle title="Messages" icon="sym_r_add_alert">
-    <template #action>
+  <q-banner class="q-pa-md" inline-actions>
+    <template v-slot:avatar>
+      <q-icon name="sym_r_add_alert" />
+    </template>
+    <span class="text-h6">Messages</span>
+    <template v-slot:action>
       <q-btn
         flat
         color="primary"
@@ -14,7 +18,7 @@
         @click="app.deleteMessages(selectedItems).then(fetchList)"
       />
     </template>
-  </PageTitle>
+  </q-banner>
 
   <div class="q-px-md q-pb-md">
     <LocalSearch v-model="search" label="Search messages" :options="options" />
@@ -73,7 +77,7 @@ import { useAppStore } from '../../stores/app'
 import { formatDatum } from '../../helpers'
 import ErrorBanner from '../ErrorBanner.vue'
 import type { MessageType } from '../../helpers/models'
-import PageTitle from '../PageTitle.vue'
+
 import LocalSearch from '../LocalSearch.vue'
 
 const app = useAppStore()

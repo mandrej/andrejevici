@@ -1,7 +1,12 @@
 <template>
   <q-tab-panels v-model="adminTab" class="body">
     <q-tab-panel name="repair" class="q-pa-none">
-      <PageTitle title="Rebuild / Repair" icon="sym_r_construction" />
+      <q-banner class="q-pa-md">
+        <template v-slot:avatar>
+          <q-icon name="sym_r_construction" />
+        </template>
+        <span class="text-h6">Rebuild / Repair</span>
+      </q-banner>
 
       <q-list separator>
         <q-item clickable>
@@ -74,13 +79,9 @@
         </div> -->
     </q-tab-panel>
 
-    <q-tab-panel name="tags" class="q-pa-none">
-      <TagsTab />
+    <q-tab-panel name="meta" class="q-pa-none">
+      <MetaTab />
     </q-tab-panel>
-
-    <!-- <q-tab-panel name="camera" class="q-pa-none">
-        <CameraTab />
-      </q-tab-panel> -->
 
     <q-tab-panel name="users" class="q-pa-none">
       <UsersTab />
@@ -99,10 +100,8 @@ import { useValuesStore } from '../stores/values'
 import { formatDatum } from '../helpers'
 import { formatBytes } from '../helpers'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
-import PageTitle from '../components/PageTitle.vue'
 
-const TagsTab = defineAsyncComponent(() => import('../components/tab/TagsTab.vue'))
-// const CameraTab = defineAsyncComponent(() => import('../components/tab/CameraTab.vue'))
+const MetaTab = defineAsyncComponent(() => import('../components/tab/MetaTab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/tab/UsersTab.vue'))
 const MessagesTab = defineAsyncComponent(() => import('../components/tab/MessagesTab.vue'))
 

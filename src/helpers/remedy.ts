@@ -304,50 +304,51 @@ export const mismatch = async () => {
 }
 
 /**
- * Removes unused tags from the database.
+ * Removes unused values for a specific field from the database.
  *
- * @return {Promise<void>} A promise that resolves when the unused tags are removed.
+ * @param {keyof ValuesState['values']} field - The field to remove unused values for.
+ * @return {Promise<void>} A promise that resolves when the unused values are removed.
  */
-export const removeUnusedTags = async (): Promise<void> => {
+export const removeUnused = async (field: keyof ValuesState['values']): Promise<void> => {
   // delete from store
   let id, counterRef: DocumentReference
-  for (const [value, count] of Object.entries(meta.values.tags)) {
+  for (const [value, count] of Object.entries(meta.values[field])) {
     if (typeof count === 'number' && count <= 0) {
       try {
-        id = counterId('tags', value)
+        id = counterId(field, value)
         counterRef = doc(counterCollection, id)
-        deleteDoc(counterRef)
+        void deleteDoc(counterRef)
       } finally {
-        delete meta.values.tags[value]
+        delete meta.values[field][value]
       }
     }
   }
   // delete from database
-  const q = query(counterCollection, where('field', '==', 'tags'))
+  const q = query(counterCollection, where('field', '==', field))
   const querySnapshot = await getDocs(q)
 
-  // Use for...of loop instead of forEach to properly handle async operations
   for (const d of querySnapshot.docs) {
     const obj = d.data()
     if (obj.count <= 0) {
       try {
-        const id = counterId('tags', obj.value)
+        const id = counterId(field, obj.value)
         const counterRef = doc(counterCollection, id)
-        deleteDoc(counterRef)
+        void deleteDoc(counterRef)
       } finally {
-        delete meta.values.tags[obj.value]
+        delete meta.values[field][obj.value]
       }
     }
   }
 }
 
 /**
- * Deletes a tag from all photo documents, its counter, and the local store.
+ * Deletes a value from all photo documents, its counter, and the local store.
  *
- * @param {string} tag - The tag to delete.
- * @return {Promise<void>} A promise that resolves when the tag is fully removed.
+ * @param {keyof ValuesState['values']} field - The field to delete the value from.
+ * @param {string} value - The value to delete.
+ * @return {Promise<void>} A promise that resolves when the value is fully removed.
  */
-export const deleteTag = async (tag: string): Promise<void> => {
+export const deleteValue = async (field: keyof ValuesState['values'], value: string): Promise<void> => {
   const batchLimit = 498
   const operations: Promise<void>[] = []
   let batch = writeBatch(db)
@@ -359,19 +360,24 @@ export const deleteTag = async (tag: string): Promise<void> => {
     count = 0
   }
 
-  const q = query(photoCollection, where('tags', 'array-contains', tag))
-  const counterRef = doc(counterCollection, counterId('tags', tag))
+  const filter =
+    field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
+  const q = query(photoCollection, filter)
+  const counterRef = doc(counterCollection, counterId(field, value))
 
   const [querySnapshot] = await Promise.all([getDocs(q)])
 
   querySnapshot.forEach((d) => {
     const obj = d.data()
-    if (Array.isArray(obj.tags)) {
-      const updated = obj.tags.filter((t: string) => t !== tag)
+    if (field === 'tags' && Array.isArray(obj.tags)) {
+      const updated = obj.tags.filter((t: string) => t !== value)
       batch.update(doc(photoCollection, d.id), { tags: updated })
       count++
-      if (count >= batchLimit) commitBatch()
+    } else if (field !== 'tags') {
+      batch.update(doc(photoCollection, d.id), { [field]: '' })
+      count++
     }
+    if (count >= batchLimit) commitBatch()
   })
 
   // Delete counter doc

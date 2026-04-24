@@ -3,7 +3,12 @@
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
-  <PageTitle title="Users" icon="sym_r_person" />
+  <q-banner class="q-pa-md">
+    <template v-slot:avatar>
+      <q-icon name="sym_r_person" />
+    </template>
+    <span class="text-h6">Users</span>
+  </q-banner>
 
   <div class="q-px-md q-pb-md">
     <LocalSearch v-model="search" label="Search users" :options="nickValues" />
@@ -191,7 +196,7 @@ import { useUserStore } from '../../stores/user'
 import ErrorBanner from '../ErrorBanner.vue'
 import type { UsersAndDevices } from '../../helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
-import PageTitle from '../PageTitle.vue'
+
 import LocalSearch from '../LocalSearch.vue'
 
 const app = useAppStore()

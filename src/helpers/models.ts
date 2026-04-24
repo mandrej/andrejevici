@@ -96,6 +96,13 @@ export interface FileProgress {
   [key: string]: number
 }
 
+export interface MetaOption {
+  label: string
+  value: keyof ValuesState['values']
+  icon: string
+  short: string
+}
+
 export interface AppStoreState {
   bucket: BucketType
   find: FindType | null
@@ -111,6 +118,8 @@ export interface AppStoreState {
   showConfirm: boolean
   showCarousel: boolean
   adminTab: string
+  metaTab: keyof ValuesState['values']
+  metaOptions: MetaOption[]
   selected: PhotoType[]
   theme: 'light' | 'dark' | 'auto'
 }

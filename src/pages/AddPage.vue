@@ -1,7 +1,12 @@
 <template>
   <EditRecord v-if="showEdit" :rec="currentEdit" />
 
-  <PageTitle title="Upload / publish images" icon="sym_r_upload" />
+  <q-banner class="q-pa-md">
+    <template v-slot:avatar>
+      <q-icon name="sym_r_upload" />
+    </template>
+    <span class="text-h6">Upload / publish images</span>
+  </q-banner>
 
   <template v-if="canAddPhoto">
     <q-form @submit="onSubmit">
@@ -113,7 +118,7 @@ import { fakeHistory, completePhoto, formatBytes } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import PictureCard from '../components/PictureCard.vue'
-import PageTitle from '../components/PageTitle.vue'
+
 import TagsMerge from '../components/sidebar/TagsMerge.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from '../helpers/models'
