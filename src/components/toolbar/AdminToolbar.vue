@@ -9,6 +9,10 @@
     >
   </q-toolbar-title>
 
+  <div class="row absolute-bottom">
+    <q-linear-progress v-if="busy" color="warning" indeterminate />
+  </div>
+
   <q-space />
   <q-tabs v-model="adminTab" shrink>
     <q-tab name="repair" label="Repair" />
@@ -16,10 +20,6 @@
     <q-tab name="users" label="Users" />
     <q-tab name="messages" label="Messages" />
   </q-tabs>
-
-  <div class="row absolute-bottom">
-    <q-linear-progress v-if="busy" color="warning" indeterminate />
-  </div>
 </template>
 
 <script setup lang="ts">
