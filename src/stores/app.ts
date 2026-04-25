@@ -95,8 +95,6 @@ export const useAppStore = defineStore('app', {
       'bucket',
       'lastRecord',
       'find',
-      'objects',
-      'next',
       'uploaded',
       'adminTab',
       'metaTab',
@@ -104,6 +102,8 @@ export const useAppStore = defineStore('app', {
       'theme',
     ],
     omit: [
+      'objects',
+      'next',
       'currentEdit',
       'busy',
       'progressInfo',
