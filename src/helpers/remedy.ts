@@ -452,10 +452,13 @@ export const renameValue = async (
     }
   })
 
-  // Update counters
-  if (counterSnapshot.exists()) {
+  // Update counters and store
+  const countToMove = counterSnapshot.exists()
+    ? counterSnapshot.data().count
+    : querySnapshot.size
+
+  if (countToMove > 0) {
     const newRef = doc(counterCollection, counterId(field, newValue))
-    const obj = counterSnapshot.data()
 
     // Ensure we have space for counter operations
     if (count >= batchLimit - 2) {
@@ -465,18 +468,21 @@ export const renameValue = async (
     batch.set(
       newRef,
       {
-        count: increment(obj.count),
+        count: increment(countToMove),
         field: field,
         value: newValue,
       },
       { merge: true },
     )
-    batch.delete(oldRef)
+
+    if (counterSnapshot.exists()) {
+      batch.delete(oldRef)
+    }
     count += 2
 
     // Update store
     if (meta.values[field]) {
-      meta.values[field][newValue] = (meta.values[field][newValue] || 0) + obj.count
+      meta.values[field][newValue] = (meta.values[field][newValue] || 0) + countToMove
       delete meta.values[field][oldValue]
     }
   }

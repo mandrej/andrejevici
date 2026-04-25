@@ -67,75 +67,78 @@
       :options="currentValueList"
       class="col"
     />
-    <q-btn
-      flat
-      round
-      dense
-      :color="sortBy === 'count' ? 'primary' : 'grey-7'"
-      icon="sym_r_bar_chart"
-      @click="toggleSort('count')"
-      class="q-ml-sm"
-    >
-      <q-tooltip>Sort by count</q-tooltip>
-    </q-btn>
-    <q-btn
-      flat
-      round
-      dense
-      :color="sortBy === 'name' ? 'primary' : 'grey-7'"
-      icon="sym_r_sort_by_alpha"
-      @click="toggleSort('name')"
-      class="q-ml-xs"
-    >
-      <q-tooltip>Sort by name</q-tooltip>
-    </q-btn>
-    <q-btn
-      flat
-      round
-      dense
-      :icon="sortOrder === 'desc' ? 'sym_r_arrow_downward' : 'sym_r_arrow_upward'"
-      @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-      class="q-ml-xs"
-    >
-      <q-tooltip>{{ sortOrder === 'desc' ? 'Descending' : 'Ascending' }}</q-tooltip>
-    </q-btn>
   </div>
 
-  <q-scroll-area class="q-pa-md" style="height: 60vh">
-    <q-list separator :dense="$q.screen.xs">
-      <q-item v-for="val in filteredValues" :key="val" class="q-px-none">
-        <q-item-section
-          @click="app.searchBy({ [app.metaTab]: app.metaTab === 'tags' ? [val] : val })"
-          class="cursor-pointer text-body1"
-        >
-          <div class="row items-center text-body1">
-            {{ val }}
-            <q-badge align="middle" class="bg-secondary text-body2 text-black q-ml-sm">
-              {{ currentCounts[val] || 0 }}
-            </q-badge>
-          </div>
-        </q-item-section>
+  <q-table
+    flat
+    :rows="tableRows"
+    :columns="columns"
+    row-key="name"
+    class="sticky-header-table q-mx-md q-mb-md"
+    style="height: 60vh"
+    :pagination="{ rowsPerPage: 0 }"
+    hide-bottom
+    binary-state-sort
+  >
+    <template v-slot:body-cell-name="props">
+      <q-td
+        :props="props"
+        @click="
+          app.searchBy({
+            [app.metaTab]: app.metaTab === 'tags' ? [props.row.name] : props.row.name,
+          })
+        "
+        class="cursor-pointer text-body1"
+      >
+        {{ props.row.name }}
+      </q-td>
+    </template>
 
-        <q-item-section side>
-          <div class="row no-wrap">
-            <q-btn flat round color="negative" icon="sym_r_delete" @click="confirmDelete(val)">
-              <q-tooltip>Remove {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
-            </q-btn>
-            <q-btn
-              v-if="app.metaTab !== 'model'"
-              flat
-              round
-              color="primary"
-              icon="sym_r_edit"
-              @click="openRenameDialog(val)"
-            >
-              <q-tooltip>Rename {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
-            </q-btn>
-          </div>
-        </q-item-section>
-      </q-item>
-    </q-list>
-  </q-scroll-area>
+    <template v-slot:body-cell-count="props">
+      <q-td :props="props">
+        <q-badge align="middle" class="bg-secondary text-body2 text-black">
+          {{ props.row.count }}
+        </q-badge>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-delete="props">
+      <q-td :props="props">
+        <q-btn
+          flat
+          round
+          dense
+          color="negative"
+          icon="sym_r_delete"
+          @click="confirmDelete(props.row.name)"
+          :disable="
+            (app.metaTab === 'tags' && props.row.name === 'flash') || app.metaTab === 'model'
+          "
+        >
+          <q-tooltip>Remove {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
+        </q-btn>
+      </q-td>
+    </template>
+
+    <template v-slot:body-cell-rename="props">
+      <q-td :props="props">
+        <q-btn
+          flat
+          round
+          dense
+          color="primary"
+          icon="sym_r_edit"
+          @click="openRenameDialog(props.row.name)"
+          :disable="
+            (app.metaTab === 'tags' && props.row.name === 'flash') ||
+            (app.metaTab === 'model' && props.row.name === CONFIG.unknownModel)
+          "
+        >
+          <q-tooltip>Rename {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
+        </q-btn>
+      </q-td>
+    </template>
+  </q-table>
 
   <q-dialog v-model="showRenameDialog" persistent>
     <q-card style="min-width: 350px">
@@ -197,10 +200,11 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '../../stores/app'
 import { useValuesStore } from '../../stores/values'
 import LocalSearch from '../LocalSearch.vue'
+import CONFIG from 'src/config'
 
 import { removeUnused, renameValue, deleteValue } from '../../helpers/remedy'
 import notify from '../../helpers/notify'
-import type { QInput } from 'quasar'
+import type { QInput, QTableColumn } from 'quasar'
 
 const meta = useValuesStore()
 const app = useAppStore()
@@ -221,9 +225,7 @@ const currentValueList = computed(() => Object.keys(currentCounts.value).sort())
 
 const newValueRef = ref<InstanceType<typeof QInput> | null>(null),
   newValue = ref(''),
-  search = ref(''),
-  sortBy = ref<'name' | 'count'>('name'),
-  sortOrder = ref<'asc' | 'desc'>('asc')
+  search = ref('')
 
 const showRenameDialog = ref(false)
 const valueToRename = ref('')
@@ -232,14 +234,19 @@ const newTagName = ref('')
 const showDeleteDialog = ref(false)
 const valueToDelete = ref('')
 
-const toggleSort = (type: 'name' | 'count') => {
-  if (sortBy.value === type) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy.value = type
-    sortOrder.value = type === 'count' ? 'desc' : 'asc'
-  }
-}
+const columns: QTableColumn[] = [
+  { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
+  { name: 'count', label: 'Count', field: 'count', align: 'left', sortable: true },
+  { name: 'delete', label: '', field: 'delete', align: 'right' },
+  { name: 'rename', label: '', field: 'rename', align: 'right' },
+]
+
+const tableRows = computed(() => {
+  return filteredValues.value.map((val) => ({
+    name: val,
+    count: currentCounts.value[val] || 0,
+  }))
+})
 
 const filteredValues = computed(() => {
   let list = [...currentValueList.value]
@@ -247,19 +254,6 @@ const filteredValues = computed(() => {
   if (search.value) {
     list = list.filter((v) => v.toLowerCase().includes(search.value.toLowerCase()))
   }
-
-  list.sort((a, b) => {
-    let result = 0
-    if (sortBy.value === 'count') {
-      const countA = currentCounts.value[a] || 0
-      const countB = currentCounts.value[b] || 0
-      result = countA - countB
-    } else {
-      result = a.localeCompare(b)
-    }
-
-    return sortOrder.value === 'desc' ? -result : result
-  })
 
   return list
 })
@@ -282,6 +276,14 @@ const addValue = () => {
 }
 
 const confirmDelete = (val: string) => {
+  if (app.metaTab === 'tags' && val === 'flash') {
+    notify({ type: 'warning', message: 'Cannot remove "flash"' })
+    return
+  }
+  if (app.metaTab === 'model' && val === CONFIG.unknownModel) {
+    notify({ type: 'warning', message: `Cannot remove "${CONFIG.unknownModel}"` })
+    return
+  }
   valueToDelete.value = val
   showDeleteDialog.value = true
 }
@@ -322,13 +324,16 @@ const removeUnusedValues = async () => {
 }
 
 const openRenameDialog = (val: string) => {
+  if (app.metaTab === 'tags' && val === 'flash') return
+  if (app.metaTab === 'model' && val === CONFIG.unknownModel) return
+
   valueToRename.value = val
   newTagName.value = val
   showRenameDialog.value = true
 }
 
 const performRename = async () => {
-  if (valueToRename.value === '' || newTagName.value === '' || app.metaTab === 'model') return
+  if (valueToRename.value === '' || newTagName.value === '') return
   if (valueToRename.value === newTagName.value) {
     showRenameDialog.value = false
     return
@@ -338,6 +343,14 @@ const performRename = async () => {
     notify({
       type: 'warning',
       message: `Cannot change "flash"`,
+    })
+    return
+  }
+
+  if (app.metaTab === 'model' && valueToRename.value === CONFIG.unknownModel) {
+    notify({
+      type: 'warning',
+      message: `Cannot change "${CONFIG.unknownModel}"`,
     })
     return
   }
@@ -365,6 +378,27 @@ const performRename = async () => {
 </script>
 
 <style scoped>
+.sticky-header-table {
+  height: 60vh;
+}
+
+:deep(.q-table__middle) {
+  max-height: 100%;
+}
+
+:deep(.q-table__card) {
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.q-table thead tr th) {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background-color: var(--q-my-toolbar-bg);
+  color: var(--q-my-text);
+}
+
 :deep(.q-field__native) {
   overflow: visible !important;
 }

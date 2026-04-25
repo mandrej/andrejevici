@@ -1,6 +1,7 @@
 import exifReader from 'exifreader'
 import { formatDatum } from './index'
 import type { ExifType } from './models'
+import CONFIG from 'src/config'
 
 // interface LensSwap {
 //   [key: string]: string
@@ -23,7 +24,7 @@ import type { ExifType } from './models'
  * @return {Promise<ExifType | null>} A promise that resolves to an object containing the EXIF data, or null if the file does not contain EXIF data.
  */
 const readExif = async (url: string): Promise<ExifType | null> => {
-  const result: ExifType = { model: 'UNKNOWN', date: formatDatum(new Date()) }
+  const result: ExifType = { model: CONFIG.unknownModel, date: formatDatum(new Date()) }
   const tags = await exifReader.load(url, { expanded: true })
 
   if (tags.exif) delete tags.exif.MakerNote
@@ -36,7 +37,8 @@ const readExif = async (url: string): Promise<ExifType | null> => {
 
   if (exif && 'Make' in exif && 'Model' in exif) {
     const make = exif.Make.description.replace('/', '')
-    const model = exif.Model.description.replace('/', '')
+    let model = exif.Model.description.replace('/', '')
+    if (model.toLowerCase() === 'model') model = CONFIG.unknownModel
     const makeArr = make.split(' ')
     const modelArr = model.split(' ')
     result.model = makeArr.some((it) => modelArr.includes(it)) ? model : `${make} ${model}`
