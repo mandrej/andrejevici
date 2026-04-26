@@ -105,15 +105,14 @@
     <template v-slot:body-cell-delete="props">
       <q-td :props="props">
         <q-btn
+          v-if="app.metaTab === 'tags'"
           flat
           round
           dense
           color="negative"
           icon="sym_r_delete"
           @click="confirmDelete(props.row.name)"
-          :disable="
-            (app.metaTab === 'tags' && props.row.name === 'flash') || app.metaTab === 'model'
-          "
+          :disable="props.row.name === 'flash'"
         >
           <q-tooltip>Remove {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
         </q-btn>
@@ -236,7 +235,7 @@ const valueToDelete = ref('')
 
 const columns: QTableColumn[] = [
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
-  { name: 'count', label: 'Count', field: 'count', align: 'left', sortable: true },
+  { name: 'count', label: 'Count', field: 'count', align: 'right', sortable: true },
   { name: 'delete', label: '', field: 'delete', align: 'right' },
   { name: 'rename', label: '', field: 'rename', align: 'right' },
 ]
@@ -395,7 +394,7 @@ const performRename = async () => {
   position: sticky;
   z-index: 1;
   top: 0;
-  background-color: var(--q-my-toolbar-bg);
+  background-color: var(--q-my-page-bg);
   color: var(--q-my-text);
 }
 
