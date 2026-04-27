@@ -9,7 +9,7 @@ import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
 import { reFilename, counterId } from '.'
 import router from '../router'
-import { counterCollection, photoCollection } from './collections'
+import { counterCollection, photoCollection, renameCollection } from './collections'
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
@@ -470,6 +470,13 @@ export const renameValue = async (
       batch.delete(oldRef)
     }
     count += 2
+  }
+
+  // Record rename for exif resolution
+  if (field === 'lens' || field === 'model') {
+    const safeOldValue = oldValue.replace(/\//g, '')
+    batch.set(doc(renameCollection, safeOldValue), { newValue, field }, { merge: true })
+    count++
   }
 
   // 2. Photo collection

@@ -3,19 +3,8 @@ import { formatDatum } from './index'
 import type { ExifType } from './models'
 import CONFIG from 'src/config'
 
-// interface LensSwap {
-//   [key: string]: string
-// }
-
-// const LENSES: LensSwap = {
-//   1007: '30mm F2.8',
-//   '70-300 mm f4.5-5.6': 'VR 70-300mm f4.5-5.6E',
-//   '70.0-300.0 mm f4.5-5.6': 'VR 70-300mm f4.5-5.6E',
-//   'Nikon NIKKOR Z 24-70mm f4 S': 'NIKKOR Z 24-70mm f4 S',
-//   'Canon EF-S 17-55mm f2.8 IS USM': 'EF-S17-55mm f2.8 IS USM',
-//   'Canon EF 100mm f2.8 Macro USM': 'EF100mm f2.8 Macro USM',
-//   'Canon EF 50mm f1.8 STM': 'EF50mm f1.8 STM',
-// }
+import { getDoc, doc } from 'firebase/firestore'
+import { renameCollection } from './collections'
 
 /**
  * Reads the EXIF data from a file.
@@ -41,12 +30,32 @@ const readExif = async (url: string): Promise<ExifType | null> => {
     if (model.toLowerCase() === 'model') model = CONFIG.unknownModel
     const makeArr = make.split(' ')
     const modelArr = model.split(' ')
-    result.model = makeArr.some((it) => modelArr.includes(it)) ? model : `${make} ${model}`
+    let finalModel = makeArr.some((it) => modelArr.includes(it)) ? model : `${make} ${model}`
+
+    const safeModel = finalModel.replace(/\//g, '')
+    try {
+      const renameDoc = await getDoc(doc(renameCollection, safeModel))
+      if (renameDoc.exists()) {
+        finalModel = renameDoc.data().newValue
+      }
+    } catch (e) {
+      if (process.env.DEV) console.warn('Failed to query Rename collection for model', e)
+    }
+    result.model = finalModel
   }
 
   if (exif && 'LensModel' in exif) {
-    result.lens = exif.LensModel.description.replace('/', '')
-    // result.lens = LENSES[lens] || lens
+    let lens = exif.LensModel.description.replace('/', '')
+    const safeLens = lens.replace(/\//g, '')
+    try {
+      const renameDoc = await getDoc(doc(renameCollection, safeLens))
+      if (renameDoc.exists()) {
+        lens = renameDoc.data().newValue
+      }
+    } catch (e) {
+      if (process.env.DEV) console.warn('Failed to query Rename collection for lens', e)
+    }
+    result.lens = lens
   }
 
   if (exif && 'DateTimeOriginal' in exif) {
