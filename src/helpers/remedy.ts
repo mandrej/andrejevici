@@ -303,17 +303,7 @@ export const mismatch = async () => {
   }
 }
 
-/**
- * Removes unused values for a specific field from the database.
- *
- * @param {keyof ValuesState['values']} field - The field to remove unused values for.
- * @return {Promise<void>} A promise that resolves when the unused values are removed.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const removeUnused = async (_field: keyof ValuesState['values']): Promise<void> => {
-  // Now handled entirely by meta.countersBuild which inherently cleans up unused counters.
-  // Kept here so the API call in MetaTab.vue doesn't break.
-}
+
 
 /**
  * Deletes a value from all photo documents, its counter, and the local store.

@@ -48,13 +48,13 @@
         />
         <q-btn
           flat
-          label="Remove unused"
-          icon="sym_r_clear_all"
-          @click="removeUnusedValues"
+          label="Rebuild"
+          icon="sym_r_build"
+          @click="rebuildCounts"
           color="primary"
           class="q-ml-sm q-mt-sm no-wrap"
         >
-          <q-tooltip>Remove unused {{ activeTabLabel.toLowerCase() }}</q-tooltip>
+          <q-tooltip>Rebuild {{ app.metaTab.toLowerCase() }} counts</q-tooltip>
         </q-btn>
       </div>
     </div>
@@ -153,7 +153,8 @@
           clearable
           :rules="[
             (val: string) => !!val || 'Field is required',
-            (val: string) => app.metaTab !== 'tags' || val.indexOf('/') === -1 || 'Cannot use / in tags',
+            (val: string) =>
+              app.metaTab !== 'tags' || val.indexOf('/') === -1 || 'Cannot use / in tags',
           ]"
           @keyup.enter="performRename"
         >
@@ -201,12 +202,7 @@ import { useValuesStore } from '../../stores/values'
 import LocalSearch from '../LocalSearch.vue'
 import CONFIG from 'src/config'
 
-import {
-  removeUnused,
-  renameValue,
-  deleteValue,
-  addValue as addCounterValue,
-} from '../../helpers/remedy'
+import { renameValue, deleteValue, addValue as addCounterValue } from '../../helpers/remedy'
 import notify from '../../helpers/notify'
 import type { QInput, QTableColumn } from 'quasar'
 
@@ -323,18 +319,17 @@ const removeValueAction = async () => {
   }
 }
 
-const removeUnusedValues = async () => {
+const rebuildCounts = async () => {
   try {
-    await removeUnused(app.metaTab)
     await meta.countersBuild(app.metaTab)
     notify({
       type: 'positive',
-      message: `Successfully removed unused ${activeTabLabel.value.toLowerCase()}`,
+      message: `Successfully rebuilt ${app.metaTab} counts`,
       icon: 'sym_r_check',
     })
   } catch (error) {
     notify({
-      message: `Failed to remove unused ${activeTabLabel.value.toLowerCase()}: ${error instanceof Error ? error.message : String(error)}`,
+      message: `Failed to rebuild ${app.metaTab} counts: ${error instanceof Error ? error.message : String(error)}`,
       type: 'negative',
     })
   }
