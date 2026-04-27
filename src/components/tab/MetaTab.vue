@@ -201,7 +201,12 @@ import { useValuesStore } from '../../stores/values'
 import LocalSearch from '../LocalSearch.vue'
 import CONFIG from 'src/config'
 
-import { removeUnused, renameValue, deleteValue } from '../../helpers/remedy'
+import {
+  removeUnused,
+  renameValue,
+  deleteValue,
+  addValue as addCounterValue,
+} from '../../helpers/remedy'
 import notify from '../../helpers/notify'
 import type { QInput, QTableColumn } from 'quasar'
 
@@ -264,10 +269,22 @@ const isValueInUse = computed(() => {
   )
 })
 
-const addValue = () => {
+const addValue = async () => {
   if (newValue.value !== '' && currentValueList.value.indexOf(newValue.value) === -1) {
-    values.value[app.metaTab][newValue.value] = 0
-    newValue.value = ''
+    try {
+      await addCounterValue(app.metaTab, newValue.value)
+      notify({
+        type: 'positive',
+        message: `${activeTabShort.value} "${newValue.value}" added`,
+        icon: 'sym_r_check',
+      })
+      newValue.value = ''
+    } catch (error) {
+      notify({
+        type: 'negative',
+        message: `Failed to add ${activeTabShort.value.toLowerCase()}: ${error instanceof Error ? error.message : String(error)}`,
+      })
+    }
   }
   if (newValueRef.value) {
     newValueRef.value.resetValidation()
@@ -292,7 +309,6 @@ const removeValueAction = async () => {
   showDeleteDialog.value = false
   try {
     await deleteValue(app.metaTab, val)
-    delete values.value[app.metaTab][val]
     notify({
       type: 'positive',
       message: `${activeTabShort.value} "${val}" removed`,

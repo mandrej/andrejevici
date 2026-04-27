@@ -1,6 +1,6 @@
 import { db, storage } from '../firebase'
 import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
-import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, increment } from 'firebase/firestore'
+import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, increment, setDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
 import { storeToRefs } from 'pinia'
@@ -367,6 +367,11 @@ export const deleteValue = async (field: keyof ValuesState['values'], value: str
 
   const [querySnapshot] = await Promise.all([getDocs(q)])
 
+  // 1. Counter collection
+  batch.delete(counterRef)
+  count++
+
+  // 2. Photo collection
   querySnapshot.forEach((d) => {
     const obj = d.data()
     if (field === 'tags' && Array.isArray(obj.tags)) {
@@ -380,14 +385,35 @@ export const deleteValue = async (field: keyof ValuesState['values'], value: str
     if (count >= batchLimit) commitBatch()
   })
 
-  // Delete counter doc
-  if (count >= batchLimit - 1) commitBatch()
-  batch.delete(counterRef)
-  count++
-
   if (count > 0) commitBatch()
 
   await Promise.all(operations)
+
+  // 3. meta.values
+  if (meta.values[field]) {
+    delete meta.values[field][value]
+  }
+}
+
+/**
+ * Adds a value in the database.
+ *
+ * @param {keyof ValuesState['values']} field - The field to add the value for.
+ * @param {string} value - The value to add.
+ * @return {Promise<void>} A promise that resolves when the value is added.
+ */
+export const addValue = async (
+  field: keyof ValuesState['values'],
+  value: string,
+): Promise<void> => {
+  const id = counterId(field, value)
+  const counterRef = doc(counterCollection, id)
+  await setDoc(counterRef, { count: 0, field, value })
+  
+  if (!meta.values[field]) {
+    meta.values[field] = {}
+  }
+  meta.values[field][value] = 0
 }
 
 /**
@@ -422,7 +448,31 @@ export const renameValue = async (
 
   const [querySnapshot, counterSnapshot] = await Promise.all([getDocs(q), getDoc(oldRef)])
 
-  // Update photos
+  const countToMove = counterSnapshot.exists()
+    ? counterSnapshot.data().count
+    : querySnapshot.size
+
+  // 1. Counter collection
+  if (countToMove > 0) {
+    const newRef = doc(counterCollection, counterId(field, newValue))
+
+    batch.set(
+      newRef,
+      {
+        count: increment(countToMove),
+        field: field,
+        value: newValue,
+      },
+      { merge: true },
+    )
+
+    if (counterSnapshot.exists()) {
+      batch.delete(oldRef)
+    }
+    count += 2
+  }
+
+  // 2. Photo collection
   querySnapshot.forEach((d) => {
     const photoRef = doc(photoCollection, d.id)
 
@@ -452,44 +502,15 @@ export const renameValue = async (
     }
   })
 
-  // Update counters and store
-  const countToMove = counterSnapshot.exists()
-    ? counterSnapshot.data().count
-    : querySnapshot.size
-
-  if (countToMove > 0) {
-    const newRef = doc(counterCollection, counterId(field, newValue))
-
-    // Ensure we have space for counter operations
-    if (count >= batchLimit - 2) {
-      commitBatch()
-    }
-
-    batch.set(
-      newRef,
-      {
-        count: increment(countToMove),
-        field: field,
-        value: newValue,
-      },
-      { merge: true },
-    )
-
-    if (counterSnapshot.exists()) {
-      batch.delete(oldRef)
-    }
-    count += 2
-
-    // Update store
-    if (meta.values[field]) {
-      meta.values[field][newValue] = (meta.values[field][newValue] || 0) + countToMove
-      delete meta.values[field][oldValue]
-    }
-  }
-
   if (count > 0) {
     commitBatch()
   }
 
   await Promise.all(operations)
+
+  // 3. meta.values
+  if (countToMove > 0 && meta.values[field]) {
+    meta.values[field][newValue] = (meta.values[field][newValue] || 0) + countToMove
+    delete meta.values[field][oldValue]
+  }
 }
