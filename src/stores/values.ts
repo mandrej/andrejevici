@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { db } from '../firebase'
-import { doc, query, orderBy, getDocs, writeBatch, increment } from 'firebase/firestore'
+import { doc, query, orderBy, getDocs, writeBatch, increment, where } from 'firebase/firestore'
 import { isEmpty, delimiter, counterId, months } from '../helpers'
 import CONFIG from '../config'
 import { counterCollection, photoCollection } from '../helpers/collections'
@@ -8,37 +8,30 @@ import notify from '../helpers/notify'
 import type { PhotoType, ValuesState, Suggestion } from '../helpers/models'
 
 /**
- * Builds counters for all photos in the database.
- * @returns A promise that resolves to the new values.
+ * Builds counters for a specific field from all photos in the database.
+ * @param field - The field to build counters for.
+ * @returns A promise that resolves to the counter map for the given field.
  */
-const buildCounters = async (): Promise<ValuesState['values']> => {
+const buildCounters = async (
+  field: keyof ValuesState['values'],
+): Promise<Record<string, number>> => {
   // Build new counters
   const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
-  const newValues: ValuesState['values'] = {
-    year: {},
-    tags: {},
-    model: {},
-    lens: {},
-    email: {},
-    nick: {},
-  }
+  const newValues: Record<string, number> = {}
 
   photoSnapshot.forEach((doc) => {
     const obj = doc.data() as Record<string, unknown>
-    CONFIG.photo_filter.forEach((field) => {
-      if (field === 'tags') {
-        const tags = Array.isArray(obj.tags) ? obj.tags : []
-        for (const tag of tags) {
-          newValues.tags[tag] = (newValues.tags[tag] ?? 0) + 1
-        }
-      } else {
-        const val = obj[field]
-        if (val !== undefined && val !== null && val !== '') {
-          newValues[field as keyof ValuesState['values']][val as string] =
-            (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
-        }
+    if (field === 'tags') {
+      const tags = Array.isArray(obj.tags) ? obj.tags : []
+      for (const tag of tags) {
+        newValues[tag] = (newValues[tag] ?? 0) + 1
       }
-    })
+    } else {
+      const val = obj[field]
+      if (val !== undefined && val !== null && val !== '') {
+        newValues[val as string] = (newValues[val as string] ?? 0) + 1
+      }
+    }
   })
   return newValues
 }
@@ -203,37 +196,58 @@ export const useValuesStore = defineStore('meta', {
       })
     },
 
-    async countersBuild(): Promise<void> {
-      notify({ group: 'counters', message: `Please wait`, timeout: 0 })
+    async countersBuild(targetField?: string): Promise<void> {
+      const fieldsToBuild = targetField ? [targetField] : CONFIG.photo_filter
 
-      // Build new counters
-      const newValues = await buildCounters()
+      for (const f of fieldsToBuild) {
+        const fieldKey = f as keyof ValuesState['values']
+        notify({ group: 'counters', message: `Building counters for ${fieldKey}...`, timeout: 0 })
 
-      // Delete old counters
-      const countersToDelete = await getDocs(query(counterCollection))
-      const deleteBatch = writeBatch(db)
-      countersToDelete.forEach((doc) => deleteBatch.delete(doc.ref))
-      await deleteBatch.commit()
-      notify({ group: 'counters', message: `Deleted old counters`, timeout: 0 })
+        // Build new counters
+        const newValues = await buildCounters(fieldKey)
 
-      // Write new counters to database and store
-      const setBatch = writeBatch(db)
-      CONFIG.photo_filter.forEach((field) => {
-        const fieldKey = field as keyof ValuesState['values']
-        Object.entries(newValues[fieldKey]).forEach(([key, count]) => {
-          const counterRef = doc(counterCollection, counterId(field, key))
-          setBatch.set(counterRef, { count, field, value: key })
-        })
-        this.values[fieldKey] = newValues[fieldKey]
+        // Delete old counters for this field
+        const countersToDelete = await getDocs(
+          query(counterCollection, where('field', '==', fieldKey)),
+        )
+
+        let deleteBatch = writeBatch(db)
+        let count = 0
+        for (const doc of countersToDelete.docs) {
+          deleteBatch.delete(doc.ref)
+          count++
+          if (count === 498) {
+            await deleteBatch.commit()
+            deleteBatch = writeBatch(db)
+            count = 0
+          }
+        }
+        if (count > 0) await deleteBatch.commit()
+
+        // Write new counters to database and store
+        let setBatch = writeBatch(db)
+        count = 0
+        for (const [key, val] of Object.entries(newValues)) {
+          const counterRef = doc(counterCollection, counterId(fieldKey, key))
+          setBatch.set(counterRef, { count: val, field: fieldKey, value: key })
+          count++
+          if (count === 498) {
+            await setBatch.commit()
+            setBatch = writeBatch(db)
+            count = 0
+          }
+        }
+        if (count > 0) await setBatch.commit()
+
+        this.values[fieldKey] = newValues
         notify({
           type: 'positive',
           group: 'counters',
-          message: `Built counters for ${field}`,
+          message: `Built counters for ${fieldKey}`,
           icon: 'sym_r_check',
         })
-      })
+      }
 
-      await setBatch.commit()
       notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'sym_r_check' })
     },
 
@@ -306,7 +320,7 @@ export const useValuesStore = defineStore('meta', {
       for (const key of toAdd) {
         const parts = key.split(delimiter)
         const field = parts[1] as keyof ValuesState['values']
-        const value = parts[2] as string
+        const value = parts.slice(2).join(delimiter).replace(/%2F/g, '/')
         const currentCount = this.values[field][value] || 0
         const newCount = currentCount + 1
 
@@ -324,7 +338,7 @@ export const useValuesStore = defineStore('meta', {
       for (const key of toRemove) {
         const parts = key.split(delimiter)
         const field = parts[1] as keyof ValuesState['values']
-        const value = parts[2] as string
+        const value = parts.slice(2).join(delimiter).replace(/%2F/g, '/')
         const currentCount = this.values[field][value] || 0
         const newCount = currentCount - 1
 

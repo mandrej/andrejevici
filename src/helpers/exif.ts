@@ -25,14 +25,14 @@ const readExif = async (url: string): Promise<ExifType | null> => {
   const exif = tags.exif
 
   if (exif && 'Make' in exif && 'Model' in exif) {
-    const make = exif.Make.description.replace('/', '')
-    let model = exif.Model.description.replace('/', '')
+    const make = exif.Make.description
+    let model = exif.Model.description
     if (model.toLowerCase() === 'model') model = CONFIG.unknownModel
     const makeArr = make.split(' ')
     const modelArr = model.split(' ')
     let finalModel = makeArr.some((it) => modelArr.includes(it)) ? model : `${make} ${model}`
 
-    const safeModel = finalModel.replace(/\//g, '')
+    const safeModel = finalModel.replace(/\//g, '%2F')
     try {
       const renameDoc = await getDoc(doc(renameCollection, safeModel))
       if (renameDoc.exists()) {
@@ -45,8 +45,8 @@ const readExif = async (url: string): Promise<ExifType | null> => {
   }
 
   if (exif && 'LensModel' in exif) {
-    let lens = exif.LensModel.description.replace('/', '')
-    const safeLens = lens.replace(/\//g, '')
+    let lens = exif.LensModel.description
+    const safeLens = lens.replace(/\//g, '%2F')
     try {
       const renameDoc = await getDoc(doc(renameCollection, safeLens))
       if (renameDoc.exists()) {

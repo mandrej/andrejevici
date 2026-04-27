@@ -153,7 +153,7 @@
           clearable
           :rules="[
             (val: string) => !!val || 'Field is required',
-            (val: string) => val.indexOf('/') === -1 || 'Cannot use / here',
+            (val: string) => app.metaTab !== 'tags' || val.indexOf('/') === -1 || 'Cannot use / in tags',
           ]"
           @keyup.enter="performRename"
         >
@@ -309,6 +309,7 @@ const removeValueAction = async () => {
   showDeleteDialog.value = false
   try {
     await deleteValue(app.metaTab, val)
+    await meta.countersBuild(app.metaTab)
     notify({
       type: 'positive',
       message: `${activeTabShort.value} "${val}" removed`,
@@ -325,6 +326,7 @@ const removeValueAction = async () => {
 const removeUnusedValues = async () => {
   try {
     await removeUnused(app.metaTab)
+    await meta.countersBuild(app.metaTab)
     notify({
       type: 'positive',
       message: `Successfully removed unused ${activeTabLabel.value.toLowerCase()}`,
@@ -375,6 +377,7 @@ const performRename = async () => {
     const changed = newTagName.value
 
     await renameValue(app.metaTab, existing, changed)
+    await meta.countersBuild(app.metaTab)
 
     notify({
       type: 'positive',

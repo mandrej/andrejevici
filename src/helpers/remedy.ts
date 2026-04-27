@@ -1,6 +1,6 @@
 import { db, storage } from '../firebase'
-import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
-import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, increment, setDoc } from 'firebase/firestore'
+import type { DocumentSnapshot } from 'firebase/firestore'
+import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, setDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
 import { storeToRefs } from 'pinia'
@@ -309,36 +309,10 @@ export const mismatch = async () => {
  * @param {keyof ValuesState['values']} field - The field to remove unused values for.
  * @return {Promise<void>} A promise that resolves when the unused values are removed.
  */
-export const removeUnused = async (field: keyof ValuesState['values']): Promise<void> => {
-  // delete from store
-  let id, counterRef: DocumentReference
-  for (const [value, count] of Object.entries(meta.values[field])) {
-    if (typeof count === 'number' && count <= 0) {
-      try {
-        id = counterId(field, value)
-        counterRef = doc(counterCollection, id)
-        void deleteDoc(counterRef)
-      } finally {
-        delete meta.values[field][value]
-      }
-    }
-  }
-  // delete from database
-  const q = query(counterCollection, where('field', '==', field))
-  const querySnapshot = await getDocs(q)
-
-  for (const d of querySnapshot.docs) {
-    const obj = d.data()
-    if (obj.count <= 0) {
-      try {
-        const id = counterId(field, obj.value)
-        const counterRef = doc(counterCollection, id)
-        void deleteDoc(counterRef)
-      } finally {
-        delete meta.values[field][obj.value]
-      }
-    }
-  }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const removeUnused = async (_field: keyof ValuesState['values']): Promise<void> => {
+  // Now handled entirely by meta.countersBuild which inherently cleans up unused counters.
+  // Kept here so the API call in MetaTab.vue doesn't break.
 }
 
 /**
@@ -363,15 +337,10 @@ export const deleteValue = async (field: keyof ValuesState['values'], value: str
   const filter =
     field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
   const q = query(photoCollection, filter)
-  const counterRef = doc(counterCollection, counterId(field, value))
 
-  const [querySnapshot] = await Promise.all([getDocs(q)])
+  const querySnapshot = await getDocs(q)
 
-  // 1. Counter collection
-  batch.delete(counterRef)
-  count++
-
-  // 2. Photo collection
+  // 1. Photo collection
   querySnapshot.forEach((d) => {
     const obj = d.data()
     if (field === 'tags' && Array.isArray(obj.tags)) {
@@ -388,11 +357,6 @@ export const deleteValue = async (field: keyof ValuesState['values'], value: str
   if (count > 0) commitBatch()
 
   await Promise.all(operations)
-
-  // 3. meta.values
-  if (meta.values[field]) {
-    delete meta.values[field][value]
-  }
 }
 
 /**
@@ -444,42 +408,17 @@ export const renameValue = async (
   const filter =
     field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
   const q = query(photoCollection, filter)
-  const oldRef = doc(counterCollection, counterId(field, oldValue))
 
-  const [querySnapshot, counterSnapshot] = await Promise.all([getDocs(q), getDoc(oldRef)])
-
-  const countToMove = counterSnapshot.exists()
-    ? counterSnapshot.data().count
-    : querySnapshot.size
-
-  // 1. Counter collection
-  if (countToMove > 0) {
-    const newRef = doc(counterCollection, counterId(field, newValue))
-
-    batch.set(
-      newRef,
-      {
-        count: increment(countToMove),
-        field: field,
-        value: newValue,
-      },
-      { merge: true },
-    )
-
-    if (counterSnapshot.exists()) {
-      batch.delete(oldRef)
-    }
-    count += 2
-  }
+  const querySnapshot = await getDocs(q)
 
   // Record rename for exif resolution
   if (field === 'lens' || field === 'model') {
-    const safeOldValue = oldValue.replace(/\//g, '')
+    const safeOldValue = oldValue.replace(/\//g, '%2F')
     batch.set(doc(renameCollection, safeOldValue), { newValue, field }, { merge: true })
     count++
   }
 
-  // 2. Photo collection
+  // 1. Photo collection
   querySnapshot.forEach((d) => {
     const photoRef = doc(photoCollection, d.id)
 
@@ -514,10 +453,4 @@ export const renameValue = async (
   }
 
   await Promise.all(operations)
-
-  // 3. meta.values
-  if (countToMove > 0 && meta.values[field]) {
-    meta.values[field][newValue] = (meta.values[field][newValue] || 0) + countToMove
-    delete meta.values[field][oldValue]
-  }
 }

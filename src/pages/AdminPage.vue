@@ -38,7 +38,7 @@
             <q-item-label caption> Automatic cron job every 3 days </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn label="rebuild" @click="meta.countersBuild" flat />
+            <q-btn label="rebuild" @click="countersBuild" flat />
           </q-item-section>
         </q-item>
 
@@ -100,6 +100,7 @@ import { useValuesStore } from '../stores/values'
 import { formatDatum } from '../helpers'
 import { formatBytes } from '../helpers'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
+import CONFIG from 'src/config'
 
 const MetaTab = defineAsyncComponent(() => import('../components/tab/MetaTab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/tab/UsersTab.vue'))
@@ -111,6 +112,12 @@ const { bucket } = storeToRefs(app)
 
 const { adminTab } = storeToRefs(app)
 const values = computed(() => meta.values)
+
+const countersBuild = async () => {
+  for (const field of CONFIG.photo_filter) {
+    await meta.countersBuild(field)
+  }
+}
 
 // const show = () => {
 //   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external']
