@@ -117,7 +117,8 @@ export const thumbUrl = (filename: string) => {
 }
 
 export const counterId = (field: string, value: string): string => {
-  return `Photo${delimiter}${field}${delimiter}${value.replace(/\//g, '%2F')}` // FIXME Photo is hard coded
+  // IDs cannot contain a forward slash (/)
+  return `Photo${delimiter}${field}${delimiter}${('' + value).replace(/\//g, '%2F')}` // FIXME Photo is hard coded
 }
 
 export const isAuthorOrAdmin = (
