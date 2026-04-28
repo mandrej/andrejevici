@@ -45,7 +45,7 @@ const logger = __importStar(require("firebase-functions/logger"));
 (0, app_1.initializeApp)();
 const delimiter = '||'; // for counter id
 const counterId = (field, value) => {
-    return `Photo${delimiter}${field}${delimiter}${value}`; // FIXME Photo is hard coded
+    return `Photo${delimiter}${field}${delimiter}${value}`.replace(/\//g, '%2F'); // FIXME Photo is hard coded
 };
 // Build new counters
 const buildCounters = async () => {
