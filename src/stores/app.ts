@@ -33,7 +33,6 @@ import type {
   BucketType,
   PhotoType,
   AppStoreState,
-  FileProgress,
   MessageType,
 } from '../helpers/models'
 import { photoCollection, messageCollection, bucketCollection } from '../helpers/collections'
@@ -61,21 +60,21 @@ const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => ar
  * Creates a Pinia store for the application.
  * @returns The application store instance.
  */
+/** Applies the theme to Quasar's Dark mode */
+const applyTheme = (theme: 'light' | 'dark' | 'auto') =>
+  Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
+
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
-    bucket: {
-      size: 0,
-      count: 0,
-    } as BucketType,
-
-    find: {} as FindType | null,
-    uploaded: [] as PhotoType[],
-    objects: [] as PhotoType[],
+    bucket: { size: 0, count: 0 },
+    find: {},
+    uploaded: [],
+    objects: [],
     next: '',
     currentEdit: {} as PhotoType,
-    lastRecord: null as PhotoType | null,
+    lastRecord: null,
     busy: false,
-    progressInfo: {} as FileProgress,
+    progressInfo: {},
     error: '',
     showEdit: false,
     showConfirm: false,
@@ -87,7 +86,7 @@ export const useAppStore = defineStore('app', {
       { label: 'Manage Cameras', value: 'model', icon: 'sym_r_photo_camera', short: 'Camera' },
       { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
     ],
-    selected: [] as PhotoType[],
+    selected: [],
     theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
   }),
   persist: {
@@ -100,18 +99,6 @@ export const useAppStore = defineStore('app', {
       'metaTab',
       'metaOptions',
       'theme',
-    ],
-    omit: [
-      'objects',
-      'next',
-      'currentEdit',
-      'busy',
-      'progressInfo',
-      'error',
-      'showEdit',
-      'showConfirm',
-      'showCarousel',
-      'selected',
     ],
   },
   actions: {
@@ -156,19 +143,14 @@ export const useAppStore = defineStore('app', {
      * Builds the bucket by calculating the total size and count of photos.
      */
     async bucketBuild(): Promise<void> {
-      const res = {
-        count: 0,
-        size: 0,
-      }
-      const q = query(photoCollection, orderBy('date', 'desc'))
-      const querySnapshot = await getDocs(q)
-      if (!querySnapshot.empty) {
-        querySnapshot.forEach((d) => {
-          res.count++
-          res.size += d.data().size
-        })
-      }
-      this.bucket = { ...res }
+      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+      let count = 0
+      let size = 0
+      querySnapshot.forEach((d) => {
+        count++
+        size += d.data().size
+      })
+      this.bucket = { count, size }
       setDoc(bucketRef, this.bucket, { merge: true })
       notify({ type: 'positive', message: `Bucket size calculated`, icon: 'sym_r_check' })
     },
@@ -309,10 +291,7 @@ export const useAppStore = defineStore('app', {
         removeFromList(this.uploaded, obj)
 
         // set find on new added image and fetch
-        this.find = Object.assign(
-          {},
-          { year: obj.year, month: obj.month, day: obj.day },
-        ) as FindType
+        this.find = { year: obj.year, month: obj.month, day: obj.day }
         await this.fetchRecords(true)
 
         notify({ type: 'positive', message: `${obj.filename} published`, icon: 'sym_r_check' })
@@ -391,15 +370,10 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<MessageType[]>} A promise that resolves to an array of the most recent messages.
      */
     async fetchMessages(): Promise<MessageType[]> {
-      const messages: MessageType[] = []
-      const q = query(messageCollection, orderBy('timestamp', 'desc'), limit(50))
-      const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        snapshot.forEach((d) => {
-          messages.push({ ...(d.data() as MessageType), key: d.id })
-        })
-      }
-      return messages
+      const snapshot = await getDocs(
+        query(messageCollection, orderBy('timestamp', 'desc'), limit(50)),
+      )
+      return snapshot.docs.map((d) => ({ ...(d.data() as MessageType), key: d.id }))
     },
 
     /**
@@ -410,10 +384,9 @@ export const useAppStore = defineStore('app', {
      */
     async deleteMessages(keys: string[]): Promise<void> {
       const batch = writeBatch(db)
-      keys.forEach((key) => {
-        const docRef = doc(messageCollection, key)
-        batch.delete(docRef)
-      })
+      for (const key of keys) {
+        batch.delete(doc(messageCollection, key))
+      }
       await batch.commit()
       notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'sym_r_check' })
     },
@@ -425,14 +398,14 @@ export const useAppStore = defineStore('app', {
     setTheme(theme: 'light' | 'dark' | 'auto') {
       this.theme = theme
       LocalStorage.set('theme', theme)
-      Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
+      applyTheme(theme)
     },
 
     /**
      * Initializes the theme from local storage.
      */
     initTheme() {
-      Dark.set(this.theme === 'auto' ? 'auto' : this.theme === 'dark')
+      applyTheme(this.theme)
     },
   },
 })

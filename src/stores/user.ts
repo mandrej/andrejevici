@@ -1,5 +1,4 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { nextTick } from 'vue'
 import CONFIG from '../config'
 import { auth, db, messaging } from '../firebase'
 import {
@@ -21,7 +20,6 @@ import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import router from '../router'
 import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
-import type { Firestore, Query } from '@firebase/firestore'
 import notify from '../helpers/notify'
 import { deviceCollection, userCollection } from '../helpers/collections'
 
@@ -55,17 +53,6 @@ export const useUserStore = defineStore('auth', {
   },
   persist: {
     pick: ['user.uid', 'token'],
-    omit: [
-      'user.email',
-      'user.name',
-      'user.nick',
-      'user.isAuthorized',
-      'user.isAdmin',
-      'user.allowPush',
-      'user.timestamp',
-      'allowPush',
-      'askPush',
-    ],
   },
 
   actions: {
@@ -164,9 +151,7 @@ export const useUserStore = defineStore('auth', {
             })
           }
         } else if (permission === 'denied') {
-          this.askPush = false
-          this.allowPush = false
-          await this.updateSubscriber()
+          await this.disableNotifications()
           notify({
             type: 'warning',
             message: 'Notifications denied. You can enable them later in browser settings.',
@@ -174,9 +159,7 @@ export const useUserStore = defineStore('auth', {
         }
       } catch (err) {
         console.error('Error enabling notifications:', err)
-        this.askPush = false
-        this.allowPush = false
-        await this.updateSubscriber()
+        await this.disableNotifications()
         notify({
           type: 'negative',
           message: 'Failed to enable notifications. Please try again.',
@@ -222,13 +205,8 @@ export const useUserStore = defineStore('auth', {
      * Retrieves all users from Firestore, ordered by email.
      */
     async fetchUsers(): Promise<MyUserType[]> {
-      const users: MyUserType[] = []
-      const q = query(userCollection, orderBy('email', 'asc'))
-      const snapshot = await getDocs(q)
-      snapshot.forEach((d) => {
-        users.push({ ...(d.data() as MyUserType) })
-      })
-      return users
+      const snapshot = await getDocs(query(userCollection, orderBy('email', 'asc')))
+      return snapshot.docs.map((d) => d.data() as MyUserType)
     },
 
     /**
@@ -251,13 +229,8 @@ export const useUserStore = defineStore('auth', {
      * Retrieves all registered devices from Firestore, ordered by timestamp descending.
      */
     async fetchDevices(): Promise<DeviceType[]> {
-      const devices: DeviceType[] = []
-      const q = query(deviceCollection, orderBy('timestamp', 'desc'))
-      const snapshot = await getDocs(q)
-      snapshot.forEach((d) => {
-        devices.push({ ...(d.data() as DeviceType), key: d.id })
-      })
-      return devices
+      const snapshot = await getDocs(query(deviceCollection, orderBy('timestamp', 'desc')))
+      return snapshot.docs.map((d) => ({ ...(d.data() as DeviceType), key: d.id }))
     },
 
     /**
@@ -266,15 +239,19 @@ export const useUserStore = defineStore('auth', {
     async fetchUsersAndDevices(): Promise<UsersAndDevices[]> {
       const [devices, users] = await Promise.all([this.fetchDevices(), this.fetchUsers()])
 
-      const deviceMap: Record<string, Timestamp[]> = {}
-      devices.forEach((dev) => {
-        if (!deviceMap[dev.email]) deviceMap[dev.email] = []
-        deviceMap[dev.email]!.push(dev.timestamp as Timestamp)
-      })
+      const deviceMap = new Map<string, Timestamp[]>()
+      for (const dev of devices) {
+        const list = deviceMap.get(dev.email)
+        if (list) {
+          list.push(dev.timestamp as Timestamp)
+        } else {
+          deviceMap.set(dev.email, [dev.timestamp as Timestamp])
+        }
+      }
 
       return users.map((user) => ({
         ...user,
-        timestamps: deviceMap[user.email] || [],
+        timestamps: deviceMap.get(user.email) ?? [],
       }))
     },
 
@@ -315,14 +292,10 @@ export const useUserStore = defineStore('auth', {
      */
     async updateSubscriber(): Promise<void> {
       if (!this.user?.uid) return
-      const docRef = doc(userCollection, this.user.uid)
-      const snap = await getDoc(docRef)
-      if (snap.exists()) {
-        await updateDoc(docRef, {
-          allowPush: this.allowPush,
-          timestamp: Timestamp.fromDate(new Date()),
-        })
-      }
+      await updateDoc(doc(userCollection, this.user.uid), {
+        allowPush: this.allowPush,
+        timestamp: Timestamp.fromDate(new Date()),
+      })
     },
 
     /**
@@ -331,44 +304,29 @@ export const useUserStore = defineStore('auth', {
      */
     async updateDevice(token: string): Promise<void> {
       if (!this.user?.email) return
-      const docRef = doc(deviceCollection, token)
-      const snap = await getDoc(docRef)
-      if (!snap.exists()) {
-        await setDoc(docRef, {
-          email: this.user.email,
-          timestamp: Timestamp.fromDate(new Date()),
-        })
-      }
+      await setDoc(doc(deviceCollection, token), {
+        email: this.user.email,
+        timestamp: Timestamp.fromDate(new Date()),
+      }, { merge: true })
     },
 
     /**
      * Removes all device tokens associated with the current user from Firestore.
      */
-    removeDevice(): Promise<void> {
-      const q = query(deviceCollection, where('email', '==', this.user?.email || ''))
-      return new Promise((resolve, reject) => {
-        this.deleteQueryBatch(db, q, resolve).catch(reject)
-      })
-    },
-
     /**
-     * Deletes documents matching a query in batches of up to 500.
+     * Removes all device tokens associated with the current user from Firestore.
+     * Deletes in batches of 500 to stay within Firestore limits.
      */
-    async deleteQueryBatch(db: Firestore, query: Query, resolve: () => void): Promise<void> {
-      const querySnapshot = await getDocs(query)
-      if (querySnapshot.empty) {
-        resolve()
-        return
-      }
+    async removeDevice(): Promise<void> {
+      const q = query(deviceCollection, where('email', '==', this.user?.email || ''))
+      let snapshot = await getDocs(q)
 
-      const batch = writeBatch(db)
-      querySnapshot.forEach((doc) => batch.delete(doc.ref))
-      await batch.commit()
-
-      if (querySnapshot.size >= 500) {
-        nextTick(() => void this.deleteQueryBatch(db, query, resolve))
-      } else {
-        resolve()
+      while (!snapshot.empty) {
+        const batch = writeBatch(db)
+        snapshot.forEach((d) => batch.delete(d.ref))
+        await batch.commit()
+        if (snapshot.size < 500) break
+        snapshot = await getDocs(q)
       }
     },
   },

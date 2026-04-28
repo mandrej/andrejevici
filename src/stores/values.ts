@@ -15,7 +15,6 @@ import type { PhotoType, ValuesState, Suggestion } from '../helpers/models'
 const buildCounters = async (
   field: keyof ValuesState['values'],
 ): Promise<Record<string, number>> => {
-  // Build new counters
   const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
   const newValues: Record<string, number> = {}
 
@@ -53,6 +52,50 @@ const byCountReverse = <T extends keyof ValuesState['values']>(
   )
 }
 
+/** Sorted keys from byCountReverse */
+const sortedKeys = (state: ValuesState, field: keyof ValuesState['values']): string[] =>
+  Object.keys(byCountReverse(state, field))
+
+/** Extracts field and value from a counter ID string */
+const parseCounterKey = (key: string): { field: keyof ValuesState['values']; value: string } => {
+  const parts = key.split(delimiter)
+  return {
+    field: parts[1] as keyof ValuesState['values'],
+    value: parts.slice(2).join(delimiter).replace(/%2F/g, '/'),
+  }
+}
+
+/**
+ * Commits items in batches of 498 to stay within Firestore's 500-operation limit.
+ * @param items - Items to process in batches.
+ * @param applyFn - Function to apply each item to the batch.
+ */
+const commitInBatches = async <T>(
+  items: T[],
+  applyFn: (batch: ReturnType<typeof writeBatch>, item: T) => void,
+): Promise<void> => {
+  let batch = writeBatch(db)
+  let count = 0
+  for (const item of items) {
+    applyFn(batch, item)
+    count++
+    if (count === 498) {
+      await batch.commit()
+      batch = writeBatch(db)
+      count = 0
+    }
+  }
+  if (count > 0) await batch.commit()
+}
+
+/** Creates a Suggestion object from field data */
+const makeSuggestion = (field: string, value: string, count?: number): Suggestion => ({
+  key: `${field}-${value}`,
+  field: field === 'nick' ? 'author' : field,
+  value,
+  ...(count !== undefined && { count }),
+})
+
 export const useValuesStore = defineStore('meta', {
   state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
@@ -64,117 +107,55 @@ export const useValuesStore = defineStore('meta', {
   },
   getters: {
     // values getters
-    tagsValues: (state: ValuesState) => {
-      return Object.keys(state.values.tags).sort()
-    },
-    modelValues: (state: ValuesState) => {
-      return Object.keys(byCountReverse(state, 'model'))
-    },
-    lensValues: (state: ValuesState) => {
-      return Object.keys(byCountReverse(state, 'lens'))
-    },
-    emailValues: (state: ValuesState) => {
-      return Object.keys(byCountReverse(state, 'email'))
-    },
-    nickValues: (state: ValuesState) => {
-      return Object.keys(byCountReverse(state, 'nick'))
-    },
-    yearValues: (state: ValuesState) => {
-      return Object.keys(state.values.year).reverse()
-    },
+    tagsValues: (state: ValuesState) => Object.keys(state.values.tags).sort(),
+    modelValues: (state: ValuesState) => sortedKeys(state, 'model'),
+    lensValues: (state: ValuesState) => sortedKeys(state, 'lens'),
+    emailValues: (state: ValuesState) => sortedKeys(state, 'email'),
+    nickValues: (state: ValuesState) => sortedKeys(state, 'nick'),
+    yearValues: (state: ValuesState) => Object.keys(state.values.year).reverse(),
+
     // withCount
-    yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> => {
-      const ret: Array<{ value: string; count: number }> = []
-      for (const year of Object.keys(state.values.year).reverse()) {
-        ret.push({ value: year, count: state.values.year[year] || 0 })
-      }
-      return ret
-    },
-    nickWithCount: (state: ValuesState): { [key: string]: number } => {
-      return byCountReverse(state, 'nick')
-    },
-    tagsWithCount: (state: ValuesState): { [key: string]: number } => {
-      return Object.fromEntries(
+    yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> =>
+      Object.keys(state.values.year)
+        .reverse()
+        .map((year) => ({ value: year, count: state.values.year[year] || 0 })),
+
+    nickWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'nick'),
+
+    tagsWithCount: (state: ValuesState): { [key: string]: number } =>
+      Object.fromEntries(
         Object.entries(state.values.tags)
           .sort(([a], [b]) => a.localeCompare(b))
           .filter(([, v]) => v > 0),
-      )
-    },
+      ),
+
     allSuggestions(): Suggestion[] {
       const suggestions: Suggestion[] = []
 
-      // Add authors
-      this.nickValues.forEach((nick) => {
-        const count = this.values.nick[nick]
-        suggestions.push({
-          key: `nick-${nick}`,
-          field: 'author',
-          value: nick,
-          ...(count !== undefined && { count }),
-        })
-      })
+      // Add counted fields (nick, tags, year, model, lens)
+      const countedFields = [
+        { field: 'nick', values: this.nickValues },
+        { field: 'tags', values: this.tagsValues },
+        { field: 'year', values: this.yearValues },
+        { field: 'model', values: this.modelValues },
+        { field: 'lens', values: this.lensValues },
+      ] as const
 
-      // Add tags
-      this.tagsValues.forEach((tag) => {
-        const count = this.values.tags[tag]
-        suggestions.push({
-          key: `tags-${tag}`,
-          field: 'tags',
-          value: tag,
-          ...(count !== undefined && { count }),
-        })
-      })
-
-      // Add years
-      this.yearValues.forEach((year) => {
-        const count = this.values.year[year]
-        suggestions.push({
-          key: `year-${year}`,
-          field: 'year',
-          value: year,
-          ...(count !== undefined && { count }),
-        })
-      })
-
-      // Add months (case-insensitive autocomplete)
-      months.forEach((month, index) => {
-        suggestions.push({
-          key: `month-${index + 1}`,
-          field: 'month',
-          value: month,
-        })
-      })
-
-      // Add days
-      for (let i = 1; i <= 31; i++) {
-        suggestions.push({
-          key: `day-${i}`,
-          field: 'day',
-          value: i.toString(),
-        })
+      for (const { field, values } of countedFields) {
+        for (const value of values) {
+          suggestions.push(makeSuggestion(field, value, this.values[field][value]))
+        }
       }
 
-      // Add models
-      this.modelValues.forEach((model) => {
-        const count = this.values.model[model]
-        suggestions.push({
-          key: `model-${model}`,
-          field: 'model',
-          value: model,
-          ...(count !== undefined && { count }),
-        })
+      // Add months (static, no counts)
+      months.forEach((month, index) => {
+        suggestions.push({ key: `month-${index + 1}`, field: 'month', value: month })
       })
 
-      // Add lenses
-      this.lensValues.forEach((lens) => {
-        const count = this.values.lens[lens]
-        suggestions.push({
-          key: `lens-${lens}`,
-          field: 'lens',
-          value: lens,
-          ...(count !== undefined && { count }),
-        })
-      })
+      // Add days (static, no counts)
+      for (let i = 1; i <= 31; i++) {
+        suggestions.push({ key: `day-${i}`, field: 'day', value: i.toString() })
+      }
 
       return suggestions
     },
@@ -184,14 +165,9 @@ export const useValuesStore = defineStore('meta', {
      * Reads the values from the database.
      */
     async readValues(): Promise<void> {
-      const q = query(counterCollection)
-      const querySnapshot = await getDocs(q)
+      const querySnapshot = await getDocs(query(counterCollection))
       querySnapshot.forEach((d) => {
-        const obj = d.data() as {
-          count: number
-          field: string
-          value: string
-        }
+        const obj = d.data() as { count: number; field: string; value: string }
         this.values[obj.field as keyof ValuesState['values']][obj.value] = obj.count
       })
     },
@@ -203,41 +179,20 @@ export const useValuesStore = defineStore('meta', {
         const fieldKey = f as keyof ValuesState['values']
         notify({ group: 'counters', message: `Building counters for ${fieldKey}...`, timeout: 0 })
 
-        // Build new counters
         const newValues = await buildCounters(fieldKey)
 
         // Delete old counters for this field
         const countersToDelete = await getDocs(
           query(counterCollection, where('field', '==', fieldKey)),
         )
+        await commitInBatches(countersToDelete.docs, (batch, d) => batch.delete(d.ref))
 
-        let deleteBatch = writeBatch(db)
-        let count = 0
-        for (const doc of countersToDelete.docs) {
-          deleteBatch.delete(doc.ref)
-          count++
-          if (count === 498) {
-            await deleteBatch.commit()
-            deleteBatch = writeBatch(db)
-            count = 0
-          }
-        }
-        if (count > 0) await deleteBatch.commit()
-
-        // Write new counters to database and store
-        let setBatch = writeBatch(db)
-        count = 0
-        for (const [key, val] of Object.entries(newValues)) {
+        // Write new counters
+        const entries = Object.entries(newValues)
+        await commitInBatches(entries, (batch, [key, val]) => {
           const counterRef = doc(counterCollection, counterId(fieldKey, key))
-          setBatch.set(counterRef, { count: val, field: fieldKey, value: key })
-          count++
-          if (count === 498) {
-            await setBatch.commit()
-            setBatch = writeBatch(db)
-            count = 0
-          }
-        }
-        if (count > 0) await setBatch.commit()
+          batch.set(counterRef, { count: val, field: fieldKey, value: key })
+        })
 
         this.values[fieldKey] = newValues
         notify({
@@ -286,20 +241,10 @@ export const useValuesStore = defineStore('meta', {
       const oldObj = oldData ? this.buildCounterMap(oldData) : {}
       const newObj = newData ? this.buildCounterMap(newData) : {}
 
-      // Early return if both are empty
       if (isEmpty(oldObj) && isEmpty(newObj)) return
 
-      const toAdd: string[] = []
-      const toRemove: string[] = []
-
-      // Keys in new but not in old: increments
-      for (const key in newObj) {
-        if (!(key in oldObj)) toAdd.push(key)
-      }
-      // Keys in old but not in new: decrements
-      for (const key in oldObj) {
-        if (!(key in newObj)) toRemove.push(key)
-      }
+      const toAdd = Object.keys(newObj).filter((key) => !(key in oldObj))
+      const toRemove = Object.keys(oldObj).filter((key) => !(key in newObj))
 
       if (toAdd.length > 0 || toRemove.length > 0) {
         this.batchUpdateCounters(toAdd, toRemove)
@@ -318,13 +263,10 @@ export const useValuesStore = defineStore('meta', {
       const batch = writeBatch(db)
 
       for (const key of toAdd) {
-        const parts = key.split(delimiter)
-        const field = parts[1] as keyof ValuesState['values']
-        const value = parts.slice(2).join(delimiter).replace(/%2F/g, '/')
+        const { field, value } = parseCounterKey(key)
         const currentCount = this.values[field][value] || 0
-        const newCount = currentCount + 1
 
-        this.values[field][value] = newCount
+        this.values[field][value] = currentCount + 1
 
         const counterRef = doc(counterCollection, key)
         if (currentCount === 0) {
@@ -332,13 +274,11 @@ export const useValuesStore = defineStore('meta', {
         } else {
           batch.update(counterRef, { count: increment(1) })
         }
-        if (process.env.DEV) console.log('increase', key, newCount)
+        if (process.env.DEV) console.log('increase', key, currentCount + 1)
       }
 
       for (const key of toRemove) {
-        const parts = key.split(delimiter)
-        const field = parts[1] as keyof ValuesState['values']
-        const value = parts.slice(2).join(delimiter).replace(/%2F/g, '/')
+        const { field, value } = parseCounterKey(key)
         const currentCount = this.values[field][value] || 0
         const newCount = currentCount - 1
 
