@@ -8,75 +8,134 @@
         <span class="text-h6">Rebuild / Repair</span>
       </q-banner>
 
-      <q-list separator>
-        <q-item clickable>
-          <q-item-section avatar>
-            <q-badge transparent align="middle" color="warning" class="text-h6 text-black">
-              {{ Intl.NumberFormat().format(bucket.count) }}/{{ formatBytes(bucket.size) }}</q-badge
-            >
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Bucket count and size</q-item-label>
-            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn label="Recalc" @click="app.bucketBuild" flat />
-          </q-item-section>
-        </q-item>
-
-        <q-item clickable>
-          <q-item-section>
-            <q-item-label>Recreate existing field values</q-item-label>
-            <q-item-label caption>
-              <template v-for="(val, key) in values" :key="key">
-                <span class="text-body1">{{ key }}</span>
-                <q-badge class="q-mx-xs bg-secondary text-black text-body2">
-                  {{ Object.keys(val).length }}
+      <div class="row q-col-gutter-md q-pa-md">
+        <!-- Bucket Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <q-card flat bordered class="full-height column">
+            <q-card-section class="col">
+              <div class="row items-center no-wrap q-mb-sm">
+                <q-icon name="sym_r_storage" size="sm" color="primary" class="q-mr-sm" />
+                <div class="text-subtitle1 text-weight-bold">Bucket Status</div>
+              </div>
+              <div class="text-caption text-grey-7 q-mb-md">
+                Current total storage usage and file count. Updated via cron.
+              </div>
+              <div class="text-center q-py-sm">
+                <q-badge color="warning" class="text-h6 text-black q-pa-md rounded-borders">
+                  <span>{{ Intl.NumberFormat().format(bucket.count) }} photos</span>
+                  <span class="q-mx-xs">/</span>
+                  <span>{{ formatBytes(bucket.size) }}</span>
                 </q-badge>
-              </template>
-            </q-item-label>
-            <q-item-label caption> Automatic cron job every 3 days </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn label="rebuild" @click="countersBuild" flat />
-          </q-item-section>
-        </q-item>
+              </div>
+            </q-card-section>
+            <q-separator />
+            <q-card-actions align="right">
+              <q-btn label="Recalculate" @click="app.bucketBuild" color="primary" flat />
+            </q-card-actions>
+          </q-card>
+        </div>
 
-        <q-item clickable>
-          <q-item-section>
-            <q-item-label
-              >Fixes photos in the database by populating missing dimensions.</q-item-label
-            >
-            <q-item-label caption class="text-h6">{{
-              formatDatum('2026-02-27', 'DD.MM.YYYY')
-            }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-btn color="primary" :disable="true" label="Fix" @click="fix" />
-          </q-item-section>
-        </q-item>
-        <q-item clickable>
-          <q-item-section> Find images without thumbnails </q-item-section>
-          <q-item-section side>
-            <q-btn label="Find" color="primary" @click="missingThumbnails" />
-          </q-item-section>
-        </q-item>
-        <q-item clickable>
-          <q-item-section> Resolve Cloud storage and datastore mismatch </q-item-section>
-          <q-item-section side>
-            <q-btn color="negative" label="Resolve" @click="mismatch" />
-          </q-item-section>
-        </q-item>
-      </q-list>
+        <!-- Field Values Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <q-card flat bordered class="full-height column">
+            <q-card-section class="col">
+              <div class="row items-center no-wrap q-mb-sm">
+                <q-icon name="sym_r_schema" size="sm" color="secondary" class="q-mr-sm" />
+                <div class="text-subtitle1 text-weight-bold">Metadata Counters</div>
+              </div>
+              <div class="text-caption text-grey-7 q-mb-sm">
+                Rebuild index counters for all metadata fields.
+              </div>
+              <div class="row q-gutter-xs">
+                <q-badge
+                  v-for="(val, key) in values"
+                  :key="key"
+                  color="secondary"
+                  class="text-subtitle1 text-black"
+                >
+                  {{ key }}: {{ Object.keys(val).length }}
+                </q-badge>
+              </div>
+            </q-card-section>
+            <q-separator />
+            <q-card-actions align="right">
+              <q-btn label="Rebuild" @click="countersBuild" color="secondary" flat />
+            </q-card-actions>
+          </q-card>
+        </div>
 
-      <!-- <div class="q-pa-md">
-          <q-btn color="primary" label="Show" @click="show" />
-          <q-btn color="secondary" label="Show" @click="show" />
-          <q-btn color="accent" label="Show" @click="show" />
-          <q-btn color="positive" label="Show" @click="show" />
-          <q-btn color="negative" label="Show" @click="show" />
-          <q-btn color="dark" label="Show" @click="show" />
-        </div> -->
+        <!-- Dimensions Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <q-card flat bordered class="full-height column">
+            <q-card-section class="col">
+              <div class="row items-center no-wrap q-mb-sm">
+                <q-icon name="sym_r_aspect_ratio" size="sm" color="accent" class="q-mr-sm" />
+                <div class="text-subtitle1 text-weight-bold">Image Dimensions</div>
+              </div>
+              <div class="text-caption text-grey-7">
+                Populates missing height/width data for legacy records.
+              </div>
+              <div class="q-mt-sm">
+                <q-badge color="accent" icon="event" class="text-subtitle1">
+                  Last run: {{ formatDatum('2026-02-27', 'DD.MM.YYYY') }}
+                </q-badge>
+              </div>
+            </q-card-section>
+            <q-separator />
+            <q-card-actions align="right">
+              <q-btn color="accent" :disable="true" label="Run Fix" @click="fix" flat />
+            </q-card-actions>
+          </q-card>
+        </div>
+
+        <!-- Thumbnails Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <q-card flat bordered class="full-height column">
+            <q-card-section class="col">
+              <div class="row items-center no-wrap q-mb-sm">
+                <q-icon name="sym_r_image_not_supported" size="sm" color="orange" class="q-mr-sm" />
+                <div class="text-subtitle1 text-weight-bold">Missing Thumbs</div>
+              </div>
+              <div class="text-caption text-grey-7">
+                Scan storage for images that are missing generated thumbnails.
+              </div>
+            </q-card-section>
+            <q-separator />
+            <q-card-actions align="right">
+              <q-btn label="Scan" color="orange" @click="missingThumbnails" flat />
+            </q-card-actions>
+          </q-card>
+        </div>
+
+        <!-- Mismatch Card -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <q-card flat bordered class="full-height column">
+            <q-card-section class="col">
+              <div class="row items-center no-wrap q-mb-sm">
+                <q-icon name="sym_r_sync_problem" size="sm" color="negative" class="q-mr-sm" />
+                <div class="text-subtitle1 text-weight-bold">Storage Mismatch</div>
+              </div>
+              <div class="text-caption text-grey-7">
+                Resolve inconsistencies between Cloud Storage and Firestore.
+              </div>
+            </q-card-section>
+            <q-separator />
+            <q-card-actions align="right">
+              <q-btn color="negative" label="Resolve" @click="mismatch" flat />
+            </q-card-actions>
+          </q-card>
+        </div>
+      </div>
+
+      <!-- <div class="q-pa-md row q-gutter-sm items-center">
+        <div class="text-subtitle2 text-grey-7 q-mr-md">Debug Notifications:</div>
+        <q-btn flat round dense color="primary" icon="sym_r_info" @click="show" />
+        <q-btn flat round dense color="secondary" icon="sym_r_warning" @click="show" />
+        <q-btn flat round dense color="accent" icon="sym_r_stars" @click="show" />
+        <q-btn flat round dense color="positive" icon="sym_r_check_circle" @click="show" />
+        <q-btn flat round dense color="negative" icon="sym_r_error" @click="show" />
+        <q-btn flat round dense color="dark" icon="sym_r_visibility" @click="show" />
+      </div> -->
     </q-tab-panel>
 
     <q-tab-panel name="meta" class="q-pa-none">
@@ -101,6 +160,7 @@ import { formatDatum } from '../helpers'
 import { formatBytes } from '../helpers'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
 import CONFIG from 'src/config'
+// import notify from 'src/helpers/notify'
 
 const MetaTab = defineAsyncComponent(() => import('../components/tab/MetaTab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/tab/UsersTab.vue'))
@@ -120,21 +180,17 @@ const countersBuild = async () => {
 }
 
 // const show = () => {
-//   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external']
+//   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external'] as const
 //   for (const color of colors) {
 //     notify({
 //       type: color,
 //       html: true,
-//       message: `${color}<br>Testing`,
+//       message: `${color}<br>Testing notification system`,
 //       actions: [{ icon: 'sym_r_close' }],
-//       caption: 'testing',
+//       caption: 'System Test',
 //     })
 //   }
 // }
 </script>
 
-<style scoped>
-.q-btn--standard {
-  width: 100px;
-}
-</style>
+<style scoped></style>
