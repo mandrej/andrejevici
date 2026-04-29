@@ -3,10 +3,6 @@ import type { DocumentSnapshot } from 'firebase/firestore'
 import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, setDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from '../stores/app'
-import { useValuesStore } from '../stores/values'
-import { useUserStore } from '../stores/user'
 import { reFilename, counterId } from '.'
 import router from '../router'
 import { counterCollection, photoCollection, renameCollection } from './collections'
@@ -16,11 +12,28 @@ import type { PhotoType, ValuesState } from './models'
 
 import readExif from './exif'
 
-const app = useAppStore()
-const meta = useValuesStore()
-const auth = useUserStore()
-const { uploaded } = storeToRefs(app)
-const { user } = storeToRefs(auth)
+const BATCH_LIMIT = 498
+
+/**
+ * Commits items in batches to stay within Firestore's 500-operation limit.
+ */
+const commitInBatches = async <T>(
+  items: T[],
+  applyFn: (batch: ReturnType<typeof writeBatch>, item: T) => void,
+): Promise<void> => {
+  let batch = writeBatch(db)
+  let count = 0
+  for (const item of items) {
+    applyFn(batch, item)
+    count++
+    if (count >= BATCH_LIMIT) {
+      await batch.commit()
+      batch = writeBatch(db)
+      count = 0
+    }
+  }
+  if (count > 0) await batch.commit()
+}
 
 /**
  * Fixes photos in the database by populating missing dimensions.
@@ -64,9 +77,9 @@ export const fix = async () => {
 
     let fixedCount = 0
     let errorCount = 0
-    const batchLimit = 400
-    let batch = writeBatch(db)
-    let count = 0
+
+    // Collect items that need updating, then batch-commit
+    const updates: Array<{ ref: typeof toFix[0]['ref']; dim: [number, number] }> = []
 
     for (const docSnap of toFix) {
       const filename = docSnap.id
@@ -76,15 +89,8 @@ export const fix = async () => {
         const exif = await readExif(url)
 
         if (exif && exif.dim) {
-          batch.update(docSnap.ref, { dim: exif.dim })
-          count++
+          updates.push({ ref: docSnap.ref, dim: exif.dim })
           fixedCount++
-
-          if (count >= batchLimit) {
-            await batch.commit()
-            batch = writeBatch(db)
-            count = 0
-          }
         } else {
           console.warn(`Could not find dimensions for ${filename}`)
           errorCount++
@@ -95,9 +101,9 @@ export const fix = async () => {
       }
     }
 
-    if (count > 0) {
-      await batch.commit()
-    }
+    await commitInBatches(updates, (batch, { ref, dim }) => {
+      batch.update(ref, { dim })
+    })
 
     notify({
       type: fixedCount > 0 ? 'positive' : 'warning',
@@ -124,15 +130,17 @@ export const fix = async () => {
 const getStorageData = async (filename: string) => {
   try {
     const _ref = storageRef(storage, filename)
-    const downloadURL = await getDownloadURL(_ref)
-    const metadata = await getMetadata(_ref)
+    // Parallelize the two independent storage calls
+    const [downloadURL, metadata] = await Promise.all([getDownloadURL(_ref), getMetadata(_ref)])
     if (downloadURL) {
+      const { useUserStore } = await import('../stores/user')
+      const auth = useUserStore()
       return {
         url: downloadURL,
         filename: filename,
         size: metadata.size || 0,
-        email: user.value?.email,
-        nick: user.value?.nick,
+        email: auth.user?.email,
+        nick: auth.user?.nick,
       }
     } else {
       throw new Error(`Failed to get download URL for file: ${filename}`)
@@ -159,38 +167,48 @@ export const missingThumbnails = async () => {
   const thumbSet = new Set<string>()
   const allowedExts = ['.jpg', '.jpeg', '.png']
 
-  const photoRefs = await listAll(storageRef(storage, ''))
-  photoRefs.items.forEach((r) => {
+  // Parallelize the two independent listAll calls
+  const [photoRefs, thumbRefs] = await Promise.all([
+    listAll(storageRef(storage, '')),
+    listAll(storageRef(storage, CONFIG.thumbnails)),
+  ])
+
+  for (const r of photoRefs.items) {
     const match = r.name.match(reFilename)
-    if (!match) return
+    if (!match) continue
     const [, name, ext] = match
     if (name && ext && allowedExts.includes(ext.toLowerCase())) {
-      const list = photoMap.get(name) || []
-      list.push(r.name)
-      photoMap.set(name, list)
+      const list = photoMap.get(name)
+      if (list) {
+        list.push(r.name)
+      } else {
+        photoMap.set(name, [r.name])
+      }
     }
-  })
+  }
 
-  const thumbRefs = await listAll(storageRef(storage, CONFIG.thumbnails))
-  thumbRefs.items.forEach((r) => thumbSet.add(r.name.replace(CONFIG.thumbSuffix, '')))
+  for (const r of thumbRefs.items) {
+    thumbSet.add(r.name.replace(CONFIG.thumbSuffix, ''))
+  }
 
   const missing = Array.from(photoMap.keys())
     .filter((x) => !thumbSet.has(x))
     .sort()
 
   const promises: Array<Promise<DocumentSnapshot>> = []
-  missing.forEach((name) => {
+  for (const name of missing) {
     const filenames = photoMap.get(name)
-    filenames?.forEach((filename) => {
-      const docRef = doc(photoCollection, filename)
-      promises.push(getDoc(docRef))
-    })
-  })
+    if (filenames) {
+      for (const filename of filenames) {
+        promises.push(getDoc(doc(photoCollection, filename)))
+      }
+    }
+  }
 
   let hit = 0
   const results = await Promise.allSettled(promises)
   let message: string = ''
-  results.forEach((it) => {
+  for (const it of results) {
     if (it.status === 'fulfilled') {
       if (it.value.exists()) {
         const data = it.value.data()
@@ -207,7 +225,7 @@ export const missingThumbnails = async () => {
         timeout: 0,
       })
     }
-  })
+  }
 
   if (hit > 0) {
     notify({
@@ -234,6 +252,11 @@ export const missingThumbnails = async () => {
  * @return {Promise<void>} A promise that resolves when the mismatched files are found.
  */
 export const mismatch = async () => {
+  const { storeToRefs } = await import('pinia')
+  const { useAppStore } = await import('../stores/app')
+  const app = useAppStore()
+  const { uploaded } = storeToRefs(app)
+
   notify({
     group: 'mismatch',
     message: `Please wait`,
@@ -268,11 +291,10 @@ export const mismatch = async () => {
   }
 
   if (missingRecords.length > 0) {
-    const promises = missingRecords.map((name) => getStorageData(name))
-    const results = await Promise.all(promises)
-    results.forEach((it) => {
+    const results = await Promise.all(missingRecords.map((name) => getStorageData(name)))
+    for (const it of results) {
       uploaded.value.push(it as PhotoType)
-    })
+    }
 
     notify({
       group: 'mismatch',
@@ -313,40 +335,24 @@ export const mismatch = async () => {
  * @return {Promise<void>} A promise that resolves when the value is fully removed.
  */
 export const deleteValue = async (field: keyof ValuesState['values'], value: string): Promise<void> => {
-  const batchLimit = 498
-  const operations: Promise<void>[] = []
-  let batch = writeBatch(db)
-  let count = 0
-
-  const commitBatch = () => {
-    operations.push(batch.commit())
-    batch = writeBatch(db)
-    count = 0
-  }
-
   const filter =
     field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
-  const q = query(photoCollection, filter)
+  const querySnapshot = await getDocs(query(photoCollection, filter))
 
-  const querySnapshot = await getDocs(q)
-
-  // 1. Photo collection
+  // Build the list of photo updates
+  const updates: Array<{ id: string; data: Record<string, unknown> }> = []
   querySnapshot.forEach((d) => {
     const obj = d.data()
     if (field === 'tags' && Array.isArray(obj.tags)) {
-      const updated = obj.tags.filter((t: string) => t !== value)
-      batch.update(doc(photoCollection, d.id), { tags: updated })
-      count++
+      updates.push({ id: d.id, data: { tags: obj.tags.filter((t: string) => t !== value) } })
     } else if (field !== 'tags') {
-      batch.update(doc(photoCollection, d.id), { [field]: '' })
-      count++
+      updates.push({ id: d.id, data: { [field]: '' } })
     }
-    if (count >= batchLimit) commitBatch()
   })
 
-  if (count > 0) commitBatch()
-
-  await Promise.all(operations)
+  await commitInBatches(updates, (batch, { id, data }) => {
+    batch.update(doc(photoCollection, id), data)
+  })
 }
 
 /**
@@ -360,6 +366,9 @@ export const addValue = async (
   field: keyof ValuesState['values'],
   value: string,
 ): Promise<void> => {
+  const { useValuesStore } = await import('../stores/values')
+  const meta = useValuesStore()
+
   const id = counterId(field, value)
   const counterRef = doc(counterCollection, id)
   await setDoc(counterRef, { count: 0, field, value })
@@ -383,64 +392,54 @@ export const renameValue = async (
   oldValue: string,
   newValue: string,
 ): Promise<void> => {
-  const batchLimit = 498
-  const operations: Promise<void>[] = []
-  let batch = writeBatch(db)
-  let count = 0
-
-  const commitBatch = () => {
-    operations.push(batch.commit())
-    batch = writeBatch(db)
-    count = 0
-  }
-
   // Parallelize reads
   const filter =
     field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
-  const q = query(photoCollection, filter)
+  const querySnapshot = await getDocs(query(photoCollection, filter))
 
-  const querySnapshot = await getDocs(q)
+  // Build the list of operations to commit
+  type BatchOp = { type: 'set'; id: string; data: Record<string, unknown>; merge?: boolean }
+    | { type: 'update'; id: string; data: Record<string, unknown> }
+
+  const ops: BatchOp[] = []
 
   // Record rename for exif resolution
   if (field === 'lens' || field === 'model') {
-    const safeOldValue = oldValue.replace(/\//g, '%2F')
-    batch.set(doc(renameCollection, safeOldValue), { newValue, field }, { merge: true })
-    count++
+    ops.push({
+      type: 'set',
+      id: oldValue,
+      data: { newValue, field },
+      merge: true,
+    })
   }
 
-  // 1. Photo collection
+  // Photo collection updates
   querySnapshot.forEach((d) => {
-    const photoRef = doc(photoCollection, d.id)
-
     if (field === 'tags') {
       const obj = d.data()
-      // Ensure tags exists and is an array
       if (Array.isArray(obj.tags)) {
         const idx = obj.tags.indexOf(oldValue)
         if (idx > -1) {
+          const updatedTags = [...obj.tags]
           // If the new tag already exists, just remove the old one. Otherwise, replace it.
-          if (obj.tags.includes(newValue)) {
-            obj.tags.splice(idx, 1)
+          if (updatedTags.includes(newValue)) {
+            updatedTags.splice(idx, 1)
           } else {
-            obj.tags.splice(idx, 1, newValue)
+            updatedTags.splice(idx, 1, newValue)
           }
-          batch.update(photoRef, { [field]: obj.tags })
-          count++
+          ops.push({ type: 'update', id: d.id, data: { [field]: updatedTags } })
         }
       }
     } else {
-      batch.update(photoRef, { [field]: newValue })
-      count++
-    }
-
-    if (count >= batchLimit) {
-      commitBatch()
+      ops.push({ type: 'update', id: d.id, data: { [field]: newValue } })
     }
   })
 
-  if (count > 0) {
-    commitBatch()
-  }
-
-  await Promise.all(operations)
+  await commitInBatches(ops, (batch, op) => {
+    if (op.type === 'set') {
+      batch.set(doc(renameCollection, op.id), op.data, { merge: op.merge ?? false })
+    } else {
+      batch.update(doc(photoCollection, op.id), op.data)
+    }
+  })
 }
