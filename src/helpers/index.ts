@@ -2,8 +2,7 @@ import CONFIG from '../config'
 import { date, format } from 'quasar'
 import readExif from './exif'
 import { slugify } from 'transliteration'
-import { computed } from 'vue'
-import type { MyUserType, PhotoType } from './models'
+import type { FindType, MyUserType, PhotoType } from './models'
 
 const { humanStorageSize } = format
 const { formatDate } = date
@@ -39,9 +38,7 @@ export const months = [
   'December',
 ]
 
-export const formatBytes = (bytes: number): string => {
-  return humanStorageSize(bytes)
-}
+export const formatBytes = (bytes: number): string => humanStorageSize(bytes)
 export const formatDatum = (
   str: Date | number | string,
   format: string = CONFIG.dateFormat,
@@ -59,17 +56,8 @@ export const fakeHistory = () => {
   window.history.pushState(history.state, '', history.state.current)
 }
 
-export const build = computed(() => {
-  return process.env.ANDREJEVICI_BUILD || ''
-})
-export const isEmpty = (obj: object) => {
-  for (const prop in obj) {
-    if (Object.hasOwn(obj, prop)) {
-      return false
-    }
-  }
-  return true
-}
+export const build = process.env.ANDREJEVICI_BUILD || ''
+export const isEmpty = (obj: object): boolean => Object.keys(obj).length === 0
 
 export const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
   const idx = arr.findIndex((it) => it.filename === obj.filename)
@@ -100,7 +88,7 @@ export const sliceSlug = (text: string): string[] => {
 
 export const U = '_'
 export const delimiter = '||' // for counter id
-export const reFilename = new RegExp(/^(.*?)(\.[^.]*)?$/)
+export const reFilename = /^(.*?)(\.[^.]*)?$/
 
 export const thumbName = (filename: string) => {
   const match = filename.match(reFilename)
@@ -133,23 +121,29 @@ export const completePhoto = async (
   tags: string[],
   headline: string,
 ): Promise<PhotoType> => {
-  let tmp = { ...rec }
   // url, filename, size, email, nick exist from uploadTask
   const datum = new Date()
-  tmp.date = formatDatum(datum, CONFIG.dateFormat)
-  tmp.year = datum.getFullYear()
-  tmp.month = datum.getMonth() + 1
-  tmp.day = datum.getDate()
-  tmp.headline = headline
-  tmp.text = sliceSlug(headline)
-  tmp.tags = tags
-
   const exif = await readExif(rec.url)
-  tmp = { ...tmp, ...exif }
+
+  const tmp: PhotoType = {
+    ...rec,
+    date: formatDatum(datum, CONFIG.dateFormat),
+    year: datum.getFullYear(),
+    month: datum.getMonth() + 1,
+    day: datum.getDate(),
+    headline,
+    text: sliceSlug(headline),
+    tags,
+    ...exif,
+  }
+
   // Sync 'flash' tag with EXIF data
   const updatedTags = new Set(tmp.tags)
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  tmp.flash ? updatedTags.add('flash') : updatedTags.delete('flash')
+  if (tmp.flash) {
+    updatedTags.add('flash')
+  } else {
+    updatedTags.delete('flash')
+  }
   tmp.tags = [...updatedTags]
   return tmp
 }
@@ -159,7 +153,7 @@ export const completePhoto = async (
  * @param query The search query criteria to fix.
  * @returns The sanitized and normalized search query criteria.
  */
-import type { FindType } from './models'
+const dateFields = new Set(['year', 'month', 'day'])
 export const fixQuery = (query: FindType): FindType => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)
@@ -168,7 +162,7 @@ export const fixQuery = (query: FindType): FindType => {
           value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true),
       )
       .map(([key, value]) => {
-        if (['year', 'month', 'day'].includes(key)) {
+        if (dateFields.has(key)) {
           return [key, Number(value)]
         } else if (key === 'tags' && typeof value === 'string') {
           return [key, [value]]

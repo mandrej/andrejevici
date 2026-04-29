@@ -1,6 +1,8 @@
 import { Notify } from 'quasar'
 import type { QNotifyOptions } from 'quasar'
 
+const darkTextTypes = new Set(['info', 'warning', 'positive'])
+
 /**
  * Sends a notification to the user.
  *
@@ -20,15 +22,14 @@ export default function notify({
   caption = '',
   icon = '',
 }: QNotifyOptions) {
-  const color = (type: string) =>
-    ['info', 'warning', 'positive'].indexOf(type) >= 0 ? 'dark' : 'white'
-  actions.forEach((element) => {
-    element.color = color(type)
-  })
+  const textColor = darkTextTypes.has(type) ? 'dark' : 'white'
+  for (const action of actions) {
+    action.color = textColor
+  }
   Notify.create({
-    type: type,
-    textColor: color(type),
-    message: message,
+    type,
+    textColor,
+    message,
     multiLine,
     timeout,
     spinner,
