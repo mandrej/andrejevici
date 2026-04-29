@@ -76,6 +76,19 @@
             </q-item-section>
           </q-item>
         </template>
+        <template #append>
+          <q-btn
+            v-if="hasActiveFilters"
+            round
+            dense
+            flat
+            icon="sym_r_clear_all"
+            class="clear-button"
+            @click="clearAll"
+          >
+            <q-tooltip>Clear all filters</q-tooltip>
+          </q-btn>
+        </template>
       </q-select>
     </div>
   </div>
@@ -228,6 +241,11 @@ const removeTag = (tag: string) => {
     submit()
   }
 }
+const clearAll = () => {
+  tmp.value = {}
+  submit()
+}
+
 const hasActiveFilters = computed(() => {
   return Object.keys(tmp.value).length > 0
 })
@@ -287,6 +305,16 @@ const hasActiveFilters = computed(() => {
 
   :deep(.q-chip__content) {
     white-space: nowrap;
+  }
+
+  .clear-button {
+    color: var(--q-primary);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 </style>

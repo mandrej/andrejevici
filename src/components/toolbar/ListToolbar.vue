@@ -3,7 +3,7 @@
     <router-link to="/" class="text-h6 q-mr-sm" style="color: inherit; text-decoration: none">
       {{ $route.meta.title }}
     </router-link>
-    <GlobalSearch style="max-width: 600px; flex-grow: 1" />
+    <GlobalSearch />
   </q-toolbar-title>
 
   <div class="absolute-bottom">
