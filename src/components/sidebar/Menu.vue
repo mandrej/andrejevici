@@ -1,6 +1,6 @@
 <template>
   <q-list class="q-mt-lg">
-    <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
+    <!-- <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
       <q-item-section avatar>
         <q-icon name="sym_r_home" />
       </q-item-section>
@@ -8,6 +8,19 @@
       <q-item-section>
         <q-item-label>Start</q-item-label>
         <q-item-label caption></q-item-label>
+      </q-item-section>
+    </q-item> -->
+
+    <q-item clickable v-ripple @click="auth.signIn">
+      <q-item-section avatar>
+        <q-icon :name="user && user.isAuthorized ? 'sym_r_logout' : 'sym_r_login'" />
+      </q-item-section>
+
+      <q-item-section>
+        <q-item-label>{{ user ? `${user.name}` : 'Sign in' }}</q-item-label>
+        <q-item-label caption>
+          {{ user ? contribution(user!.email) : 'Sign in with your Google account' }}
+        </q-item-label>
       </q-item-section>
     </q-item>
 
@@ -53,19 +66,6 @@
       <q-item-section>
         <q-item-label>Admin</q-item-label>
         <q-item-label caption>rebuild, repair, tags, subscribers</q-item-label>
-      </q-item-section>
-    </q-item>
-
-    <q-item clickable v-ripple @click="auth.signIn">
-      <q-item-section avatar>
-        <q-icon :name="user && user.isAuthorized ? 'sym_r_logout' : 'sym_r_login'" />
-      </q-item-section>
-
-      <q-item-section>
-        <q-item-label>{{ user ? `Sign out ${user.name}` : 'Sign in' }}</q-item-label>
-        <q-item-label caption>
-          {{ user ? contribution(user!.email) : 'Sign in with your Google account' }}
-        </q-item-label>
       </q-item-section>
     </q-item>
   </q-list>

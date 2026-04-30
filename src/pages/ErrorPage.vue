@@ -1,15 +1,18 @@
 <template>
-  <div class="column">
-    <div class="row justify-center">
-      <div class="text-h1 text-center text-weight-thin">
+  <q-card flat>
+    <q-card-section>
+      <div class="text-h1 text-weight-thin text-center">
         {{ props.code }}
-        <p class="q-ma-none text-body2">
-          {{ text }}
-        </p>
-        <q-btn class="full-width" flat size="lg" to="/">Go Home</q-btn>
       </div>
-    </div>
-  </div>
+      <p class="q-ma-none text-body2 text-center">
+        {{ text }}
+      </p>
+    </q-card-section>
+    <q-separator />
+    <q-card-actions align="right">
+      <q-btn class="full-width" flat size="lg" to="/">Go Home</q-btn>
+    </q-card-actions>
+  </q-card>
 </template>
 
 <script setup lang="ts">
