@@ -19,6 +19,12 @@
       }"
     />
   </div>
+
+  <q-space />
+  <q-tabs v-model="addTab" shrink inline-label>
+    <q-tab name="Photo" icon="sym_r_image" label="Images" />
+    <q-tab name="Video" icon="sym_r_video_library" label="Videos" />
+  </q-tabs>
 </template>
 
 <script setup lang="ts">
@@ -26,5 +32,5 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 
 const app = useAppStore()
-const { progressInfo } = storeToRefs(app)
+const { progressInfo, addTab } = storeToRefs(app)
 </script>

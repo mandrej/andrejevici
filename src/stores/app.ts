@@ -34,8 +34,9 @@ import type {
   PhotoType,
   AppStoreState,
   MessageType,
+  VideoType,
 } from '../helpers/models'
-import { photoCollection, messageCollection, bucketCollection } from '../helpers/collections'
+import { photoCollection, messageCollection, bucketCollection, videoCollection } from '../helpers/collections'
 
 const bucketRef = doc(bucketCollection, 'total')
 
@@ -80,6 +81,7 @@ export const useAppStore = defineStore('app', {
     showConfirm: false,
     showCarousel: false,
     adminTab: 'repair',
+    addTab: 'Photo',
     metaTab: 'tags',
     metaOptions: [
       { label: 'Manage Tags', value: 'tags', icon: 'sym_r_label', short: 'Tag' },
@@ -96,6 +98,7 @@ export const useAppStore = defineStore('app', {
       'find',
       'uploaded',
       'adminTab',
+      'addTab',
       'metaTab',
       'metaOptions',
       'theme',
@@ -298,6 +301,21 @@ export const useAppStore = defineStore('app', {
       }
       this.currentEdit = obj
       // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
+      return obj
+    },
+
+    /**
+     * Saves a video record to the Firestore database.
+     *
+     * @param {VideoType} obj - The video record to save.
+     * @return {Promise<VideoType>} The saved video record.
+     */
+    async saveVideo(obj: VideoType): Promise<VideoType> {
+      const docRef = doc(videoCollection, obj.filename)
+      const meta = useValuesStore()
+      await setDoc(docRef, obj, { merge: true })
+      meta.updateCounters(null, obj, 'Video')
+      notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
       return obj
     },
 

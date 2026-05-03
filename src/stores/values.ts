@@ -168,7 +168,11 @@ export const useValuesStore = defineStore('meta', {
       const querySnapshot = await getDocs(query(counterCollection))
       querySnapshot.forEach((d) => {
         const obj = d.data() as { count: number; field: string; value: string }
-        this.values[obj.field as keyof ValuesState['values']][obj.value] = obj.count
+        const field = obj.field as keyof ValuesState['values']
+        if (this.values[field]) {
+          const current = this.values[field][obj.value] || 0
+          this.values[field][obj.value] = current + obj.count
+        }
       })
     },
 
@@ -206,24 +210,23 @@ export const useValuesStore = defineStore('meta', {
       notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'sym_r_check' })
     },
 
-    /**
-     * Helper function to build counter map from photo data
-     * @param {PhotoType} data - The photo data to extract counters from
-     * @returns {Object} Map of counter IDs to count values
-     */
-    buildCounterMap(data: PhotoType): { [key: string]: number } {
+    buildCounterMap(
+      data: PhotoType | VideoType,
+      kind: CounterKind = 'Photo',
+    ): { [key: string]: number } {
       const counterMap: { [key: string]: number } = {}
+      const fields = kind === 'Photo' ? CONFIG.photo_filter : ['tags', 'year']
 
-      for (const field of CONFIG.photo_filter) {
-        const fieldValue = data[field as keyof PhotoType]
+      for (const field of fields) {
+        const fieldValue = data[field as keyof typeof data]
         if (!fieldValue) continue
 
         if (field === 'tags') {
           for (const tag of fieldValue as string[]) {
-            counterMap[counterId(field, tag)] = 1
+            counterMap[counterId(field, tag, kind)] = 1
           }
         } else {
-          counterMap[counterId(field, fieldValue as string)] = 1
+          counterMap[counterId(field, fieldValue as string, kind)] = 1
         }
       }
 
@@ -237,9 +240,13 @@ export const useValuesStore = defineStore('meta', {
      * @param {PhotoType | null} oldData - The old data to update counters from.
      * @param {PhotoType | null} newData - The new data to update counters from.
      */
-    updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
-      const oldObj = oldData ? this.buildCounterMap(oldData) : {}
-      const newObj = newData ? this.buildCounterMap(newData) : {}
+    updateCounters(
+      oldData: PhotoType | VideoType | null,
+      newData: PhotoType | VideoType | null,
+      kind: CounterKind = 'Photo',
+    ): void {
+      const oldObj = oldData ? this.buildCounterMap(oldData, kind) : {}
+      const newObj = newData ? this.buildCounterMap(newData, kind) : {}
 
       if (isEmpty(oldObj) && isEmpty(newObj)) return
 

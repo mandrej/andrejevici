@@ -1,5 +1,7 @@
 import type { Timestamp } from '@google-cloud/firestore'
 
+export type CounterKind = 'Photo' | 'Video'
+
 export interface FindType {
   year?: number | undefined
   month?: number | undefined
@@ -46,6 +48,19 @@ export interface PhotoType extends ExifType {
   tags?: string[]
   text?: string[]
   thumb?: string
+}
+export interface VideoType {
+  readonly filename: string
+  readonly url: string
+  email: string
+  nick: string
+  headline?: string
+  tags?: string[]
+  text?: string[]
+  date?: string
+  day?: number
+  month?: number
+  year?: number
 }
 export interface CounterRecord {
   count: number
@@ -118,6 +133,7 @@ export interface AppStoreState {
   showConfirm: boolean
   showCarousel: boolean
   adminTab: string
+  addTab: 'Photo' | 'Video'
   metaTab: keyof ValuesState['values']
   metaOptions: MetaOption[]
   selected: PhotoType[]
