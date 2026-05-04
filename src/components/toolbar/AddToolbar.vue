@@ -22,8 +22,8 @@
 
   <q-space />
   <q-tabs v-model="addTab" shrink inline-label>
-    <q-tab name="Photo" icon="sym_r_image" label="Images" />
-    <q-tab name="Video" icon="sym_r_video_library" label="Videos" />
+    <q-tab name="photo" icon="sym_r_image" label="Images" />
+    <q-tab name="video" icon="sym_r_video_library" label="Videos" />
   </q-tabs>
 </template>
 

@@ -3,16 +3,16 @@
 
   <q-banner class="q-pa-md">
     <template v-slot:avatar>
-      <q-icon :name="addTab === 'Photo' ? 'sym_r_upload' : 'sym_r_video_library'" />
+      <q-icon :name="addTab === 'photo' ? 'sym_r_upload' : 'sym_r_video_library'" />
     </template>
     <span class="text-h6">{{
-      addTab === 'Photo' ? 'Upload / publish images' : 'Publish videos'
+      addTab === 'photo' ? 'Upload / publish images' : 'Publish videos'
     }}</span>
   </q-banner>
 
   <template v-if="canAddPhoto">
     <q-tab-panels v-model="addTab" animated>
-      <q-tab-panel name="Photo" class="q-pa-none">
+      <q-tab-panel name="photo" class="q-pa-none">
         <q-form @submit="onSubmit">
           <q-item>
             <q-item-section>
@@ -100,7 +100,7 @@
         </div>
       </q-tab-panel>
 
-      <q-tab-panel name="Video">
+      <q-tab-panel name="video">
         <q-form @submit="onVideoSubmit" class="q-pa-md">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-sm-6">
@@ -212,7 +212,7 @@ const canAddPhoto = computed(() => !!user.value?.isAuthorized && !!user.value?.n
 
 const videoUrl = ref('')
 const videoFilename = ref('')
-const videoDate = ref('')
+const videoDate = ref(formatDatum(new Date(), 'YYYY-MM-DD HH:mm'))
 
 interface Task {
   [key: string]: ReturnType<typeof uploadBytesResumable>
@@ -308,6 +308,7 @@ const uploadTask = (file: File): Promise<string> => {
               size: file.size,
               email: user.value!.email,
               nick: user.value!.nick,
+              kind: 'photo',
             }
             uploaded.value.push(data)
             resolve(filename)
@@ -338,7 +339,7 @@ const onVideoSubmit = async () => {
   const datum = new Date(videoDate.value)
   const video: VideoType = {
     url: videoUrl.value,
-    filename: videoFilename.value,
+    filename: `${uuidv4().substring(0, 8)}_${videoFilename.value}`,
     email: user.value!.email,
     nick: user.value!.nick,
     headline: headlineToApply.value || CONFIG.noTitle,
@@ -348,13 +349,14 @@ const onVideoSubmit = async () => {
     year: datum.getFullYear(),
     month: datum.getMonth() + 1,
     day: datum.getDate(),
+    size: 0,
   }
 
   try {
     await app.saveVideo(video)
     videoUrl.value = ''
     videoFilename.value = ''
-    videoDate.value = ''
+    videoDate.value = formatDatum(new Date(), 'YYYY-MM-DD HH:mm')
     headlineToApply.value = ''
     tagsToApply.value = []
     notify({ type: 'positive', message: 'Video published successfully' })

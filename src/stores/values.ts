@@ -5,7 +5,7 @@ import { isEmpty, delimiter, counterId, months } from '../helpers'
 import CONFIG from '../config'
 import { counterCollection, photoCollection } from '../helpers/collections'
 import notify from '../helpers/notify'
-import type { PhotoType, ValuesState, Suggestion } from '../helpers/models'
+import type { PhotoType, ValuesState, Suggestion, CounterKind } from '../helpers/models'
 
 /**
  * Builds counters for a specific field from all photos in the database.
@@ -16,23 +16,26 @@ const buildCounters = async (
   field: keyof ValuesState['values'],
 ): Promise<Record<string, number>> => {
   const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
-  const newValues: Record<string, number> = {}
+  const counterMap: Record<string, number> = {}
 
   photoSnapshot.forEach((doc) => {
-    const obj = doc.data() as Record<string, unknown>
+    const obj = doc.data() as PhotoType
+    const kind = obj.kind || 'photo'
     if (field === 'tags') {
       const tags = Array.isArray(obj.tags) ? obj.tags : []
       for (const tag of tags) {
-        newValues[tag] = (newValues[tag] ?? 0) + 1
+        const id = counterId(field, tag, kind)
+        counterMap[id] = (counterMap[id] ?? 0) + 1
       }
     } else {
-      const val = obj[field]
+      const val = obj[field as keyof PhotoType]
       if (val !== undefined && val !== null && val !== '') {
-        newValues[val as string] = (newValues[val as string] ?? 0) + 1
+        const id = counterId(field, val as string, kind)
+        counterMap[id] = (counterMap[id] ?? 0) + 1
       }
     }
   })
-  return newValues
+  return counterMap
 }
 
 /**
@@ -183,7 +186,7 @@ export const useValuesStore = defineStore('meta', {
         const fieldKey = f as keyof ValuesState['values']
         notify({ group: 'counters', message: `Building counters for ${fieldKey}...`, timeout: 0 })
 
-        const newValues = await buildCounters(fieldKey)
+        const newCounterMap = await buildCounters(fieldKey)
 
         // Delete old counters for this field
         const countersToDelete = await getDocs(
@@ -192,13 +195,21 @@ export const useValuesStore = defineStore('meta', {
         await commitInBatches(countersToDelete.docs, (batch, d) => batch.delete(d.ref))
 
         // Write new counters
-        const entries = Object.entries(newValues)
-        await commitInBatches(entries, (batch, [key, val]) => {
-          const counterRef = doc(counterCollection, counterId(fieldKey, key))
-          batch.set(counterRef, { count: val, field: fieldKey, value: key })
+        const entries = Object.entries(newCounterMap)
+        await commitInBatches(entries, (batch, [id, val]) => {
+          const { value } = parseCounterKey(id)
+          const counterRef = doc(counterCollection, id)
+          batch.set(counterRef, { count: val, field: fieldKey, value })
         })
 
-        this.values[fieldKey] = newValues
+        // Update local state - merge counts for the same value across kinds
+        const mergedValues: Record<string, number> = {}
+        for (const [id, count] of entries) {
+          const { value } = parseCounterKey(id)
+          mergedValues[value] = (mergedValues[value] || 0) + count
+        }
+        this.values[fieldKey] = mergedValues
+
         notify({
           type: 'positive',
           group: 'counters',
@@ -210,12 +221,10 @@ export const useValuesStore = defineStore('meta', {
       notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'sym_r_check' })
     },
 
-    buildCounterMap(
-      data: PhotoType | VideoType,
-      kind: CounterKind = 'Photo',
-    ): { [key: string]: number } {
+    buildCounterMap(data: PhotoType, kind: CounterKind = 'photo'): { [key: string]: number } {
       const counterMap: { [key: string]: number } = {}
-      const fields = kind === 'Photo' ? CONFIG.photo_filter : ['tags', 'year']
+      const assetKind = data.kind || kind
+      const fields = CONFIG.photo_filter
 
       for (const field of fields) {
         const fieldValue = data[field as keyof typeof data]
@@ -223,10 +232,10 @@ export const useValuesStore = defineStore('meta', {
 
         if (field === 'tags') {
           for (const tag of fieldValue as string[]) {
-            counterMap[counterId(field, tag, kind)] = 1
+            counterMap[counterId(field, tag, assetKind)] = 1
           }
         } else {
-          counterMap[counterId(field, fieldValue as string, kind)] = 1
+          counterMap[counterId(field, fieldValue as string, assetKind)] = 1
         }
       }
 
@@ -241,9 +250,9 @@ export const useValuesStore = defineStore('meta', {
      * @param {PhotoType | null} newData - The new data to update counters from.
      */
     updateCounters(
-      oldData: PhotoType | VideoType | null,
-      newData: PhotoType | VideoType | null,
-      kind: CounterKind = 'Photo',
+      oldData: PhotoType | null,
+      newData: PhotoType | null,
+      kind: CounterKind = 'photo',
     ): void {
       const oldObj = oldData ? this.buildCounterMap(oldData, kind) : {}
       const newObj = newData ? this.buildCounterMap(newData, kind) : {}

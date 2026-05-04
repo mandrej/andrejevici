@@ -3,7 +3,7 @@ import type { DocumentSnapshot } from 'firebase/firestore'
 import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, setDoc } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
-import { reFilename, counterId } from '.'
+import { reFilename, counterId, getYouTubeId } from '.'
 import router from '../router'
 import { counterCollection, photoCollection, renameCollection } from './collections'
 
@@ -53,9 +53,9 @@ export const fix = async () => {
     const querySnapshot = await getDocs(q)
 
     const toFix = querySnapshot.docs.filter((doc) => {
-      const data = doc.data()
-      // Check if dim is missing, null, or an empty array
-      return !data.dim || (Array.isArray(data.dim) && data.dim.length === 0)
+      const data = doc.data() as PhotoType
+      // Only fix photos that are missing dimensions
+      return data.kind === 'photo' && (!data.dim || (data.dim as number[]).length === 0)
     })
 
     if (toFix.length === 0) {
@@ -211,7 +211,8 @@ export const missingThumbnails = async () => {
   for (const it of results) {
     if (it.status === 'fulfilled') {
       if (it.value.exists()) {
-        const data = it.value.data()
+        const data = it.value.data() as PhotoType
+        if (data.kind === 'video') continue // Skip videos
         const filename = it.value.id.replace(/\.[^.]+$/, '')
         message += `${data?.date} ${filename}<br/>`
         hit++
@@ -270,7 +271,8 @@ export const mismatch = async () => {
   ])
 
   const bucketNames = new Set(storageResult.items.map((r) => r.name))
-  const storageNames = new Set(firestoreResult.docs.map((d) => d.id))
+  const firestoreDocs = firestoreResult.docs.map((d) => d.data() as PhotoType)
+  const storageNames = new Set(firestoreDocs.filter(d => d.kind === 'photo').map((d) => d.filename))
   const uploadedFilenames = new Set(uploaded.value.map((it) => it.filename))
 
   // Files in storage but not in firestore (orphaned files)
@@ -442,4 +444,70 @@ export const renameValue = async (
       batch.update(doc(photoCollection, op.id), op.data)
     }
   })
+}
+
+/**
+ * Finds all videos missing the 'thumb' property and populates it using the YouTube ID.
+ */
+export const fixVideoThumbnails = async (): Promise<void> => {
+  notify({
+    message: 'Finding videos missing thumbnails...',
+    timeout: 0,
+    spinner: true,
+    group: 'fix-video-thumb',
+  })
+
+  try {
+    const q = query(photoCollection, where('kind', '==', 'video'))
+    const querySnapshot = await getDocs(q)
+
+    const toFix = querySnapshot.docs.filter((doc) => {
+      const data = doc.data() as PhotoType
+      return !data.thumb
+    })
+
+    if (toFix.length === 0) {
+      notify({
+        type: 'positive',
+        message: 'No videos missing thumbnails',
+        icon: 'sym_r_check',
+        group: 'fix-video-thumb',
+      })
+      return
+    }
+
+    notify({
+      message: `Found ${toFix.length} videos to fix. Processing...`,
+      timeout: 0,
+      spinner: true,
+      group: 'fix-video-thumb',
+    })
+
+    const batch = writeBatch(db)
+    toFix.forEach((doc) => {
+      const data = doc.data() as PhotoType
+      const id = getYouTubeId(data.url)
+      if (id) {
+        batch.update(doc.ref, {
+          thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        })
+      }
+    })
+
+    await batch.commit()
+
+    notify({
+      type: 'positive',
+      message: `Successfully fixed ${toFix.length} video thumbnails`,
+      icon: 'sym_r_check',
+      group: 'fix-video-thumb',
+    })
+  } catch (error) {
+    console.error('Failed to fix video thumbnails:', error)
+    notify({
+      type: 'negative',
+      message: 'Error fixing video thumbnails',
+      group: 'fix-video-thumb',
+    })
+  }
 }

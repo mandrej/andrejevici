@@ -1,13 +1,20 @@
 <template>
-  <q-card v-if="rec.thumb" :id="U + rec.filename" class="card" flat>
+  <q-card v-if="isPublished" :id="U + rec.filename" class="card" flat>
     <q-img
       loading="lazy"
       :ratio="4 / 3"
-      :src="rec.thumb"
+      :src="thumbUrl"
       @click="emit('carouselShow', rec.filename)"
       class="col cursor-pointer"
       spinner-color="grey-5"
     >
+      <div
+        v-if="rec.kind === 'video'"
+        class="absolute-full flex flex-center"
+        style="background: rgba(0, 0, 0, 0.2)"
+      >
+        <q-icon name="sym_r_play_circle" size="64px" color="white" />
+      </div>
       <template #error>
         <FileBroken />
       </template>
@@ -56,10 +63,16 @@ import { U, formatDatum, openMaps } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 import { useAppStore } from '../stores/app'
 import FileBroken from './FileBroken.vue'
+import { computed } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   rec: PhotoType
 }>()
+
+const thumbUrl = computed(() => props.rec.thumb || props.rec.url)
+const isPublished = computed(
+  () => (props.rec.kind === 'photo' && props.rec.thumb) || props.rec.kind === 'video',
+)
 const emit = defineEmits(['carouselShow'])
 const app = useAppStore()
 </script>

@@ -11,14 +11,14 @@
         <div>
           <q-btn type="submit" color="primary" label="Save" @click="onSubmit" />
           <q-btn
-            v-if="user!.isAdmin"
+            v-if="user!.isAdmin && tmp.kind !== 'video'"
             class="q-ml-sm gt-sm"
             flat
             label="Read Exif"
             @click="getExif"
           />
         </div>
-        <div>{{ formatBytes(tmp.size) }} {{ tmp.dim }}</div>
+        <div v-if="tmp.kind !== 'video'">{{ formatBytes(tmp.size) }} {{ tmp.dim }}</div>
         <div>
           <q-btn flat round dense icon="sym_r_close" @click="onCancel" />
         </div>
@@ -34,7 +34,7 @@
         >
           <div class="row q-col-gutter-md">
             <div class="col-xs-12 col-sm-4 gt-xs">
-              <q-img :ratio="1" :src="tmp.thumb ? tmp.thumb : tmp.url">
+              <q-img :ratio="1" :src="thumbUrl">
                 <template #error>
                   <FileBroken />
                 </template>
@@ -123,7 +123,7 @@
 
             <div class="col-xs-2 vertical-bottom text-right"></div>
 
-            <div class="col-xs-12 col-sm-6">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-12 col-sm-6">
               <AutoComplete
                 label="Camera Model"
                 v-model="tmp.model"
@@ -135,7 +135,7 @@
                 "
               />
             </div>
-            <div class="col-xs-12 col-sm-6">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-12 col-sm-6">
               <AutoComplete
                 label="Camera Lens"
                 v-model="tmp.lens"
@@ -147,24 +147,24 @@
                 "
               />
             </div>
-            <div class="col-xs-6 col-sm-4">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.focal_length" type="number" label="Focal length [mm]" />
             </div>
 
-            <div class="col-xs-6 col-sm-4">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.iso" type="number" label="ISO [ASA]" />
             </div>
-            <div class="col-xs-6 col-sm-4">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.aperture" type="number" step="0.1" label="Aperture" />
             </div>
-            <div class="col-xs-6 col-sm-4">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.shutter" label="Shutter [s]" />
             </div>
 
             <div class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.loc" label="Location [latitude, longitude]" clearable />
             </div>
-            <div class="col-xs-6 col-sm-4 col-4 q-mt-sm">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4 col-4 q-mt-sm">
               <q-checkbox v-model="tmp.flash" label="Flash fired?" />
             </div>
           </div>
@@ -175,8 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { U, formatBytes, sliceSlug } from '../../helpers'
+import { reactive, computed } from 'vue'
+import { U, formatBytes, sliceSlug, getYouTubeId } from '../../helpers'
 import CONFIG from '../../config'
 import readExif from '../../helpers/exif'
 import notify from '../../helpers/notify'
@@ -200,6 +200,15 @@ const tmp = reactive({ ...props.rec }) as PhotoType
 const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
+
+const thumbUrl = computed(() => {
+  if (tmp.thumb) return tmp.thumb
+  if (tmp.kind === 'video') {
+    const id = getYouTubeId(tmp.url)
+    if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+  }
+  return tmp.url
+})
 
 const getExif = async () => {
   /**

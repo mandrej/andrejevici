@@ -22,7 +22,7 @@
                 v-if="user?.isAuthorized && user?.nick"
                 to="/add"
                 color="primary"
-                label="Add photos"
+                label="Add photos / videos"
               />
             </div>
           </div>
@@ -37,7 +37,7 @@
           <q-btn
             v-if="user?.isAuthorized && user?.nick"
             to="/add"
-            icon="sym_r_add_a_photo"
+            icon="sym_r_add"
             size="lg"
             round
             unelevated
@@ -63,7 +63,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
-import { isEmpty } from '../helpers'
+import { isEmpty, getYouTubeMaxResUrl, getYouTubeId } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 
 const app = useAppStore()
@@ -82,8 +82,16 @@ const common = {
   minHeight: '50vh',
 }
 const imageStyle = (rec: PhotoType) => {
-  if (rec && rec.thumb) {
-    return { ...common, backgroundImage: `url(${rec.url}), url(${rec.thumb})` }
+  if (!rec) return {}
+  let thumb = rec.thumb || rec.url
+  if (!rec.thumb && rec.kind === 'video') {
+    const id = getYouTubeId(rec.url)
+    if (id) thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
   }
+  if (rec.kind === 'video') {
+    const maxRes = getYouTubeMaxResUrl(rec.url)
+    return { ...common, backgroundImage: `url(${maxRes}), url(${thumb})` }
+  }
+  return { ...common, backgroundImage: `url(${rec.url}), url(${thumb})` }
 }
 </script>

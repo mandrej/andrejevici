@@ -109,9 +109,7 @@
               :disable="user?.email === item.email || !item.nick"
               color="negative"
               label="Admin"
-              @click="
-                user?.email !== item.email && item.nick ? auth.updateUser(item, 'isAdmin') : null
-              "
+              @update:model-value="(val) => toggleAdmin(item, val as boolean)"
             />
             <q-checkbox
               :dense="$q.screen.xs"
@@ -198,6 +196,7 @@ import type { UsersAndDevices } from '../../helpers/models'
 import type { Timestamp } from '@google-cloud/firestore'
 
 import LocalSearch from '../LocalSearch.vue'
+import notify from '../../helpers/notify'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -217,6 +216,8 @@ const filteredResult = computed(() => {
   )
 })
 
+const adminCount = computed(() => result.value.filter((u) => u.isAdmin).length)
+
 const showNickDialog = ref(false)
 const userToEdit = ref<UsersAndDevices | null>(null)
 const tempNick = ref('')
@@ -231,6 +232,11 @@ const confirmDeleteUser = (user: UsersAndDevices) => {
 
 const doDeleteUser = async () => {
   if (userToDelete.value) {
+    if (userToDelete.value.isAdmin && adminCount.value === 1) {
+      notify({ type: 'negative', message: 'Cannot delete the only admin user' })
+      showDeleteDialog.value = false
+      return
+    }
     await auth.deleteUser(userToDelete.value.uid)
     showDeleteDialog.value = false
     await fetchList()
@@ -250,6 +256,25 @@ const openNickDialog = (user: UsersAndDevices) => {
   userToEdit.value = user
   tempNick.value = user.nick
   showNickDialog.value = true
+}
+
+const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
+  // If we are trying to remove admin status and there's only one admin left
+  if (!val && adminCount.value === 0) {
+    // Note: adminCount is computed from result.value.
+    // If the checkbox already changed the value in the object, adminCount might already be 0.
+    // Let's check more carefully.
+  }
+  
+  // Re-calculating count excluding the current item if we are turning it off
+  const remainingAdmins = result.value.filter(u => u.isAdmin).length
+  if (!val && remainingAdmins === 0) {
+    notify({ type: 'negative', message: 'Cannot remove the last administrator' })
+    item.isAdmin = true // Revert
+    return
+  }
+  
+  await auth.updateUser(item, 'isAdmin')
 }
 
 const saveNick = async () => {

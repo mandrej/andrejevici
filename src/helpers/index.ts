@@ -107,7 +107,7 @@ export const thumbUrl = (filename: string) => {
 export const counterId = (
   field: string,
   value: string | number,
-  kind: CounterKind = 'Photo',
+  kind: CounterKind = 'photo',
 ): string => {
   // IDs cannot contain a forward slash (/)
   return `${kind}${delimiter}${field}${delimiter}${value}`.replace(/\//g, '%2F')
@@ -131,6 +131,7 @@ export const completePhoto = async (
 
   const tmp: PhotoType = {
     ...rec,
+    kind: 'photo',
     date: formatDatum(datum, CONFIG.dateFormat),
     year: datum.getFullYear(),
     month: datum.getMonth() + 1,
@@ -179,4 +180,15 @@ export const fixQuery = (query: FindType): FindType => {
 export const openMaps = (loc: string) => {
   const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
   window.open(url, '_blank')
+}
+
+export const getYouTubeId = (url: string): string | null => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/
+  const match = url.match(regExp)
+  return match && match[2] && match[2].length === 11 ? match[2] : null
+}
+
+export const getYouTubeMaxResUrl = (url: string): string | null => {
+  const id = getYouTubeId(url)
+  return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : null
 }

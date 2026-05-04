@@ -15,7 +15,15 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
-import { thumbName, thumbUrl, removeFromList, replaceInList, sliceSlug, fixQuery } from '../helpers'
+import {
+  thumbName,
+  thumbUrl,
+  removeFromList,
+  replaceInList,
+  sliceSlug,
+  fixQuery,
+  getYouTubeId,
+} from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import { useValuesStore } from './values'
@@ -36,7 +44,7 @@ import type {
   MessageType,
   VideoType,
 } from '../helpers/models'
-import { photoCollection, messageCollection, bucketCollection, videoCollection } from '../helpers/collections'
+import { photoCollection, messageCollection, bucketCollection } from '../helpers/collections'
 
 const bucketRef = doc(bucketCollection, 'total')
 
@@ -81,7 +89,7 @@ export const useAppStore = defineStore('app', {
     showConfirm: false,
     showCarousel: false,
     adminTab: 'repair',
-    addTab: 'Photo',
+    addTab: 'photo',
     metaTab: 'tags',
     metaOptions: [
       { label: 'Manage Tags', value: 'tags', icon: 'sym_r_label', short: 'Tag' },
@@ -197,6 +205,8 @@ export const useAppStore = defineStore('app', {
             return where(key, 'array-contains-any', val)
           } else if (key === 'text') {
             return where(key, 'array-contains-any', sliceSlug(val as string))
+          } else if (key === 'kind') {
+            return where(key, '==', val)
           } else {
             return where(key, '==', val)
           }
@@ -259,12 +269,14 @@ export const useAppStore = defineStore('app', {
     async saveRecord(obj: PhotoType): Promise<PhotoType> {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
+      if (!obj.kind) obj.kind = 'photo'
+
       if (obj.thumb) {
         const oldDoc = this.objects.find((x) => x.filename === obj.filename)
         await setDoc(docRef, obj, { merge: true })
         replaceInList(this.objects, obj)
 
-        meta.updateCounters(oldDoc || obj, obj)
+        meta.updateCounters(oldDoc || obj, obj, obj.kind)
         notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'sym_r_check' })
       } else {
         // set thumbnail url = publish
@@ -289,7 +301,7 @@ export const useAppStore = defineStore('app', {
           this.lastRecord = { ...obj }
         }
         this.bucketDiff(obj.size)
-        meta.updateCounters(null, obj)
+        meta.updateCounters(null, obj, obj.kind)
         // delete uploaded
         removeFromList(this.uploaded, obj)
 
@@ -311,10 +323,15 @@ export const useAppStore = defineStore('app', {
      * @return {Promise<VideoType>} The saved video record.
      */
     async saveVideo(obj: VideoType): Promise<VideoType> {
-      const docRef = doc(videoCollection, obj.filename)
+      obj.kind = 'video'
+      const id = getYouTubeId(obj.url)
+      if (id) {
+        obj.thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+      }
+      const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       await setDoc(docRef, obj, { merge: true })
-      meta.updateCounters(null, obj, 'Video')
+      meta.updateCounters(null, obj, 'video')
       notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
       return obj
     },
@@ -330,12 +347,17 @@ export const useAppStore = defineStore('app', {
      */
     async deleteRecord(obj: PhotoType) {
       const docRef = doc(photoCollection, obj.filename)
-      const stoRef = storageRef(storage, obj.filename)
-      const thumbRef = storageRef(storage, thumbName(obj.filename))
       const meta = useValuesStore()
 
       try {
-        await Promise.all([deleteDoc(docRef), deleteObject(stoRef), deleteObject(thumbRef)])
+        const promises: Promise<void>[] = [deleteDoc(docRef)]
+        if (obj.kind !== 'video') {
+          const stoRef = storageRef(storage, obj.filename)
+          const thumbRef = storageRef(storage, thumbName(obj.filename))
+          promises.push(deleteObject(stoRef))
+          promises.push(deleteObject(thumbRef))
+        }
+        await Promise.all(promises)
       } catch (err) {
         notify({
           type: 'error',

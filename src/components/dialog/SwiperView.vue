@@ -7,7 +7,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
-import { U } from '../../helpers'
+import { U, getYouTubeId } from '../../helpers'
 import { useQuasar, copyToClipboard } from 'quasar'
 import notify from '../../helpers/notify'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
@@ -30,6 +30,8 @@ window.onpopstate = function () {
 }
 
 const getCaption = (rec: PhotoType, showExtra: boolean): string => {
+  if (rec.kind === 'video') return rec.headline || ''
+
   let tmp = ''
   const { headline, aperture, shutter, iso, model, lens } = rec
   tmp += (headline || '') + '<br/>'
@@ -63,6 +65,13 @@ const onShare = async () => {
 
 const initLightbox = () => {
   const dataSource = objects.value.map((obj) => {
+    if (obj.kind === 'video') {
+      const id = getYouTubeId(obj.url)
+      return {
+        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
+        obj: obj,
+      }
+    }
     // PhotoSwipe v5 requires width/height.
     // We try to use obj.dim if available, otherwise default to 0 and update on load.
     // Assuming obj.dim is [width, height]
@@ -153,6 +162,13 @@ const initLightbox = () => {
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
         el.style.right = '20px'
+        pswp.on('change', () => {
+          const currSlide = pswp.currSlide
+          if (currSlide && currSlide.data.obj) {
+            const obj = currSlide.data.obj as PhotoType
+            el.style.display = obj.kind === 'video' ? 'none' : 'flex'
+          }
+        })
       },
     })
   })
@@ -169,6 +185,8 @@ const initLightbox = () => {
   // Handle images with unknown dimensions
   lightbox.on('contentLoad', (e) => {
     const { content } = e
+    if (content.data.html) return // Skip videos
+
     const width = content.data.width
     const height = content.data.height
 
@@ -243,5 +261,21 @@ onUnmounted(() => {
 
 .pswp::-webkit-scrollbar {
   display: none;
+}
+
+.video-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: 90%;
+  max-width: 1280px;
+  max-height: 720px;
+}
+
+.video-wrapper iframe {
+  width: 100%;
+  height: 100%;
 }
 </style>
