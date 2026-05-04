@@ -161,7 +161,7 @@
               <q-input v-model="tmp.shutter" label="Shutter [s]" />
             </div>
 
-            <div class="col-xs-6 col-sm-4">
+            <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4">
               <q-input v-model="tmp.loc" label="Location [latitude, longitude]" clearable />
             </div>
             <div v-if="tmp.kind !== 'video'" class="col-xs-6 col-sm-4 col-4 q-mt-sm">

@@ -68,7 +68,7 @@ const initLightbox = () => {
     if (obj.kind === 'video') {
       const id = getYouTubeId(obj.url)
       return {
-        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
+        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&playlist=${id}&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
         obj: obj,
       }
     }
@@ -143,6 +143,13 @@ const initLightbox = () => {
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
         el.style.right = '70px'
+        pswp.on('change', () => {
+          const currSlide = pswp.currSlide
+          if (currSlide && currSlide.data.obj) {
+            const obj = currSlide.data.obj as PhotoType
+            el.style.display = obj.kind === 'video' ? 'none' : 'flex'
+          }
+        })
       },
     })
 
@@ -265,13 +272,10 @@ onUnmounted(() => {
 
 .video-wrapper {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  height: 90%;
-  max-width: 1280px;
-  max-height: 720px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .video-wrapper iframe {

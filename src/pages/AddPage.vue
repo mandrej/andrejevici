@@ -6,7 +6,7 @@
       <q-icon :name="addTab === 'photo' ? 'sym_r_upload' : 'sym_r_video_library'" />
     </template>
     <span class="text-h6">{{
-      addTab === 'photo' ? 'Upload / publish images' : 'Publish videos'
+      addTab === 'photo' ? 'Upload / publish images' : 'Link videos'
     }}</span>
   </q-banner>
 
@@ -106,7 +106,7 @@
             <div class="col-12 col-sm-6">
               <q-input
                 v-model="videoUrl"
-                label="YouTube Video URL *"
+                label="YouTube Video URL"
                 hint="Paste the YouTube Studio URL here"
                 :rules="[(val) => !!val || 'URL is required']"
               />
@@ -114,7 +114,7 @@
             <div class="col-12 col-sm-6">
               <q-input
                 v-model="videoFilename"
-                label="Filename / ID *"
+                label="Filename / ID"
                 hint="A unique identifier for this video (slug)"
                 :rules="[(val) => !!val || 'Filename is required']"
               />
@@ -130,7 +130,7 @@
             <div class="col-12 col-sm-4">
               <q-input
                 v-model="videoDate"
-                label="Recording Date *"
+                label="Recording Date"
                 :rules="[(val) => !!val || 'Date is required']"
               >
                 <template v-slot:prepend>
@@ -163,7 +163,7 @@
               <TagsMerge label="Tags to apply" hint="You can add / remove tag later" />
             </q-item-section>
             <q-item-section side>
-              <q-btn label="Publish Video" type="submit" color="primary" style="width: 140px" />
+              <q-btn label="Link Video" type="submit" color="primary" style="width: 140px" />
             </q-item-section>
           </q-item>
         </q-form>
@@ -359,6 +359,7 @@ const onVideoSubmit = async () => {
     videoDate.value = formatDatum(new Date(), 'YYYY-MM-DD HH:mm')
     headlineToApply.value = ''
     tagsToApply.value = []
+
     notify({ type: 'positive', message: 'Video published successfully' })
   } catch (err) {
     notify({ type: 'negative', message: `Failed to publish video: ${(err as Error).message}` })

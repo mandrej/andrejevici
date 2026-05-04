@@ -331,6 +331,12 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       await setDoc(docRef, obj, { merge: true })
+      if (
+        !this.lastRecord ||
+        (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
+      ) {
+        this.lastRecord = { ...obj }
+      }
       meta.updateCounters(null, obj, 'video')
       notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
       return obj
