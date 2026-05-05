@@ -20,9 +20,8 @@ interface ValuesState {
 }
 
 const delimiter = '||' // for counter id
-
 const counterId = (field: string, value: string | number): string => {
-  return `Photo${delimiter}${field}${delimiter}${value}`.replace(/\//g, '%2F') // FIXME Photo is hard coded
+  return `${field}${delimiter}${value}`.replace(/\//g, '%2F')
 }
 
 // Build new counters

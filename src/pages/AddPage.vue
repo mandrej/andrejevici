@@ -101,14 +101,13 @@
       </q-tab-panel>
 
       <q-tab-panel name="video">
-        <q-form @submit="onVideoSubmit" class="q-pa-md">
+        <q-form ref="videoFormRef" @submit="onVideoSubmit" class="q-pa-md">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-sm-6">
               <q-input
                 v-model="videoUrl"
                 label="YouTube Video URL"
                 hint="Paste the YouTube Studio URL here"
-                :rules="[(val) => !!val || 'URL is required']"
               />
             </div>
             <div class="col-12 col-sm-6">
@@ -116,7 +115,6 @@
                 v-model="videoFilename"
                 label="Filename / ID"
                 hint="A unique identifier for this video (slug)"
-                :rules="[(val) => !!val || 'Filename is required']"
               />
             </div>
             <div class="col-12 col-sm-8">
@@ -128,11 +126,7 @@
               />
             </div>
             <div class="col-12 col-sm-4">
-              <q-input
-                v-model="videoDate"
-                label="Recording Date"
-                :rules="[(val) => !!val || 'Date is required']"
-              >
+              <q-input v-model="videoDate" label="Recording Date">
                 <template v-slot:prepend>
                   <q-icon name="sym_r_event" class="cursor-pointer">
                     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -193,10 +187,10 @@ import { fakeHistory, completePhoto, formatBytes, sliceSlug, formatDatum } from 
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import PictureCard from '../components/PictureCard.vue'
-
 import TagsMerge from '../components/sidebar/TagsMerge.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType, VideoType } from '../helpers/models'
+import type { QForm } from 'quasar'
 
 const EditRecord = defineAsyncComponent(() => import('../components/dialog/EditRecord.vue'))
 
@@ -213,6 +207,7 @@ const canAddPhoto = computed(() => !!user.value?.isAuthorized && !!user.value?.n
 const videoUrl = ref('')
 const videoFilename = ref('')
 const videoDate = ref(formatDatum(new Date(), 'YYYY-MM-DD HH:mm'))
+const videoFormRef = ref<InstanceType<typeof QForm> | null>(null)
 
 interface Task {
   [key: string]: ReturnType<typeof uploadBytesResumable>
@@ -359,6 +354,10 @@ const onVideoSubmit = async () => {
     videoDate.value = formatDatum(new Date(), 'YYYY-MM-DD HH:mm')
     headlineToApply.value = ''
     tagsToApply.value = []
+
+    if (videoFormRef.value) {
+      videoFormRef.value.resetValidation()
+    }
 
     notify({ type: 'positive', message: 'Video published successfully' })
   } catch (err) {

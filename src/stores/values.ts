@@ -5,7 +5,7 @@ import { isEmpty, delimiter, counterId, months } from '../helpers'
 import CONFIG from '../config'
 import { counterCollection, photoCollection } from '../helpers/collections'
 import notify from '../helpers/notify'
-import type { PhotoType, ValuesState, Suggestion, CounterKind } from '../helpers/models'
+import type { PhotoType, ValuesState, Suggestion } from '../helpers/models'
 
 /**
  * Builds counters for a specific field from all photos in the database.
@@ -20,17 +20,16 @@ const buildCounters = async (
 
   photoSnapshot.forEach((doc) => {
     const obj = doc.data() as PhotoType
-    const kind = obj.kind || 'photo'
     if (field === 'tags') {
       const tags = Array.isArray(obj.tags) ? obj.tags : []
       for (const tag of tags) {
-        const id = counterId(field, tag, kind)
+        const id = counterId(field, tag)
         counterMap[id] = (counterMap[id] ?? 0) + 1
       }
     } else {
       const val = obj[field as keyof PhotoType]
       if (val !== undefined && val !== null && val !== '') {
-        const id = counterId(field, val as string, kind)
+        const id = counterId(field, val as string)
         counterMap[id] = (counterMap[id] ?? 0) + 1
       }
     }
@@ -63,8 +62,8 @@ const sortedKeys = (state: ValuesState, field: keyof ValuesState['values']): str
 const parseCounterKey = (key: string): { field: keyof ValuesState['values']; value: string } => {
   const parts = key.split(delimiter)
   return {
-    field: parts[1] as keyof ValuesState['values'],
-    value: parts.slice(2).join(delimiter).replace(/%2F/g, '/'),
+    field: parts[0] as keyof ValuesState['values'],
+    value: parts.slice(1).join(delimiter).replace(/%2F/g, '/'),
   }
 }
 
@@ -168,6 +167,7 @@ export const useValuesStore = defineStore('meta', {
      * Reads the values from the database.
      */
     async readValues(): Promise<void> {
+      this.values = { year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} }
       const querySnapshot = await getDocs(query(counterCollection))
       querySnapshot.forEach((d) => {
         const obj = d.data() as { count: number; field: string; value: string }
@@ -221,9 +221,8 @@ export const useValuesStore = defineStore('meta', {
       notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'sym_r_check' })
     },
 
-    buildCounterMap(data: PhotoType, kind: CounterKind = 'photo'): { [key: string]: number } {
+    buildCounterMap(data: PhotoType): { [key: string]: number } {
       const counterMap: { [key: string]: number } = {}
-      const assetKind = data.kind || kind
       const fields = CONFIG.photo_filter
 
       for (const field of fields) {
@@ -232,10 +231,10 @@ export const useValuesStore = defineStore('meta', {
 
         if (field === 'tags') {
           for (const tag of fieldValue as string[]) {
-            counterMap[counterId(field, tag, assetKind)] = 1
+            counterMap[counterId(field, tag)] = 1
           }
         } else {
-          counterMap[counterId(field, fieldValue as string, assetKind)] = 1
+          counterMap[counterId(field, fieldValue as string)] = 1
         }
       }
 
@@ -249,13 +248,9 @@ export const useValuesStore = defineStore('meta', {
      * @param {PhotoType | null} oldData - The old data to update counters from.
      * @param {PhotoType | null} newData - The new data to update counters from.
      */
-    updateCounters(
-      oldData: PhotoType | null,
-      newData: PhotoType | null,
-      kind: CounterKind = 'photo',
-    ): void {
-      const oldObj = oldData ? this.buildCounterMap(oldData, kind) : {}
-      const newObj = newData ? this.buildCounterMap(newData, kind) : {}
+    updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
+      const oldObj = oldData ? this.buildCounterMap(oldData) : {}
+      const newObj = newData ? this.buildCounterMap(newData) : {}
 
       if (isEmpty(oldObj) && isEmpty(newObj)) return
 

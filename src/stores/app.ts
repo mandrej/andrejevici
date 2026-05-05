@@ -276,7 +276,7 @@ export const useAppStore = defineStore('app', {
         await setDoc(docRef, obj, { merge: true })
         replaceInList(this.objects, obj)
 
-        meta.updateCounters(oldDoc || obj, obj, obj.kind)
+        meta.updateCounters(oldDoc || obj, obj)
         notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'sym_r_check' })
       } else {
         // set thumbnail url = publish
@@ -301,7 +301,7 @@ export const useAppStore = defineStore('app', {
           this.lastRecord = { ...obj }
         }
         this.bucketDiff(obj.size)
-        meta.updateCounters(null, obj, obj.kind)
+        meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
 
@@ -337,7 +337,7 @@ export const useAppStore = defineStore('app', {
       ) {
         this.lastRecord = { ...obj }
       }
-      meta.updateCounters(null, obj, 'video')
+      meta.updateCounters(null, obj)
       notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
       return obj
     },

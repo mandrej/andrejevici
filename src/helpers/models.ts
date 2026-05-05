@@ -1,7 +1,6 @@
 import type { Timestamp } from '@google-cloud/firestore'
 
 export type AssetKind = 'photo' | 'video'
-export type CounterKind = 'photo' | 'video'
 
 export interface FindType {
   year?: number | undefined
@@ -54,11 +53,6 @@ export interface PhotoType extends ExifType {
 }
 export type VideoType = PhotoType
 
-export interface CounterRecord {
-  count: number
-  field: 'year' | 'tags' | 'model' | 'lens' | 'nick'
-  value: string
-}
 export interface MyUserType {
   readonly uid: string
   name: string

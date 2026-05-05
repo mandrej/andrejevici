@@ -1,6 +1,15 @@
 import { db, storage } from '../firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
-import { doc, query, getDocs, deleteDoc, getDoc, writeBatch, where, setDoc } from 'firebase/firestore'
+import {
+  doc,
+  query,
+  getDocs,
+  deleteDoc,
+  getDoc,
+  writeBatch,
+  where,
+  setDoc,
+} from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
 import { reFilename, counterId, getYouTubeId } from '.'
@@ -9,8 +18,6 @@ import { counterCollection, photoCollection, renameCollection } from './collecti
 
 import notify from './notify'
 import type { PhotoType, ValuesState } from './models'
-
-import readExif from './exif'
 
 const BATCH_LIMIT = 498
 
@@ -36,16 +43,16 @@ const commitInBatches = async <T>(
 }
 
 /**
- * Fixes photos in the database by populating missing dimensions.
+ * Fixes records in the database by populating missing 'kind' property.
  *
- * @return {Promise<void>} A promise that resolves when the photos are fixed.
+ * @return {Promise<void>} A promise that resolves when the records are fixed.
  */
 export const fix = async () => {
   notify({
-    message: 'Finding records missing dimensions...',
+    message: 'Finding records missing kind...',
     timeout: 0,
     spinner: true,
-    group: 'fix-dim',
+    group: 'fix-kind',
   })
 
   try {
@@ -54,16 +61,15 @@ export const fix = async () => {
 
     const toFix = querySnapshot.docs.filter((doc) => {
       const data = doc.data() as PhotoType
-      // Only fix photos that are missing dimensions
-      return data.kind === 'photo' && (!data.dim || (data.dim as number[]).length === 0)
+      return !data.kind
     })
 
     if (toFix.length === 0) {
       notify({
         type: 'positive',
-        message: 'No records missing dimensions',
+        message: 'No records missing kind',
         icon: 'sym_r_check',
-        group: 'fix-dim',
+        group: 'fix-kind',
       })
       return
     }
@@ -72,51 +78,25 @@ export const fix = async () => {
       message: `Found ${toFix.length} records to fix. Processing...`,
       timeout: 0,
       spinner: true,
-      group: 'fix-dim',
+      group: 'fix-kind',
     })
 
-    let fixedCount = 0
-    let errorCount = 0
-
-    // Collect items that need updating, then batch-commit
-    const updates: Array<{ ref: typeof toFix[0]['ref']; dim: [number, number] }> = []
-
-    for (const docSnap of toFix) {
-      const filename = docSnap.id
-      try {
-        const _ref = storageRef(storage, filename)
-        const url = await getDownloadURL(_ref)
-        const exif = await readExif(url)
-
-        if (exif && exif.dim) {
-          updates.push({ ref: docSnap.ref, dim: exif.dim })
-          fixedCount++
-        } else {
-          console.warn(`Could not find dimensions for ${filename}`)
-          errorCount++
-        }
-      } catch (e) {
-        console.error(`Failed to process ${filename}:`, e)
-        errorCount++
-      }
-    }
-
-    await commitInBatches(updates, (batch, { ref, dim }) => {
-      batch.update(ref, { dim })
+    await commitInBatches(toFix, (batch, docSnap) => {
+      batch.update(docSnap.ref, { kind: 'photo' })
     })
 
     notify({
-      type: fixedCount > 0 ? 'positive' : 'warning',
-      message: `Fixed ${fixedCount} records. ${errorCount > 0 ? `Errors: ${errorCount}` : ''}`,
-      icon: fixedCount > 0 ? 'sym_r_check' : 'sym_r_warning',
+      type: 'positive',
+      message: `Fixed ${toFix.length} records with missing kind.`,
+      icon: 'sym_r_check',
       timeout: 5000,
-      group: 'fix-dim',
+      group: 'fix-kind',
     })
   } catch (error) {
     notify({
       type: 'negative',
       message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-dim',
+      group: 'fix-kind',
     })
   }
 }
@@ -272,7 +252,9 @@ export const mismatch = async () => {
 
   const bucketNames = new Set(storageResult.items.map((r) => r.name))
   const firestoreDocs = firestoreResult.docs.map((d) => d.data() as PhotoType)
-  const storageNames = new Set(firestoreDocs.filter(d => d.kind === 'photo').map((d) => d.filename))
+  const storageNames = new Set(
+    firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.filename),
+  )
   const uploadedFilenames = new Set(uploaded.value.map((it) => it.filename))
 
   // Files in storage but not in firestore (orphaned files)
@@ -327,8 +309,6 @@ export const mismatch = async () => {
   }
 }
 
-
-
 /**
  * Deletes a value from all photo documents, its counter, and the local store.
  *
@@ -336,7 +316,10 @@ export const mismatch = async () => {
  * @param {string} value - The value to delete.
  * @return {Promise<void>} A promise that resolves when the value is fully removed.
  */
-export const deleteValue = async (field: keyof ValuesState['values'], value: string): Promise<void> => {
+export const deleteValue = async (
+  field: keyof ValuesState['values'],
+  value: string,
+): Promise<void> => {
   const filter =
     field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
   const querySnapshot = await getDocs(query(photoCollection, filter))
@@ -374,7 +357,7 @@ export const addValue = async (
   const id = counterId(field, value)
   const counterRef = doc(counterCollection, id)
   await setDoc(counterRef, { count: 0, field, value })
-  
+
   if (!meta.values[field]) {
     meta.values[field] = {}
   }
@@ -400,7 +383,8 @@ export const renameValue = async (
   const querySnapshot = await getDocs(query(photoCollection, filter))
 
   // Build the list of operations to commit
-  type BatchOp = { type: 'set'; id: string; data: Record<string, unknown>; merge?: boolean }
+  type BatchOp =
+    | { type: 'set'; id: string; data: Record<string, unknown>; merge?: boolean }
     | { type: 'update'; id: string; data: Record<string, unknown> }
 
   const ops: BatchOp[] = []

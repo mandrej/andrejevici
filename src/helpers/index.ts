@@ -2,7 +2,7 @@ import CONFIG from '../config'
 import { date, format } from 'quasar'
 import readExif from './exif'
 import { slugify } from 'transliteration'
-import type { CounterKind, FindType, MyUserType, PhotoType } from './models'
+import type { FindType, MyUserType, PhotoType } from './models'
 
 const { humanStorageSize } = format
 const { formatDate } = date
@@ -104,13 +104,9 @@ export const thumbUrl = (filename: string) => {
   ].join('/')
 }
 
-export const counterId = (
-  field: string,
-  value: string | number,
-  kind: CounterKind = 'photo',
-): string => {
+export const counterId = (field: string, value: string | number): string => {
   // IDs cannot contain a forward slash (/)
-  return `${kind}${delimiter}${field}${delimiter}${value}`.replace(/\//g, '%2F')
+  return `${field}${delimiter}${value}`.replace(/\//g, '%2F')
 }
 
 export const isAuthorOrAdmin = (

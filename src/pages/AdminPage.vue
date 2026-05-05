@@ -70,20 +70,20 @@
             <q-card-section class="col">
               <div class="row items-center no-wrap q-mb-sm">
                 <q-icon name="sym_r_aspect_ratio" size="sm" color="accent" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Image Dimensions</div>
+                <div class="text-subtitle1 text-weight-bold">Photo kind</div>
               </div>
               <div class="text-caption text-grey-7">
-                Populates missing height/width data for legacy records.
+                Populates kind 'photo' where missing in Photo collection.
               </div>
               <div class="q-mt-sm">
                 <q-badge color="accent" icon="event" class="text-subtitle1">
-                  Last run: {{ formatDatum('2026-02-27', 'DD.MM.YYYY') }}
+                  Last run: {{ formatDatum('2026-05-05', 'DD.MM.YYYY') }}
                 </q-badge>
               </div>
             </q-card-section>
             <q-separator />
             <q-card-actions align="right">
-              <q-btn color="accent" :disable="true" label="Run Fix" @click="fix" flat />
+              <q-btn color="accent" label="Run Fix" @click="fix" flat />
             </q-card-actions>
           </q-card>
         </div>
