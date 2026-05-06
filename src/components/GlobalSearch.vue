@@ -26,6 +26,10 @@
               {{ tmp.text }}
             </q-chip>
 
+            <q-chip v-if="tmp.kind" removable @remove="removeFilter('kind')">
+              {{ tmp.kind }}
+            </q-chip>
+
             <q-chip v-for="tag in tmp.tags" :key="tag" removable @remove="removeTag(tag)">
               {{ tag }}
             </q-chip>

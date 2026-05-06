@@ -81,6 +81,7 @@ export interface ValuesState {
     lens: { [key: string]: number }
     email: { [key: string]: number }
     nick: { [key: string]: number }
+    kind: { [key: string]: number }
   }
 }
 export interface MessageType {

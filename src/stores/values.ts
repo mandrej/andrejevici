@@ -102,7 +102,7 @@ export const useValuesStore = defineStore('meta', {
   state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
     tagsToApply: [],
-    values: { year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} },
+    values: { kind: {}, year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} },
   }),
   persist: {
     pick: ['headlineToApply', 'tagsToApply', 'values'],
@@ -114,6 +114,7 @@ export const useValuesStore = defineStore('meta', {
     lensValues: (state: ValuesState) => sortedKeys(state, 'lens'),
     emailValues: (state: ValuesState) => sortedKeys(state, 'email'),
     nickValues: (state: ValuesState) => sortedKeys(state, 'nick'),
+    kindValues: (state: ValuesState) => sortedKeys(state, 'kind'),
     yearValues: (state: ValuesState) => Object.keys(state.values.year).reverse(),
 
     // withCount
@@ -123,6 +124,8 @@ export const useValuesStore = defineStore('meta', {
         .map((year) => ({ value: year, count: state.values.year[year] || 0 })),
 
     nickWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'nick'),
+
+    kindWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'kind'),
 
     tagsWithCount: (state: ValuesState): { [key: string]: number } =>
       Object.fromEntries(
@@ -136,6 +139,7 @@ export const useValuesStore = defineStore('meta', {
 
       // Add counted fields (nick, tags, year, model, lens)
       const countedFields = [
+        { field: 'kind', values: this.kindValues },
         { field: 'nick', values: this.nickValues },
         { field: 'tags', values: this.tagsValues },
         { field: 'year', values: this.yearValues },
@@ -167,7 +171,7 @@ export const useValuesStore = defineStore('meta', {
      * Reads the values from the database.
      */
     async readValues(): Promise<void> {
-      this.values = { year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} }
+      this.values = { kind: {}, year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} }
       const querySnapshot = await getDocs(query(counterCollection))
       querySnapshot.forEach((d) => {
         const obj = d.data() as { count: number; field: string; value: string }

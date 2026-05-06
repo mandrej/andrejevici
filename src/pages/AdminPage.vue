@@ -70,7 +70,7 @@
             <q-card-section class="col">
               <div class="row items-center no-wrap q-mb-sm">
                 <q-icon name="sym_r_aspect_ratio" size="sm" color="accent" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Photo kind</div>
+                <div class="text-subtitle1 text-weight-bold">Add photo kind</div>
               </div>
               <div class="text-caption text-grey-7">
                 Populates kind 'photo' where missing in Photo collection.

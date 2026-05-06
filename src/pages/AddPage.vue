@@ -33,19 +33,19 @@
             </q-item-section>
             <q-item-section side>
               <q-btn
+                v-if="morphModel === 'cancel'"
                 label="Cancel all"
                 type="button"
                 color="negative"
                 style="width: 120px"
                 @click="cancelAll"
-                v-morph:cancel:buttons:500="morphModel"
               />
               <q-btn
+                v-if="morphModel === 'upload'"
                 label="Upload"
                 type="submit"
                 color="primary"
                 style="width: 120px"
-                v-morph:upload:buttons:500="morphModel"
                 :disable="files.length === 0"
               />
             </q-item-section>
@@ -107,15 +107,11 @@
               <q-input
                 v-model="videoUrl"
                 label="YouTube Video URL"
-                hint="Paste the YouTube Studio URL here"
+                hint="Paste the YouTube URL here"
               />
             </div>
             <div class="col-12 col-sm-6">
-              <q-input
-                v-model="videoFilename"
-                label="Filename / ID"
-                hint="A unique identifier for this video (slug)"
-              />
+              <q-input v-model="videoFilename" label="Filename" hint="A filename for this video" />
             </div>
             <div class="col-12 col-sm-8">
               <q-input

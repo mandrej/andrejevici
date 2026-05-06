@@ -92,6 +92,7 @@ export const useAppStore = defineStore('app', {
     addTab: 'photo',
     metaTab: 'tags',
     metaOptions: [
+      { label: 'Manage Kinds', value: 'kind', icon: 'sym_r_category', short: 'Kind' },
       { label: 'Manage Tags', value: 'tags', icon: 'sym_r_label', short: 'Tag' },
       { label: 'Manage Cameras', value: 'model', icon: 'sym_r_photo_camera', short: 'Camera' },
       { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
@@ -338,6 +339,11 @@ export const useAppStore = defineStore('app', {
         this.lastRecord = { ...obj }
       }
       meta.updateCounters(null, obj)
+
+      // set find on new added image and fetch
+      this.find = { year: obj.year, month: obj.month, day: obj.day }
+      await this.fetchRecords(true)
+
       notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
       return obj
     },
