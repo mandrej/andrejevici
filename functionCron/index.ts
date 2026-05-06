@@ -10,6 +10,7 @@ interface ValuesState {
   headlineToApply: string
   tagsToApply: string[]
   values: {
+    kind: { [key: string]: number }
     year: { [key: string]: number }
     tags: { [key: string]: number }
     model: { [key: string]: number }
@@ -27,6 +28,7 @@ const counterId = (field: string, value: string | number): string => {
 // Build new counters
 const buildCounters = async (): Promise<ValuesState['values']> => {
   const newValues: ValuesState['values'] = {
+    kind: {},
     year: {},
     tags: {},
     model: {},
