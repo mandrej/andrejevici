@@ -68,7 +68,7 @@ const initLightbox = () => {
     if (obj.kind === 'video') {
       const id = getYouTubeId(obj.url)
       return {
-        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
+        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=0&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
         obj: obj,
       }
     }
