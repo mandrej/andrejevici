@@ -35,7 +35,7 @@
   <SwiperView v-if="showCarousel" :index="index" @carousel-cancel="carouselCancel" />
 
   <div class="q-pa-md q-mb-md">
-    <q-infinite-scroll @load="onLoad" :debounce="500" :offset="250">
+    <q-infinite-scroll ref="scrollRef" @load="onLoad" :debounce="500" :offset="250">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
         <div
           v-for="item in objects"
@@ -79,6 +79,11 @@
           </PictureCard>
         </div>
       </transition-group>
+      <template v-slot:loading>
+        <div class="row justify-center q-my-md">
+          <q-spinner-dots color="primary" size="40px" />
+        </div>
+      </template>
     </q-infinite-scroll>
   </div>
 
@@ -89,7 +94,7 @@
 
 <script setup lang="ts">
 import { scroll, debounce } from 'quasar'
-import { ref, onMounted, defineAsyncComponent } from 'vue'
+import { ref, onMounted, defineAsyncComponent, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
@@ -108,8 +113,19 @@ const auth = useUserStore()
 const route = useRoute()
 const index = ref(-1)
 
-const { objects, busy, error, next, showCarousel, showConfirm, showEdit, currentEdit, selected } =
-  storeToRefs(app)
+const {
+  objects,
+  busy,
+  error,
+  next,
+  find,
+  showCarousel,
+  showConfirm,
+  showEdit,
+  currentEdit,
+  selected,
+} = storeToRefs(app)
+const scrollRef = ref<{ reset: () => void } | null>(null)
 const select2delete = ref<PhotoType | null>(null)
 const { user } = storeToRefs(auth)
 const { getScrollTarget, setVerticalScrollPosition } = scroll
@@ -121,14 +137,25 @@ window.onpopstate = () => {
   showCarousel.value = false
 }
 
+watch(
+  find,
+  () => {
+    nextTick(() => {
+      scrollRef.value?.reset()
+      onLoad(0, () => {
+        /* done */
+      })
+    })
+  },
+  { deep: true },
+)
+
 onMounted(() => {
   if (route.hash) {
     const filename = route.hash.substring(2)
     debounce(() => {
       findPhoto(filename)
     }, 1000)()
-  } else if (objects.value.length === 0) {
-    app.fetchRecords(true)
   }
 })
 
@@ -153,10 +180,21 @@ const findPhoto = async (c: string) => {
     notify({ type: 'warning', message: 'Photo not found' })
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const onLoad = async (index = 0, done: (stop?: boolean) => void) => {
-  if (next.value !== '') {
-    await app.fetchRecords(false)
+  if (busy.value) {
+    const stopWatch = watch(busy, (val) => {
+      if (!val) {
+        stopWatch()
+        onLoad(index, done)
+      }
+    })
+    return
+  }
+
+  const isInitial = objects.value.length === 0
+  if (isInitial || next.value !== '') {
+    await app.fetchRecords(isInitial)
   }
   done(next.value === '')
 }
