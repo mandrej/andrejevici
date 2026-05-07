@@ -49,6 +49,13 @@
                 clearable
               />
               <q-input v-model="tmp.filename" label="Filename" readonly />
+              <q-input
+                v-if="tmp.kind === 'video'"
+                v-model="tmp.url"
+                label="Video URL"
+                hint="YouTube link"
+                :rules="[(val: string) => !!val || 'Video URL is required']"
+              />
               <AutoComplete
                 label="Author"
                 v-model="tmp.email"
@@ -197,6 +204,7 @@ const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const tmp = reactive({ ...props.rec }) as PhotoType
+const originalUrl = props.rec?.url || ''
 const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
@@ -269,6 +277,11 @@ const onSubmit = async () => {
   } else {
     tmp.email = user.value!.email
     tmp.nick = user.value!.nick
+  }
+  // if change video url, regenerate thumb
+  if (tmp.kind === 'video' && tmp.url !== originalUrl) {
+    const id = getYouTubeId(tmp.url)
+    tmp.thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : ''
   }
   // if change tags
   tmp.tags = tmp.tags ? tmp.tags : []

@@ -60,14 +60,14 @@
               />
             </q-item-section>
           </q-item>
-          <q-item>
-            <q-item-section>
+          <div class="row q-px-md q-col-gutter-sm items-end">
+            <div class="col-xs-12 col-sm">
               <TagsMerge
                 :label="`Tags to apply for next publish / or to merge with existing`"
                 :hint="`You can add / remove tag later`"
               />
-            </q-item-section>
-            <q-item-section side>
+            </div>
+            <div class="col-xs-12 col-sm-auto text-right">
               <q-btn
                 :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
                 @click="publishSelected"
@@ -75,8 +75,8 @@
                 :disable="uploaded.length === 0"
                 style="width: 120px"
               />
-            </q-item-section>
-          </q-item>
+            </div>
+          </div>
         </q-form>
 
         <div class="q-pa-md">
@@ -101,62 +101,7 @@
       </q-tab-panel>
 
       <q-tab-panel name="video">
-        <q-form ref="videoFormRef" @submit="onVideoSubmit" class="q-pa-md">
-          <div class="row q-col-gutter-md">
-            <div class="col-12 col-sm-6">
-              <q-input
-                v-model="videoUrl"
-                label="YouTube Video URL"
-                hint="Paste the YouTube URL here"
-              />
-            </div>
-            <div class="col-12 col-sm-6">
-              <q-input v-model="videoFilename" label="Filename" hint="A filename for this video" />
-            </div>
-            <div class="col-12 col-sm-8">
-              <q-input
-                v-model="headlineToApply"
-                label="Headline to apply"
-                :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-                clearable
-              />
-            </div>
-            <div class="col-12 col-sm-4">
-              <q-input v-model="videoDate" label="Recording Date">
-                <template v-slot:prepend>
-                  <q-icon name="sym_r_event" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <q-date v-model="videoDate" mask="YYYY-MM-DD HH:mm">
-                        <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat />
-                        </div>
-                      </q-date>
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-                <template v-slot:append>
-                  <q-icon name="sym_r_access_time" class="cursor-pointer">
-                    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                      <q-time v-model="videoDate" mask="YYYY-MM-DD HH:mm" format24h>
-                        <div class="row items-center justify-end">
-                          <q-btn v-close-popup label="Close" color="primary" flat />
-                        </div>
-                      </q-time>
-                    </q-popup-proxy>
-                  </q-icon>
-                </template>
-              </q-input>
-            </div>
-          </div>
-          <q-item class="q-px-none q-mt-md">
-            <q-item-section>
-              <TagsMerge label="Tags to apply" hint="You can add / remove tag later" />
-            </q-item-section>
-            <q-item-section side>
-              <q-btn label="Link Video" type="submit" color="primary" style="width: 140px" />
-            </q-item-section>
-          </q-item>
-        </q-form>
+        <VideoTab />
       </q-tab-panel>
     </q-tab-panels>
   </template>
@@ -179,14 +124,14 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { fakeHistory, completePhoto, formatBytes, sliceSlug, formatDatum } from '../helpers'
+import { fakeHistory, completePhoto, formatBytes } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import PictureCard from '../components/PictureCard.vue'
 import TagsMerge from '../components/sidebar/TagsMerge.vue'
+import VideoTab from '../components/tab/VideoTab.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
-import type { PhotoType, VideoType } from '../helpers/models'
-import type { QForm } from 'quasar'
+import type { PhotoType } from '../helpers/models'
 
 const EditRecord = defineAsyncComponent(() => import('../components/dialog/EditRecord.vue'))
 
@@ -199,11 +144,6 @@ const { headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 const selection = ref<string[]>([])
 const canAddPhoto = computed(() => !!user.value?.isAuthorized && !!user.value?.nick)
-
-const videoUrl = ref('')
-const videoFilename = ref('')
-const videoDate = ref(formatDatum(new Date(), 'YYYY-MM-DD HH:mm'))
-const videoFormRef = ref<InstanceType<typeof QForm> | null>(null)
 
 interface Task {
   [key: string]: ReturnType<typeof uploadBytesResumable>
@@ -322,43 +262,6 @@ const onValidationError = (rejectedEntries: ValidationErrors[]) => {
       timeout: 0,
     })
   })
-}
-
-const onVideoSubmit = async () => {
-  if (!videoUrl.value || !videoFilename.value || !videoDate.value) return
-
-  const datum = new Date(videoDate.value)
-  const video: VideoType = {
-    url: videoUrl.value,
-    filename: `${uuidv4().substring(0, 8)}_${videoFilename.value}`,
-    email: user.value!.email,
-    nick: user.value!.nick,
-    headline: headlineToApply.value || CONFIG.noTitle,
-    tags: [...tagsToApply.value],
-    text: sliceSlug(headlineToApply.value || CONFIG.noTitle),
-    date: formatDatum(datum, CONFIG.dateFormat),
-    year: datum.getFullYear(),
-    month: datum.getMonth() + 1,
-    day: datum.getDate(),
-    size: 0,
-  }
-
-  try {
-    await app.saveVideo(video)
-    videoUrl.value = ''
-    videoFilename.value = ''
-    videoDate.value = formatDatum(new Date(), 'YYYY-MM-DD HH:mm')
-    headlineToApply.value = ''
-    tagsToApply.value = []
-
-    if (videoFormRef.value) {
-      videoFormRef.value.resetValidation()
-    }
-
-    notify({ type: 'positive', message: 'Video published successfully' })
-  } catch (err) {
-    notify({ type: 'negative', message: `Failed to publish video: ${(err as Error).message}` })
-  }
 }
 
 /**

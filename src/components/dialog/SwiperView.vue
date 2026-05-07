@@ -63,12 +63,19 @@ const onShare = async () => {
   }
 }
 
+const pauseAllVideos = () => {
+  const iframes = document.querySelectorAll<HTMLIFrameElement>('.pswp .video-wrapper iframe')
+  iframes.forEach((iframe) => {
+    iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*')
+  })
+}
+
 const initLightbox = () => {
   const dataSource = objects.value.map((obj) => {
     if (obj.kind === 'video') {
       const id = getYouTubeId(obj.url)
       return {
-        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=0&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
+        html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
         obj: obj,
       }
     }
@@ -180,8 +187,14 @@ const initLightbox = () => {
     })
   })
 
+  // Pause videos when swiping away
+  lightbox.on('contentDeactivate', () => {
+    pauseAllVideos()
+  })
+
   // Handle Close
   lightbox.on('close', () => {
+    pauseAllVideos()
     const curr = lightbox?.pswp?.currSlide?.data.obj as PhotoType | undefined
     const hash = curr ? U + curr.filename : null
     // We need to defer this slightly or ensure it doesn't conflict with unmount
