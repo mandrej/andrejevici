@@ -18,7 +18,7 @@
                 <div class="text-subtitle1 text-weight-bold">Bucket Status</div>
               </div>
               <div class="text-caption text-grey-7 q-mb-md">
-                Current total storage usage and file count. Updated via cron.
+                Current total storage usage and file count. Updated via cron job every 3 days.
               </div>
               <div class="text-center q-py-sm">
                 <q-badge color="warning" class="text-h6 text-black q-pa-md rounded-borders">
@@ -30,7 +30,7 @@
             </q-card-section>
             <q-separator />
             <q-card-actions align="right">
-              <q-btn label="Recalculate" @click="app.bucketBuild" color="primary" flat />
+              <q-btn label="Calculate" @click="app.bucketBuild" color="primary" flat />
             </q-card-actions>
           </q-card>
         </div>
@@ -44,7 +44,7 @@
                 <div class="text-subtitle1 text-weight-bold">Metadata Counters</div>
               </div>
               <div class="text-caption text-grey-7 q-mb-sm">
-                Rebuild index counters for all metadata fields.
+                Rebuild index counters for all metadata fields. Updated via cron job every 3 days.
               </div>
               <div class="row q-gutter-xs">
                 <q-badge
@@ -59,7 +59,7 @@
             </q-card-section>
             <q-separator />
             <q-card-actions align="right">
-              <q-btn label="Rebuild" @click="countersBuild" color="secondary" flat />
+              <q-btn label="Build" @click="countersBuild" color="secondary" flat />
             </q-card-actions>
           </q-card>
         </div>
