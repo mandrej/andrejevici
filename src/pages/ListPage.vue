@@ -35,7 +35,7 @@
   <SwiperView v-if="showCarousel" :index="index" @carousel-cancel="carouselCancel" />
 
   <div class="q-pa-md q-mb-md">
-    <q-infinite-scroll ref="scrollRef" @load="onLoad" :debounce="500" :offset="250">
+    <q-infinite-scroll ref="scrollRef" @load="onLoad" :debounce="500" :offset="500">
       <transition-group tag="div" class="row q-col-gutter-md" name="fade">
         <div
           v-for="item in objects"
@@ -80,11 +80,15 @@
         </div>
       </transition-group>
       <template v-slot:loading>
-        <div class="row justify-center q-my-md">
+        <div class="row justify-center q-my-xl">
           <q-spinner-dots color="primary" size="40px" />
         </div>
       </template>
     </q-infinite-scroll>
+
+    <div v-if="!next && objects.length > 0" class="text-center q-pa-xl">
+      <div class="text-overline text-grey q-mb-sm">End of list</div>
+    </div>
   </div>
 
   <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
@@ -139,13 +143,12 @@ window.onpopstate = () => {
 
 watch(
   find,
-  () => {
-    nextTick(() => {
-      scrollRef.value?.reset()
-      onLoad(0, () => {
-        /* done */
-      })
-    })
+  async () => {
+    // Reset scroll and objects for a fresh search
+    scrollRef.value?.reset()
+    await nextTick()
+    // Initial fetch for the first page
+    await app.fetchRecords(true)
   },
   { deep: true },
 )
@@ -181,7 +184,8 @@ const findPhoto = async (c: string) => {
   }
 }
 
-const onLoad = async (index = 0, done: (stop?: boolean) => void) => {
+const onLoad = async (index: number, done: (stop?: boolean) => void) => {
+  // If we're already busy fetching, wait for it to finish and then check if we need more
   if (busy.value) {
     const stopWatch = watch(busy, (val) => {
       if (!val) {
@@ -192,11 +196,21 @@ const onLoad = async (index = 0, done: (stop?: boolean) => void) => {
     return
   }
 
-  const isInitial = objects.value.length === 0
-  if (isInitial || next.value !== '') {
-    await app.fetchRecords(isInitial)
+  // If we already know there are no results, or we reached the end, stop
+  if (error.value === 'empty' || (objects.value.length > 0 && !next.value)) {
+    done(true)
+    return
   }
-  done(next.value === '')
+
+  try {
+    const isInitial = objects.value.length === 0
+    await app.fetchRecords(isInitial)
+    // done(true) stops the scroll if next is empty
+    done(!next.value)
+  } catch (err) {
+    console.error('Infinite scroll error:', err)
+    done(true) // stop on error to avoid infinite loops
+  }
 }
 
 const confirmShow = (rec: PhotoType) => {

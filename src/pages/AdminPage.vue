@@ -11,15 +11,13 @@
       <div class="row q-col-gutter-md q-pa-md">
         <!-- Bucket Card -->
         <div class="col-12 col-sm-6 col-md-4">
-          <q-card flat bordered class="full-height column">
-            <q-card-section class="col">
-              <div class="row items-center no-wrap q-mb-sm">
-                <q-icon name="sym_r_storage" size="sm" color="primary" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Bucket Status</div>
-              </div>
-              <div class="text-caption text-grey-7 q-mb-md">
-                Current total storage usage and file count. Updated via cron job every 3 days.
-              </div>
+          <AdminCard
+            icon="sym_r_storage"
+            color="primary"
+            title="Bucket Status"
+            description="Current total storage usage and file count. Updated via cron job every 3 days."
+          >
+            <template #details>
               <div class="text-center q-py-sm">
                 <q-badge color="warning" class="text-h6 text-black q-pa-md rounded-borders">
                   <span>{{ Intl.NumberFormat().format(bucket.count) }} photos</span>
@@ -27,25 +25,22 @@
                   <span>{{ formatBytes(bucket.size) }}</span>
                 </q-badge>
               </div>
-            </q-card-section>
-            <q-separator />
-            <q-card-actions align="right">
+            </template>
+            <template #action>
               <q-btn label="Calculate" @click="app.bucketBuild" color="primary" flat />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </AdminCard>
         </div>
 
         <!-- Field Values Card -->
         <div class="col-12 col-sm-6 col-md-4">
-          <q-card flat bordered class="full-height column">
-            <q-card-section class="col">
-              <div class="row items-center no-wrap q-mb-sm">
-                <q-icon name="sym_r_schema" size="sm" color="secondary" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Metadata Counters</div>
-              </div>
-              <div class="text-caption text-grey-7 q-mb-sm">
-                Rebuild index counters for all metadata fields. Updated via cron job every 3 days.
-              </div>
+          <AdminCard
+            icon="sym_r_schema"
+            color="secondary"
+            title="Metadata Counters"
+            description="Rebuild index counters for all metadata fields. Updated via cron job every 3 days."
+          >
+            <template #details>
               <div class="row q-gutter-xs">
                 <q-badge
                   v-for="(val, key) in values"
@@ -56,74 +51,60 @@
                   {{ key }}: {{ Object.keys(val).length }}
                 </q-badge>
               </div>
-            </q-card-section>
-            <q-separator />
-            <q-card-actions align="right">
+            </template>
+            <template #action>
               <q-btn label="Build" @click="countersBuild" color="secondary" flat />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </AdminCard>
         </div>
 
         <!-- Dimensions Card -->
         <div class="col-12 col-sm-6 col-md-4">
-          <q-card flat bordered class="full-height column">
-            <q-card-section class="col">
-              <div class="row items-center no-wrap q-mb-sm">
-                <q-icon name="sym_r_aspect_ratio" size="sm" color="accent" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Add photo kind</div>
-              </div>
-              <div class="text-caption text-grey-7">
-                Populates kind 'photo' where missing in Photo collection.
-              </div>
+          <AdminCard
+            icon="sym_r_aspect_ratio"
+            color="accent"
+            title="Add photo kind"
+            description="Populates kind 'photo' where missing in Photo collection."
+          >
+            <template #details>
               <div class="q-mt-sm">
                 <q-badge color="accent" icon="event" class="text-subtitle1">
                   Last run: {{ formatDatum('2026-05-05', 'DD.MM.YYYY') }}
                 </q-badge>
               </div>
-            </q-card-section>
-            <q-separator />
-            <q-card-actions align="right">
+            </template>
+            <template #action>
               <q-btn color="accent" label="Run Fix" @click="fix" flat />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </AdminCard>
         </div>
 
         <!-- Thumbnails Card -->
         <div class="col-12 col-sm-6 col-md-4">
-          <q-card flat bordered class="full-height column">
-            <q-card-section class="col">
-              <div class="row items-center no-wrap q-mb-sm">
-                <q-icon name="sym_r_image_not_supported" size="sm" color="orange" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Missing Thumbs</div>
-              </div>
-              <div class="text-caption text-grey-7">
-                Scan storage for images that are missing generated thumbnails.
-              </div>
-            </q-card-section>
-            <q-separator />
-            <q-card-actions align="right">
+          <AdminCard
+            icon="sym_r_image_not_supported"
+            color="orange"
+            title="Missing Thumbs"
+            description="Scan storage for images that are missing generated thumbnails."
+          >
+            <template #action>
               <q-btn label="Scan" color="orange" @click="missingThumbnails" flat />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </AdminCard>
         </div>
 
         <!-- Mismatch Card -->
         <div class="col-12 col-sm-6 col-md-4">
-          <q-card flat bordered class="full-height column">
-            <q-card-section class="col">
-              <div class="row items-center no-wrap q-mb-sm">
-                <q-icon name="sym_r_sync_problem" size="sm" color="negative" class="q-mr-sm" />
-                <div class="text-subtitle1 text-weight-bold">Storage Mismatch</div>
-              </div>
-              <div class="text-caption text-grey-7">
-                Resolve inconsistencies between Cloud Storage and Firestore.
-              </div>
-            </q-card-section>
-            <q-separator />
-            <q-card-actions align="right">
+          <AdminCard
+            icon="sym_r_sync_problem"
+            color="negative"
+            title="Storage Mismatch"
+            description="Resolve inconsistencies between Cloud Storage and Firestore."
+          >
+            <template #action>
               <q-btn color="negative" label="Resolve" @click="mismatch" flat />
-            </q-card-actions>
-          </q-card>
+            </template>
+          </AdminCard>
         </div>
       </div>
 
@@ -158,6 +139,7 @@ import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { formatDatum } from '../helpers'
 import { formatBytes } from '../helpers'
+import AdminCard from '../components/AdminCard.vue'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
 import CONFIG from 'src/config'
 // import notify from 'src/helpers/notify'
