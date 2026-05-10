@@ -133,6 +133,9 @@ const scrollRef = ref<{ reset: () => void } | null>(null)
 const select2delete = ref<PhotoType | null>(null)
 const { user } = storeToRefs(auth)
 const { getScrollTarget, setVerticalScrollPosition } = scroll
+let skipNextFindFetch = false
+let queuedLoadDone: ((stop?: boolean) => void) | null = null
+let stopBusyWatch: (() => void) | null = null
 
 // Close dialogs on back button
 window.onpopstate = () => {
@@ -147,6 +150,10 @@ watch(
     // Reset scroll and objects for a fresh search
     scrollRef.value?.reset()
     await nextTick()
+    if (skipNextFindFetch) {
+      skipNextFindFetch = false
+      return
+    }
     // Initial fetch for the first page
     await app.fetchRecords(true)
   },
@@ -170,6 +177,7 @@ const findPhoto = async (c: string) => {
   }
 
   if (rec && rec.year && rec.month) {
+    skipNextFindFetch = true
     app.find = { year: rec.year, month: rec.month }
     await app.fetchRecords(true)
   }
@@ -187,12 +195,20 @@ const findPhoto = async (c: string) => {
 const onLoad = async (index: number, done: (stop?: boolean) => void) => {
   // If we're already busy fetching, wait for it to finish and then check if we need more
   if (busy.value) {
-    const stopWatch = watch(busy, (val) => {
-      if (!val) {
-        stopWatch()
-        onLoad(index, done)
-      }
-    })
+    queuedLoadDone = done
+    if (!stopBusyWatch) {
+      stopBusyWatch = watch(busy, (val) => {
+        if (!val) {
+          stopBusyWatch?.()
+          stopBusyWatch = null
+          const nextDone = queuedLoadDone
+          queuedLoadDone = null
+          if (nextDone) {
+            void onLoad(index, nextDone)
+          }
+        }
+      })
+    }
     return
   }
 

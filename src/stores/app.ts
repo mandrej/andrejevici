@@ -215,14 +215,13 @@ export const useAppStore = defineStore('app', {
       )
 
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
+      this.busy = true
       if (reset) this.next = ''
       if (this.next != '') {
         const cursor: DocumentSnapshot = await getDoc(doc(photoCollection, this.next))
         constraints.push(startAfter(cursor))
       }
       constraints.push(limit(max))
-
-      this.busy = true
       try {
         const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
         if (reset) this.objects.length = 0
@@ -234,7 +233,7 @@ export const useAppStore = defineStore('app', {
           }
         })
         const next = querySnapshot.docs[querySnapshot.docs.length - 1]
-        this.next = next && next.id !== this.next ? next.id : ''
+        this.next = querySnapshot.docs.length < max ? '' : next?.id || ''
       } catch (err) {
         this.error = (err as Error).message
         this.busy = false
