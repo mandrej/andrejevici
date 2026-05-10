@@ -130,6 +130,7 @@ import notify from '../helpers/notify'
 import PictureCard from '../components/PictureCard.vue'
 import TagsMerge from '../components/sidebar/TagsMerge.vue'
 import VideoTab from '../components/tab/VideoTab.vue'
+import { UploadTracker } from '../helpers/uploadTracker'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from '../helpers/models'
 
@@ -145,9 +146,6 @@ const { user } = storeToRefs(auth)
 const selection = ref<string[]>([])
 const canAddPhoto = computed(() => !!user.value?.isAuthorized && !!user.value?.nick)
 
-interface Task {
-  [key: string]: ReturnType<typeof uploadBytesResumable>
-}
 interface ValidationErrors {
   file: File
   failedPropValidation: string
@@ -158,13 +156,13 @@ onMounted(() => {
 })
 
 const files = ref([])
-const task: Task = {}
+const trackers = new Map<string, UploadTracker>()
 const morphModel = ref('upload')
 
 const cancelAll = (): void => {
-  Object.keys(app.progressInfo).forEach((key: string) => {
-    if (task[key]) {
-      task[key].cancel()
+  trackers.forEach((tracker) => {
+    if (!tracker.isTerminal()) {
+      tracker.cancel()
     }
   })
   morphModel.value = 'upload'
@@ -178,7 +176,7 @@ const onSubmit = async (): Promise<void> => {
       .then((val) => {
         notify({ type: 'positive', message: `Uploaded ${val}.`, icon: 'sym_r_check' })
         if (typeof val === 'string') {
-          delete task[val]
+          trackers.delete(val)
           delete app.progressInfo[val]
         }
         return val
@@ -192,10 +190,11 @@ const onSubmit = async (): Promise<void> => {
         })
         const reason = err.message
         if (typeof reason === 'string') {
-          if (task[reason]) {
-            task[reason].cancel()
-            delete task[reason]
+          const tracker = trackers.get(reason)
+          if (tracker && !tracker.isTerminal()) {
+            tracker.cancel()
           }
+          trackers.delete(reason)
           delete app.progressInfo[reason]
         }
         throw err
@@ -214,25 +213,32 @@ const uploadTask = (file: File): Promise<string> => {
     const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
 
+    const tracker = new UploadTracker(id, filename)
+    trackers.set(filename, tracker)
+
     app.progressInfo[filename] = 0
-    task[filename] = uploadBytesResumable(_ref, file, {
+    const uploadTaskObj = uploadBytesResumable(_ref, file, {
       contentType: file.type,
       cacheControl: 'public, max-age=604800',
     })
-    task[filename]?.on(
+    tracker.setTask(uploadTaskObj)
+
+    uploadTaskObj.on(
       'state_changed',
       (snapshot: UploadTaskSnapshot) => {
-        app.progressInfo[filename] = snapshot.bytesTransferred / snapshot.totalBytes
+        tracker.updateProgress(snapshot)
+        app.progressInfo[filename] = tracker.progress
       },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (error: Error) => {
-        task[filename]?.cancel()
+        tracker.markError(error)
         app.progressInfo[filename] = 0
         reject(new Error(filename))
       },
       () => {
-        getDownloadURL(task[filename]!.snapshot.ref)
+        getDownloadURL(uploadTaskObj.snapshot.ref)
           .then((downloadURL) => {
+            tracker.complete(downloadURL)
+            app.progressInfo[filename] = 1
             const data: PhotoType = {
               url: downloadURL,
               filename: filename,
@@ -245,7 +251,8 @@ const uploadTask = (file: File): Promise<string> => {
             resolve(filename)
             if (process.env.DEV) console.log('uploaded', filename)
           })
-          .catch(() => {
+          .catch((err) => {
+            tracker.markError(err)
             reject(new Error(`Failed to get download URL: ${filename}`))
           })
       },
