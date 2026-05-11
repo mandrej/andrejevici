@@ -4,10 +4,9 @@ export type UploadStatus = 'pending' | 'uploading' | 'completed' | 'error' | 'ca
 
 /**
  * Manages a single upload task with atomic state transitions.
- * Uses a unique uploadId instead of filename to avoid collisions.
+ * Uses a unique filename to avoid collisions.
  */
 export class UploadTracker {
-  readonly uploadId: string
   filename: string
   status: UploadStatus = 'pending'
   progress: number = 0
@@ -15,8 +14,7 @@ export class UploadTracker {
   error: Error | null = null
   task: UploadTask | null = null // Firebase UploadTaskSnapshot
 
-  constructor(uploadId: string, filename: string) {
-    this.uploadId = uploadId
+  constructor(filename: string) {
     this.filename = filename
   }
 

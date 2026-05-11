@@ -31,9 +31,9 @@
                 @rejected="onValidationError"
               />
             </q-item-section>
-            <q-item-section side>
+            <q-item-section side class="q-gutter-sm">
               <q-btn
-                v-if="morphModel === 'cancel'"
+                v-if="trackers.size > 0"
                 label="Cancel all"
                 type="button"
                 color="negative"
@@ -41,12 +41,11 @@
                 @click="cancelAll"
               />
               <q-btn
-                v-if="morphModel === 'upload'"
+                v-if="files.length > 0"
                 label="Upload"
                 type="submit"
                 color="primary"
                 style="width: 120px"
-                :disable="files.length === 0"
               />
             </q-item-section>
           </q-item>
@@ -117,7 +116,7 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, reactive } from 'vue'
 import { storage } from '../firebase'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
@@ -155,9 +154,8 @@ onMounted(() => {
   app.progressInfo = {}
 })
 
-const files = ref([])
-const trackers = new Map<string, UploadTracker>()
-const morphModel = ref('upload')
+const files = ref<File[]>([])
+const trackers = reactive(new Map<string, UploadTracker>())
 
 const cancelAll = (): void => {
   trackers.forEach((tracker) => {
@@ -165,10 +163,8 @@ const cancelAll = (): void => {
       tracker.cancel()
     }
   })
-  morphModel.value = 'upload'
 }
 const onSubmit = async (): Promise<void> => {
-  morphModel.value = 'cancel'
   const promises: Promise<unknown>[] = []
 
   files.value.forEach((file: File) => {
@@ -183,10 +179,9 @@ const onSubmit = async (): Promise<void> => {
       })
       .catch((err: Error) => {
         notify({
-          type: 'negative',
+          type: 'warning',
           message: `Rejected ${err.message}.`,
-          actions: [{ icon: 'sym_r_close' }],
-          timeout: 0,
+          caption: `Please upload the file again.`,
         })
         const reason = err.message
         if (typeof reason === 'string') {
@@ -197,6 +192,7 @@ const onSubmit = async (): Promise<void> => {
           trackers.delete(reason)
           delete app.progressInfo[reason]
         }
+        files.value.push(file)
         throw err
       })
     promises.push(p)
@@ -204,7 +200,6 @@ const onSubmit = async (): Promise<void> => {
 
   files.value = []
   await Promise.allSettled(promises)
-  morphModel.value = 'upload'
 }
 
 const uploadTask = (file: File): Promise<string> => {
@@ -213,7 +208,7 @@ const uploadTask = (file: File): Promise<string> => {
     const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
 
-    const tracker = new UploadTracker(id, filename)
+    const tracker = new UploadTracker(filename)
     trackers.set(filename, tracker)
 
     app.progressInfo[filename] = 0
