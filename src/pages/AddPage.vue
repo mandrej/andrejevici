@@ -173,15 +173,14 @@ const onSubmit = async (): Promise<void> => {
         notify({ type: 'positive', message: `Uploaded ${val}.`, icon: 'sym_r_check' })
         if (typeof val === 'string') {
           trackers.delete(val)
-          delete app.progressInfo[val]
         }
         return val
       })
       .catch((err: Error) => {
         notify({
           type: 'warning',
-          message: `Rejected ${err.message}.`,
-          caption: `Please upload the file again.`,
+          message: `Rejected ${file.name}.`,
+          caption: `Please upload them again.`,
         })
         const reason = err.message
         if (typeof reason === 'string') {
@@ -190,7 +189,6 @@ const onSubmit = async (): Promise<void> => {
             tracker.cancel()
           }
           trackers.delete(reason)
-          delete app.progressInfo[reason]
         }
         files.value.push(file)
         throw err
@@ -200,6 +198,7 @@ const onSubmit = async (): Promise<void> => {
 
   files.value = []
   await Promise.allSettled(promises)
+  app.progressInfo = {}
 }
 
 const uploadTask = (file: File): Promise<string> => {
@@ -226,14 +225,14 @@ const uploadTask = (file: File): Promise<string> => {
       },
       (error: Error) => {
         tracker.markError(error)
-        app.progressInfo[filename] = 0
+        delete app.progressInfo[filename]
         reject(new Error(filename))
       },
       () => {
         getDownloadURL(uploadTaskObj.snapshot.ref)
           .then((downloadURL) => {
             tracker.complete(downloadURL)
-            app.progressInfo[filename] = 1
+            delete app.progressInfo[filename]
             const data: PhotoType = {
               url: downloadURL,
               filename: filename,
