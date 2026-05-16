@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { storage, db } from '../firebase'
+import { storage } from '../firebase'
 import { LocalStorage, Dark } from 'quasar'
 import {
   doc,
@@ -12,7 +12,6 @@ import {
   setDoc,
   deleteDoc,
   startAfter,
-  writeBatch,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
@@ -36,15 +35,8 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type {
-  FindType,
-  BucketType,
-  PhotoType,
-  AppStoreState,
-  MessageType,
-  VideoType,
-} from '../helpers/models'
-import { photoCollection, messageCollection, bucketCollection } from '../helpers/collections'
+import type { FindType, BucketType, PhotoType, AppStoreState, VideoType } from '../helpers/models'
+import { photoCollection, bucketCollection } from '../helpers/collections'
 
 const bucketRef = doc(bucketCollection, 'total')
 
@@ -413,33 +405,6 @@ export const useAppStore = defineStore('app', {
         console.error('Failed to get last record:', error)
         return null
       }
-    },
-
-    /**
-     * Retrieves the most recent messages from the Firestore database.
-     *
-     * @return {Promise<MessageType[]>} A promise that resolves to an array of the most recent messages.
-     */
-    async fetchMessages(): Promise<MessageType[]> {
-      const snapshot = await getDocs(
-        query(messageCollection, orderBy('timestamp', 'desc'), limit(50)),
-      )
-      return snapshot.docs.map((d) => ({ ...(d.data() as MessageType), key: d.id }))
-    },
-
-    /**
-     * Deletes messages from the Firestore database.
-     *
-     * @param {string[]} keys - An array of message keys to delete.
-     * @return {Promise<void>} A promise that resolves when the messages are deleted.
-     */
-    async deleteMessages(keys: string[]): Promise<void> {
-      const batch = writeBatch(db)
-      for (const key of keys) {
-        batch.delete(doc(messageCollection, key))
-      }
-      await batch.commit()
-      notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'sym_r_check' })
     },
 
     /**

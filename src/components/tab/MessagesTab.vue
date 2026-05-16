@@ -15,7 +15,7 @@
         icon="sym_r_delete"
         label="Delete Selected"
         :disable="selectedItems.length === 0"
-        @click="app.deleteMessages(selectedItems).then(fetchList)"
+        @click="deleteMessages(selectedItems)"
       />
     </template>
   </q-banner>
@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import { formatDatum } from '../../helpers'
@@ -79,6 +79,10 @@ import ErrorBanner from '../ErrorBanner.vue'
 import type { MessageType } from '../../helpers/models'
 
 import LocalSearch from '../LocalSearch.vue'
+import { doc, query, limit, orderBy, writeBatch, onSnapshot } from 'firebase/firestore'
+import { db } from '../../firebase'
+import { messageCollection } from '../../helpers/collections'
+import notify from '../../helpers/notify'
 
 const app = useAppStore()
 const { busy, error } = storeToRefs(app)
@@ -98,14 +102,39 @@ const filteredResult = computed(() => {
   )
 })
 
-const fetchList = async () => {
-  busy.value = true
-  error.value = ''
-  result.value = await app.fetchMessages()
-  busy.value = false
-  error.value = result.value.length === 0 ? 'No messages found' : ''
+const deleteMessages = async (keys: string[]) => {
+  const batch = writeBatch(db)
+  for (const key of keys) {
+    batch.delete(doc(messageCollection, key))
+  }
+  await batch.commit()
+  notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'sym_r_check' })
   selectedItems.value = []
 }
 
-onMounted(fetchList)
+let unsubscribe: (() => void) | null = null
+
+const startListening = () => {
+  busy.value = true
+  error.value = ''
+  unsubscribe = onSnapshot(
+    query(messageCollection, orderBy('timestamp', 'desc'), limit(50)),
+    (snapshot) => {
+      result.value = snapshot.docs.map((d) => ({ ...(d.data() as MessageType), key: d.id }))
+      busy.value = false
+      error.value = result.value.length === 0 ? 'No messages found' : ''
+    },
+    (err) => {
+      console.error("Error listening to messages:", err)
+      error.value = err.message
+      busy.value = false
+    }
+  )
+}
+
+onMounted(startListening)
+
+onUnmounted(() => {
+  if (unsubscribe) unsubscribe()
+})
 </script>
