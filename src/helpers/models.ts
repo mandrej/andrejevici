@@ -106,7 +106,6 @@ export interface MetaOption {
 }
 
 export interface AppStoreState {
-  bucket: BucketType
   find: FindType | null
   uploaded: PhotoType[]
   objects: PhotoType[]

@@ -26,6 +26,7 @@ import {
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import { useValuesStore } from './values'
+import { useBucketStore } from './bucket'
 import router from '../router'
 import type {
   QuerySnapshot,
@@ -35,10 +36,8 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import type { FindType, BucketType, PhotoType, AppStoreState, VideoType } from '../helpers/models'
-import { photoCollection, bucketCollection } from '../helpers/collections'
-
-const bucketRef = doc(bucketCollection, 'total')
+import type { FindType, PhotoType, AppStoreState, VideoType } from '../helpers/models'
+import { photoCollection } from '../helpers/collections'
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -67,7 +66,6 @@ const applyTheme = (theme: 'light' | 'dark' | 'auto') =>
 
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
-    bucket: { size: 0, count: 0 },
     find: {},
     uploaded: [],
     objects: [],
@@ -94,7 +92,6 @@ export const useAppStore = defineStore('app', {
   }),
   persist: {
     pick: [
-      'bucket',
       'lastRecord',
       'find',
       'uploaded',
@@ -114,49 +111,6 @@ export const useAppStore = defineStore('app', {
       this.find = fixQuery(criteria)
       void this.fetchRecords(true)
       void router.push({ name: 'list' })
-    },
-
-    /**
-     * Reads the bucket data from the database and updates the store state.
-     */
-    async bucketRead() {
-      const docSnap = await getDoc(bucketRef)
-      if (docSnap.exists()) {
-        this.bucket = docSnap.data() as BucketType
-      } else {
-        console.error('Failed to read bucket data')
-      }
-    },
-
-    bucketDiff(num: number): void {
-      // Update size and count in a single operation
-      this.bucket.size += num
-      this.bucket.count += num > 0 ? 1 : -1
-
-      // Reset to zero if count becomes negative or zero
-      if (this.bucket.count <= 0) {
-        this.bucket.size = 0
-        this.bucket.count = 0
-      }
-
-      setDoc(bucketRef, this.bucket, { merge: true })
-      if (process.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
-    },
-
-    /**
-     * Builds the bucket by calculating the total size and count of photos.
-     */
-    async bucketBuild(): Promise<void> {
-      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
-      let count = 0
-      let size = 0
-      querySnapshot.forEach((d) => {
-        count++
-        size += d.data().size
-      })
-      this.bucket = { count, size }
-      setDoc(bucketRef, this.bucket, { merge: true })
-      notify({ type: 'positive', message: `Bucket size calculated`, icon: 'sym_r_check' })
     },
 
     /**
@@ -261,6 +215,7 @@ export const useAppStore = defineStore('app', {
     async saveRecord(obj: PhotoType): Promise<PhotoType> {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
+      const bucket = useBucketStore()
       if (!obj.kind) obj.kind = 'photo'
 
       if (obj.thumb) {
@@ -292,7 +247,7 @@ export const useAppStore = defineStore('app', {
         ) {
           this.lastRecord = { ...obj }
         }
-        this.bucketDiff(obj.size)
+        bucket.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
@@ -351,6 +306,7 @@ export const useAppStore = defineStore('app', {
     async deleteRecord(obj: PhotoType) {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
+      const bucket = useBucketStore()
 
       try {
         const promises: Promise<void>[] = [deleteDoc(docRef)]
@@ -372,7 +328,7 @@ export const useAppStore = defineStore('app', {
       if (obj.thumb) {
         removeFromList(this.objects, obj)
 
-        this.bucketDiff(-obj.size)
+        bucket.bucketDiff(-obj.size)
         meta.updateCounters(obj, null)
         if (obj.date === this.lastRecord?.date) {
           this.getLast()

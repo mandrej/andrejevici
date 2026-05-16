@@ -27,7 +27,7 @@
               </div>
             </template>
             <template #action>
-              <q-btn label="Calculate" @click="app.bucketBuild" color="primary" flat />
+              <q-btn label="Calculate" @click="bucketStore.bucketBuild" color="primary" flat />
             </template>
           </AdminCard>
         </div>
@@ -137,6 +137,7 @@ import { computed, defineAsyncComponent } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
+import { useBucketStore } from '../stores/bucket'
 import { formatDatum } from '../helpers'
 import { formatBytes } from '../helpers'
 import AdminCard from '../components/AdminCard.vue'
@@ -150,7 +151,8 @@ const MessagesTab = defineAsyncComponent(() => import('../components/tab/Message
 
 const app = useAppStore()
 const meta = useValuesStore()
-const { bucket } = storeToRefs(app)
+const bucketStore = useBucketStore()
+const { bucket } = storeToRefs(bucketStore)
 
 const { adminTab } = storeToRefs(app)
 const values = computed(() => meta.values)

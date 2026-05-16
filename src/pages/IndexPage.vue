@@ -47,14 +47,17 @@ import { storeToRefs } from 'pinia'
 import { build } from '../helpers'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
+import { useBucketStore } from '../stores/bucket'
 
 const app = useAppStore()
 const meta = useValuesStore()
+const bucketStore = useBucketStore()
 
 const nickWithCount = computed(() => meta.nickWithCount)
 const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
-const { bucket, theme: appTheme } = storeToRefs(app)
+const { bucket } = storeToRefs(bucketStore)
+const { theme: appTheme } = storeToRefs(app)
 
 const theme = computed({
   get: () => appTheme.value,

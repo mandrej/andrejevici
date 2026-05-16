@@ -7,8 +7,8 @@ import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
 import { useValuesStore } from './stores/values'
-import { useUserStore } from './stores/user'
-import { resolveAuthReady } from './stores/user'
+import { useUserStore, resolveAuthReady } from './stores/user'
+import { useBucketStore } from './stores/bucket'
 import { messaging } from './firebase'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
@@ -17,11 +17,12 @@ import { onMessage } from 'firebase/messaging'
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
+const bucketStore = useBucketStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
 onMounted(async () => {
   app.initTheme()
-  app.bucketRead()
+  bucketStore.bucketRead()
   await app.getLast()
   await meta.readValues()
   // Reset transient UI state on mount
