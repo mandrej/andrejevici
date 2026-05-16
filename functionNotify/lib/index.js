@@ -93,6 +93,8 @@ exports.notify = (0, https_1.onRequest)(
             if (!resp || idx >= registrationTokens.length)
                 return;
             const token = registrationTokens[idx];
+            if (!token)
+                return;
             const data = deviceData.get(token);
             let statusText;
             if (resp.success) {
