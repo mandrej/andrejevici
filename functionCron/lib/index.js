@@ -32,22 +32,44 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cronBucket = exports.cronCounters = void 0;
 const app_1 = require("firebase-admin/app");
 const firestore_1 = require("firebase-admin/firestore");
 const scheduler_1 = require("firebase-functions/v2/scheduler");
-const es6_promise_pool_1 = __importDefault(require("es6-promise-pool"));
 const logger = __importStar(require("firebase-functions/logger"));
 (0, app_1.initializeApp)();
+// Cache singleton – avoids repeated SDK look-ups
+let _db;
+const db = () => (_db ?? (_db = (0, firestore_1.getFirestore)()));
+const COUNTER_FIELDS = [
+    'kind',
+    'year',
+    'tags',
+    'model',
+    'lens',
+    'email',
+    'nick',
+];
 const delimiter = '||'; // for counter id
 const counterId = (field, value) => {
     return `${field}${delimiter}${value}`.replace(/\//g, '%2F');
 };
-// Build new counters
+/** Commit an array of write-batch operations in chunks of up to 500. */
+const commitBatches = async (ops) => {
+    const MAX_BATCH = 500;
+    const promises = [];
+    for (let i = 0; i < ops.length; i += MAX_BATCH) {
+        const batch = db().batch();
+        const chunk = ops.slice(i, i + MAX_BATCH);
+        for (const op of chunk) {
+            op(batch);
+        }
+        promises.push(batch.commit());
+    }
+    await Promise.all(promises);
+};
+// Build new counters — only fetches the fields we need
 const buildCounters = async () => {
     const newValues = {
         kind: {},
@@ -58,11 +80,14 @@ const buildCounters = async () => {
         email: {},
         nick: {},
     };
-    const query = (0, firestore_1.getFirestore)().collection('Photo').orderBy('date', 'desc');
-    const querySnapshot = await query.get();
+    // select() fetches only the listed fields, drastically reducing data transfer
+    const querySnapshot = await db()
+        .collection('Photo')
+        .select(...COUNTER_FIELDS)
+        .get();
     querySnapshot.forEach((doc) => {
         const obj = doc.data();
-        Object.keys(newValues).forEach((field) => {
+        for (const field of COUNTER_FIELDS) {
             if (field === 'tags') {
                 const tags = Array.isArray(obj.tags) ? obj.tags : [];
                 for (const tag of tags) {
@@ -72,80 +97,54 @@ const buildCounters = async () => {
             else {
                 const val = obj[field];
                 if (val !== undefined && val !== null && val !== '') {
-                    newValues[field][val] =
-                        (newValues[field][val] ?? 0) + 1;
+                    newValues[field][val] = (newValues[field][val] ?? 0) + 1;
                 }
             }
-        });
+        }
     });
     return newValues;
 };
 // 5PM America/Los_Angeles = 2AM Europe/Paris
 exports.cronCounters = (0, scheduler_1.onSchedule)({ schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
     logger.log('cronCounters START');
-    const newValues = await buildCounters();
-    const query = (0, firestore_1.getFirestore)().collection('Counter');
-    const querySnapshot = await query.get();
-    // Delete existing counters using PromisePool
-    const docsToDelete = querySnapshot.docs;
-    let deleteIndex = 0;
-    const deleteProducer = () => {
-        if (deleteIndex >= docsToDelete.length) {
-            return undefined;
-        }
-        const doc = docsToDelete[deleteIndex];
-        deleteIndex++;
-        if (!doc) {
-            return undefined;
-        }
-        return (0, firestore_1.getFirestore)().collection('Counter').doc(doc.id).delete();
-    };
-    const deletePool = new es6_promise_pool_1.default(deleteProducer, 10);
-    await deletePool.start();
-    logger.log(`cronCounters deleted ${deleteIndex} existing counters`);
-    // Create an array of all write operations
-    const writeOperations = [];
-    for (const field in newValues) {
+    // Run buildCounters and fetch existing counters in parallel
+    const [newValues, existingSnapshot] = await Promise.all([
+        buildCounters(),
+        db().collection('Counter').get(),
+    ]);
+    // Delete all existing counters using batched writes
+    const deleteOps = existingSnapshot.docs.map((doc) => (batch) => {
+        batch.delete(doc.ref);
+    });
+    await commitBatches(deleteOps);
+    logger.log(`cronCounters deleted ${deleteOps.length} existing counters`);
+    // Create new counters using batched writes
+    const counterRef = db().collection('Counter');
+    const writeOps = [];
+    for (const field of COUNTER_FIELDS) {
         for (const [key, count] of Object.entries(newValues[field])) {
-            writeOperations.push({ field, key, count });
+            const docRef = counterRef.doc(counterId(field, key));
+            writeOps.push((batch) => {
+                batch.set(docRef, { field, value: key, count });
+            });
         }
     }
-    // Generator function to create promises for the pool
-    let operationIndex = 0;
-    const promiseProducer = () => {
-        if (operationIndex >= writeOperations.length) {
-            return undefined;
-        }
-        const operation = writeOperations[operationIndex];
-        operationIndex++;
-        if (!operation) {
-            return undefined;
-        }
-        const { field, key, count } = operation;
-        return (0, firestore_1.getFirestore)()
-            .collection('Counter')
-            .doc(counterId(field, key))
-            .set({ field, value: key, count });
-    };
-    // Create and execute the promise pool with concurrency of 5
-    const pool = new es6_promise_pool_1.default(promiseProducer, 5);
-    await pool.start();
-    logger.log(`cronCounters created ${operationIndex} new counters`);
+    await commitBatches(writeOps);
+    logger.log(`cronCounters created ${writeOps.length} new counters`);
 });
 // 6PM America/Los_Angeles = 3AM Europe/Paris
 exports.cronBucket = (0, scheduler_1.onSchedule)({ schedule: '0 18 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' }, async () => {
-    logger.log('Get new value');
+    logger.log('cronBucket START');
     const res = {
         count: 0,
         size: 0,
     };
-    const query = (0, firestore_1.getFirestore)().collection('Photo').orderBy('date', 'desc');
-    const querySnapshot = await query.get();
+    // Only fetch the 'size' field — no need to download full documents
+    const querySnapshot = await db().collection('Photo').select('size').get();
     querySnapshot.forEach((doc) => {
-        const obj = doc.data();
         res.count++;
-        res.size += obj.size;
+        res.size += doc.data().size ?? 0;
     });
-    logger.log('Write new value');
-    (0, firestore_1.getFirestore)().collection('Bucket').doc('total').set(res);
+    await db().collection('Bucket').doc('total').set(res);
+    logger.log(`cronBucket done: ${res.count} photos, ${res.size} bytes`);
 });

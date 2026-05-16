@@ -1,13 +1,18 @@
 import { initializeApp } from 'firebase-admin/app'
-import { FieldValue, getFirestore } from 'firebase-admin/firestore'
-import { getMessaging } from 'firebase-admin/messaging'
+import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getMessaging, type Messaging } from 'firebase-admin/messaging'
 import { onRequest } from 'firebase-functions/v2/https'
 import type { Request } from 'firebase-functions/v2/https'
 import type { Response } from 'express'
-import type { CollectionReference, DocumentData } from 'firebase-admin/firestore'
 import * as logger from 'firebase-functions/logger'
 
 initializeApp()
+
+// Cache singletons – avoids repeated SDK look-ups on every invocation
+let _db: Firestore | undefined
+let _messaging: Messaging | undefined
+const db = () => (_db ??= getFirestore())
+const messaging = () => (_messaging ??= getMessaging())
 
 export const notify = onRequest(
   // : Cloud Functions can be configured with a maximum timeout of 540 seconds (9 minutes)
@@ -24,7 +29,6 @@ export const notify = onRequest(
   async (req: Request, res: Response) => {
     logger.info('Notify request received', { body: req.body })
     try {
-      const registrationTokens: string[] = []
       const text: string = req.body.text
 
       if (!text) {
@@ -32,17 +36,22 @@ export const notify = onRequest(
         return
       }
 
-      const query: CollectionReference<DocumentData> = getFirestore().collection('Device')
-      const querySnapshot = await query.get()
+      // Fetch only the fields we need from Device docs
+      const querySnapshot = await db().collection('Device').select('email', 'timestamp').get()
 
-      querySnapshot.forEach((docSnap) => {
-        registrationTokens.push(docSnap.id)
-      })
-
-      if (registrationTokens.length === 0) {
+      if (querySnapshot.empty) {
         res.status(200).send('No subscribers found')
         return
       }
+
+      // Build token list and cache device data in one pass
+      const registrationTokens: string[] = []
+      const deviceData = new Map<string, { email?: string; timestamp?: FirebaseFirestore.Timestamp }>()
+
+      querySnapshot.forEach((docSnap) => {
+        registrationTokens.push(docSnap.id)
+        deviceData.set(docSnap.id, docSnap.data() as { email?: string; timestamp?: FirebaseFirestore.Timestamp })
+      })
 
       const message = {
         tokens: registrationTokens,
@@ -53,58 +62,69 @@ export const notify = onRequest(
         },
       }
 
-      const response = await getMessaging().sendEachForMulticast(message)
-      const promises: Promise<void>[] = []
+      const response = await messaging().sendEachForMulticast(message)
+
+      // Collect all Firestore writes into batched operations
+      const MAX_BATCH = 500
+      const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = []
 
       response.responses.forEach((resp, idx) => {
-        if (resp && idx < registrationTokens.length) {
-          if (!resp.success) {
-            promises.push(tokenDispacher(registrationTokens[idx], false, text))
-          } else {
-            promises.push(tokenDispacher(registrationTokens[idx], true, text))
-          }
+        if (!resp || idx >= registrationTokens.length) return
+
+        const token = registrationTokens[idx]
+        const data = deviceData.get(token)
+
+        let statusText: string
+        if (resp.success) {
+          statusText = 'successfully sent to ' + data?.email
+          logger.info(`Message sent to ${data?.email}`)
+        } else {
+          const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
+          statusText =
+            'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000)
+          logger.info(
+            `Removed token for ${data?.email} age ${Math.floor(diff / 86400000)}`,
+          )
+          // Queue delete of stale token
+          ops.push((batch) => {
+            batch.delete(db().collection('Device').doc(token))
+          })
         }
+
+        // Queue Message log entry
+        ops.push((batch) => {
+          batch.set(db().collection('Message').doc(), {
+            email: data?.email,
+            message: text,
+            status: resp.success,
+            text: statusText,
+            timestamp: FieldValue.serverTimestamp(),
+          })
+        })
       })
 
-      if (promises.length === 0) {
+      if (ops.length === 0) {
         res.status(200).send('No active subscribers found')
-        logger.info(`No active subscribers found. No message sent`)
+        logger.info('No active subscribers found. No message sent')
         return
       }
 
-      await Promise.all(promises)
-      res.status(200).send(`Message sent successfully to ${promises.length} devices`)
+      // Commit all writes in parallel batches of 500
+      const batchPromises: Promise<FirebaseFirestore.WriteResult[]>[] = []
+      for (let i = 0; i < ops.length; i += MAX_BATCH) {
+        const batch = db().batch()
+        const chunk = ops.slice(i, i + MAX_BATCH)
+        for (const op of chunk) {
+          op(batch)
+        }
+        batchPromises.push(batch.commit())
+      }
+      await Promise.all(batchPromises)
+
+      res.status(200).send(`Message sent successfully to ${registrationTokens.length} devices`)
     } catch (error) {
       logger.error('Error sending multicast message:', error)
       res.status(500).json({ error: (error as Error).message })
     }
   },
 )
-
-const tokenDispacher = async (
-  token: string | undefined,
-  status: boolean,
-  msg: string,
-): Promise<void> => {
-  if (token === undefined) return
-  const docRef = getFirestore().collection('Device').doc(token)
-  const doc = await docRef.get()
-  const data = doc.data()
-  let text = 'successfully sent to ' + data?.email
-
-  if (status) {
-    logger.info(`Message sent to ${data?.email}`)
-  } else {
-    const diff = Date.now() - data?.timestamp.toMillis()
-    text = 'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000)
-    logger.info(`Removed token for ${data?.email} age ` + Math.floor(diff / 86400000))
-    await docRef.delete()
-  }
-  await getFirestore().collection('Message').add({
-    email: data?.email,
-    message: msg,
-    status: status,
-    text: text,
-    timestamp: FieldValue.serverTimestamp(),
-  })
-}

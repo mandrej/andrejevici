@@ -1,14 +1,18 @@
 import { initializeApp } from 'firebase-admin/app'
-import { FieldValue, getFirestore } from 'firebase-admin/firestore'
-import { getStorage } from 'firebase-admin/storage'
+import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getStorage, type Storage } from 'firebase-admin/storage'
 import { onObjectFinalized } from 'firebase-functions/v2/storage'
 import * as logger from 'firebase-functions/logger'
 import * as path from 'path'
-import * as os from 'os'
-import * as fs from 'fs'
 import sharp from 'sharp'
 
 initializeApp()
+
+// Cache singletons – avoids repeated SDK look-ups on every invocation
+let _db: Firestore | undefined
+let _storage: Storage | undefined
+const db = () => (_db ??= getFirestore())
+const storage = () => (_storage ??= getStorage())
 
 const THUMB_SIZE = 400
 const THUMB_PREFIX = 'thumbnails/'
@@ -28,10 +32,10 @@ const LOCKS_COLLECTION = 'thumbnailLocks'
  */
 const acquireLock = async (filePath: string): Promise<boolean> => {
   const lockId = filePath.replace(/\//g, '_').replace(/\./g, '-')
-  const lockRef = getFirestore().collection(LOCKS_COLLECTION).doc(lockId)
+  const lockRef = db().collection(LOCKS_COLLECTION).doc(lockId)
 
   try {
-    await getFirestore().runTransaction(async (tx) => {
+    await db().runTransaction(async (tx) => {
       const snap = await tx.get(lockRef)
       if (snap.exists) {
         // Another instance is already processing this file
@@ -54,7 +58,7 @@ const acquireLock = async (filePath: string): Promise<boolean> => {
 /** Releases the lock so the file can be retried if processing failed. */
 const releaseLock = async (filePath: string): Promise<void> => {
   const lockId = filePath.replace(/\//g, '_').replace(/\./g, '-')
-  await getFirestore().collection(LOCKS_COLLECTION).doc(lockId).delete()
+  await db().collection(LOCKS_COLLECTION).doc(lockId).delete()
 }
 
 export const generateThumbnail = onObjectFinalized(
@@ -69,7 +73,11 @@ export const generateThumbnail = onObjectFinalized(
     const bucketName: string = event.data.bucket
 
     // Skip if not an image, unless contentType is vaguely defined or empty. We also check the extension below safely.
-    if (contentType && !contentType.startsWith('image/') && contentType !== 'application/octet-stream') {
+    if (
+      contentType &&
+      !contentType.startsWith('image/') &&
+      contentType !== 'application/octet-stream'
+    ) {
       logger.info(`Skipping non-image file based on content type: ${filePath} (${contentType})`)
       return
     }
@@ -106,29 +114,23 @@ export const generateThumbnail = onObjectFinalized(
 
     logger.info(`Generating thumbnail for ${filePath} -> ${thumbFilePath}`)
 
-    const bucket = getStorage().bucket(bucketName)
-    const tmpInput = path.join(os.tmpdir(), `orig_${Date.now()}_${fileName}${ext}`)
-    const tmpOutput = path.join(os.tmpdir(), `thumb_${Date.now()}_${fileName}${THUMB_SUFFIX}`)
+    const bucket = storage().bucket(bucketName)
 
     try {
-      // Download original file to /tmp
-      await bucket.file(filePath).download({ destination: tmpInput })
-      logger.info(`Downloaded original file to ${tmpInput}`)
+      // Stream-based pipeline: Storage read → sharp → Storage write
+      // Eliminates two temp-file disk round-trips for maximum speed
+      const sourceStream = bucket.file(filePath).createReadStream()
 
-      // Generate 400x400 JPEG thumbnail with sharp
-      await sharp(tmpInput)
+      const transformer = sharp({ failOn: 'none' })
         .resize(THUMB_SIZE, THUMB_SIZE, {
           fit: 'cover',
           position: 'centre',
         })
         .jpeg({ quality: 85, progressive: true })
-        .toFile(tmpOutput)
 
-      logger.info(`Thumbnail created at ${tmpOutput}`)
-
-      // Upload thumbnail to Storage
-      await bucket.upload(tmpOutput, {
-        destination: thumbFilePath,
+      const destFile = bucket.file(thumbFilePath)
+      const destStream = destFile.createWriteStream({
+        resumable: false, // small file — skip resumable overhead
         public: true,
         metadata: {
           contentType: 'image/jpeg',
@@ -140,6 +142,15 @@ export const generateThumbnail = onObjectFinalized(
         },
       })
 
+      await new Promise<void>((resolve, reject) => {
+        sourceStream.on('error', reject)
+        transformer.on('error', reject)
+        destStream.on('error', reject)
+        destStream.on('finish', resolve)
+
+        sourceStream.pipe(transformer).pipe(destStream)
+      })
+
       logger.info(`Thumbnail uploaded to ${thumbFilePath}`)
     } catch (error) {
       logger.error(`Error generating thumbnail for ${filePath}:`, error)
@@ -149,16 +160,6 @@ export const generateThumbnail = onObjectFinalized(
       await releaseLock(filePath).catch((e) =>
         logger.warn(`Failed to release lock for ${filePath}:`, e),
       )
-      // Clean up temp files
-      for (const tmpFile of [tmpInput, tmpOutput]) {
-        try {
-          if (fs.existsSync(tmpFile)) {
-            fs.unlinkSync(tmpFile)
-          }
-        } catch (cleanupError) {
-          logger.warn(`Failed to clean up temp file ${tmpFile}:`, cleanupError)
-        }
-      }
     }
   },
 )

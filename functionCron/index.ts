@@ -1,10 +1,13 @@
 import { initializeApp } from 'firebase-admin/app'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
-import PromisePool from 'es6-promise-pool'
 import * as logger from 'firebase-functions/logger'
 
 initializeApp()
+
+// Cache singleton – avoids repeated SDK look-ups
+let _db: Firestore | undefined
+const db = () => (_db ??= getFirestore())
 
 interface ValuesState {
   headlineToApply: string
@@ -20,12 +23,41 @@ interface ValuesState {
   }
 }
 
+const COUNTER_FIELDS: (keyof ValuesState['values'])[] = [
+  'kind',
+  'year',
+  'tags',
+  'model',
+  'lens',
+  'email',
+  'nick',
+]
+
 const delimiter = '||' // for counter id
 const counterId = (field: string, value: string | number): string => {
   return `${field}${delimiter}${value}`.replace(/\//g, '%2F')
 }
 
-// Build new counters
+/** Commit an array of write-batch operations in chunks of up to 500. */
+const commitBatches = async (
+  ops: Array<(batch: FirebaseFirestore.WriteBatch) => void>,
+): Promise<void> => {
+  const MAX_BATCH = 500
+  const promises: Promise<FirebaseFirestore.WriteResult[]>[] = []
+
+  for (let i = 0; i < ops.length; i += MAX_BATCH) {
+    const batch = db().batch()
+    const chunk = ops.slice(i, i + MAX_BATCH)
+    for (const op of chunk) {
+      op(batch)
+    }
+    promises.push(batch.commit())
+  }
+
+  await Promise.all(promises)
+}
+
+// Build new counters — only fetches the fields we need
 const buildCounters = async (): Promise<ValuesState['values']> => {
   const newValues: ValuesState['values'] = {
     kind: {},
@@ -36,12 +68,16 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
     email: {},
     nick: {},
   }
-  const query = getFirestore().collection('Photo').orderBy('date', 'desc')
-  const querySnapshot = await query.get()
+
+  // select() fetches only the listed fields, drastically reducing data transfer
+  const querySnapshot = await db()
+    .collection('Photo')
+    .select(...COUNTER_FIELDS)
+    .get()
 
   querySnapshot.forEach((doc) => {
     const obj = doc.data() as Record<string, unknown>
-    Object.keys(newValues).forEach((field) => {
+    for (const field of COUNTER_FIELDS) {
       if (field === 'tags') {
         const tags = Array.isArray(obj.tags) ? obj.tags : []
         for (const tag of tags) {
@@ -50,11 +86,10 @@ const buildCounters = async (): Promise<ValuesState['values']> => {
       } else {
         const val = obj[field]
         if (val !== undefined && val !== null && val !== '') {
-          newValues[field as keyof ValuesState['values']][val as string] =
-            (newValues[field as keyof ValuesState['values']][val as string] ?? 0) + 1
+          newValues[field][val as string] = (newValues[field][val as string] ?? 0) + 1
         }
       }
-    })
+    }
   })
   return newValues
 }
@@ -64,68 +99,37 @@ export const cronCounters = onSchedule(
   { schedule: '0 17 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
     logger.log('cronCounters START')
-    const newValues = await buildCounters()
 
-    const query = getFirestore().collection('Counter')
-    const querySnapshot = await query.get()
+    // Run buildCounters and fetch existing counters in parallel
+    const [newValues, existingSnapshot] = await Promise.all([
+      buildCounters(),
+      db().collection('Counter').get(),
+    ])
 
-    // Delete existing counters using PromisePool
-    const docsToDelete = querySnapshot.docs
-    let deleteIndex = 0
-    const deleteProducer = (): Promise<FirebaseFirestore.WriteResult> | undefined => {
-      if (deleteIndex >= docsToDelete.length) {
-        return undefined
-      }
-      const doc = docsToDelete[deleteIndex]
-      deleteIndex++
+    // Delete all existing counters using batched writes
+    const deleteOps = existingSnapshot.docs.map(
+      (doc) => (batch: FirebaseFirestore.WriteBatch) => {
+        batch.delete(doc.ref)
+      },
+    )
+    await commitBatches(deleteOps)
+    logger.log(`cronCounters deleted ${deleteOps.length} existing counters`)
 
-      if (!doc) {
-        return undefined
-      }
+    // Create new counters using batched writes
+    const counterRef = db().collection('Counter')
+    const writeOps: Array<(batch: FirebaseFirestore.WriteBatch) => void> = []
 
-      return getFirestore().collection('Counter').doc(doc.id).delete()
-    }
-
-    const deletePool = new PromisePool(deleteProducer, 10)
-    await deletePool.start()
-
-    logger.log(`cronCounters deleted ${deleteIndex} existing counters`)
-
-    // Create an array of all write operations
-    const writeOperations: Array<{ field: string; key: string; count: number }> = []
-    for (const field in newValues) {
-      for (const [key, count] of Object.entries(newValues[field as keyof ValuesState['values']])) {
-        writeOperations.push({ field, key, count })
+    for (const field of COUNTER_FIELDS) {
+      for (const [key, count] of Object.entries(newValues[field])) {
+        const docRef = counterRef.doc(counterId(field, key))
+        writeOps.push((batch) => {
+          batch.set(docRef, { field, value: key, count })
+        })
       }
     }
 
-    // Generator function to create promises for the pool
-    let operationIndex = 0
-    const promiseProducer = (): Promise<FirebaseFirestore.WriteResult> | undefined => {
-      if (operationIndex >= writeOperations.length) {
-        return undefined
-      }
-
-      const operation = writeOperations[operationIndex]
-      operationIndex++
-
-      if (!operation) {
-        return undefined
-      }
-
-      const { field, key, count } = operation
-
-      return getFirestore()
-        .collection('Counter')
-        .doc(counterId(field, key))
-        .set({ field, value: key, count })
-    }
-
-    // Create and execute the promise pool with concurrency of 5
-    const pool = new PromisePool(promiseProducer, 5)
-    await pool.start()
-
-    logger.log(`cronCounters created ${operationIndex} new counters`)
+    await commitBatches(writeOps)
+    logger.log(`cronCounters created ${writeOps.length} new counters`)
   },
 )
 
@@ -133,21 +137,21 @@ export const cronCounters = onSchedule(
 export const cronBucket = onSchedule(
   { schedule: '0 18 */3 * *', region: 'us-central1', timeZone: 'America/Los_Angeles' },
   async () => {
-    logger.log('Get new value')
+    logger.log('cronBucket START')
     const res = {
       count: 0,
       size: 0,
     }
-    const query = getFirestore().collection('Photo').orderBy('date', 'desc')
-    const querySnapshot = await query.get()
+
+    // Only fetch the 'size' field — no need to download full documents
+    const querySnapshot = await db().collection('Photo').select('size').get()
 
     querySnapshot.forEach((doc) => {
-      const obj = doc.data() as Record<string, unknown>
       res.count++
-      res.size += obj.size as number
+      res.size += (doc.data().size as number) ?? 0
     })
 
-    logger.log('Write new value')
-    getFirestore().collection('Bucket').doc('total').set(res)
+    await db().collection('Bucket').doc('total').set(res)
+    logger.log(`cronBucket done: ${res.count} photos, ${res.size} bytes`)
   },
 )
