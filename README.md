@@ -77,6 +77,6 @@ docker run -dit \
   --name firebase-tools \
   andreysenov/firebase-tools:latest-node-22 \
   firebase emulators:start --import /data #--export-on-exit /data
-  
+
 quasar dev -m pwa
 ```

@@ -279,6 +279,13 @@ const hasActiveFilters = computed(() => {
     padding: 0;
   }
 
+  :deep(.q-field__prepend) {
+    max-width: 95%;
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
   :deep(.q-field__native) {
     min-width: 20px;
     padding: 8px 0;
@@ -291,6 +298,8 @@ const hasActiveFilters = computed(() => {
     gap: 4px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    width: 100%;
+    max-width: 100%;
 
     &::-webkit-scrollbar {
       display: none;

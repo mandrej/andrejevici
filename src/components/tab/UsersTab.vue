@@ -265,15 +265,15 @@ const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
     // If the checkbox already changed the value in the object, adminCount might already be 0.
     // Let's check more carefully.
   }
-  
+
   // Re-calculating count excluding the current item if we are turning it off
-  const remainingAdmins = result.value.filter(u => u.isAdmin).length
+  const remainingAdmins = result.value.filter((u) => u.isAdmin).length
   if (!val && remainingAdmins === 0) {
     notify({ type: 'negative', message: 'Cannot remove the last administrator' })
     item.isAdmin = true // Revert
     return
   }
-  
+
   await auth.updateUser(item, 'isAdmin')
 }
 

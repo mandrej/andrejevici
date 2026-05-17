@@ -46,11 +46,17 @@ export const notify = onRequest(
 
       // Build token list and cache device data in one pass
       const registrationTokens: string[] = []
-      const deviceData = new Map<string, { email?: string; timestamp?: FirebaseFirestore.Timestamp }>()
+      const deviceData = new Map<
+        string,
+        { email?: string; timestamp?: FirebaseFirestore.Timestamp }
+      >()
 
       querySnapshot.forEach((docSnap) => {
         registrationTokens.push(docSnap.id)
-        deviceData.set(docSnap.id, docSnap.data() as { email?: string; timestamp?: FirebaseFirestore.Timestamp })
+        deviceData.set(
+          docSnap.id,
+          docSnap.data() as { email?: string; timestamp?: FirebaseFirestore.Timestamp },
+        )
       })
 
       const message = {
@@ -82,11 +88,8 @@ export const notify = onRequest(
           logger.info(`Message sent to ${data?.email}`)
         } else {
           const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
-          statusText =
-            'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000)
-          logger.info(
-            `Removed token for ${data?.email} age ${Math.floor(diff / 86400000)}`,
-          )
+          statusText = 'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000)
+          logger.info(`Removed token for ${data?.email} age ${Math.floor(diff / 86400000)}`)
           // Queue delete of stale token
           ops.push((batch) => {
             batch.delete(db().collection('Device').doc(token))

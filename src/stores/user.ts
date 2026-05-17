@@ -304,10 +304,14 @@ export const useUserStore = defineStore('auth', {
      */
     async updateDevice(token: string): Promise<void> {
       if (!this.user?.email) return
-      await setDoc(doc(deviceCollection, token), {
-        email: this.user.email,
-        timestamp: Timestamp.fromDate(new Date()),
-      }, { merge: true })
+      await setDoc(
+        doc(deviceCollection, token),
+        {
+          email: this.user.email,
+          timestamp: Timestamp.fromDate(new Date()),
+        },
+        { merge: true },
+      )
     },
 
     /**

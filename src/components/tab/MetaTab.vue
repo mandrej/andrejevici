@@ -5,7 +5,7 @@
     </template>
     <q-select
       v-model="app.metaTab"
-      :options="app.metaOptions"
+      :options="metaOptions"
       emit-value
       map-options
       borderless
@@ -205,18 +205,26 @@ import CONFIG from 'src/config'
 import { renameValue, deleteValue, addValue as addCounterValue } from '../../helpers/remedy'
 import notify from '../../helpers/notify'
 import type { QInput, QTableColumn } from 'quasar'
+import type { MetaOption } from '../../helpers/models'
 
 const meta = useValuesStore()
 const app = useAppStore()
 
+const metaOptions: MetaOption[] = [
+  { label: 'Manage Kinds', value: 'kind', icon: 'sym_r_category', short: 'Kind' },
+  { label: 'Manage Tags', value: 'tags', icon: 'sym_r_label', short: 'Tag' },
+  { label: 'Manage Cameras', value: 'model', icon: 'sym_r_photo_camera', short: 'Camera' },
+  { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
+]
+
 const activeTabLabel = computed(() => {
-  return app.metaOptions.find((opt) => opt.value === app.metaTab)?.label || 'Metadata'
+  return metaOptions.find((opt) => opt.value === app.metaTab)?.label || 'Metadata'
 })
 const activeTabShort = computed(() => {
-  return app.metaOptions.find((opt) => opt.value === app.metaTab)?.short || 'Value'
+  return metaOptions.find((opt) => opt.value === app.metaTab)?.short || 'Value'
 })
 const activeTabIcon = computed(() => {
-  return app.metaOptions.find((opt) => opt.value === app.metaTab)?.icon || 'sym_r_settings'
+  return metaOptions.find((opt) => opt.value === app.metaTab)?.icon || 'sym_r_settings'
 })
 
 const values = computed(() => meta.values)

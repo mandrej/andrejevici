@@ -1,6 +1,11 @@
 <template>
   <q-toolbar-title class="row items-center no-wrap">
-    <router-link to="/" class="text-h6 q-mr-sm" style="color: inherit; text-decoration: none">
+    <router-link
+      v-if="$q.screen.gt.xs"
+      to="/"
+      class="text-h6 q-mr-sm"
+      style="color: inherit; text-decoration: none"
+    >
       {{ $route.meta.title }}
     </router-link>
     <GlobalSearch />

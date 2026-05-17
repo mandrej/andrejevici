@@ -107,11 +107,9 @@ export const cronCounters = onSchedule(
     ])
 
     // Delete all existing counters using batched writes
-    const deleteOps = existingSnapshot.docs.map(
-      (doc) => (batch: FirebaseFirestore.WriteBatch) => {
-        batch.delete(doc.ref)
-      },
-    )
+    const deleteOps = existingSnapshot.docs.map((doc) => (batch: FirebaseFirestore.WriteBatch) => {
+      batch.delete(doc.ref)
+    })
     await commitBatches(deleteOps)
     logger.log(`cronCounters deleted ${deleteOps.length} existing counters`)
 

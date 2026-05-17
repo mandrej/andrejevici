@@ -8,4 +8,3 @@ export const messageCollection = collection(db, 'Message')
 export const deviceCollection = collection(db, 'Device')
 export const bucketCollection = collection(db, 'Bucket')
 export const renameCollection = collection(db, 'Rename')
-

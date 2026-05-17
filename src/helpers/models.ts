@@ -121,7 +121,6 @@ export interface AppStoreState {
   adminTab: string
   addTab: AssetKind
   metaTab: keyof ValuesState['values']
-  metaOptions: MetaOption[]
   selected: PhotoType[]
   theme: 'light' | 'dark' | 'auto'
 }

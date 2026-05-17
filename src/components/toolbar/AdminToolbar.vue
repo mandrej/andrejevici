@@ -15,10 +15,14 @@
 
   <q-space />
   <q-tabs v-model="adminTab" shrink inline-label>
-    <q-tab name="repair" icon="sym_r_construction" label="Repair" />
-    <q-tab name="meta" icon="sym_r_schema" label="Metadata" />
-    <q-tab name="users" icon="sym_r_group" label="Users" />
-    <q-tab name="messages" icon="sym_r_chat" label="Messages" />
+    <q-tab
+      name="repair"
+      icon="sym_r_construction"
+      :label="$q.screen.gt.xs ? 'Repair' : undefined"
+    />
+    <q-tab name="meta" icon="sym_r_schema" :label="$q.screen.gt.xs ? 'Metadata' : undefined" />
+    <q-tab name="users" icon="sym_r_group" :label="$q.screen.gt.xs ? 'Users' : undefined" />
+    <q-tab name="messages" icon="sym_r_chat" :label="$q.screen.gt.xs ? 'Messages' : undefined" />
   </q-tabs>
 </template>
 

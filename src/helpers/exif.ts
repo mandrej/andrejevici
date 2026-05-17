@@ -53,15 +53,12 @@ const readExif = async (url: string): Promise<ExifType | null> => {
             if (model.toLowerCase() === 'model') model = CONFIG.unknownModel
             const makeWords = make.split(' ')
             const modelWords = model.split(' ')
-            const raw = makeWords.some((w) => modelWords.includes(w))
-              ? model
-              : `${make} ${model}`
+            const raw = makeWords.some((w) => modelWords.includes(w)) ? model : `${make} ${model}`
             return resolveRename(raw)
           })()
         : null
 
-    const lensPromise =
-      'LensModel' in exif ? resolveRename(exif.LensModel.description) : null
+    const lensPromise = 'LensModel' in exif ? resolveRename(exif.LensModel.description) : null
 
     const [resolvedModel, resolvedLens] = await Promise.all([modelPromise, lensPromise])
     if (resolvedModel) result.model = resolvedModel

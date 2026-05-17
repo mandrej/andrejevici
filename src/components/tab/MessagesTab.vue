@@ -125,10 +125,10 @@ const startListening = () => {
       error.value = result.value.length === 0 ? 'No messages found' : ''
     },
     (err) => {
-      console.error("Error listening to messages:", err)
+      console.error('Error listening to messages:', err)
       error.value = err.message
       busy.value = false
-    }
+    },
   )
 }
 

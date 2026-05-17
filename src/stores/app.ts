@@ -81,26 +81,11 @@ export const useAppStore = defineStore('app', {
     adminTab: 'repair',
     addTab: 'photo',
     metaTab: 'tags',
-    metaOptions: [
-      { label: 'Manage Kinds', value: 'kind', icon: 'sym_r_category', short: 'Kind' },
-      { label: 'Manage Tags', value: 'tags', icon: 'sym_r_label', short: 'Tag' },
-      { label: 'Manage Cameras', value: 'model', icon: 'sym_r_photo_camera', short: 'Camera' },
-      { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
-    ],
     selected: [],
     theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
   }),
   persist: {
-    pick: [
-      'lastRecord',
-      'find',
-      'uploaded',
-      'adminTab',
-      'addTab',
-      'metaTab',
-      'metaOptions',
-      'theme',
-    ],
+    pick: ['lastRecord', 'find', 'uploaded', 'adminTab', 'addTab', 'metaTab', 'theme'],
   },
   actions: {
     /**

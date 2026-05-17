@@ -103,8 +103,7 @@ exports.notify = (0, https_1.onRequest)(
             }
             else {
                 const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now());
-                statusText =
-                    'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000);
+                statusText = 'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000);
                 logger.info(`Removed token for ${data?.email} age ${Math.floor(diff / 86400000)}`);
                 // Queue delete of stale token
                 ops.push((batch) => {
