@@ -14,10 +14,20 @@
     label="Headline to apply"
     class="q-px-md q-mb-md"
     clearable
+    :dense="$q.screen.lt.sm"
   />
-  <TagsMerge v-if="user?.isAdmin" class="q-px-md q-mb-md" :label="`Tags to apply`" />
+  <TagsMerge
+    v-if="user?.isAdmin"
+    class="q-px-md q-mb-md"
+    :label="`Tags to apply`"
+    :dense="$q.screen.lt.sm"
+  />
 
-  <div v-if="user?.isAdmin && selected.length > 0" class="q-px-md column q-gutter-sm">
+  <div
+    v-if="user?.isAdmin && selected.length > 0"
+    class="q-px-md column"
+    :class="{ 'q-gutter-sm': $q.screen.gt.sm }"
+  >
     <div class="text-caption text-center">{{ selected.length }} items selected</div>
     <q-btn
       v-if="tagsToApply && tagsToApply.length > 0"

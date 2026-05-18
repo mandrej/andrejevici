@@ -1,5 +1,5 @@
 <template>
-  <q-list class="q-mt-lg">
+  <q-list class="q-mt-lg" :dense="$q.screen.lt.sm">
     <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
       <q-item-section avatar>
         <q-icon name="sym_r_home" />
