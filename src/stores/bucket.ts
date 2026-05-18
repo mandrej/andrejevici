@@ -12,7 +12,11 @@ export const useBucketStore = defineStore('bucket', {
   }),
   persist: true,
   actions: {
-    async bucketRead() {
+    async getOrFetchBucket() {
+      // If the bucket data already exists in the store, use it instead of fetching
+      if (this.bucket && this.bucket.count > 0) {
+        return
+      }
       const docSnap = await getDoc(bucketRef)
       if (docSnap.exists()) {
         this.bucket = docSnap.data() as BucketType

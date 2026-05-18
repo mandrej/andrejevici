@@ -32,9 +32,9 @@ onMounted(() => {
   // This avoids blocking the initial page mount/render and allows the app to load instantly
   // using the persisted cache from LocalStorage.
   void Promise.all([
-    bucketStore.bucketRead(),
-    app.getLast(),
-    meta.readValues(),
+    bucketStore.getOrFetchBucket(),
+    app.getOrFetchLastRec(),
+    meta.getOrFetchValues(),
   ])
 })
 

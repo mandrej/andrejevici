@@ -170,7 +170,10 @@ export const useValuesStore = defineStore('meta', {
     /**
      * Reads the values from the database.
      */
-    async readValues(): Promise<void> {
+    async getOrFetchValues(): Promise<void> {
+      if (this.values.kind && Object.keys(this.values.kind).length > 0) {
+        return
+      }
       try {
         const querySnapshot = await getDocs(query(counterCollection))
         const newValues: ValuesState['values'] = {

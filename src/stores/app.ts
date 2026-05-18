@@ -316,7 +316,7 @@ export const useAppStore = defineStore('app', {
         bucket.bucketDiff(-obj.size)
         meta.updateCounters(obj, null)
         if (obj.date === this.lastRecord?.date) {
-          this.getLast()
+          this.fetchLastRec()
         }
       } else {
         removeFromList(this.uploaded, obj)
@@ -328,13 +328,21 @@ export const useAppStore = defineStore('app', {
       })
     },
 
+    async getOrFetchLastRec() {
+      if (this.lastRecord && this.lastRecord.date) {
+        return
+      } else {
+        await this.fetchLastRec()
+      }
+    },
+
     /**
      * Retrieves the most recent photo from the Firestore database.
      *
      * @return {Promise<PhotoType | null>} A promise that resolves to the last photo
      * taken, or null if no photos are found.
      */
-    async getLast(): Promise<PhotoType | null> {
+    async fetchLastRec(): Promise<PhotoType | null> {
       try {
         const querySnapshot = await getDocs(
           query(photoCollection, orderBy('date', 'desc'), limit(1)),

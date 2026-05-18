@@ -3,7 +3,7 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
-import { getMessaging } from 'firebase/messaging'
+import { getMessaging, type Messaging } from 'firebase/messaging'
 // import { getAnalytics } from "firebase/analytics";
 import CONFIG from './config'
 
@@ -12,7 +12,8 @@ const auth = getAuth(firebaseApp)
 const storage = getStorage(firebaseApp)
 const db = getFirestore(firebaseApp)
 const functions = getFunctions(firebaseApp)
-const messaging = getMessaging(firebaseApp)
+const messaging =
+  typeof window !== 'undefined' ? getMessaging(firebaseApp) : (null as unknown as Messaging)
 
 if (process.env.DEV) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099')
