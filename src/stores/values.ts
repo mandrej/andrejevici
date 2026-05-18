@@ -171,16 +171,29 @@ export const useValuesStore = defineStore('meta', {
      * Reads the values from the database.
      */
     async readValues(): Promise<void> {
-      this.values = { kind: {}, year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} }
-      const querySnapshot = await getDocs(query(counterCollection))
-      querySnapshot.forEach((d) => {
-        const obj = d.data() as { count: number; field: string; value: string }
-        const field = obj.field as keyof ValuesState['values']
-        if (this.values[field]) {
-          const current = this.values[field][obj.value] || 0
-          this.values[field][obj.value] = current + obj.count
+      try {
+        const querySnapshot = await getDocs(query(counterCollection))
+        const newValues: ValuesState['values'] = {
+          kind: {},
+          year: {},
+          tags: {},
+          model: {},
+          lens: {},
+          email: {},
+          nick: {},
         }
-      })
+        querySnapshot.forEach((d) => {
+          const obj = d.data() as { count: number; field: string; value: string }
+          const field = obj.field as keyof ValuesState['values']
+          if (newValues[field]) {
+            const current = newValues[field][obj.value] || 0
+            newValues[field][obj.value] = current + obj.count
+          }
+        })
+        this.values = newValues
+      } catch (err) {
+        console.error('Failed to read values:', err)
+      }
     },
 
     async countersBuild(targetField?: string): Promise<void> {

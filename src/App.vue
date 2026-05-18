@@ -20,16 +20,22 @@ const auth = useUserStore()
 const bucketStore = useBucketStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
-onMounted(async () => {
+onMounted(() => {
   app.initTheme()
-  bucketStore.bucketRead()
-  await app.getLast()
-  await meta.readValues()
-  // Reset transient UI state on mount
+  // Reset transient UI state immediately on mount
   busy.value = false
   error.value = ''
   showEdit.value = false
   showConfirm.value = false
+
+  // Load backend statistics, last record, and filter values asynchronously in the background in parallel.
+  // This avoids blocking the initial page mount/render and allows the app to load instantly
+  // using the persisted cache from LocalStorage.
+  void Promise.all([
+    bucketStore.bucketRead(),
+    app.getLast(),
+    meta.readValues(),
+  ])
 })
 
 /**
