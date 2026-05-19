@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { build } from '../helpers'
 import { useAppStore } from '../stores/app'
@@ -58,11 +58,6 @@ const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket } = storeToRefs(bucketStore)
 const { theme: appTheme } = storeToRefs(app)
-
-onMounted(() => {
-  bucketStore.fetchBucket()
-  meta.fetchValues()
-})
 
 const theme = computed({
   get: () => appTheme.value,

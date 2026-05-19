@@ -225,13 +225,7 @@ export const useAppStore = defineStore('app', {
         }
         // save everything
         await setDoc(docRef, obj, { merge: true })
-        // update lastRecord only if it's newer than the current lastRecord
-        if (
-          !this.lastRecord ||
-          (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
-        ) {
-          this.lastRecord = { ...obj }
-        }
+        this.updateLastRecord(obj)
         bucket.bucketDiff(obj.size)
         meta.updateCounters(null, obj)
         // delete uploaded
@@ -263,12 +257,7 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       await setDoc(docRef, obj, { merge: true })
-      if (
-        !this.lastRecord ||
-        (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
-      ) {
-        this.lastRecord = { ...obj }
-      }
+      this.updateLastRecord(obj)
       meta.updateCounters(null, obj)
 
       // set find on new added image and fetch
@@ -345,6 +334,19 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         console.error('Failed to get last record:', error)
         return null
+      }
+    },
+
+    /**
+     * Updates the last record if the given object is more recent.
+     * @param obj The object to compare with the last record.
+     */
+    updateLastRecord(obj: PhotoType) {
+      if (
+        !this.lastRecord ||
+        (obj.date && (!this.lastRecord.date || obj.date > this.lastRecord.date))
+      ) {
+        this.lastRecord = { ...obj }
       }
     },
 

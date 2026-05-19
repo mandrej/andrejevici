@@ -7,6 +7,8 @@ import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
 import { useUserStore, resolveAuthReady } from './stores/user'
+import { useValuesStore } from './stores/values'
+import { useBucketStore } from './stores/bucket'
 import { messaging } from './firebase'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
@@ -14,7 +16,21 @@ import { onMessage } from 'firebase/messaging'
 
 const app = useAppStore()
 const auth = useUserStore()
+const meta = useValuesStore()
+const bucketStore = useBucketStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
+
+/**
+ * The setup() function (or the code inside <script setup>) itself is designed to execute only once per component instance.
+ * This is where you typically initialize reactive state or perform one-time setup logic.
+ */
+const initializeApp = () => {
+  app.fetchLastRec()
+  bucketStore.fetchBucket()
+  meta.fetchValues()
+}
+
+initializeApp()
 
 onMounted(() => {
   app.initTheme()
