@@ -155,6 +155,32 @@ export default defineConfig(() => {
       // manifestFilename: 'manifest.json',
       // useCredentialsForManifestTag: true,
       // injectPwaMetaTags: false,
+      workboxOptions: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+              },
+            },
+          },
+        ],
+      },
       extendGenerateSWOptions(cfg) {
         // Merge Firebase Messaging into the Workbox-generated SW.
         cfg.importScripts = ['firebase-messaging-sw.js']
