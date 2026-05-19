@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
@@ -72,6 +72,10 @@ const meta = useValuesStore()
 const { user } = storeToRefs(auth)
 const lastRecord = computed(() => app.lastRecord as PhotoType)
 const nickValues = computed(() => meta.nickValues)
+
+onMounted(() => {
+  app.fetchLastRec()
+})
 
 const common = {
   display: 'block',

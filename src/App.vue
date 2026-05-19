@@ -6,18 +6,14 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from './stores/app'
-import { useValuesStore } from './stores/values'
 import { useUserStore, resolveAuthReady } from './stores/user'
-import { useBucketStore } from './stores/bucket'
 import { messaging } from './firebase'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { onMessage } from 'firebase/messaging'
 
 const app = useAppStore()
-const meta = useValuesStore()
 const auth = useUserStore()
-const bucketStore = useBucketStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
 onMounted(() => {
@@ -27,15 +23,6 @@ onMounted(() => {
   error.value = ''
   showEdit.value = false
   showConfirm.value = false
-
-  // Load backend statistics, last record, and filter values asynchronously in the background in parallel.
-  // This avoids blocking the initial page mount/render and allows the app to load instantly
-  // using the persisted cache from LocalStorage.
-  void Promise.all([
-    bucketStore.getOrFetchBucket(),
-    app.getOrFetchLastRec(),
-    meta.getOrFetchValues(),
-  ])
 })
 
 /**

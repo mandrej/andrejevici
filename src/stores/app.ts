@@ -328,14 +328,6 @@ export const useAppStore = defineStore('app', {
       })
     },
 
-    async getOrFetchLastRec() {
-      if (this.lastRecord && this.lastRecord.date) {
-        return
-      } else {
-        await this.fetchLastRec()
-      }
-    },
-
     /**
      * Retrieves the most recent photo from the Firestore database.
      *
