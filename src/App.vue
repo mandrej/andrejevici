@@ -20,18 +20,6 @@ const meta = useValuesStore()
 const bucketStore = useBucketStore()
 const { busy, error, showEdit, showConfirm } = storeToRefs(app)
 
-/**
- * The setup() function (or the code inside <script setup>) itself is designed to execute only once per component instance.
- * This is where you typically initialize reactive state or perform one-time setup logic.
- */
-const initializeApp = () => {
-  app.fetchLastRec()
-  bucketStore.fetchBucket()
-  meta.fetchValues()
-}
-
-initializeApp()
-
 onMounted(() => {
   app.initTheme()
   // Reset transient UI state immediately on mount
@@ -39,6 +27,8 @@ onMounted(() => {
   error.value = ''
   showEdit.value = false
   showConfirm.value = false
+
+  void Promise.all([app.fetchLastRec(), bucketStore.fetchBucket(), meta.fetchValues()])
 })
 
 /**
