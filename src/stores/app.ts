@@ -22,6 +22,7 @@ import {
   sliceSlug,
   fixQuery,
   getYouTubeId,
+  formatDatum,
 } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
@@ -38,6 +39,7 @@ import type {
 } from '@firebase/firestore'
 import type { FindType, PhotoType, AppStoreState, VideoType } from '../helpers/models'
 import { photoCollection } from '../helpers/collections'
+import readExif from 'src/helpers/exif'
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -186,6 +188,42 @@ export const useAppStore = defineStore('app', {
       this.busy = false
       if (process.env.DEV)
         console.log('FETCH ' + JSON.stringify(this.find, null, 2) + ' with next: ' + this.next)
+    },
+
+    /**
+     * Completes a photo record with additional metadata after upload.
+     * @param rec - The photo record to complete.
+     * @param tags - Additional tags to apply to the photo.
+     * @param headline - The headline to apply to the photo.
+     * @returns A promise that resolves to the completed photo record.
+     */
+    async completePhoto(rec: PhotoType, tags: string[], headline: string): Promise<PhotoType> {
+      // url, filename, size, email, nick exist from uploadTask
+      const datum = new Date()
+      const exif = await readExif(rec.url)
+
+      const tmp: PhotoType = {
+        ...rec,
+        kind: 'photo',
+        date: formatDatum(datum, CONFIG.dateFormat),
+        year: datum.getFullYear(),
+        month: datum.getMonth() + 1,
+        day: datum.getDate(),
+        headline,
+        text: sliceSlug(headline),
+        tags,
+        ...exif,
+      }
+
+      // Sync 'flash' tag with EXIF data
+      const updatedTags = new Set(tmp.tags)
+      if (tmp.flash) {
+        updatedTags.add('flash')
+      } else {
+        updatedTags.delete('flash')
+      }
+      tmp.tags = [...updatedTags]
+      return tmp
     },
 
     /**

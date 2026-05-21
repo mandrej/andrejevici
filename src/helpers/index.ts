@@ -1,6 +1,5 @@
 import CONFIG from '../config'
 import { date, format } from 'quasar'
-import readExif from './exif'
 import { slugify } from 'transliteration'
 import type { FindType, MyUserType, PhotoType } from './models'
 
@@ -114,39 +113,6 @@ export const isAuthorOrAdmin = (
   rec: PhotoType,
 ): boolean => {
   return Boolean(user && (user.isAdmin || user.email === rec.email))
-}
-
-export const completePhoto = async (
-  rec: PhotoType,
-  tags: string[],
-  headline: string,
-): Promise<PhotoType> => {
-  // url, filename, size, email, nick exist from uploadTask
-  const datum = new Date()
-  const exif = await readExif(rec.url)
-
-  const tmp: PhotoType = {
-    ...rec,
-    kind: 'photo',
-    date: formatDatum(datum, CONFIG.dateFormat),
-    year: datum.getFullYear(),
-    month: datum.getMonth() + 1,
-    day: datum.getDate(),
-    headline,
-    text: sliceSlug(headline),
-    tags,
-    ...exif,
-  }
-
-  // Sync 'flash' tag with EXIF data
-  const updatedTags = new Set(tmp.tags)
-  if (tmp.flash) {
-    updatedTags.add('flash')
-  } else {
-    updatedTags.delete('flash')
-  }
-  tmp.tags = [...updatedTags]
-  return tmp
 }
 
 /**

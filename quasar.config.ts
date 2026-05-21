@@ -59,7 +59,25 @@ export default defineConfig(() => {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf(viteConf) {
+        if (viteConf.build) {
+          viteConf.build.rollupOptions = viteConf.build.rollupOptions || {}
+          const output = viteConf.build.rollupOptions.output
+          if (output && !Array.isArray(output)) {
+            output.manualChunks = (id) => {
+              if (id.includes('node_modules/firebase')) return 'firebase'
+              if (id.includes('node_modules/quasar')) return 'quasar'
+            }
+          } else if (!output) {
+            viteConf.build.rollupOptions.output = {
+              manualChunks(id) {
+                if (id.includes('node_modules/firebase')) return 'firebase'
+                if (id.includes('node_modules/quasar')) return 'quasar'
+              },
+            }
+          }
+        }
+      },
       viteVuePluginOptions: {
         template: {
           compilerOptions: {},

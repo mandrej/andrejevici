@@ -123,7 +123,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useUserStore } from '../stores/user'
-import { fakeHistory, completePhoto, formatBytes } from '../helpers'
+import { fakeHistory, formatBytes } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import PictureCard from '../components/PictureCard.vue'
@@ -272,7 +272,7 @@ const onValidationError = (rejectedEntries: ValidationErrors[]) => {
  * @returns {Promise<void>} - A promise that resolves when the edit is complete.
  */
 const editRecord = async (rec: PhotoType): Promise<void> => {
-  const newRec: PhotoType = await completePhoto(
+  const newRec: PhotoType = await app.completePhoto(
     rec,
     tagsToApply.value,
     headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle,
@@ -301,7 +301,7 @@ const publishSelected = async () => {
   const targets = app.uploaded.filter((item) => selection.value.includes(item.filename))
 
   for (const rec of targets) {
-    const newRec: PhotoType = await completePhoto(
+    const newRec: PhotoType = await app.completePhoto(
       rec,
       tagsToApply.value,
       headlineToApply.value ? headlineToApply.value.trim() : CONFIG.noTitle,

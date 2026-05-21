@@ -30,10 +30,20 @@
 
         <div v-else class="column col-xs-12 col-md-6 relative-position">
           <router-link
-            :style="{ ...imageStyle(lastRecord), height: '100%' }"
+            class="hero-link"
+            :style="containerStyle"
             :to="{ path: '/list' }"
             v-ripple.early="{ color: 'purple' }"
-          />
+          >
+            <img
+              v-if="heroUrls.main"
+              :src="heroUrls.main"
+              class="hero-image"
+              fetchpriority="high"
+              loading="eager"
+              alt="Latest photo"
+            />
+          </router-link>
           <q-btn
             v-if="user?.isAuthorized && user?.nick"
             to="/add"
@@ -73,25 +83,47 @@ const { user } = storeToRefs(auth)
 const lastRecord = computed(() => app.lastRecord as PhotoType)
 const nickValues = computed(() => meta.nickValues)
 
-const common = {
-  display: 'block',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  transition: 'background-image 0.2s ease-in-out',
-  minHeight: '50vh',
-}
-const imageStyle = (rec: PhotoType) => {
-  if (!rec) return {}
+const heroUrls = computed(() => {
+  const rec = lastRecord.value
+  if (!rec) return { main: '', thumb: '' }
+
   let thumb = rec.thumb || rec.url
   if (!rec.thumb && rec.kind === 'video') {
     const id = getYouTubeId(rec.url)
     if (id) thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
   }
-  if (rec.kind === 'video') {
-    const maxRes = getYouTubeMaxResUrl(rec.url)
-    return { ...common, backgroundImage: `url(${maxRes}), url(${thumb})` }
+
+  const main = rec.kind === 'video' ? getYouTubeMaxResUrl(rec.url) : rec.url
+  return { main, thumb }
+})
+
+const containerStyle = computed(() => {
+  const urls = heroUrls.value
+  if (!urls.thumb) return {}
+  return {
+    backgroundImage: `url(${urls.thumb})`,
   }
-  return { ...common, backgroundImage: `url(${rec.url}), url(${thumb})` }
-}
+})
 </script>
+
+<style scoped>
+.hero-link {
+  display: block;
+  height: 100%;
+  min-height: 50vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+</style>

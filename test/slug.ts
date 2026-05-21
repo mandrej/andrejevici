@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
 import { slugify } from 'transliteration'
-import { sliceSlug } from '../src/helpers/index'
+import { sliceSlug } from '../src/helpers'
 
 const cir = 'Љубиша Црногорчевић живи да једе шупаљ ђеврек на џаку'
 const lat = 'Ljubiša Crnogorčević živi da jede šupalj djevrek na džaku'
