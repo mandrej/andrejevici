@@ -58,14 +58,14 @@ const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
  */
 const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 
-/**
- * Creates a Pinia store for the application.
- * @returns The application store instance.
- */
 /** Applies the theme to Quasar's Dark mode */
 const applyTheme = (theme: 'light' | 'dark' | 'auto') =>
   Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
 
+/**
+ * Creates a Pinia store for the application.
+ * @returns The application store instance.
+ */
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
     find: {},

@@ -12,7 +12,7 @@ import type { PhotoType, ValuesState, Suggestion } from '../helpers/models'
  * @param field - The field to build counters for.
  * @returns A promise that resolves to the counter map for the given field.
  */
-const buildCounters = async (
+const buildCounterMap = async (
   field: keyof ValuesState['values'],
 ): Promise<Record<string, number>> => {
   const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
@@ -55,7 +55,7 @@ const byCountReverse = <T extends keyof ValuesState['values']>(
 }
 
 /** Sorted keys from byCountReverse */
-const sortedKeys = (state: ValuesState, field: keyof ValuesState['values']): string[] =>
+const sortByCountReverse = (state: ValuesState, field: keyof ValuesState['values']): string[] =>
   Object.keys(byCountReverse(state, field))
 
 /** Extracts field and value from a counter ID string */
@@ -110,29 +110,28 @@ export const useValuesStore = defineStore('meta', {
   getters: {
     // values getters
     tagsValues: (state: ValuesState) => Object.keys(state.values.tags).sort(),
-    modelValues: (state: ValuesState) => sortedKeys(state, 'model'),
-    lensValues: (state: ValuesState) => sortedKeys(state, 'lens'),
-    emailValues: (state: ValuesState) => sortedKeys(state, 'email'),
-    nickValues: (state: ValuesState) => sortedKeys(state, 'nick'),
-    kindValues: (state: ValuesState) => sortedKeys(state, 'kind'),
+    modelValues: (state: ValuesState) => sortByCountReverse(state, 'model'),
+    lensValues: (state: ValuesState) => sortByCountReverse(state, 'lens'),
+    emailValues: (state: ValuesState) => sortByCountReverse(state, 'email'),
+    nickValues: (state: ValuesState) => sortByCountReverse(state, 'nick'),
+    kindValues: (state: ValuesState) => sortByCountReverse(state, 'kind'),
     yearValues: (state: ValuesState) => Object.keys(state.values.year).reverse(),
 
-    // withCount
-    yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> =>
-      Object.keys(state.values.year)
-        .reverse()
-        .map((year) => ({ value: year, count: state.values.year[year] || 0 })),
+    // yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> =>
+    //   Object.keys(state.values.year)
+    //     .reverse()
+    //     .map((year) => ({ value: year, count: state.values.year[year] || 0 })),
 
     nickWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'nick'),
 
-    kindWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'kind'),
+    // kindWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'kind'),
 
-    tagsWithCount: (state: ValuesState): { [key: string]: number } =>
-      Object.fromEntries(
-        Object.entries(state.values.tags)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .filter(([, v]) => v > 0),
-      ),
+    // tagsWithCount: (state: ValuesState): { [key: string]: number } =>
+    //   Object.fromEntries(
+    //     Object.entries(state.values.tags)
+    //       .sort(([a], [b]) => a.localeCompare(b))
+    //       .filter(([, v]) => v > 0),
+    //   ),
 
     allSuggestions(): Suggestion[] {
       const suggestions: Suggestion[] = []
@@ -203,7 +202,7 @@ export const useValuesStore = defineStore('meta', {
         const fieldKey = f as keyof ValuesState['values']
         notify({ group: 'counters', message: `Building counters for ${fieldKey}...`, timeout: 0 })
 
-        const newCounterMap = await buildCounters(fieldKey)
+        const newCounterMap = await buildCounterMap(fieldKey)
 
         // Delete old counters for this field
         const countersToDelete = await getDocs(
@@ -238,7 +237,12 @@ export const useValuesStore = defineStore('meta', {
       notify({ type: 'positive', group: 'counters', message: `All done`, icon: 'sym_r_check' })
     },
 
-    buildCounterMap(data: PhotoType): { [key: string]: number } {
+    /**
+     * Builds the counter object for a single photo.
+     * @param data - The photo data to build the counter object for.
+     * @returns A counter object for the given photo.
+     */
+    buildCounterObject(data: PhotoType): { [key: string]: number } {
       const counterMap: { [key: string]: number } = {}
       const fields = CONFIG.photo_filter
 
@@ -266,8 +270,8 @@ export const useValuesStore = defineStore('meta', {
      * @param {PhotoType | null} newData - The new data to update counters from.
      */
     updateCounters(oldData: PhotoType | null, newData: PhotoType | null): void {
-      const oldObj = oldData ? this.buildCounterMap(oldData) : {}
-      const newObj = newData ? this.buildCounterMap(newData) : {}
+      const oldObj = oldData ? this.buildCounterObject(oldData) : {}
+      const newObj = newData ? this.buildCounterObject(newData) : {}
 
       if (isEmpty(oldObj) && isEmpty(newObj)) return
 
