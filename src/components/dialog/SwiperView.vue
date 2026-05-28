@@ -98,7 +98,7 @@ const initLightbox = () => {
     index: props.index,
     closeOnVerticalDrag: false,
     wheelToZoom: false,
-    bgOpacity: 0.9,
+    bgOpacity: 1,
     // counter: false,
     zoom: false,
     initialZoomLevel: 'fit',
