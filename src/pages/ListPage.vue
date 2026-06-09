@@ -87,7 +87,7 @@
     </q-infinite-scroll>
 
     <div v-if="!next && objects.length > 0" class="text-center q-pa-xl">
-      <div class="text-overline text-grey q-mb-sm">End of list</div>
+      <div class="text-overline text-grey q-mb-sm">End of list ({{ objects.length }} records)</div>
     </div>
   </div>
 
