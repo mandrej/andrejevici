@@ -1,5 +1,5 @@
 <template>
-  <q-form ref="videoFormRef" @submit="onVideoSubmit" class="q-pa-md">
+  <q-form ref="videoFormRef" @submit="onVideoSubmit">
     <div class="row q-col-gutter-md">
       <div class="col-12 col-sm-6">
         <q-input
@@ -17,15 +17,7 @@
           :rules="[(val: string) => !!val || 'Filename is required']"
         />
       </div>
-      <div class="col-12 col-sm-8">
-        <q-input
-          v-model="headlineToApply"
-          label="Headline to apply"
-          :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-          clearable
-        />
-      </div>
-      <div class="col-12 col-sm-4">
+      <div class="col-12 col-sm-6">
         <q-input v-model="videoDate" label="Recording Date">
           <template v-slot:prepend>
             <q-icon name="sym_r_event" class="cursor-pointer">
@@ -51,12 +43,7 @@
           </template>
         </q-input>
       </div>
-    </div>
-    <div class="row q-col-gutter-sm items-end q-mt-md">
-      <div class="col-xs-12 col-sm">
-        <TagsMerge label="Tags to apply" hint="You can add / remove tag later" />
-      </div>
-      <div class="col-xs-12 col-sm-auto text-right">
+      <div class="col-12 col-sm-6 self-center text-right">
         <q-btn label="Link Video" type="submit" color="primary" style="width: 140px" />
       </div>
     </div>
@@ -73,7 +60,7 @@ import { useUserStore } from '../../stores/user'
 import { sliceSlug, formatDatum } from '../../helpers'
 import CONFIG from '../../config'
 import notify from '../../helpers/notify'
-import TagsMerge from '../sidebar/TagsMerge.vue'
+
 import type { VideoType } from '../../helpers/models'
 import type { QForm } from 'quasar'
 

@@ -75,7 +75,7 @@ export default defineConfigWithVueTs(
       'vue/multi-word-component-names': [
         'error',
         {
-          ignores: ['App', 'Default', 'Plain', 'Menu'],
+          ignores: ['App', 'Default', 'Plain', 'Menu', 'Sidebar'],
         },
       ],
     },

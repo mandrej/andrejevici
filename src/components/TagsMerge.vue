@@ -14,8 +14,8 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { useValuesStore } from '../../stores/values'
-import AutoComplete from '../AutoComplete.vue'
+import { useValuesStore } from '../stores/values'
+import AutoComplete from './AutoComplete.vue'
 
 defineProps({
   label: {

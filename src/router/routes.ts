@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
         name: 'list',
         components: {
           default: () => import('../pages/ListPage.vue'),
-          sidebar: () => import('../components/sidebar/ListSidebar.vue'),
+          sidebar: () => import('../components/sidebar/Sidebar.vue'),
           toolbar: () => import('../components/toolbar/ListToolbar.vue'),
         },
       },
@@ -34,7 +34,7 @@ const routes: RouteRecordRaw[] = [
         name: 'add',
         components: {
           default: () => import('../pages/AddPage.vue'),
-          sidebar: () => import('../components/sidebar/DefaultSidebar.vue'),
+          sidebar: () => import('../components/sidebar/Sidebar.vue'),
           toolbar: () => import('../components/toolbar/AddToolbar.vue'),
         },
       },
@@ -50,7 +50,7 @@ const routes: RouteRecordRaw[] = [
         name: 'admin',
         components: {
           default: () => import('../pages/AdminPage.vue'),
-          sidebar: () => import('../components/sidebar/DefaultSidebar.vue'),
+          sidebar: () => import('../components/sidebar/Sidebar.vue'),
           toolbar: () => import('../components/toolbar/AdminToolbar.vue'),
         },
       },
