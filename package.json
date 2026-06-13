@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.18.0",
+    "@warp-ds/vue": "^2.3.0",
     "exifreader": "^4.26.0",
     "firebase": "^11.2.0",
     "photoswipe": "^5.4.4",

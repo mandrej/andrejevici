@@ -10,7 +10,7 @@
 
   <template v-if="canAddPhoto">
     <q-tab-panels v-model="addTab" animated>
-      <q-tab-panel name="photo" class="q-pa-none">
+      <q-tab-panel name="photo">
         <PhotoTab />
       </q-tab-panel>
 

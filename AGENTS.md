@@ -1,140 +1,337 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+This file provides comprehensive guidance for WARP and AI agents working with the Andrejevici codebase.
 
 ## Project Overview
 
-Andrejevici is a photo album web application built with:
+**Andrejevici** is a photo album web application for browsing, uploading, and managing photos with EXIF data extraction, tagging, searching, and admin capabilities.
 
+**Tech Stack:**
 - **Frontend**: Vue 3 + TypeScript + Quasar 2 (PWA)
 - **Backend**: Firebase (Firestore, Storage, Auth, Functions, Messaging)
 - **Build**: Vite + TypeScript
-- **Testing**: Node.js test module
+- **Package Manager**: npm
+- **Node Runtime**: ^22 || ^20 || ^18
 
-The app allows users to browse, upload, and manage photos with EXIF data extraction, tagging, searching, and admin capabilities.
+## Quick Start
 
-## Common Commands
+### Installation & Setup
 
-### Development
+```bash
+npm install                    # Install dependencies (auto-runs quasar prepare)
+./ands run                     # Start Firebase emulators with data import/export
+npm run dev                    # Start Quasar dev server (in another terminal)
+```
 
-- `npm install` - Install dependencies (includes `quasar prepare`)
-- `npm run dev` - Start Quasar dev server with hot reload: `quasar dev -m pwa`
-- `./ands run` - Start Firebase emulators with data import/export: `firebase emulators:start --import ./data --export-on-exit ./data`
+### Development Commands
 
-### Building & Deployment
+- `npm run dev` - Start Quasar dev server with hot reload on port 5173
+- `npm run lint` - Run ESLint on all source files
+- `npm run format` - Format code with Prettier
+- `npm test` - Run Node.js tests with tsx
+- `npm test test/slug.ts` - Run a specific test file
 
-- `npm run build` - Build PWA for production: `quasar build -m pwa`
-- `./ands build` - Build with version timestamp in .env: sets `ANDREJEVICI_BUILD` and calls `quasar build -m pwa`
-- `./ands deploy` - Deploy to Firebase Hosting (excludes functions): `firebase deploy --except functions,extensions`
-- `./ands functions` - Build and deploy Firebase functions only
+### Build & Deployment
 
-### Code Quality
+- `npm run build` - Build PWA for production
+- `./ands build` - Build with version timestamp in `.env`
+- `./ands deploy` - Deploy to Firebase Hosting (excludes functions)
+- `./ands functions` - Build and deploy Firebase Cloud Functions only
+- `./ands icons` - Generate icons from `AppIcon.svg` using Inkscape
 
-- `npm run lint` - ESLint with flat config (checks `src/**/*.{ts,js,cjs,mjs,vue}`)
-- `npm run format` - Prettier formatting for all code and config files
+## Project Structure
 
-### Testing
+### Source Code Layout (`src/`)
 
-- `npm test` - Run Node tests with tsx (uses native Node test module)
-- `npm test test/slug.ts` - Run specific test file
-- Tests are in `test/` directory using Node's `test` module and `assert/strict`
+```
+src/
+├── App.vue                          # Root component with auth & messaging setup
+├── firebase.ts                      # Firebase SDK initialization & emulator config
+├── config.ts                        # Global configuration (credentials, limits, EXIF tags)
+├── env.d.ts                         # TypeScript environment type definitions
+├── components/
+│   ├── sidebar/                     # Navigation & management sidebars
+│   │   ├── Sidebar.vue              # Main navigation sidebar
+│   │   ├── ManageSelection.vue       # Photo selection management
+│   │   ├── Menu.vue                 # Navigation menu
+│   │   └── SendMessage.vue          # Messaging interface
+│   ├── toolbar/                     # Page-specific toolbars
+│   │   ├── ListToolbar.vue          # Album list toolbar
+│   │   ├── AddToolbar.vue           # Upload page toolbar
+│   │   └── AdminToolbar.vue         # Admin page toolbar
+│   ├── tab/                         # Photo detail & management tabs
+│   │   ├── MetaTab.vue              # Photo metadata editor
+│   │   ├── PhotoTab.vue             # Photo display
+│   │   ├── UsersTab.vue             # User permissions manager
+│   │   ├── VideoTab.vue             # Video preview
+│   │   └── MessagesTab.vue          # Messaging interface
+│   ├── dialog/                      # Modal dialogs
+│   │   ├── SwiperView.vue           # Image carousel/swiper
+│   │   └── EditRecord.vue           # Record editing dialog
+│   ├── LocalSearch.vue              # Client-side search component
+│   ├── GlobalSearch.vue             # Global search interface
+│   ├── PictureCard.vue              # Photo grid card component
+│   ├── AutoComplete.vue             # Auto-complete suggestions
+│   ├── AdminCard.vue                # Admin card component
+│   ├── ErrorBanner.vue              # Error display banner
+│   ├── FileBroken.vue               # Broken file indicator
+│   └── TagsMerge.vue                # Tag merging utility
+├── layouts/
+│   ├── Default.vue                  # Main layout (sidebar + toolbar + content)
+│   └── Plain.vue                    # Minimal layout (for login, etc.)
+├── pages/
+│   ├── IndexPage.vue                # Home page
+│   ├── ListPage.vue                 # Album browse & filter
+│   ├── AddPage.vue                  # Photo upload page
+│   ├── AdminPage.vue                # Admin management page
+│   └── ErrorPage.vue                # 401/404 error page
+├── router/
+│   ├── index.ts                     # Router setup & initialization
+│   └── routes.ts                    # Route definitions with auth guards
+├── stores/                          # Pinia state management
+│   ├── index.ts                     # Store initialization
+│   ├── app.ts                       # UI state (busy, modals, theme)
+│   ├── user.ts                      # Auth state & user data
+│   ├── values.ts                    # Global filter values (tags, lenses, etc.)
+│   └── bucket.ts                    # Storage bucket state
+├── helpers/
+│   ├── index.ts                     # Utility functions (date, slug, counter, search)
+│   ├── exif.ts                      # EXIF data extraction (via exifreader)
+│   ├── models.ts                    # TypeScript type definitions
+│   ├── collections.ts               # Firestore collection references & queries
+│   ├── notify.ts                    # Push notification handler
+│   ├── remedy.ts                    # Data repair & cleanup utilities
+│   └── uploadTracker.ts             # Upload progress tracking
+└── css/
+    └── app.scss                     # Global styles
 
-### Icon & Asset Generation
+src-pwa/                            # PWA-specific files
+├── custom-service-worker.ts         # Service worker (Workbox + Firebase Messaging)
+├── register-service-worker.ts       # Service worker registration
+├── manifest.json                    # PWA manifest
+└── tsconfig.json                    # Service worker TypeScript config
+```
 
-- `./ands icons` - Generate icons from AppIcon.svg using Inkscape and @quasar/icongenie
-
-## Architecture
-
-### Core Structure
-
-- `src/App.vue` - Root component; initializes Firebase auth listener, FCM messaging handler, and state
-- `src/firebase.ts` - Firebase SDK initialization and emulator configuration
-- `src/config.ts` - Global config (Firebase credentials, limits, URLs, EXIF tags, etc.)
-- `src/router/routes.ts` - Route definitions with layout components and auth guards (requiresAuth, requiresAdmin)
+## Core Architecture
 
 ### State Management (Pinia)
 
-- `src/stores/app.ts` - UI state (busy flag, error messages, modals, last photos, theme)
-- `src/stores/user.ts` - Auth state (current user, permissions, FCM token management, push notification consent)
-- `src/stores/values.ts` - Global values (tags, photographers, lenses, models from Firestore collection)
+Four main stores manage application state:
 
-### Pages & Layouts
+- **`stores/app.ts`** - UI state: busy flag, notifications, modals, theme, last viewed photos
+- **`stores/user.ts`** - Authentication: current user, permissions, FCM token, push notification consent
+- **`stores/values.ts`** - Global filter data: tags, photographers, lenses, camera models (synced from Firestore)
+- **`stores/bucket.ts`** - Firebase Storage bucket state
 
-- Pages in `src/pages/`: IndexPage (home), ListPage (album browse), AddPage (upload), AdminPage (management), ErrorPage (401/404)
-- Layouts in `src/layouts/`: Plain (simple), Default (with sidebar and toolbar)
-- Sidebar components in `src/components/sidebar/`: navigation, filters (ListSidebar), menus (DefaultSidebar, Menu)
-- Toolbar components in `src/components/toolbar/`: action buttons for each page
-- Tab components in `src/components/tab/`: MetaTab (photo details), UsersTab (permissions), VideoTab, MessagesTab
+### Routing & Guards
 
-### Helpers
-
-- `src/helpers/index.ts` - Utility functions: date formatting, slug generation for search, thumbnail naming, counter IDs, photo completion (adds EXIF), search query sanitization
-- `src/helpers/exif.ts` - EXIF data extraction using exifreader
-- `src/helpers/models.ts` - TypeScript type definitions (PhotoType, MyUserType, FindType)
-- `src/helpers/collections.ts` - Firestore collection references and queries
-- `src/helpers/notify.ts` - Push notification handler
-- `src/helpers/remedy.ts` - Data repair/cleanup utilities
+Routes defined in `src/router/routes.ts` with auth guards:
+- `requiresAuth` - User must be authenticated
+- `requiresAdmin` - User must have admin role
 
 ### Firebase Integration
 
-- Service accounts & rules: `firestore.rules`, `storage.rules`
-- Emulator config in `firebase.json` with ports (Auth 9099, Firestore 8080, Storage 9199, Functions 5001)
-- Cloud Functions deployed from three codebases:
-  - `functionNotify/` - Handles push notifications
-  - `functionCron/` - Scheduled tasks
-  - `functionThumb/` - Image resizing (uses Firebase Extension for image-resize)
+**Emulator Configuration** (`firebase.json`):
+- Auth: 9099
+- Firestore: 8080
+- Storage: 9199
+- Functions: 5001
+- Hub: 4400
+- UI: 4000
 
-### Build Configuration
+**Security Rules:**
+- `firestore.rules` - Firestore access control
+- `storage.rules` - Cloud Storage access control
 
-- `quasar.config.ts` - Quasar framework config with PWA settings, Vite plugins (vite-plugin-checker for type checking)
-- Service Worker: `src-pwa/custom-service-worker.ts` (integrates Workbox + Firebase Messaging)
-- `tsconfig.json` - Extends `.quasar/tsconfig.json`
+**Cloud Functions** (deployed from separate codebases):
+- `functionNotify/` - Push notification handler
+- `functionCron/` - Scheduled background tasks
+- `functionThumb/` - Image resizing (uses Firebase Image Resize Extension)
 
-## Code Style & Linting
+**Indexes**: Defined in `firestore.indexes.json` for optimized queries
 
-- **ESLint**: Flat config in `eslint.config.js` using `@vue/eslint-config-typescript` with strict TypeScript checks
-- **Prettier**: Line width 100, single quotes, no semicolons
+## Code Quality & Standards
+
+### Linting & Formatting
+
+**ESLint** (Flat config in `eslint.config.js`):
+- Rules: `@eslint/js`, `@vue/eslint-config-typescript`, `eslint-plugin-vue`
+- TypeScript type checking enabled
 - Type imports enforced: `prefer: 'type-imports'`
-- Component naming: multi-word required except for App, Default, Plain, Menu
+- Component naming: Multi-word required (exceptions: App, Default, Plain, Menu, Sidebar)
+- Debugger allowed in dev only
+
+**Prettier** (config: `.prettierrc.json`):
+- Line width: 100
+- Single quotes
+- No semicolons
+
+### TypeScript
+
+- **Strict mode**: Enabled in `quasar.config.ts`
+- **Vue shim**: Enabled for `.vue` component typing
+- **Target**: ES2022 (browser), Node 20 (Node target)
+
+### Testing
+
+- Framework: Node.js native `test` module with `assert/strict`
+- Files: Located in `test/` directory
+- Execution: `tsx` runner (Esbuild + TypeScript for Node)
+- Examples: `test/slug.ts` (slug generation), `test/exif.ts` (EXIF extraction)
+
+## Build Configuration
+
+### Vite Build (`quasar.config.ts`)
+
+- **Code splitting**: Firebase and Quasar in separate chunks
+- **Plugins**: `vite-plugin-checker` for type checking and linting during dev
+- **PWA**: Workbox-based GenerateSW mode with runtime caching
+- **Runtime caching strategies**:
+  - Google Fonts: `CacheFirst` (1 year TTL)
+  - Images: `StaleWhileRevalidate` (30 day TTL)
+- **Service Worker**: Integrates Firebase Messaging + Workbox
+
+### Deployment (`firebase.json`)
+
+- **Hosting**: `dist/pwa` directory served as public
+- **SPA routing**: All requests rewritten to `index.html`
+- **Cache headers**:
+  - Manifest: 1 day (must-revalidate)
+  - Service workers: no-cache
+- **Firestore indexes**: Auto-deployed with hosting
 
 ## Development Workflow
 
-1. Start Firebase emulators: `./ands run` (in one terminal)
-2. Start Quasar dev server: `npm run dev` (in another terminal)
-3. Dev mode connects to emulators (see `src/firebase.ts` for `process.env.DEV` checks)
-4. Lint before committing: `npm run lint && npm run format`
-5. Run tests: `npm test test/slug.ts` (test slug generation) or `npm test test/exif.ts` (EXIF extraction)
+### 1. Start Firebase Emulators (Terminal 1)
+
+```bash
+./ands run
+```
+
+This starts emulators with automatic data import/export to `./data` directory.
+
+### 2. Start Dev Server (Terminal 2)
+
+```bash
+npm run dev
+```
+
+Dev server connects to emulators (controlled by `process.env.DEV` checks in `src/firebase.ts`).
+
+### 3. Write & Test Code
+
+- Edit components, stores, helpers as needed
+- Hot reload applies changes automatically
+- Run tests: `npm test test/<file>.ts`
+- Lint before commit: `npm run lint`
+- Format code: `npm run format`
+
+### 4. Deploy
+
+```bash
+./ands build    # Build with version timestamp
+./ands deploy   # Deploy to Firebase Hosting
+```
+
+For Cloud Functions: `./ands functions`
 
 ## Key Implementation Notes
 
-### Authentication & Push Notifications
+### Authentication & Notifications
 
 - Firebase Auth with emulator support in dev
-- FCM token refreshed after login if user previously consented
-- Push permission dialog shown if login interval (CONFIG.loginDays) elapsed
-- Message handler in App.vue displays notifications in-app
+- FCM token refreshed post-login if user consented previously
+- Push permission dialog triggered if login interval (config `loginDays`) elapsed
+- Message handler in `App.vue` displays in-app notifications
 
 ### Photo Data Pipeline
 
-- Uploaded photos completed with `completePhoto()`: adds EXIF (camera model, lens, focal length, ISO, aperture, exposure, flash), timestamps, headline, searchable text (slug)
-- Slugified headlines stored in `text` field for full-text search across Cyrillic/Latin characters
-- Thumbnail generated and cached separately in storage bucket with suffix `_400x400.jpeg`
+1. **Upload**: Photo uploaded via `AddPage.vue`
+2. **Completion**: `completePhoto()` (in `helpers/index.ts`) enriches photo with:
+   - EXIF metadata: camera model, lens, focal length, ISO, aperture, exposure, flash
+   - Timestamps & metadata
+   - Searchable slug (via `transliteration` for Cyrillic/Latin)
+   - Headline text field
+3. **Thumbnail**: Generated and cached with `_400x400.jpeg` suffix
+4. **Search**: Full-text search on slugified text across Cyrillic/Latin characters
 
 ### Firestore Data Model
 
-- Collections referenced in `src/helpers/collections.ts`
-- Photo records include: filename, url, size, email (uploader), nick, date, year, month, day, headline, tags, EXIF fields, kind
-- Global values collection for filters: tags, photographers, lenses, models
+**Collections** (refs in `src/helpers/collections.ts`):
+- `photos` - Photo records with EXIF, tags, timestamps
+- `users` - User profiles & permissions
+- `tags`, `photographers`, `lenses`, `models` - Global filter values
+
+**Photo Document Schema**:
+```
+{
+  filename: string
+  url: string
+  size: number
+  email: string          // uploader
+  nick: string
+  date: Timestamp
+  year, month, day: number
+  headline: string
+  text: string           // slugified for search
+  tags: string[]
+  ... EXIF fields (camera, lens, ISO, etc.)
+  kind: string
+}
+```
 
 ### Search & Filtering
 
-- Local search via `GlobalSearch.vue` component
-- Query sanitization in `fixQuery()`: removes empty fields, casts date fields to numbers, normalizes tags
-- Search criteria define by `photo_filter` in config
+- **LocalSearch.vue**: Client-side search with tag/date/photographer filters
+- **Query sanitization**: `fixQuery()` removes empty fields, normalizes data types
+- **Filter criteria**: Defined by `photo_filter` in `config.ts`
+- **Firestore queries**: Optimized with indexes for filtered/paginated results
 
-## Deployment Notes
+## Debugging & Troubleshooting
 
-- Production build: `./ands build` (sets version timestamp)
-- Hosting config in `firebase.json`: dist/pwa served as public, rewrites to index.html for SPA routing
-- Cache headers: manifest files (1 day, must-revalidate), service workers (no-cache)
-- Image resize extension configured via environment (see README.md for extension setup)
+### Firebase Emulator
+
+- **UI Dashboard**: http://localhost:4000
+- **Inspect data**: Use Firestore tab in emulator UI
+- **Export data**: `./ands run` auto-exports on exit to `./data`
+- **Reset data**: Delete `./data` directory before starting emulators
+
+### Dev Server
+
+- **Port**: 5173 (Quasar default)
+- **TypeScript errors**: Shown in terminal and overlaid in browser
+- **Linting errors**: Real-time feedback via `vite-plugin-checker`
+
+### Tests
+
+```bash
+npm test                      # Run all tests
+npm test test/slug.ts         # Test slug generation
+npm test test/exif.ts         # Test EXIF extraction
+```
+
+## Useful Patterns & Tips
+
+1. **Store access**: Import stores and use directly (e.g., `userStore.currentUser`)
+2. **Firestore queries**: Use helpers in `collections.ts` (pre-built query refs)
+3. **EXIF extraction**: `extractExif()` in `helpers/exif.ts` returns structured metadata
+4. **Component naming**: Multi-word except App, Default, Plain, Menu, Sidebar
+5. **Icons**: `material-symbols-rounded` in Quasar (auto-loaded)
+6. **Error handling**: Use `errorBanner` from app store for user-facing errors
+
+## Environment & Configuration
+
+- **`.env`**: Auto-generated by `./ands build` with `ANDREJEVICI_BUILD` timestamp
+- **`src/config.ts`**: Central config for Firebase credentials, limits, URL patterns, EXIF tag filters
+- **`process.env.DEV`**: Used to detect emulator vs. production Firebase
+
+## Common Issues & Solutions
+
+| Issue | Solution |
+|-------|----------|
+| "Cannot find module" | Run `npm install` and `quasar prepare` |
+| Emulator won't start | Check ports 9099, 8080, 5001 are free; kill lingering `firebase` processes |
+| Data lost after emulator restart | `./data` export may be corrupted; delete and start fresh |
+| Hot reload not working | Verify Quasar dev server is running on port 5173 |
+| Linting errors block dev | Run `npm run format` to auto-fix most issues |
+| Tests fail with module errors | Ensure `tsx` is installed (dev dependency); try `npm install` |

@@ -2,7 +2,7 @@
   <EditRecord v-if="showEdit" :rec="currentEdit" />
 
   <q-form @submit="onSubmit">
-    <q-item>
+    <q-item class="q-pa-none">
       <q-item-section>
         <q-file
           name="photos"
@@ -37,7 +37,7 @@
         />
       </q-item-section>
     </q-item>
-    <div class="row q-px-md q-mt-md justify-end">
+    <div class="row q-py-md q-mt-md justify-end">
       <q-btn
         :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
         @click="publishSelected"
@@ -48,25 +48,23 @@
     </div>
   </q-form>
 
-  <div class="q-pa-md">
-    <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-      <div
-        v-for="rec in uploaded"
-        :key="rec.filename"
-        class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
-      >
-        <PictureCard :rec="rec">
-          <template #action>
-            <q-card-actions class="justify-between">
-              <q-btn flat round icon="sym_r_delete" @click="deleteRec(rec)" />
-              <q-checkbox v-model="selection" :val="rec.filename" />
-              <q-btn flat round icon="sym_r_publish" @click="editRecord(rec)" />
-            </q-card-actions>
-          </template>
-        </PictureCard>
-      </div>
-    </transition-group>
-  </div>
+  <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+    <div
+      v-for="rec in uploaded"
+      :key="rec.filename"
+      class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+    >
+      <PictureCard :rec="rec">
+        <template #action>
+          <q-card-actions class="justify-between">
+            <q-btn flat round icon="sym_r_delete" @click="deleteRec(rec)" />
+            <q-checkbox v-model="selection" :val="rec.filename" />
+            <q-btn flat round icon="sym_r_publish" @click="editRecord(rec)" />
+          </q-card-actions>
+        </template>
+      </PictureCard>
+    </div>
+  </transition-group>
 </template>
 
 <script setup lang="ts">
