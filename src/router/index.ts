@@ -21,6 +21,12 @@ const router = createRouter({
   history: createWebHistory(process.env.VUE_ROUTER_BASE),
 })
 
+/**
+ * Global navigation guard that awaits Firebase auth initialisation before
+ * evaluating route access requirements. Redirects to the 401 error page when:
+ * - The route has `requiresAuth` and the user is not authorised (or lacks a nick).
+ * - The route has `requiresAdmin` and the user is not an admin.
+ */
 router.beforeEach(async (to: RouteLocationNormalized) => {
   await authReady
 
@@ -33,6 +39,10 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     return { name: '401', replace: true }
   }
 })
+/**
+ * Updates the browser tab title to the matched route's `meta.title` after
+ * each navigation, with `CONFIG.title` as the fallback.
+ */
 router.afterEach((to: RouteLocationNormalized) => {
   // Use next tick to handle router history correctly
   void nextTick(() => {

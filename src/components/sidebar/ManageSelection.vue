@@ -73,6 +73,10 @@ const { selected, busy } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const { headlineToApply, tagsToApply } = storeToRefs(meta)
 
+/**
+ * Merges `tagsToApply` into each selected photo record and saves the
+ * updated records to Firestore, then clears the selection.
+ */
 const applyTags = async () => {
   for (const item of selected.value) {
     const rec = { ...item }
@@ -82,6 +86,10 @@ const applyTags = async () => {
   clearSelected()
 }
 
+/**
+ * Overwrites the headline of every selected photo with `headlineToApply`
+ * and saves each record to Firestore, then clears the selection.
+ */
 const applyHeadline = async () => {
   if (!headlineToApply.value) return
   for (const item of selected.value) {
@@ -92,6 +100,10 @@ const applyHeadline = async () => {
   clearSelected()
 }
 
+/**
+ * Deletes all currently selected photo records from Firestore and Storage,
+ * then clears the selection.
+ */
 const deleteSelected = async () => {
   const toDelete = [...selected.value]
   for (const item of toDelete) {
@@ -100,6 +112,9 @@ const deleteSelected = async () => {
   clearSelected()
 }
 
+/**
+ * Empties the `selected` array in the app store.
+ */
 const clearSelected = () => {
   selected.value = []
 }

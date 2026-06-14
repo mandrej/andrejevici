@@ -116,6 +116,15 @@ const searchInput = ref('')
 const dummySelect = ref<Suggestion[]>([])
 const filteredSuggestions = ref<Suggestion[]>([])
 
+/**
+ * Quasar `@filter` callback that populates `filteredSuggestions` based on the
+ * typed input. Supports `field: value` colon-separated syntax and falls back
+ * to a generic substring match. Appends a free-text suggestion when no
+ * structured results are found and the query is at least 3 characters long.
+ *
+ * @param val - The current text in the search input.
+ * @param update - Quasar's callback that must be called to commit the filtered list.
+ */
 const onFilter = (val: string, update: (callback: () => void) => void) => {
   update(() => {
     if (!val || val.length < 1) {
@@ -160,6 +169,13 @@ const onFilter = (val: string, update: (callback: () => void) => void) => {
   })
 }
 
+/**
+ * Handles a suggestion being selected from the dropdown. Normalises the
+ * selected field name, applies it to the active filter state, clears the
+ * text input, and triggers a search submission.
+ *
+ * @param val - The array of currently selected `Suggestion` objects (Quasar passes all).
+ */
 const onSelect = (val: Suggestion[]) => {
   if (!val || val.length === 0) return
 
@@ -196,6 +212,12 @@ const onSelect = (val: Suggestion[]) => {
   submit()
 }
 
+/**
+ * Keyboard handler for the Enter key. When no dropdown suggestions are visible
+ * and the query is at least 3 characters, falls through to a headline text search.
+ *
+ * @param e - The native keyboard event (unused but required by Quasar's `@keydown` binding).
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleKeyDownEnter = (e: KeyboardEvent) => {
   // If no suggestions are visible, we search in headlines
@@ -205,6 +227,10 @@ const handleKeyDownEnter = (e: KeyboardEvent) => {
   // Otherwise, QSelect will handle it natively
 }
 
+/**
+ * Applies the current text input as a headline (`text`) filter and submits the
+ * search. Only fires when the input is at least 3 characters long.
+ */
 const searchInHeadline = () => {
   if (searchInput.value && searchInput.value.length >= 3) {
     tmp.value.text = searchInput.value
@@ -213,6 +239,12 @@ const searchInHeadline = () => {
   }
 }
 
+/**
+ * Converts a 1-based month number to its English month name.
+ *
+ * @param monthNum - A month number between 1 and 12.
+ * @returns The month name string (e.g. `'January'`), or an empty string for out-of-range values.
+ */
 const getMonthName = (monthNum: number): string => {
   return months[monthNum - 1] || ''
 }
@@ -227,15 +259,30 @@ watch(
   { deep: true },
 )
 
+/**
+ * Applies the current `tmp` filter state to the app store and triggers a
+ * Firestore fetch.
+ */
 const submit = () => {
   app.searchBy(tmp.value)
 }
 
+/**
+ * Removes a single field from the active filter state and resubmits.
+ *
+ * @param field - The `FindType` key to remove.
+ */
 const removeFilter = (field: keyof FindType) => {
   delete tmp.value[field]
   submit()
 }
 
+/**
+ * Removes a single tag from the active `tags` filter array and resubmits.
+ * Also deletes the `tags` key entirely when the array becomes empty.
+ *
+ * @param tag - The tag string to remove.
+ */
 const removeTag = (tag: string) => {
   if (tmp.value.tags) {
     tmp.value.tags = tmp.value.tags.filter((t) => t !== tag)
@@ -245,11 +292,15 @@ const removeTag = (tag: string) => {
     submit()
   }
 }
+/**
+ * Clears all active filters and resubmits with an empty criteria object.
+ */
 const clearAll = () => {
   tmp.value = {}
   submit()
 }
 
+/** `true` when at least one filter field is active in the current search state. */
 const hasActiveFilters = computed(() => {
   return Object.keys(tmp.value).length > 0
 })

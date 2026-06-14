@@ -107,6 +107,9 @@ onMounted(() => {
 const files = ref<File[]>([])
 const trackers = reactive(new Map<string, UploadTracker>())
 
+/**
+ * Cancels all active (non-terminal) upload tasks tracked in the `trackers` map.
+ */
 const cancelAll = (): void => {
   trackers.forEach((tracker) => {
     if (!tracker.isTerminal()) {
@@ -115,6 +118,11 @@ const cancelAll = (): void => {
   })
 }
 
+/**
+ * Handles the upload form submission. Initiates an upload task for each
+ * selected file, shows success/failure notifications, and cleans up state
+ * once all uploads settle.
+ */
 const onSubmit = async (): Promise<void> => {
   const promises: Promise<unknown>[] = []
 
@@ -152,6 +160,15 @@ const onSubmit = async (): Promise<void> => {
   app.progressInfo = {}
 }
 
+/**
+ * Uploads a single file to Firebase Storage with resumable upload support.
+ * Tracks progress via an {@link UploadTracker}, updates `app.progressInfo`,
+ * and appends the resulting photo record to `app.uploaded` on success.
+ *
+ * @param file - The `File` object to upload.
+ * @returns A promise that resolves with the stored filename on success,
+ *   or rejects with an `Error` whose message is the filename on failure.
+ */
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const id: string = uuidv4().substring(0, 8)
@@ -205,6 +222,13 @@ const uploadTask = (file: File): Promise<string> => {
   })
 }
 
+/**
+ * Displays a persistent warning notification for each file that failed
+ * Quasar's file-input validation (size, type, or count constraints).
+ *
+ * @param rejectedEntries - Array of rejection descriptors containing the
+ *   rejected `File` and the name of the failed validation property.
+ */
 const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   rejectedEntries.forEach((it) => {
     notify({
@@ -216,6 +240,12 @@ const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   })
 }
 
+/**
+ * Enriches the given photo record with EXIF metadata and global tag/headline
+ * defaults, then opens the {@link EditRecord} dialog for manual editing.
+ *
+ * @param rec - The uploaded photo record to edit.
+ */
 const editRecord = async (rec: PhotoType): Promise<void> => {
   const newRec: PhotoType = await app.completePhoto(
     rec,
@@ -227,11 +257,23 @@ const editRecord = async (rec: PhotoType): Promise<void> => {
   currentEdit.value = newRec
 }
 
+/**
+ * Removes a photo record from the upload queue and deselects it if it was
+ * part of the current selection.
+ *
+ * @param rec - The photo record to delete.
+ */
 const deleteRec = (rec: PhotoType): void => {
   selection.value = selection.value.filter((item) => item !== rec.filename)
   app.deleteRecord(rec)
 }
 
+/**
+ * Publishes the selected uploaded photos (or all of them when nothing is
+ * explicitly selected). Each record is first enriched via `completePhoto`,
+ * then saved to Firestore. Successfully published records are removed from
+ * the upload queue; failures are reported as notifications.
+ */
 const publishSelected = async () => {
   if (selection.value.length === 0) {
     selection.value = app.uploaded.map((item) => item.filename)

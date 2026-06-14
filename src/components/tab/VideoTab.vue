@@ -75,6 +75,11 @@ const videoFilename = ref('')
 const videoDate = ref(formatDatum(new Date(), 'YYYY-MM-DD HH:mm'))
 const videoFormRef = ref<InstanceType<typeof QForm> | null>(null)
 
+/**
+ * Validates the form and saves the video record to Firestore. Constructs a
+ * {@link VideoType} from the input fields, calls `app.saveVideo`, then resets
+ * all form fields and triggers a success notification.
+ */
 const onVideoSubmit = async () => {
   if (!videoUrl.value || !videoFilename.value || !videoDate.value) return
 

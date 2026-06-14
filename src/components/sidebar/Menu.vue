@@ -80,6 +80,12 @@ const auth = useUserStore()
 const { user } = storeToRefs(auth)
 const values = useValuesStore()
 
+/**
+ * Returns a personalised caption for the signed-in user's menu item.
+ *
+ * @param email - The user's email address.
+ * @returns A string like `'Thanks for your 42 photos'`, or a generic fallback.
+ */
 const contribution = (email: string) => {
   const c = values.values.email[email]
   return c ? `Thanks for your ${c} photos` : 'Thanks for your photos'

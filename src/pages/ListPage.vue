@@ -169,6 +169,13 @@ onMounted(() => {
   }
 })
 
+/**
+ * Locates a photo by filename in the already-loaded object list or fetches it
+ * from Firestore, then adjusts the active filter to its year/month and opens
+ * the carousel at the photo's index. Shows a warning notification when not found.
+ *
+ * @param c - The filename of the photo to find and display.
+ */
 const findPhoto = async (c: string) => {
   let rec: PhotoType | null | undefined = objects.value.find((x) => x.filename === c)
 
@@ -192,6 +199,14 @@ const findPhoto = async (c: string) => {
   }
 }
 
+/**
+ * `q-infinite-scroll` load callback. Waits for any in-progress fetch to settle
+ * before requesting the next page. Calls `done(true)` to stop the scroller when
+ * the end of results is reached or an error occurs.
+ *
+ * @param index - The current scroll page index (provided by Quasar, not used directly).
+ * @param done - Callback to signal Quasar that loading is complete; pass `true` to stop.
+ */
 const onLoad = async (index: number, done: (stop?: boolean) => void) => {
   // If we're already busy fetching, wait for it to finish and then check if we need more
   if (busy.value) {
@@ -229,11 +244,22 @@ const onLoad = async (index: number, done: (stop?: boolean) => void) => {
   }
 }
 
+/**
+ * Opens the delete-confirmation dialog for the given photo record.
+ *
+ * @param rec - The photo record the user wants to delete.
+ */
 const confirmShow = (rec: PhotoType) => {
   select2delete.value = rec
   fakeHistory()
   showConfirm.value = true
 }
+/**
+ * Executes the confirmed deletion. Also closes the carousel if the deleted
+ * photo was the last remaining record in the list.
+ *
+ * @param rec - The photo record to delete.
+ */
 const confirmOk = (rec: PhotoType) => {
   showConfirm.value = false
   app.deleteRecord(rec)
@@ -243,11 +269,22 @@ const confirmOk = (rec: PhotoType) => {
   }
 }
 
+/**
+ * Opens the edit dialog for the given photo record.
+ *
+ * @param rec - The photo record to edit.
+ */
 const editRecord = (rec: PhotoType) => {
   currentEdit.value = rec
   fakeHistory()
   showEdit.value = true
 }
+/**
+ * Handles the `edit-ok` event from the edit dialog. Scrolls the updated card
+ * into view and briefly plays a bounce animation.
+ *
+ * @param filename - The filename (used as HTML `id`) of the updated photo card.
+ */
 const editOk = (filename: string) => {
   // Yes, an HTML id attribute can technically contain a dot (.).
   // document.getElementById('my.id')
@@ -260,6 +297,12 @@ const editOk = (filename: string) => {
   }, 2000)
 }
 
+/**
+ * Opens the carousel at the photo with the given filename. Inserts a fake
+ * history entry so the browser back button can close the carousel.
+ *
+ * @param c - The filename of the photo to open in the carousel.
+ */
 const carouselShow = (c: string) => {
   index.value = objects.value.findIndex((x) => x.filename === c)
   if (index.value !== -1) {
@@ -269,6 +312,12 @@ const carouselShow = (c: string) => {
     notify({ type: 'warning', message: 'Photo not found' })
   }
 }
+/**
+ * Closes the carousel and scrolls the page back to the previously viewed card.
+ *
+ * @param hash - A hash string (e.g. `'#_abc123.jpg'`) identifying the card to
+ *   scroll back to. The leading `'#'` is stripped before querying the DOM.
+ */
 const carouselCancel = (hash: string) => {
   showCarousel.value = false
   index.value = -1

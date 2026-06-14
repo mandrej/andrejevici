@@ -209,6 +209,10 @@ const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 
+/**
+ * Resolves the thumbnail URL to display in the dialog preview.
+ * Falls back to the YouTube thumbnail for videos, then to the raw upload URL.
+ */
 const thumbUrl = computed(() => {
   if (tmp.thumb) return tmp.thumb
   if (tmp.kind === 'video') {
@@ -218,6 +222,10 @@ const thumbUrl = computed(() => {
   return tmp.url
 })
 
+/**
+ * Re-reads EXIF metadata from the current photo URL and merges it into the
+ * editable record. Also appends the `'flash'` tag when EXIF reports flash fired.
+ */
 const getExif = async () => {
   /**
    * Reread exif
@@ -234,15 +242,34 @@ const getExif = async () => {
     tmp.tags = tags
   }
 }
+/**
+ * Validates that the given string is a well-formed email address.
+ *
+ * @param val - The string to validate.
+ * @returns `true` when valid, or an error message string when invalid.
+ */
 const isValidEmail = (val: string) => {
   const emailPattern =
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
   return emailPattern.test(val) || 'Invalid email'
 }
 
+/**
+ * Copies the given tag array to `tagsToApply` so it can be pasted into
+ * other records via {@link mergeTags}.
+ *
+ * @param source - The array of tag strings to copy.
+ */
 const copyTags = (source: string[]) => {
   tagsToApply.value = source
 }
+
+/**
+ * Merges `tagsToApply` with the given source array and writes the sorted,
+ * deduplicated result back to the current record's tags.
+ *
+ * @param source - The current record's tag array to merge into.
+ */
 const mergeTags = (source: string[]) => {
   if (Array.isArray(source)) {
     tmp.tags = Array.from(new Set([...tagsToApply.value, ...source])).sort()
@@ -251,12 +278,24 @@ const mergeTags = (source: string[]) => {
   }
 }
 
+/** Closes the dialog when the browser back button is pressed. */
 window.onpopstate = function () {
   showEdit.value = false
 }
+
+/**
+ * Closes the edit dialog without saving.
+ */
 const onCancel = () => {
   showEdit.value = false
 }
+/**
+ * Validates and saves the edited record. Derives date parts from the date
+ * string, looks up the author's nickname when the admin changes the email,
+ * regenerates the YouTube thumbnail when the video URL changes, ensures the
+ * `'flash'` tag is in sync with the EXIF flash flag, then calls
+ * `app.saveRecord` and closes the dialog.
+ */
 const onSubmit = async () => {
   // if change date
   const datum = new Date(Date.parse((tmp.date as string) || ''))

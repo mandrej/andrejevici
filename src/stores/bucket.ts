@@ -12,6 +12,10 @@ export const useBucketStore = defineStore('bucket', {
   }),
   persist: true,
   actions: {
+    /**
+     * Fetches the current bucket totals (size and count) from Firestore
+     * and updates the local store state.
+     */
     async fetchBucket() {
       const docSnap = await getDoc(bucketRef)
       if (docSnap.exists()) {
@@ -21,6 +25,13 @@ export const useBucketStore = defineStore('bucket', {
       }
     },
 
+    /**
+     * Applies an incremental size change to the bucket totals and persists
+     * the result to Firestore. Pass a positive value when adding a file and
+     * a negative value when removing one.
+     *
+     * @param num - The number of bytes to add (positive) or subtract (negative).
+     */
     bucketDiff(num: number): void {
       // Update size and count in a single operation
       this.bucket.size += num
@@ -36,6 +47,11 @@ export const useBucketStore = defineStore('bucket', {
       if (process.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
     },
 
+    /**
+     * Recalculates bucket totals by scanning every photo in Firestore and
+     * summing their file sizes. Overwrites both the local store and the
+     * Firestore document with the freshly computed values.
+     */
     async bucketBuild(): Promise<void> {
       const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
       let count = 0

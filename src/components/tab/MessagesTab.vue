@@ -90,11 +90,13 @@ const result = ref<MessageType[]>([])
 const selectedItems = ref<string[]>([])
 const search = ref('')
 
+/** Unique, sorted list of message strings for the search autocomplete. */
 const options = computed(() => {
   const allMessages = result.value.map((item) => item.message)
   return [...new Set(allMessages)].sort()
 })
 
+/** The message list filtered by the current search input (case-insensitive substring match). */
 const filteredResult = computed(() => {
   if (!search.value) return result.value
   return result.value.filter((item) =>
@@ -102,6 +104,12 @@ const filteredResult = computed(() => {
   )
 })
 
+/**
+ * Batch-deletes the given message documents from Firestore and clears the
+ * local selection.
+ *
+ * @param keys - Array of message document IDs to delete.
+ */
 const deleteMessages = async (keys: string[]) => {
   const batch = writeBatch(db)
   for (const key of keys) {
@@ -114,6 +122,11 @@ const deleteMessages = async (keys: string[]) => {
 
 let unsubscribe: (() => void) | null = null
 
+/**
+ * Subscribes to the most recent 50 messages in real-time via Firestore's
+ * `onSnapshot`. Sets `busy` while loading and `error` when the collection is
+ * empty or the listener throws.
+ */
 const startListening = () => {
   busy.value = true
   error.value = ''

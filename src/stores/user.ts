@@ -256,7 +256,9 @@ export const useUserStore = defineStore('auth', {
     },
 
     /**
-     * Updates a single field on a user document in Firestore.
+     * Deletes a user document from Firestore by UID.
+     *
+     * @param uid - The Firestore document ID of the user to delete.
      */
     async deleteUser(uid: string): Promise<void> {
       try {
@@ -314,9 +316,6 @@ export const useUserStore = defineStore('auth', {
       )
     },
 
-    /**
-     * Removes all device tokens associated with the current user from Firestore.
-     */
     /**
      * Removes all device tokens associated with the current user from Firestore.
      * Deletes in batches of 500 to stay within Firestore limits.

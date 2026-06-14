@@ -20,6 +20,11 @@ const auth = useUserStore()
 const { token } = storeToRefs(auth)
 const message = ref('TEST')
 
+/**
+ * Validates the message input and POSTs it to the notify Cloud Function.
+ * Shows a success notification with the server's response text on success,
+ * or an error notification if the request fails.
+ */
 const send = () => {
   const msg = message.value.trim()
   if (msg === '') {

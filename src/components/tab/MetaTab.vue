@@ -217,12 +217,17 @@ const metaOptions: MetaOption[] = [
   { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
 ]
 
+/** The display label for the currently selected metadata management tab. */
 const activeTabLabel = computed(() => {
   return metaOptions.find((opt) => opt.value === app.metaTab)?.label || 'Metadata'
 })
+
+/** The singular short noun for the active tab's value type (e.g. "Tag", "Camera"). */
 const activeTabShort = computed(() => {
   return metaOptions.find((opt) => opt.value === app.metaTab)?.short || 'Value'
 })
+
+/** The Material icon name for the currently active metadata tab. */
 const activeTabIcon = computed(() => {
   return metaOptions.find((opt) => opt.value === app.metaTab)?.icon || 'sym_r_settings'
 })
@@ -249,6 +254,9 @@ const columns: QTableColumn[] = [
   { name: 'rename', label: '', field: 'rename', align: 'right' },
 ]
 
+/**
+ * Computed table row data: the filtered value list mapped to `{ name, count }` objects.
+ */
 const tableRows = computed(() => {
   return filteredValues.value.map((val) => ({
     name: val,
@@ -256,6 +264,9 @@ const tableRows = computed(() => {
   }))
 })
 
+/**
+ * The value list filtered by the current search input (case-insensitive substring match).
+ */
 const filteredValues = computed(() => {
   let list = [...currentValueList.value]
 
@@ -266,6 +277,10 @@ const filteredValues = computed(() => {
   return list
 })
 
+/**
+ * `true` when the new rename value is already present in the active tab's
+ * value list (i.e. the rename would merge two existing values).
+ */
 const isValueInUse = computed(() => {
   if (!newTagName.value) return false
   return (
@@ -273,6 +288,10 @@ const isValueInUse = computed(() => {
   )
 })
 
+/**
+ * Adds a new value to the active tab's counter collection and shows a
+ * notification. Validates that the value is non-empty and not already in use.
+ */
 const addValue = async () => {
   if (newValue.value !== '' && currentValueList.value.indexOf(newValue.value) === -1) {
     try {
@@ -295,6 +314,12 @@ const addValue = async () => {
   }
 }
 
+/**
+ * Opens the delete-confirmation dialog for a metadata value, guarding against
+ * deleting protected values such as `'flash'` and the unknown camera model.
+ *
+ * @param val - The metadata value the user wants to delete.
+ */
 const confirmDelete = (val: string) => {
   if (app.metaTab === 'tags' && val === 'flash') {
     notify({ type: 'warning', message: 'Cannot remove "flash"' })
@@ -308,6 +333,10 @@ const confirmDelete = (val: string) => {
   showDeleteDialog.value = true
 }
 
+/**
+ * Executes the deletion of the pending value after user confirmation. Removes
+ * the value from all photo documents and rebuilds counters for the active field.
+ */
 const removeValueAction = async () => {
   const val = valueToDelete.value
   showDeleteDialog.value = false
@@ -327,6 +356,10 @@ const removeValueAction = async () => {
   }
 }
 
+/**
+ * Triggers a full counter rebuild for the currently active metadata field
+ * and shows the result as a notification.
+ */
 const rebuildCounts = async () => {
   try {
     await meta.countersBuild(app.metaTab)
@@ -343,6 +376,12 @@ const rebuildCounts = async () => {
   }
 }
 
+/**
+ * Opens the rename dialog pre-filled with the selected value. Protected
+ * values (`'flash'`, unknown camera model) cannot be renamed.
+ *
+ * @param val - The current value to rename.
+ */
 const openRenameDialog = (val: string) => {
   if (app.metaTab === 'tags' && val === 'flash') return
   if (app.metaTab === 'model' && val === CONFIG.unknownModel) return
@@ -352,6 +391,11 @@ const openRenameDialog = (val: string) => {
   showRenameDialog.value = true
 }
 
+/**
+ * Validates input and executes the rename (or merge when the new name already
+ * exists). Updates both Firestore documents and rebuilds counters for the
+ * active field before closing the dialog.
+ */
 const performRename = async () => {
   if (valueToRename.value === '' || newTagName.value === '') return
   if (valueToRename.value === newTagName.value) {

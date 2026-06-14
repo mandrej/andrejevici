@@ -54,11 +54,16 @@ const byCountReverse = <T extends keyof ValuesState['values']>(
   )
 }
 
-/** Sorted keys from byCountReverse */
+/** Sorted keys from byCountReverse, highest count first */
 const sortByCountReverse = (state: ValuesState, field: keyof ValuesState['values']): string[] =>
   Object.keys(byCountReverse(state, field))
 
-/** Extracts field and value from a counter ID string */
+/**
+ * Extracts the field name and decoded value from a composite counter ID string.
+ *
+ * @param key - A counter document ID produced by {@link counterId}.
+ * @returns An object with `field` and `value` (with `%2F` decoded back to `/`).
+ */
 const parseCounterKey = (key: string): { field: keyof ValuesState['values']; value: string } => {
   const parts = key.split(delimiter)
   return {
@@ -90,7 +95,14 @@ const commitInBatches = async <T>(
   if (count > 0) await batch.commit()
 }
 
-/** Creates a Suggestion object from field data */
+/**
+ * Creates a {@link Suggestion} object for use in the global search autocomplete.
+ *
+ * @param field - The filter field name (e.g. `'tags'`, `'nick'`). `'nick'` is remapped to `'author'`.
+ * @param value - The suggestion value string.
+ * @param count - Optional photo count associated with this value.
+ * @returns A `Suggestion` object with a stable composite `key`.
+ */
 const makeSuggestion = (field: string, value: string, count?: number): Suggestion => ({
   key: `${field}-${value}`,
   field: field === 'nick' ? 'author' : field,
@@ -133,6 +145,11 @@ export const useValuesStore = defineStore('meta', {
     //       .filter(([, v]) => v > 0),
     //   ),
 
+    /**
+     * Builds the combined list of all autocomplete suggestions for the global
+     * search bar, covering tags, kinds, nicknames, years, camera models, lenses,
+     * months, and days (1–31).
+     */
     allSuggestions(): Suggestion[] {
       const suggestions: Suggestion[] = []
 
@@ -195,6 +212,13 @@ export const useValuesStore = defineStore('meta', {
       }
     },
 
+    /**
+     * Rebuilds counter documents in Firestore from scratch by scanning every
+     * photo in the `Photo` collection. Optionally limited to a single field;
+     * when omitted, all fields defined in `CONFIG.photo_filter` are rebuilt.
+     *
+     * @param targetField - If provided, only this field's counters are rebuilt.
+     */
     async countersBuild(targetField?: string): Promise<void> {
       const fieldsToBuild = targetField ? [targetField] : CONFIG.photo_filter
 

@@ -29,6 +29,13 @@ window.onpopstate = function () {
   emit('carouselCancel', null)
 }
 
+/**
+ * Builds the HTML caption string shown below each slide.
+ *
+ * @param rec - The photo record for the current slide.
+ * @param showExtra - When `true`, appends camera model and lens information.
+ * @returns An HTML string with headline and shooting data.
+ */
 const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   if (rec.kind === 'video') return rec.headline || ''
 
@@ -45,6 +52,10 @@ const getCaption = (rec: PhotoType, showExtra: boolean): string => {
   return tmp
 }
 
+/**
+ * Copies the URL of the currently displayed photo (with a filename hash anchor)
+ * to the clipboard and shows a confirmation notification.
+ */
 const onShare = async () => {
   if (!lightbox || !lightbox.pswp) return
   const currSlide = lightbox.pswp.currSlide
@@ -63,6 +74,10 @@ const onShare = async () => {
   }
 }
 
+/**
+ * Sends a `pauseVideo` postMessage command to all embedded YouTube iframes
+ * currently rendered inside the PhotoSwipe overlay.
+ */
 const pauseAllVideos = () => {
   const iframes = document.querySelectorAll<HTMLIFrameElement>('.pswp .video-wrapper iframe')
   iframes.forEach((iframe) => {
@@ -70,6 +85,12 @@ const pauseAllVideos = () => {
   })
 }
 
+/**
+ * Creates and initialises a PhotoSwipe lightbox from the current `objects`
+ * list. Registers custom UI elements (caption bar, share button, fullscreen
+ * button), wires up slide-change, close, and contentLoad event handlers, and
+ * opens the lightbox at `props.index`.
+ */
 const initLightbox = () => {
   const dataSource = objects.value.map((obj) => {
     if (obj.kind === 'video') {

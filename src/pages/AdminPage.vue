@@ -157,6 +157,10 @@ const { bucket } = storeToRefs(bucketStore)
 const { adminTab } = storeToRefs(app)
 const values = computed(() => meta.values)
 
+/**
+ * Rebuilds Firestore counter documents for every field defined in
+ * `CONFIG.photo_filter` sequentially.
+ */
 const countersBuild = async () => {
   for (const field of CONFIG.photo_filter) {
     await meta.countersBuild(field)

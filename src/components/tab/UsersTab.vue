@@ -208,6 +208,10 @@ const { nickValues, nickWithCount } = storeToRefs(meta)
 const result = ref<UsersAndDevices[]>([])
 const search = ref('')
 
+/**
+ * The user list filtered by the current search input (matches nick or email,
+ * case-insensitive).
+ */
 const filteredResult = computed(() => {
   if (!search.value) return result.value
   const query = search.value.toLowerCase()
@@ -216,6 +220,7 @@ const filteredResult = computed(() => {
   )
 })
 
+/** The number of users in the result list that currently have admin status. */
 const adminCount = computed(() => result.value.filter((u) => u.isAdmin).length)
 
 const showNickDialog = ref(false)
@@ -225,11 +230,20 @@ const tempNick = ref('')
 const showDeleteDialog = ref(false)
 const userToDelete = ref<UsersAndDevices | null>(null)
 
+/**
+ * Opens the delete-confirmation dialog for the specified user.
+ *
+ * @param user - The user record the admin wants to delete.
+ */
 const confirmDeleteUser = (user: UsersAndDevices) => {
   userToDelete.value = user
   showDeleteDialog.value = true
 }
 
+/**
+ * Executes the user deletion after confirmation. Prevents deleting the last
+ * remaining admin. Refreshes the user list on success.
+ */
 const doDeleteUser = async () => {
   if (userToDelete.value) {
     if (userToDelete.value.isAdmin && adminCount.value === 1) {
@@ -243,6 +257,10 @@ const doDeleteUser = async () => {
   }
 }
 
+/**
+ * Fetches the joined users-and-devices list from Firestore and populates
+ * the local `result` ref. Sets `busy` and `error` flags throughout.
+ */
 const fetchList = async () => {
   busy.value = true
   error.value = ''
@@ -252,12 +270,24 @@ const fetchList = async () => {
   error.value = result.value.length === 0 ? 'No subscribers found' : ''
 }
 
+/**
+ * Opens the nickname-edit dialog pre-filled with the user's current nickname.
+ *
+ * @param user - The user record whose nickname should be changed.
+ */
 const openNickDialog = (user: UsersAndDevices) => {
   userToEdit.value = user
   tempNick.value = user.nick
   showNickDialog.value = true
 }
 
+/**
+ * Toggles the admin status of a user, preventing removal of the last admin.
+ * Reverts the checkbox UI if the guard fires.
+ *
+ * @param item - The user record being toggled.
+ * @param val - The new boolean admin state requested by the checkbox.
+ */
 const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
   // If we are trying to remove admin status and there's only one admin left
   if (!val && adminCount.value === 0) {
@@ -277,6 +307,9 @@ const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
   await auth.updateUser(item, 'isAdmin')
 }
 
+/**
+ * Saves the edited nickname to Firestore and closes the nickname dialog.
+ */
 const saveNick = async () => {
   if (userToEdit.value && tempNick.value) {
     userToEdit.value.nick = tempNick.value
@@ -287,10 +320,23 @@ const saveNick = async () => {
 
 onMounted(fetchList)
 
+/**
+ * Returns the number of whole days elapsed since the given Firestore timestamp.
+ *
+ * @param timestamp - A Firestore `Timestamp` value.
+ * @returns The number of days (floored) since that timestamp.
+ */
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
 }
+/**
+ * Returns the number of photos contributed by the given nickname,
+ * or `0` if the nick is not found in the values store.
+ *
+ * @param nick - The contributor's nickname.
+ * @returns The photo count, or `0`.
+ */
 const contribution = (nick: string) => {
   const entry = nickWithCount.value[nick]
   return entry ? entry : 0

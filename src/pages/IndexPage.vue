@@ -53,12 +53,22 @@ const app = useAppStore()
 const meta = useValuesStore()
 const bucketStore = useBucketStore()
 
+/** Per-nick photo count map, sorted by count descending. */
 const nickWithCount = computed(() => meta.nickWithCount)
+
+/** The two highest-contributing nicknames, used for the quick-filter buttons. */
 const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
+
+/** The oldest year in the archive (last element of yearValues). */
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket } = storeToRefs(bucketStore)
 const { theme: appTheme } = storeToRefs(app)
 
+/**
+ * Two-way computed that proxies the app store's `theme` setting.
+ * Reading returns the current theme; writing calls `app.setTheme` so that
+ * the value is persisted and Quasar Dark mode is updated immediately.
+ */
 const theme = computed({
   get: () => appTheme.value,
   set: (val: 'light' | 'dark' | 'auto') => {
