@@ -288,6 +288,9 @@ export const mismatch = async () => {
       actions: [
         {
           label: 'Resolve',
+          /**
+           * Handles handler.
+           */
           handler: () => {
             void router.push({ path: '/add' })
           },

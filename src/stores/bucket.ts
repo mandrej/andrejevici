@@ -7,6 +7,9 @@ import type { BucketType } from '../helpers/models'
 const bucketRef = doc(bucketCollection, 'total')
 
 export const useBucketStore = defineStore('bucket', {
+  /**
+   * Returns the initial store state.
+   */
   state: () => ({
     bucket: { size: 0, count: 0 } as BucketType,
   }),

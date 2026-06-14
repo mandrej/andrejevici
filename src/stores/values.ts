@@ -111,6 +111,11 @@ const makeSuggestion = (field: string, value: string, count?: number): Suggestio
 })
 
 export const useValuesStore = defineStore('meta', {
+  /**
+   * Returns the initial store state.
+   *
+   * @returns The function result.
+   */
   state: (): ValuesState => ({
     headlineToApply: CONFIG.noTitle,
     tagsToApply: [],
@@ -121,12 +126,47 @@ export const useValuesStore = defineStore('meta', {
   },
   getters: {
     // values getters
+    /**
+     * Handles tags values.
+     *
+     * @param state - The state value.
+     */
     tagsValues: (state: ValuesState) => Object.keys(state.values.tags).sort(),
+    /**
+     * Handles model values.
+     *
+     * @param state - The state value.
+     */
     modelValues: (state: ValuesState) => sortByCountReverse(state, 'model'),
+    /**
+     * Handles lens values.
+     *
+     * @param state - The state value.
+     */
     lensValues: (state: ValuesState) => sortByCountReverse(state, 'lens'),
+    /**
+     * Handles email values.
+     *
+     * @param state - The state value.
+     */
     emailValues: (state: ValuesState) => sortByCountReverse(state, 'email'),
+    /**
+     * Handles nick values.
+     *
+     * @param state - The state value.
+     */
     nickValues: (state: ValuesState) => sortByCountReverse(state, 'nick'),
+    /**
+     * Handles kind values.
+     *
+     * @param state - The state value.
+     */
     kindValues: (state: ValuesState) => sortByCountReverse(state, 'kind'),
+    /**
+     * Handles year values.
+     *
+     * @param state - The state value.
+     */
     yearValues: (state: ValuesState) => Object.keys(state.values.year).reverse(),
 
     // yearWithCount: (state: ValuesState): Array<{ value: string; count: number }> =>
@@ -134,6 +174,12 @@ export const useValuesStore = defineStore('meta', {
     //     .reverse()
     //     .map((year) => ({ value: year, count: state.values.year[year] || 0 })),
 
+    /**
+     * Handles nick with count.
+     *
+     * @param state - The state value.
+     * @returns The function result.
+     */
     nickWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'nick'),
 
     // kindWithCount: (state: ValuesState): { [key: string]: number } => byCountReverse(state, 'kind'),

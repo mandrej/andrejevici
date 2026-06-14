@@ -67,6 +67,11 @@ const applyTheme = (theme: 'light' | 'dark' | 'auto') =>
  * @returns The application store instance.
  */
 export const useAppStore = defineStore('app', {
+  /**
+   * Returns the initial store state.
+   *
+   * @returns The function result.
+   */
   state: (): AppStoreState => ({
     find: {},
     uploaded: [],

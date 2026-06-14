@@ -38,6 +38,11 @@ export const authReady = new Promise<void>((resolve) => {
 })
 
 export const useUserStore = defineStore('auth', {
+  /**
+   * Returns the initial store state.
+   *
+   * @returns The function result.
+   */
   state(): {
     user: MyUserType | null
     token: string | null

@@ -47,7 +47,15 @@ const emit = defineEmits<{
 }>()
 
 const val = computed({
+  /**
+   * Gets the bound value.
+   */
   get: () => props.modelValue,
+  /**
+   * Sets the bound value.
+   *
+   * @param v - The v value.
+   */
   set: (v) => emit('update:modelValue', v === null ? (props.multiple ? [] : '') : v),
 })
 
@@ -55,6 +63,12 @@ const options = ref(props.options)
 const field = ref(props.autocomplete) // label
 const debounce = 300
 
+/**
+ * Handles filter.
+ *
+ * @param val - The val value.
+ * @param update - The update value.
+ */
 const filter = (val: string, update: (callback: () => void) => void) => {
   if (val === '') {
     update(() => {

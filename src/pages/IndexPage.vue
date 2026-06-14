@@ -70,7 +70,15 @@ const { theme: appTheme } = storeToRefs(app)
  * the value is persisted and Quasar Dark mode is updated immediately.
  */
 const theme = computed({
+  /**
+   * Gets the bound value.
+   */
   get: () => appTheme.value,
+  /**
+   * Sets the bound value.
+   *
+   * @param val - The val value.
+   */
   set: (val: 'light' | 'dark' | 'auto') => {
     app.setTheme(val)
   },

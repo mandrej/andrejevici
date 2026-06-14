@@ -33,6 +33,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   label: 'Search',
+  /**
+   * Handles options.
+   */
   options: () => [],
   icon: 'sym_r_search',
 })
@@ -41,6 +44,12 @@ const emit = defineEmits(['update:modelValue'])
 
 const filteredOptions = ref<string[]>([])
 
+/**
+ * Filters options based on user input.
+ *
+ * @param val - The val value.
+ * @param update - The update value.
+ */
 const filterFn = (val: string, update: (callback: () => void) => void) => {
   if (val === '') {
     update(() => {
@@ -55,6 +64,11 @@ const filterFn = (val: string, update: (callback: () => void) => void) => {
   })
 }
 
+/**
+ * Updates the current value.
+ *
+ * @param val - The val value.
+ */
 const updateValue = (val: string | null) => {
   emit('update:modelValue', val || '')
 }

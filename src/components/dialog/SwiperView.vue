@@ -126,6 +126,9 @@ const initLightbox = () => {
     secondaryZoomLevel: 1,
     // maxZoomLevel: 1,
     // Dynamic import for the core module
+    /**
+     * Loads the PhotoSwipe module.
+     */
     pswpModule: () => import('photoswipe'),
   })
 
@@ -141,6 +144,11 @@ const initLightbox = () => {
       isButton: false,
       appendTo: 'root',
       html: '',
+      /**
+       * Handles on init.
+       *
+       * @param el - The el value.
+       */
       onInit: (el) => {
         pswp.on('change', () => {
           const currSlide = pswp.currSlide
@@ -164,10 +172,18 @@ const initLightbox = () => {
       isButton: true,
       tagName: 'button',
       html: '<i class="q-icon material-symbols-rounded">share</i>',
+      /**
+       * Handles on click.
+       */
       onClick: () => {
         onShare()
       },
       appendTo: 'root',
+      /**
+       * Handles on init.
+       *
+       * @param el - The el value.
+       */
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
         el.style.right = '70px'
@@ -190,10 +206,18 @@ const initLightbox = () => {
       isButton: true,
       tagName: 'button',
       html: '<i class="q-icon material-symbols-rounded">fullscreen</i>',
+      /**
+       * Handles on click.
+       */
       onClick: () => {
         $q.fullscreen.toggle()
       },
       appendTo: 'root',
+      /**
+       * Handles on init.
+       *
+       * @param el - The el value.
+       */
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
         el.style.right = '20px'

@@ -183,6 +183,12 @@ export const isAuthorOrAdmin = (
  * @returns The sanitized and normalized search query criteria.
  */
 const dateFields = new Set(['year', 'month', 'day'])
+/**
+ * Handles fix query.
+ *
+ * @param query - The query value.
+ * @returns The function result.
+ */
 export const fixQuery = (query: FindType): FindType => {
   const sanitizedQuery = Object.fromEntries(
     Object.entries(query)

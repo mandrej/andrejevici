@@ -16,6 +16,9 @@ import CONFIG from '../config'
  * with the Router instance.
  */
 const router = createRouter({
+  /**
+   * Controls the router scroll behavior between navigations.
+   */
   scrollBehavior: () => ({ left: 0, top: 0 }),
   routes,
   history: createWebHistory(process.env.VUE_ROUTER_BASE),

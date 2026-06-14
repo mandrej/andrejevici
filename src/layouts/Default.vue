@@ -60,12 +60,18 @@ watch(askPush, (newVal) => {
   showConsent.value = 'Notification' in window && newVal
 })
 
+/**
+ * Handles the enable action.
+ */
 const onEnable = async () => {
   wait.value = true
   await auth.enableNotifications()
   wait.value = false
 }
 
+/**
+ * Handles the disable action.
+ */
 const onDisable = async () => {
   wait.value = true
   await auth.disableNotifications()
