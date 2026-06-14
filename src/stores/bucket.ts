@@ -11,7 +11,7 @@ export const useBucketStore = defineStore('bucket', {
    * Returns the initial store state.
    */
   state: () => ({
-    bucket: { size: 0, count: 0 } as BucketType,
+    bucket: { size: 0, count: 0 },
   }),
   persist: true,
   actions: {

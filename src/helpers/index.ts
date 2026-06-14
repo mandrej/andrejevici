@@ -205,7 +205,7 @@ export const fixQuery = (query: FindType): FindType => {
         return [key, value]
       }),
   )
-  return sanitizedQuery as FindType
+  return sanitizedQuery
 }
 /**
  * Opens a Google Maps search for the given GPS coordinate string in a new tab.
