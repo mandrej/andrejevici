@@ -7,6 +7,7 @@ This file provides comprehensive guidance for WARP and AI agents working with th
 **Andrejevici** is a photo album web application for browsing, uploading, and managing photos with EXIF data extraction, tagging, searching, and admin capabilities.
 
 **Tech Stack:**
+
 - **Frontend**: Vue 3 + TypeScript + Quasar 2 (PWA)
 - **Backend**: Firebase (Firestore, Storage, Auth, Functions, Messaging)
 - **Build**: Vite + TypeScript
@@ -126,12 +127,14 @@ Four main stores manage application state:
 ### Routing & Guards
 
 Routes defined in `src/router/routes.ts` with auth guards:
+
 - `requiresAuth` - User must be authenticated
 - `requiresAdmin` - User must have admin role
 
 ### Firebase Integration
 
 **Emulator Configuration** (`firebase.json`):
+
 - Auth: 9099
 - Firestore: 8080
 - Storage: 9199
@@ -140,10 +143,12 @@ Routes defined in `src/router/routes.ts` with auth guards:
 - UI: 4000
 
 **Security Rules:**
+
 - `firestore.rules` - Firestore access control
 - `storage.rules` - Cloud Storage access control
 
 **Cloud Functions** (deployed from separate codebases):
+
 - `functionNotify/` - Push notification handler
 - `functionCron/` - Scheduled background tasks
 - `functionThumb/` - Image resizing (uses Firebase Image Resize Extension)
@@ -155,6 +160,7 @@ Routes defined in `src/router/routes.ts` with auth guards:
 ### Linting & Formatting
 
 **ESLint** (Flat config in `eslint.config.js`):
+
 - Rules: `@eslint/js`, `@vue/eslint-config-typescript`, `eslint-plugin-vue`
 - TypeScript type checking enabled
 - Type imports enforced: `prefer: 'type-imports'`
@@ -162,6 +168,7 @@ Routes defined in `src/router/routes.ts` with auth guards:
 - Debugger allowed in dev only
 
 **Prettier** (config: `.prettierrc.json`):
+
 - Line width: 100
 - Single quotes
 - No semicolons
@@ -258,11 +265,13 @@ For Cloud Functions: `./ands functions`
 ### Firestore Data Model
 
 **Collections** (refs in `src/helpers/collections.ts`):
+
 - `photos` - Photo records with EXIF, tags, timestamps
 - `users` - User profiles & permissions
 - `tags`, `photographers`, `lenses`, `models` - Global filter values
 
 **Photo Document Schema**:
+
 ```
 {
   filename: string
@@ -327,11 +336,11 @@ npm test test/exif.ts         # Test EXIF extraction
 
 ## Common Issues & Solutions
 
-| Issue | Solution |
-|-------|----------|
-| "Cannot find module" | Run `npm install` and `quasar prepare` |
-| Emulator won't start | Check ports 9099, 8080, 5001 are free; kill lingering `firebase` processes |
-| Data lost after emulator restart | `./data` export may be corrupted; delete and start fresh |
-| Hot reload not working | Verify Quasar dev server is running on port 5173 |
-| Linting errors block dev | Run `npm run format` to auto-fix most issues |
-| Tests fail with module errors | Ensure `tsx` is installed (dev dependency); try `npm install` |
+| Issue                            | Solution                                                                   |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| "Cannot find module"             | Run `npm install` and `quasar prepare`                                     |
+| Emulator won't start             | Check ports 9099, 8080, 5001 are free; kill lingering `firebase` processes |
+| Data lost after emulator restart | `./data` export may be corrupted; delete and start fresh                   |
+| Hot reload not working           | Verify Quasar dev server is running on port 5173                           |
+| Linting errors block dev         | Run `npm run format` to auto-fix most issues                               |
+| Tests fail with module errors    | Ensure `tsx` is installed (dev dependency); try `npm install`              |
