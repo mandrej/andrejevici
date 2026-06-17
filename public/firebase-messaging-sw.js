@@ -14,7 +14,6 @@ const firebaseConfig = {
   storageBucket: 'andrejevici.appspot.com',
   messagingSenderId: '183441678976',
   appId: '1:183441678976:web:3f87f36ff673545d3fbc65',
-  measurementId: 'G-4HF1XHQ8Y6',
 }
 
 firebase.initializeApp(firebaseConfig)
