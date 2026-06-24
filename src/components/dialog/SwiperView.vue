@@ -137,6 +137,24 @@ const initLightbox = () => {
     const pswp = lightbox?.pswp
     if (!pswp) return
 
+    const appendToBottomBar = (el: HTMLElement) => {
+      let bar = pswp.element?.querySelector('.my-bottom-bar') as HTMLElement | null
+      if (!bar && pswp.element) {
+        bar = document.createElement('div')
+        bar.className = 'my-bottom-bar'
+        bar.style.cssText =
+          'position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 2000; pointer-events: none;'
+        pswp.element.appendChild(bar)
+      }
+      if (bar) {
+        setTimeout(() => {
+          el.style.position = 'static'
+          el.style.pointerEvents = 'auto'
+          bar.appendChild(el)
+        }, 0)
+      }
+    }
+
     // Caption
     pswp.ui?.registerElement({
       name: 'custom-caption',
@@ -179,21 +197,9 @@ const initLightbox = () => {
         onShare()
       },
       appendTo: 'root',
-      /**
-       * Handles on init.
-       *
-       * @param el - The el value.
-       */
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
-        el.style.right = '70px'
-        pswp.on('change', () => {
-          const currSlide = pswp.currSlide
-          if (currSlide && currSlide.data.obj) {
-            const obj = currSlide.data.obj as PhotoType
-            el.style.display = obj.kind === 'video' ? 'none' : 'flex'
-          }
-        })
+        appendToBottomBar(el)
       },
     })
 
@@ -213,21 +219,73 @@ const initLightbox = () => {
         $q.fullscreen.toggle()
       },
       appendTo: 'root',
-      /**
-       * Handles on init.
-       *
-       * @param el - The el value.
-       */
       onInit: (el) => {
         el.classList.add('pswp__custom-bottom-btn')
-        el.style.right = '20px'
-        pswp.on('change', () => {
-          const currSlide = pswp.currSlide
-          if (currSlide && currSlide.data.obj) {
-            const obj = currSlide.data.obj as PhotoType
-            el.style.display = obj.kind === 'video' ? 'none' : 'flex'
-          }
+        appendToBottomBar(el)
+      },
+    })
+
+    // Download Button
+    pswp.ui?.registerElement({
+      name: 'download-btn',
+      order: 4,
+      isButton: true,
+      tagName: 'button',
+      html: '<i class="q-icon material-symbols-rounded">download</i>',
+      onClick: () => {
+        const curr = pswp.currSlide?.data.obj as PhotoType | undefined
+        // Track event
+        window.dataLayer = window.dataLayer || []
+        window.dataLayer.push({
+          event: 'image_download',
+          filename: curr?.filename,
+          headline: curr?.headline,
+          photographer: curr?.email,
         })
+        // Trigger download
+        if (curr) {
+          const download = async () => {
+            try {
+              const response = await fetch(curr.url)
+              const blob = await response.blob()
+              const blobUrl = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = blobUrl
+              a.download = curr.filename
+              document.body.appendChild(a)
+              a.click()
+              document.body.removeChild(a)
+              URL.revokeObjectURL(blobUrl)
+            } catch (e) {
+              console.error('Download failed, falling back to direct link:', e)
+              const a = document.createElement('a')
+              a.href = curr.url
+              a.target = '_blank'
+              a.download = curr.filename
+              a.click()
+            }
+          }
+          void download()
+        }
+      },
+      appendTo: 'root',
+      onInit: (el) => {
+        el.classList.add('pswp__custom-bottom-btn')
+        appendToBottomBar(el)
+
+        const updateVisibility = () => {
+          const currSlide = pswp.currSlide
+          const obj = (currSlide?.data.obj as PhotoType | undefined) || objects.value[props.index]
+          if (obj) {
+            el.classList.toggle('hidden', obj.kind === 'video')
+          }
+        }
+
+        // Initialize visibility
+        updateVisibility()
+
+        // Update visibility on slide change
+        pswp.on('change', updateVisibility)
       },
     })
   })
@@ -277,13 +335,19 @@ const initLightbox = () => {
   lightbox.loadAndOpen(props.index)
 }
 
+const preventDefault = (e: Event) => {
+  e.preventDefault()
+}
+
 onMounted(() => {
   document.body.classList.add('swiper-view-active')
+  window.addEventListener('contextmenu', preventDefault)
   initLightbox()
 })
 
 onUnmounted(() => {
   document.body.classList.remove('swiper-view-active')
+  window.removeEventListener('contextmenu', preventDefault)
   if (lightbox) {
     lightbox.destroy()
     lightbox = null
@@ -303,8 +367,6 @@ onUnmounted(() => {
   display: flex !important;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  bottom: 20px;
   z-index: 2000;
   cursor: pointer;
   border: none;
@@ -339,5 +401,14 @@ onUnmounted(() => {
 .video-wrapper iframe {
   width: 100%;
   height: 100%;
+}
+
+.swiper-view-active img {
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+}
+
+.pswp__custom-bottom-btn.hidden {
+  display: none !important;
 }
 </style>

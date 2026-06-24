@@ -1,3 +1,7 @@
+interface Window {
+  dataLayer?: Record<string, unknown>[]
+}
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string
