@@ -1,7 +1,7 @@
 <template>
   <div style="background-color: var(--q-my-toolbar-bg)">
     <q-input
-      v-if="user?.isAdmin"
+      v-if="user?.isAuthorized"
       v-model="headlineToApply"
       label="Headline to apply"
       class="q-px-md q-mb-md"
@@ -9,14 +9,14 @@
       :dense="$q.screen.lt.sm"
     />
     <TagsMerge
-      v-if="user?.isAdmin"
+      v-if="user?.isAuthorized"
       class="q-px-md q-mb-md"
       :label="`Tags to apply`"
       :dense="$q.screen.lt.sm"
     />
 
     <div
-      v-if="user?.isAdmin && selected.length > 0"
+      v-if="selected.length > 0"
       class="q-px-md column"
       :class="{ 'q-gutter-sm': $q.screen.gt.sm }"
     >

@@ -53,23 +53,13 @@
                 v-if="isAuthorOrAdmin(user, item)"
                 class="absolute-right column no-wrap"
               >
-                <!-- Admin can select for batch actions -->
+                <!-- Batch actions -->
                 <q-checkbox
-                  v-if="user?.isAdmin"
+                  v-if="user?.isAdmin || user?.email === item.email"
                   v-model="selected"
                   :val="item"
                   color="secondary"
                   keep-color
-                />
-
-                <!-- If author but not admin, show delete button instead of checkbox -->
-                <q-btn
-                  v-if="!user?.isAdmin && user?.email === item.email"
-                  flat
-                  round
-                  icon="sym_r_delete"
-                  color="secondary"
-                  @click="confirmShow(item)"
                 />
 
                 <!-- Both admin and author can edit -->
@@ -244,16 +234,6 @@ const onLoad = async (index: number, done: (stop?: boolean) => void) => {
   }
 }
 
-/**
- * Opens the delete-confirmation dialog for the given photo record.
- *
- * @param rec - The photo record the user wants to delete.
- */
-const confirmShow = (rec: PhotoType) => {
-  select2delete.value = rec
-  fakeHistory()
-  showConfirm.value = true
-}
 /**
  * Executes the confirmed deletion. Also closes the carousel if the deleted
  * photo was the last remaining record in the list.
