@@ -13,15 +13,11 @@
             defined nickname can add, delete or edit photos.
             <div class="q-my-md">
               <q-btn
-                color="primary"
-                :label="user && user.isAuthorized && user.nick ? 'Sign out' : 'Sign in'"
-                @click="auth.signIn()"
-              />
-              <q-btn
                 class="q-ml-md"
                 v-if="user?.isAuthorized && user?.nick"
                 to="/add"
                 color="primary"
+                rounded
                 label="Add photos / videos"
               />
             </div>
