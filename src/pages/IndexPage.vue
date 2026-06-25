@@ -1,5 +1,13 @@
 <template>
-  <q-img src="logo.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
+  <q-img v-if="$q.screen.gt.sm" src="logo.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
+  <q-btn
+    :label="user ? `Hi ${user.name}` : 'Sign in'"
+    color="primary"
+    @click="auth.signIn"
+    :flat="user !== null"
+    rounded
+    class="q-mb-md"
+  />
   <div class="text-caption">Build {{ build }}</div>
   <div class="text-h4 text-weight-thin">
     {{ $route.meta.title }}
@@ -46,12 +54,15 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { build } from '../helpers'
 import { useAppStore } from '../stores/app'
+import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useBucketStore } from '../stores/bucket'
 
 const app = useAppStore()
 const meta = useValuesStore()
 const bucketStore = useBucketStore()
+const auth = useUserStore()
+const { user } = storeToRefs(auth)
 
 /** Per-nick photo count map, sorted by count descending. */
 const nickWithCount = computed(() => meta.nickWithCount)

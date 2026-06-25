@@ -55,39 +55,13 @@
         <q-item-label caption>rebuild, repair, tags, subscribers</q-item-label>
       </q-item-section>
     </q-item>
-
-    <q-item clickable v-ripple @click="auth.signIn">
-      <q-item-section avatar>
-        <q-icon :name="user && user.isAuthorized ? 'sym_r_logout' : 'sym_r_login'" />
-      </q-item-section>
-
-      <q-item-section>
-        <q-item-label>{{ user ? `${user.name}` : 'Sign in' }}</q-item-label>
-        <q-item-label caption>
-          {{ user ? contribution(user!.email) : 'Sign in with your Google account' }}
-        </q-item-label>
-      </q-item-section>
-    </q-item>
   </q-list>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../../stores/user'
-import { useValuesStore } from '../../stores/values'
 
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
-const values = useValuesStore()
-
-/**
- * Returns a personalised caption for the signed-in user's menu item.
- *
- * @param email - The user's email address.
- * @returns A string like `'Thanks for your 42 photos'`, or a generic fallback.
- */
-const contribution = (email: string) => {
-  const c = values.values.email[email]
-  return c ? `Thanks for your ${c} photos` : 'Thanks for your photos'
-}
 </script>
