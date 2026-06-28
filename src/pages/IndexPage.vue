@@ -1,5 +1,4 @@
 <template>
-  <q-img v-if="$q.screen.gt.sm" src="logo.svg" style="width: 25vw; height: 25vw" class="q-ma-md" />
   <q-btn
     :label="user ? `Hi ${user.name}` : 'Sign in'"
     color="primary"
@@ -66,9 +65,7 @@ const { user } = storeToRefs(auth)
 
 /** Per-nick photo count map, sorted by count descending. */
 const nickWithCount = computed(() => meta.nickWithCount)
-
-/** The two highest-contributing nicknames, used for the quick-filter buttons. */
-const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 2))
+const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 5))
 
 /** The oldest year in the archive (last element of yearValues). */
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])

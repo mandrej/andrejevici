@@ -7,10 +7,10 @@
           class="column justify-center items-center col-xs-12 col-md-6 relative-position"
           :style="{ minHeight: $q.screen.gt.sm ? '100vh' : '50vh' }"
         >
-          <div class="text-center q-px-xl">
+          <div class="text-center" style="max-width: 65%">
             There are no photos posted yet...<br />
-            To add some you need to sign-in with your Google account. Only authorized users with a
-            defined nickname can add, delete or edit photos.
+            To add some you need to sign-in with your Google account. Only authorized users can add,
+            delete or edit photos.
             <div class="q-my-md">
               <q-btn
                 class="q-ml-md"
@@ -26,19 +26,15 @@
 
         <div v-else class="column col-xs-12 col-md-6 relative-position">
           <router-link
-            class="hero-link"
-            :style="containerStyle"
+            class="half-container"
             :to="{ path: '/list' }"
             v-ripple.early="{ color: 'purple' }"
           >
-            <img
-              v-if="heroUrls.main"
-              :src="heroUrls.main"
-              class="hero-image"
-              fetchpriority="high"
-              loading="eager"
-              alt="Latest photo"
-            />
+            <div
+              class="lastrec-image"
+              :style="showUrl ? { backgroundImage: `url(${showUrl})` } : {}"
+            ></div>
+            <div class="logo-overlay"></div>
           </router-link>
           <q-btn
             v-if="user?.isAuthorized && user?.nick"
@@ -69,7 +65,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
-import { isEmpty, getYouTubeMaxResUrl, getYouTubeId } from '../helpers'
+import { isEmpty, getYouTubeMaxResUrl } from '../helpers'
 import type { PhotoType } from '../helpers/models'
 
 const app = useAppStore()
@@ -79,47 +75,33 @@ const { user } = storeToRefs(auth)
 const lastRecord = computed(() => app.lastRecord as PhotoType)
 const nickValues = computed(() => meta.nickValues)
 
-const heroUrls = computed(() => {
+const showUrl = computed(() => {
   const rec = lastRecord.value
-  if (!rec) return { main: '', thumb: '' }
-
-  let thumb = rec.thumb || rec.url
-  if (!rec.thumb && rec.kind === 'video') {
-    const id = getYouTubeId(rec.url)
-    if (id) thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
-  }
-
-  const main = rec.kind === 'video' ? getYouTubeMaxResUrl(rec.url) : rec.url
-  return { main, thumb }
-})
-
-const containerStyle = computed(() => {
-  const urls = heroUrls.value
-  if (!urls.thumb) return {}
-  return {
-    backgroundImage: `url(${urls.thumb})`,
-  }
+  if (!rec) return ''
+  return rec.kind === 'video' ? getYouTubeMaxResUrl(rec.url) : rec.url
 })
 </script>
 
 <style scoped>
-.hero-link {
-  display: block;
+.half-container {
+  position: relative;
   height: 100%;
+  overflow: hidden;
   min-height: 50vh;
+}
+
+.lastrec-image {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  position: relative;
-  overflow: hidden;
 }
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+
+.logo-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
+  background: url('logo.svg') center / contain no-repeat;
+  opacity: 0.5;
 }
 </style>
