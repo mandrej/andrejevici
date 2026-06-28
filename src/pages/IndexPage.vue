@@ -15,7 +15,7 @@
     {{ bucket.count }} photos since {{ sinceYear }} and counting
   </div>
 
-  <div class="text-center text-body2 q-mt-md q-gutter-sm">
+  <div class="row justify-center text-body2 q-mt-md q-gutter-sm">
     <q-btn
       v-for="[nick] in topNicks"
       :key="nick"

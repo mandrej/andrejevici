@@ -101,7 +101,7 @@ const showUrl = computed(() => {
 .logo-overlay {
   position: absolute;
   inset: 0;
-  background: url('logo.svg') center / contain no-repeat;
+  background: url('/logo.svg') center / contain no-repeat;
   opacity: 0.5;
 }
 </style>
