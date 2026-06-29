@@ -15,9 +15,9 @@
     {{ bucket.count }} photos since {{ sinceYear }} and counting
   </div>
 
-  <div class="row justify-center text-body2 q-mt-md q-gutter-sm">
+  <div class="flex flex-wrap justify-center q-gutter-sm q-mt-sm q-mx-md">
     <q-btn
-      v-for="[nick] in topNicks"
+      v-for="nick in topNicks"
       :key="nick"
       :label="nick"
       rounded
@@ -65,7 +65,7 @@ const { user } = storeToRefs(auth)
 
 /** Per-nick photo count map, sorted by count descending. */
 const nickWithCount = computed(() => meta.nickWithCount)
-const topNicks = computed(() => Object.entries(nickWithCount.value).slice(0, 5))
+const topNicks = Object.keys(nickWithCount.value).slice(0, 5)
 
 /** The oldest year in the archive (last element of yearValues). */
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
