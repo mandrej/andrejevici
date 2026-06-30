@@ -235,12 +235,10 @@ const initLightbox = () => {
       onClick: () => {
         const curr = pswp.currSlide?.data.obj as PhotoType | undefined
         // Track event
-        window.dataLayer = window.dataLayer || []
-        window.dataLayer.push({
-          event: 'image_download',
+        gtag('event', 'image_download', {
+          photographer: curr?.email,
           filename: curr?.filename,
           headline: curr?.headline,
-          photographer: curr?.email,
         })
         // Trigger download
         if (curr) {

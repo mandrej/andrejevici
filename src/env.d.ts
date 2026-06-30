@@ -2,6 +2,8 @@ interface Window {
   dataLayer?: Record<string, unknown>[]
 }
 
+declare function gtag(...args: unknown[]): void
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string
