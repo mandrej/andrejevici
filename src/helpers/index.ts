@@ -123,6 +123,16 @@ export const delimiter = '||' // for counter id
 export const reFilename = /^(.*?)(\.[^.]*)?$/
 
 /**
+ * Extracts a default nickname from an email address.
+ *
+ * @param email - The email address.
+ * @returns The part of the email before the '@' symbol.
+ */
+export const getNickFromEmail = (email: string | undefined | null): string => {
+  return (email || '').split('@')[0] || ''
+}
+
+/**
  * Returns the Storage path for the thumbnail of a given original filename.
  * The thumbnail lives under `CONFIG.thumbnails/<name>_400x400.jpeg`.
  *

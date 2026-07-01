@@ -236,7 +236,7 @@ const initLightbox = () => {
         const curr = pswp.currSlide?.data.obj as PhotoType | undefined
         // Track event
         gtag('event', 'image_download', {
-          photographer: curr?.email,
+          nickname: curr?.nick,
           filename: curr?.filename,
           headline: curr?.headline,
         })

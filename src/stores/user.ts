@@ -22,6 +22,7 @@ import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
 import notify from '../helpers/notify'
 import { deviceCollection, userCollection } from '../helpers/collections'
+import { getNickFromEmail } from '../helpers'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -69,7 +70,7 @@ export const useUserStore = defineStore('auth', {
       const userRef = doc(userCollection, user.uid)
       const userSnap = await getDoc(userRef)
       const email = user.email || ''
-      const now = new Date()
+      const now = Timestamp.fromDate(new Date())
 
       if (userSnap.exists()) {
         const data = userSnap.data() as MyUserType
@@ -79,26 +80,20 @@ export const useUserStore = defineStore('auth', {
         const lastLogin = data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0
         this.askPush = Date.now() - lastLogin > CONFIG.loginDays * 86400000
 
-        data.timestamp = Timestamp.fromDate(now)
+        data.timestamp = now
         this.user = data
       } else {
-        // Check if this is the first user EVER
-        const q = query(userCollection, limit(1))
-        const allUsersSnap = await getDocs(q)
-        const isFirstUser = allUsersSnap.empty
-
-        const nick = isFirstUser ? 'admin' : ''
-        this.allowPush = isFirstUser
-        this.askPush = isFirstUser
+        const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
+        this.allowPush = this.askPush = isFirstUser
         this.user = {
           name: user.displayName || '',
           email,
-          nick,
+          nick: isFirstUser ? 'admin' : getNickFromEmail(email),
           uid: user.uid,
           isAuthorized: isFirstUser,
           isAdmin: isFirstUser,
           allowPush: isFirstUser,
-          timestamp: Timestamp.fromDate(now),
+          timestamp: now,
         }
       }
 
