@@ -15,8 +15,8 @@
           <!-- Spinner or Icon -->
           <div class="flex-shrink-0 mt-0.5">
             <span v-if="toast.spinner" class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            <span v-else-if="toast.icon" class="material-symbols-rounded text-xl leading-none">{{ toast.icon }}</span>
-            <span v-else class="material-symbols-rounded text-xl leading-none">{{ defaultIcon(toast.type) }}</span>
+            <AppIcon v-else-if="toast.icon" :name="toast.icon" class="w-5 h-5 leading-none" />
+            <AppIcon v-else :name="defaultIcon(toast.type)" class="w-5 h-5 leading-none" />
           </div>
 
           <!-- Content -->
@@ -32,7 +32,7 @@
 
           <!-- Close -->
           <button class="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity">
-            <span class="material-symbols-rounded text-base leading-none">close</span>
+            <AppIcon name="close" class="w-4 h-4" />
           </button>
         </div>
       </TransitionGroup>
@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import { toasts } from '../../composables/useNotify'
 import type { Toast } from '../../composables/useNotify'
+import AppIcon from './AppIcon.vue'
 
 const dismiss = (id: number) => {
   const idx = toasts.value.findIndex((t) => t.id === id)

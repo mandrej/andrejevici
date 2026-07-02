@@ -37,7 +37,7 @@
         class="px-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         @click="$emit('update:modelValue', '')"
       >
-        <span class="material-symbols-rounded text-lg">close</span>
+        <AppIcon name="close" class="w-5 h-5" />
       </button>
     </div>
 
@@ -47,6 +47,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from './AppIcon.vue'
 defineOptions({ inheritAttrs: false })
 
 withDefaults(

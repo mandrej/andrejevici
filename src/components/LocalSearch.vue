@@ -1,9 +1,7 @@
 <template>
   <!-- Simple search input with icon + clear — replaces q-select use-input mode -->
   <div class="relative flex items-center w-full">
-    <span class="absolute left-3 text-gray-400 dark:text-gray-500 material-symbols-rounded text-xl pointer-events-none">
-      search
-    </span>
+    <AppIcon name="search" class="absolute left-3 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
     <input
       type="text"
       :value="modelValue"
@@ -23,12 +21,13 @@
       class="absolute right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
       @click="$emit('update:modelValue', '')"
     >
-      <span class="material-symbols-rounded text-xl">close</span>
+      <AppIcon name="close" class="w-5 h-5" />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import AppIcon from './atoms/AppIcon.vue'
 interface Props {
   modelValue: string
   label?: string

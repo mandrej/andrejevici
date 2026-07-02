@@ -17,7 +17,7 @@
           disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary',
         ]"
       >
-        <span v-if="isChecked" class="material-symbols-rounded text-white text-sm leading-none" style="font-size: 14px;">check</span>
+        <AppIcon v-if="isChecked" name="check" class="w-3.5 h-3.5 text-white" />
       </div>
     </div>
     <span v-if="label" class="text-sm text-gray-700 dark:text-gray-300">{{ label }}</span>
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import AppIcon from './AppIcon.vue'
 
 const props = defineProps<{
   modelValue?: boolean | unknown[]

@@ -59,7 +59,7 @@
                 class="bg-white/80 dark:bg-black/60 rounded-full p-1.5 backdrop-blur-sm text-secondary hover:scale-110 transition-transform"
                 @click="editRecord(item)"
               >
-                <span class="material-symbols-rounded text-xl leading-none">edit</span>
+                <AppIcon name="edit" class="w-5 h-5 leading-none" />
               </button>
             </div>
           </template>
@@ -90,7 +90,7 @@
       class="fixed bottom-5 right-5 z-50 p-3 rounded-full bg-warning text-black shadow-lg hover:scale-110 active:scale-95 transition-all"
       @click="scrollToTop"
     >
-      <span class="material-symbols-rounded text-2xl">arrow_upward</span>
+      <AppIcon name="arrow_upward" class="w-6 h-6" />
     </button>
   </Transition>
 </template>
@@ -112,6 +112,7 @@ import ErrorBanner from '../components/ErrorBanner.vue'
 import AppDialog from '../components/atoms/AppDialog.vue'
 import AppButton from '../components/atoms/AppButton.vue'
 import AppCheckbox from '../components/atoms/AppCheckbox.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 const EditRecord = defineAsyncComponent(() => import('../components/dialog/EditRecord.vue'))
 
 const app = useAppStore()

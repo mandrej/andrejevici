@@ -7,7 +7,7 @@
     ]"
   >
     <div v-if="icon" class="flex-shrink-0 mr-3">
-      <span class="material-symbols-rounded text-2xl">{{ icon }}</span>
+      <AppIcon :name="icon" class="w-6 h-6" />
     </div>
     <div class="flex-grow">
       <slot />
@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from './AppIcon.vue'
 interface Props {
   color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | (string & {})
   icon?: string

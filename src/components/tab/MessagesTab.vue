@@ -6,7 +6,7 @@
   <!-- Header banner -->
   <div class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
     <div class="flex items-center gap-2">
-      <span class="material-symbols-rounded text-xl text-primary">add_alert</span>
+      <AppIcon name="add_alert" class="w-5 h-5 text-primary" />
       <span class="text-base font-semibold text-gray-900 dark:text-white">Messages</span>
     </div>
     <AppButton
@@ -45,11 +45,10 @@
       :key="item.key"
       class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
     >
-      <span
-        :class="['material-symbols-rounded text-xl flex-shrink-0', item.status ? 'text-positive' : 'text-negative']"
-      >
-        {{ item.status ? 'check' : 'priority_high' }}
-      </span>
+      <AppIcon
+        :name="item.status ? 'check' : 'priority_high'"
+        :class="['w-5 h-5 flex-shrink-0', item.status ? 'text-positive' : 'text-negative']"
+      />
 
       <div class="flex-1 min-w-0">
         <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ item.message }}</div>
@@ -74,6 +73,7 @@ import type { MessageType } from '../../helpers/models'
 import LocalSearch from '../LocalSearch.vue'
 import AppButton from '../atoms/AppButton.vue'
 import AppCheckbox from '../atoms/AppCheckbox.vue'
+import AppIcon from '../atoms/AppIcon.vue'
 import { doc, query, limit, orderBy, writeBatch, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { messageCollection } from '../../helpers/collections'

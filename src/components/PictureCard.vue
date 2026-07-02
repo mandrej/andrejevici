@@ -18,7 +18,7 @@
         v-if="rec.kind === 'video'"
         class="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none"
       >
-        <span class="material-symbols-rounded text-white drop-shadow-lg" style="font-size: 64px;">play_circle</span>
+        <AppIcon name="play_circle" class="w-16 h-16 text-white drop-shadow-lg" />
       </div>
     </div>
 
@@ -47,7 +47,7 @@
         class="hover:text-primary transition-colors"
         @click.stop.prevent="openMaps(rec.loc)"
       >
-        <span class="material-symbols-rounded" style="font-size: 20px;">my_location</span>
+        <AppIcon name="my_location" class="w-5 h-5" />
       </button>
     </div>
   </div>
@@ -75,6 +75,7 @@ import type { PhotoType } from '../helpers/models'
 import { useAppStore } from '../stores/app'
 import FileBroken from './FileBroken.vue'
 import { computed } from 'vue'
+import AppIcon from './atoms/AppIcon.vue'
 
 const props = defineProps<{
   rec: PhotoType

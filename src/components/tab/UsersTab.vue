@@ -5,7 +5,7 @@
 
   <AppBanner color="info" class="p-4">
     <div class="flex items-center gap-3">
-      <span class="material-symbols-rounded text-2xl">sym_r_person</span>
+      <AppIcon name="sym_r_person" class="w-6 h-6" />
       <span class="text-lg font-semibold">Users</span>
     </div>
   </AppBanner>
@@ -210,6 +210,7 @@ import AppBanner from '../atoms/AppBanner.vue'
 import AppBadge from '../atoms/AppBadge.vue'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'
+import AppIcon from '../atoms/AppIcon.vue'
 import { Dialog, DialogPanel } from '@headlessui/vue'
 import { useScreen } from '../../composables/useScreen'
 

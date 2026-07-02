@@ -10,7 +10,7 @@
       >
         <span class="block truncate">{{ displayValue }}</span>
         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-          <span class="material-symbols-rounded text-gray-400 text-lg">unfold_more</span>
+          <AppIcon name="unfold_more" class="w-5 h-5 text-gray-400" />
         </span>
       </ListboxButton>
 
@@ -38,7 +38,7 @@
                 {{ optionLabel(option) }}
               </span>
               <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                <span class="material-symbols-rounded text-sm">check</span>
+                <AppIcon name="check" class="w-4 h-4" />
               </span>
             </li>
           </ListboxOption>
@@ -51,6 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
+import AppIcon from './AppIcon.vue'
 
 type ModelValue = string | number | boolean | object | null | undefined
 

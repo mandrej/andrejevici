@@ -36,7 +36,7 @@
       ]"
       @click="addTab = tab.name"
     >
-      <span class="material-symbols-rounded text-base leading-none">{{ tab.icon }}</span>
+      <AppIcon :name="tab.icon" class="w-4 h-4" />
       <span class="hidden sm:inline">{{ tab.label }}</span>
     </button>
   </div>
@@ -46,6 +46,7 @@
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import AppProgress from '../atoms/AppProgress.vue'
+import AppIcon from '../atoms/AppIcon.vue'
 
 const app = useAppStore()
 const { progressInfo, addTab } = storeToRefs(app)

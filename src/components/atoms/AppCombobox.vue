@@ -23,7 +23,7 @@
             >
               {{ item }}
               <button type="button" @click.stop="removeItem(item)" class="hover:text-red-500 transition-colors">
-                <span class="material-symbols-rounded" style="font-size: 14px;">close</span>
+                <AppIcon name="close" class="w-3.5 h-3.5" />
               </button>
             </span>
           </template>
@@ -38,7 +38,7 @@
 
           <!-- Clear button -->
           <ComboboxButton v-if="!multiple" class="absolute right-2 top-1/2 -translate-y-1/2">
-            <span class="material-symbols-rounded text-gray-400 text-lg">unfold_more</span>
+            <AppIcon name="unfold_more" class="w-5 h-5 text-gray-400" />
           </ComboboxButton>
           <button
             v-if="clearable && (multiple ? (modelValue as unknown[]).length > 0 : modelValue)"
@@ -46,7 +46,7 @@
             @click.stop="onClear"
             class="absolute right-7 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <span class="material-symbols-rounded text-lg">close</span>
+            <AppIcon name="close" class="w-5 h-5" />
           </button>
         </div>
 
@@ -68,7 +68,7 @@
               v-slot="{ active }"
             >
               <li :class="['px-4 py-2 text-sm cursor-pointer flex items-center gap-2', active ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-200']">
-                <span class="material-symbols-rounded text-base">add</span>
+                <AppIcon name="add" class="w-4 h-4" />
                 Add "{{ query }}"
               </li>
             </ComboboxOption>
@@ -87,7 +87,7 @@
               >
                 <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ option }}</span>
                 <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                  <span class="material-symbols-rounded text-sm">check</span>
+                  <AppIcon name="check" class="w-4 h-4" />
                 </span>
               </li>
             </ComboboxOption>
@@ -110,6 +110,7 @@ import {
   ComboboxOption,
   TransitionRoot,
 } from '@headlessui/vue'
+import AppIcon from './AppIcon.vue'
 
 const props = withDefaults(
   defineProps<{

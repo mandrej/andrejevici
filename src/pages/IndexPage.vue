@@ -43,7 +43,7 @@
       :title="opt.label"
       @click="theme = opt.value"
     >
-      <span class="material-symbols-rounded text-lg">{{ opt.icon }}</span>
+      <AppIcon :name="opt.icon" class="w-5 h-5" />
     </button>
   </div>
 </template>
@@ -57,6 +57,7 @@ import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useBucketStore } from '../stores/bucket'
 import AppButton from '../components/atoms/AppButton.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

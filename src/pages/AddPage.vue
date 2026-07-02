@@ -1,9 +1,7 @@
 <template>
   <!-- Page header banner -->
   <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-    <span class="material-symbols-rounded text-2xl text-primary">
-      {{ addTab === 'photo' ? 'upload' : 'video_library' }}
-    </span>
+    <AppIcon :name="addTab === 'photo' ? 'upload' : 'video_library'" class="w-6 h-6 text-primary" />
     <span class="text-lg font-semibold text-gray-900 dark:text-white">
       {{ addTab === 'photo' ? 'Upload / publish images' : 'Link videos' }}
     </span>
@@ -32,7 +30,7 @@
 
   <div v-else class="p-4 text-center">
     <div class="flex items-center gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200">
-      <span class="material-symbols-rounded text-2xl flex-shrink-0">warning</span>
+      <AppIcon name="warning" class="w-6 h-6 flex-shrink-0" />
       <span class="text-sm">Only authorized users with a defined nickname can upload photos.</span>
     </div>
   </div>
@@ -49,6 +47,7 @@ import TagsMerge from '../components/TagsMerge.vue'
 import VideoTab from '../components/tab/VideoTab.vue'
 import PhotoTab from '../components/tab/PhotoTab.vue'
 import AppInput from '../components/atoms/AppInput.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

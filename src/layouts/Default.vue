@@ -33,7 +33,7 @@
           :aria-label="drawer ? 'Close menu' : 'Open menu'"
           @click="drawer = !drawer"
         >
-          <span class="material-symbols-rounded text-2xl">{{ drawer && !isDesktop ? 'close' : 'menu' }}</span>
+          <AppIcon :name="drawer && !isDesktop ? 'close' : 'menu'" class="w-6 h-6" />
         </button>
 
         <!-- Page-specific toolbar slot -->
@@ -68,6 +68,7 @@ import { useUserStore } from '../stores/user'
 import AppDialog from '../components/atoms/AppDialog.vue'
 import AppButton from '../components/atoms/AppButton.vue'
 import AppProgress from '../components/atoms/AppProgress.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 
 const auth = useUserStore()
 const { askPush } = storeToRefs(auth)

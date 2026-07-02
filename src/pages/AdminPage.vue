@@ -4,7 +4,7 @@
     <!-- Repair panel -->
     <template v-if="adminTab === 'repair'">
       <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <span class="material-symbols-rounded text-2xl text-primary">construction</span>
+        <AppIcon name="construction" class="w-6 h-6 text-primary" />
         <span class="text-lg font-semibold text-gray-900 dark:text-white">Rebuild / Repair</span>
       </div>
 
@@ -127,6 +127,7 @@ import { formatDatum, formatBytes } from '../helpers'
 import AdminCard from '../components/AdminCard.vue'
 import AppBadge from '../components/atoms/AppBadge.vue'
 import AppButton from '../components/atoms/AppButton.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
 import CONFIG from '../config'
 

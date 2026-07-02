@@ -1,7 +1,7 @@
 <template>
   <!-- Header: tab selector -->
   <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-    <span class="material-symbols-rounded text-xl text-primary">{{ activeTabIcon }}</span>
+    <AppIcon :name="activeTabIcon" class="w-5 h-5 text-primary" />
     <AppSelect
       v-model="app.metaTab"
       :options="metaOptions.map(o => ({ label: o.label, value: o.value }))"
@@ -77,7 +77,7 @@
               :title="`Remove ${activeTabShort.toLowerCase()}`"
               @click="confirmDelete(row.name)"
             >
-              <span class="material-symbols-rounded text-xl">delete</span>
+              <AppIcon name="delete" class="w-5 h-5" />
             </button>
           </td>
           <td class="px-3 py-2 text-right">
@@ -87,7 +87,7 @@
               :title="`Rename ${activeTabShort.toLowerCase()}`"
               @click="openRenameDialog(row.name)"
             >
-              <span class="material-symbols-rounded text-xl">edit</span>
+              <AppIcon name="edit" class="w-5 h-5" />
             </button>
           </td>
         </tr>
@@ -156,6 +156,7 @@ import AppDialog from '../atoms/AppDialog.vue'
 import { renameValue, deleteValue, addValue as addCounterValue } from '../../helpers/remedy'
 import notify from '../../helpers/notify'
 import type { MetaOption } from '../../helpers/models'
+import AppIcon from '../atoms/AppIcon.vue'
 
 const meta = useValuesStore()
 const app = useAppStore()

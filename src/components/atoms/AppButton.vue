@@ -8,8 +8,8 @@
     :class="classes"
     v-on="handlers"
   >
-    <span v-if="icon && !label" class="material-symbols-rounded text-xl leading-none">{{ icon }}</span>
-    <span v-if="icon && label" class="material-symbols-rounded text-xl leading-none mr-1.5">{{ icon }}</span>
+    <AppIcon v-if="icon && !label" :name="icon" class="w-5 h-5 leading-none" />
+    <AppIcon v-if="icon && label" :name="icon" class="w-5 h-5 leading-none mr-1.5" />
     <span v-if="label">{{ label }}</span>
     <slot />
   </component>
@@ -18,6 +18,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import AppIcon from './AppIcon.vue'
 
 const props = withDefaults(
   defineProps<{

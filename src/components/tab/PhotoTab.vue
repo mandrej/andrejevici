@@ -23,7 +23,7 @@
           :accept="CONFIG.fileType"
           @change="onFileChange"
         />
-        <span class="material-symbols-rounded text-4xl text-gray-400 dark:text-gray-500 mb-2">cloud_upload</span>
+        <AppIcon name="cloud_upload" class="w-10 h-10 text-gray-400 dark:text-gray-500 mb-2" />
         <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
           {{ files.length > 0 ? `${files.length} file(s) selected` : 'Drop images here, or click to browse' }}
         </span>
@@ -69,11 +69,11 @@
         <template #action>
           <div class="absolute top-2 right-2 flex items-center gap-1">
             <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-negative hover:scale-110 transition-transform" @click="deleteRec(rec)">
-              <span class="material-symbols-rounded text-xl leading-none">delete</span>
+              <AppIcon name="delete" class="w-5 h-5 leading-none" />
             </button>
             <AppCheckbox v-model="selection" :val="rec.filename" class="bg-white/80 dark:bg-black/60 rounded-full p-1 backdrop-blur-sm" />
             <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-primary hover:scale-110 transition-transform" @click="editRecord(rec)">
-              <span class="material-symbols-rounded text-xl leading-none">publish</span>
+              <AppIcon name="publish" class="w-5 h-5 leading-none" />
             </button>
           </div>
         </template>
@@ -100,6 +100,7 @@ import AppButton from '../atoms/AppButton.vue'
 import AppCheckbox from '../atoms/AppCheckbox.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from '../../helpers/models'
+import AppIcon from '../atoms/AppIcon.vue'
 
 const EditRecord = defineAsyncComponent(() => import('../../components/dialog/EditRecord.vue'))
 

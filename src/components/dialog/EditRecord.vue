@@ -16,7 +16,7 @@
         {{ formatBytes(tmp.size) }} {{ tmp.dim }}
       </span>
       <button class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors" @click="onCancel">
-        <span class="material-symbols-rounded text-2xl">close</span>
+        <AppIcon name="close" class="w-6 h-6" />
       </button>
     </div>
 
@@ -93,7 +93,7 @@
                 title="Copy tags"
                 @click.stop.prevent="copyTags(tmp.tags || [])"
               >
-                <span class="material-symbols-rounded text-xl">content_copy</span>
+                <AppIcon name="content_copy" class="w-5 h-5" />
               </button>
               <button
                 type="button"
@@ -101,7 +101,7 @@
                 title="Paste tags"
                 @click.stop.prevent="mergeTags(tmp.tags || [])"
               >
-                <span class="material-symbols-rounded text-xl">content_paste</span>
+                <AppIcon name="content_paste" class="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -153,6 +153,7 @@ import AppDialog from '../atoms/AppDialog.vue'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'
 import AppCheckbox from '../atoms/AppCheckbox.vue'
+import AppIcon from '../atoms/AppIcon.vue'
 import type { PhotoType } from '../../helpers/models'
 
 const emit = defineEmits(['editOk'])

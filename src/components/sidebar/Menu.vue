@@ -8,7 +8,7 @@
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
-        <span class="material-symbols-rounded text-2xl">sym_r_home</span>
+        <AppIcon name="sym_r_home" class="w-6 h-6" />
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Start</span>
@@ -24,7 +24,7 @@
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
-        <span class="material-symbols-rounded text-2xl">sym_r_grid_view</span>
+        <AppIcon name="sym_r_grid_view" class="w-6 h-6" />
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Browse</span>
@@ -41,7 +41,7 @@
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
-        <span class="material-symbols-rounded text-2xl">sym_r_add_a_photo</span>
+        <AppIcon name="sym_r_add_a_photo" class="w-6 h-6" />
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Add</span>
@@ -58,7 +58,7 @@
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
-        <span class="material-symbols-rounded text-2xl">sym_r_settings</span>
+        <AppIcon name="sym_r_settings" class="w-6 h-6" />
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Admin</span>
@@ -71,6 +71,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../../stores/user'
+import AppIcon from '../atoms/AppIcon.vue'
 
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
