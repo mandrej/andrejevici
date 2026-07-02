@@ -91,7 +91,7 @@ export const fakeHistory = () => {
   window.history.pushState(history.state, '', history.state.current)
 }
 
-export const build = (import.meta as ImportMeta).env?.ANDREJEVICI_BUILD || ''
+export const build = import.meta.env?.ANDREJEVICI_BUILD || ''
 /**
  * Returns `true` if the given object has no own enumerable properties.
  *

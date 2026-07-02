@@ -7,7 +7,7 @@
     <div class="flex items-center gap-3">
       <span class="material-symbols-rounded text-2xl">sym_r_person</span>
       <span class="text-lg font-semibold">Users</span>
-    </div}
+    </div>
   </AppBanner>
 
   <div class="px-4 pb-4">
@@ -17,7 +17,11 @@
   <div class="p-4 overflow-y-auto" style="height: 65vh">
     <div :class="['flex flex-col gap-2', screen.xs ? 'gap-1' : '']">
       <template v-if="busy">
-        <div v-for="n in 5" :key="n" class="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse">
+        <div
+          v-for="n in 5"
+          :key="n"
+          class="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
+        >
           <div class="flex-shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
           <div class="flex-grow">
             <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
@@ -35,7 +39,12 @@
         </div>
       </template>
 
-      <div v-for="item in filteredResult" :key="item.uid" v-else class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+      <div
+        v-for="item in filteredResult"
+        :key="item.uid"
+        v-else
+        class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      >
         <div class="flex-shrink-0 mr-3">
           <AppBadge color="warning" textColor="black" class="text-sm px-2 py-1">
             {{ contribution(item.nick) }}
@@ -86,7 +95,10 @@
           <AppBadge v-else color="grey" textColor="black">no tokens</AppBadge>
         </div>
 
-        <div class="flex-shrink-0 ml-3 flex gap-x-3" :class="screen.xs ? 'flex-col gap-y-1' : 'flex-row'">
+        <div
+          class="flex-shrink-0 ml-3 flex gap-x-3"
+          :class="screen.xs ? 'flex-col gap-y-1' : 'flex-row'"
+        >
           <label class="flex items-center gap-1 cursor-pointer">
             <input
               type="checkbox"
@@ -126,11 +138,15 @@
   <Dialog :open="showDeleteDialog" @close="showDeleteDialog = false" class="relative z-50">
     <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
     <div class="fixed inset-0 flex items-center justify-center p-4">
-      <DialogPanel class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+      <DialogPanel
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+      >
         <div class="p-6">
           <div class="text-lg font-bold mb-2">Delete user?</div>
           <p class="text-gray-600 dark:text-gray-400">
-            Remove <strong class="text-black dark:text-white">{{ userToDelete?.nick }}</strong> ({{ userToDelete?.email }})? This cannot be undone.
+            Remove <strong class="text-black dark:text-white">{{ userToDelete?.nick }}</strong> ({{
+              userToDelete?.email
+            }})? This cannot be undone.
           </p>
         </div>
         <div class="flex justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700">
@@ -145,7 +161,9 @@
   <Dialog :open="showNickDialog" @close="showNickDialog = false" class="relative z-50">
     <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
     <div class="fixed inset-0 flex items-center justify-center p-4">
-      <DialogPanel class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+      <DialogPanel
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+      >
         <div class="p-6">
           <div class="text-lg font-bold mb-4">Change nickname for {{ userToEdit?.email }}</div>
           <AppInput
@@ -154,8 +172,8 @@
             autofocus
             clearable
             :rules="[
-              (v) => !!v || 'Nickname cannot be empty',
-              (v) => !nickValues.includes(v) || 'Nickname already taken',
+              (v: string) => !!v || 'Nickname cannot be empty',
+              (v: string) => !nickValues.includes(v) || 'Nickname already taken',
             ]"
             @keyup.enter="saveNick"
           />
@@ -183,7 +201,7 @@ import { useUserStore } from '../../stores/user'
 
 import ErrorBanner from '../ErrorBanner.vue'
 import type { UsersAndDevices } from '../../helpers/models'
-import type { Timestamp } from '@google-cloud/firestore'
+import type { Timestamp } from 'firebase/firestore'
 
 import LocalSearch from '../LocalSearch.vue'
 import notify from '../../helpers/notify'

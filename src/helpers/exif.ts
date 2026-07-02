@@ -58,7 +58,7 @@ const readExif = async (url: string): Promise<ExifType | null> => {
           })()
         : null
 
-    const lensPromise = 'LensModel' in exif ? resolveRename(exif.LensModel.description) : null
+    const lensPromise = 'LensModel' in exif ? resolveRename(exif.LensModel!.description) : null
 
     const [resolvedModel, resolvedLens] = await Promise.all([modelPromise, lensPromise])
     if (resolvedModel) result.model = resolvedModel
@@ -66,7 +66,7 @@ const readExif = async (url: string): Promise<ExifType | null> => {
 
     // Date
     if ('DateTimeOriginal' in exif) {
-      const isoDate = exif.DateTimeOriginal.description.replace(rexDate, '$1-$2-$3')
+      const isoDate = exif.DateTimeOriginal!.description.replace(rexDate, '$1-$2-$3')
       const datum = new Date(isoDate)
       result.date = formatDatum(datum)
       result.year = datum.getFullYear()
@@ -75,19 +75,19 @@ const readExif = async (url: string): Promise<ExifType | null> => {
     }
 
     // Numeric EXIF fields
-    if ('ApertureValue' in exif) result.aperture = parseFloat(exif.ApertureValue.description)
+    if ('ApertureValue' in exif) result.aperture = parseFloat(exif.ApertureValue!.description)
     if ('ExposureTime' in exif) {
-      const shutter = exif.ExposureTime.value[0] / exif.ExposureTime.value[1]
+      const shutter = exif.ExposureTime!.value[0] / exif.ExposureTime!.value[1]
       result.shutter = shutter <= 0.1 ? `1/${Math.round(1 / shutter)}` : `${shutter}`
     }
-    if ('FocalLength' in exif) result.focal_length = parseInt(exif.FocalLength.description)
-    if ('ISOSpeedRatings' in exif) result.iso = parseInt(exif.ISOSpeedRatings.description)
-    if ('Flash' in exif) result.flash = !exif.Flash.description.startsWith('Flash did not')
+    if ('FocalLength' in exif) result.focal_length = parseInt(exif.FocalLength!.description)
+    if ('ISOSpeedRatings' in exif) result.iso = parseInt(exif.ISOSpeedRatings!.description)
+    if ('Flash' in exif) result.flash = !exif.Flash!.description.startsWith('Flash did not')
   }
 
   // Dimensions from file metadata
   if (tags.file && 'Image Height' in tags.file && 'Image Width' in tags.file) {
-    result.dim = [tags.file['Image Width'].value, tags.file['Image Height'].value]
+    result.dim = [tags.file['Image Width']!.value, tags.file['Image Height']!.value]
   }
 
   // Fallback: load image to get dimensions
@@ -117,7 +117,7 @@ const readExif = async (url: string): Promise<ExifType | null> => {
   }
 
   // GPS
-  if (tags.gps && 'Latitude' in tags.gps && 'Longitude' in tags.gps) {
+  if (tags.gps && tags.gps.Latitude !== undefined && tags.gps.Longitude !== undefined) {
     result.loc = `${tags.gps.Latitude.toFixed(6)}, ${tags.gps.Longitude.toFixed(6)}`
   }
 

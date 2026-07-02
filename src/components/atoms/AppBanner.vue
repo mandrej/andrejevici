@@ -12,7 +12,7 @@
     <div class="flex-grow">
       <slot />
     </div>
-    <div v-if="slots.default && slots.actions" class="flex items-center gap-2">
+    <div v-if="$slots.default && $slots.actions" class="flex items-center gap-2">
       <slot name="actions" />
     </div>
   </div>
@@ -20,14 +20,15 @@
 
 <script setup lang="ts">
 interface Props {
-  color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | string
+  color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | (string & {})
+  icon?: string
 }
 
 withDefaults(defineProps<Props>(), {
   color: 'info',
 })
 
-const colorClasses = {
+const colorClasses: Record<string, string> = {
   primary: 'bg-blue-50 border-blue-500 text-blue-800',
   secondary: 'bg-teal-50 border-teal-500 text-teal-800',
   accent: 'bg-purple-50 border-purple-500 text-purple-800',

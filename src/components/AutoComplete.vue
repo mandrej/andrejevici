@@ -19,7 +19,7 @@ import { computed } from 'vue'
 import AppCombobox from './atoms/AppCombobox.vue'
 
 interface Props {
-  modelValue?: string | number | any[] | null | undefined
+  modelValue?: string | string[] | null | undefined
   options: string[]
   multiple?: boolean | undefined
   canadd?: boolean | undefined

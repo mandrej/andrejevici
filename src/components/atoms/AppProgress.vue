@@ -18,7 +18,7 @@ const props = withDefaults(
   defineProps<{
     value?: number
     indeterminate?: boolean
-    color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | string
+    color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | (string & {})
     height?: number
   }>(),
   {

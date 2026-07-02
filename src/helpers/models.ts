@@ -1,4 +1,4 @@
-import type { Timestamp } from '@google-cloud/firestore'
+import type { Timestamp } from 'firebase/firestore'
 
 export type AssetKind = 'photo' | 'video'
 
