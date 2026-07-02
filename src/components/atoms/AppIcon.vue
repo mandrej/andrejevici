@@ -36,6 +36,7 @@ import {
   MagnifyingGlassIcon,
   MoonIcon,
   PencilIcon,
+  PencilSquareIcon,
   PhotoIcon,
   PlusIcon,
   RectangleStackIcon,
@@ -67,7 +68,7 @@ const iconMap: Record<string, IconComponent> = {
   check: CheckIcon,
   close: XMarkIcon,
   delete: TrashIcon,
-  edit: PencilIcon,
+  edit: PencilSquareIcon,
   build: WrenchIcon,
   search: MagnifyingGlassIcon,
 
@@ -142,7 +143,5 @@ const iconMap: Record<string, IconComponent> = {
   chat: ChatBubbleLeftRightIcon,
 }
 
-const resolved = computed<IconComponent>(
-  () => iconMap[props.name] ?? ExclamationCircleIcon,
-)
+const resolved = computed<IconComponent>(() => iconMap[props.name] ?? ExclamationCircleIcon)
 </script>

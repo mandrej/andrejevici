@@ -6,8 +6,9 @@
     <div class="p-6">
       <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Confirm Delete</h2>
       <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
-        Would you like to delete {{ formatBytes(select2delete?.size || 0) }} photo named
-        '{{ select2delete?.headline }}'?
+        Would you like to delete {{ formatBytes(select2delete?.size || 0) }} photo named '{{
+          select2delete?.headline
+        }}'?
       </p>
       <div class="flex justify-between gap-3">
         <AppButton color="primary" label="OK" @click="confirmOk(select2delete as PhotoType)" />
@@ -45,7 +46,7 @@
           <template #action>
             <div
               v-if="isAuthorOrAdmin(user, item)"
-              class="absolute top-2 right-2 flex flex-col gap-1"
+              class="absolute top-3 right-0 flex flex-col items-center gap-1"
             >
               <!-- Batch select checkbox -->
               <AppCheckbox
@@ -71,7 +72,9 @@
 
     <!-- Loading spinner -->
     <div v-if="loading" class="flex justify-center py-8">
-      <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div
+        class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+      />
     </div>
 
     <!-- End of list -->
@@ -199,7 +202,9 @@ onMounted(() => {
   window.addEventListener('scroll', onScroll)
   if (route.hash) {
     const filename = route.hash.substring(2)
-    setTimeout(() => { void findPhoto(filename) }, 1000)
+    setTimeout(() => {
+      void findPhoto(filename)
+    }, 1000)
   }
 })
 

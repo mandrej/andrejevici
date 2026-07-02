@@ -4,7 +4,7 @@
       to="/"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'home' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+        $route.name === 'home' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -12,7 +12,7 @@
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Start</span>
-        <span class="text-xs text-gray-500"></span>
+        <span class="text-xs"></span>
       </div>
     </router-link>
 
@@ -20,7 +20,7 @@
       to="/list"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'list' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+        $route.name === 'list' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -28,7 +28,7 @@
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Browse</span>
-        <span class="text-xs text-gray-500">You can filter results</span>
+        <span class="text-xs">You can filter results</span>
       </div>
     </router-link>
 
@@ -37,7 +37,7 @@
       to="/add"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'add' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+        $route.name === 'add' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -45,7 +45,7 @@
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Add</span>
-        <span class="text-xs text-gray-500">jpeg images less then 4 Mb</span>
+        <span class="text-xs">jpeg images less then 4 Mb</span>
       </div>
     </router-link>
 
@@ -54,7 +54,7 @@
       to="/admin"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'admin' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+        $route.name === 'admin' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -62,7 +62,7 @@
       </div>
       <div class="flex flex-col">
         <span class="font-medium text-sm">Admin</span>
-        <span class="text-xs text-gray-500">rebuild, repair, tags, subscribers</span>
+        <span class="text-xs">rebuild, repair, tags, subscribers</span>
       </div>
     </router-link>
   </nav>
