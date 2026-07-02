@@ -1,10 +1,32 @@
 import CONFIG from '../config'
-import { date, format } from 'quasar'
 import { slugify } from 'transliteration'
 import type { FindType, MyUserType, PhotoType } from './models'
 
-const { humanStorageSize } = format
-const { formatDate } = date
+/**
+ * Format bytes as human-readable size string (e.g. "1.2 MB").
+ */
+const formatBytesNative = (bytes: number): string => {
+  if (bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i]
+}
+
+/**
+ * Format a date using the given token-based format string.
+ * Supports: YYYY MM DD HH mm ss
+ */
+const formatDateNative = (d: Date, fmt: string): string => {
+  const pad = (n: number, len = 2) => String(n).padStart(len, '0')
+  return fmt
+    .replace('YYYY', String(d.getFullYear()))
+    .replace('MM', pad(d.getMonth() + 1))
+    .replace('DD', pad(d.getDate()))
+    .replace('HH', pad(d.getHours()))
+    .replace('mm', pad(d.getMinutes()))
+    .replace('ss', pad(d.getSeconds()))
+}
+
 const modifiers = {
   replace: {
     ш: 's',
@@ -43,7 +65,7 @@ export const months = [
  * @param bytes - The byte count to format.
  * @returns A formatted string representation of the storage size.
  */
-export const formatBytes = (bytes: number): string => humanStorageSize(bytes)
+export const formatBytes = (bytes: number): string => formatBytesNative(bytes)
 
 /**
  * Formats a date value using the application's configured date format.
@@ -56,8 +78,8 @@ export const formatDatum = (
   str: Date | number | string,
   format: string = CONFIG.dateFormat,
 ): string => {
-  const date = new Date(str)
-  return formatDate(date, format)
+  const d = new Date(typeof str === 'string' || typeof str === 'number' ? str : str)
+  return formatDateNative(d, format)
 }
 /**
  * Creates a fake history entry.
@@ -69,7 +91,7 @@ export const fakeHistory = () => {
   window.history.pushState(history.state, '', history.state.current)
 }
 
-export const build = process.env.ANDREJEVICI_BUILD || ''
+export const build = (import.meta as ImportMeta).env?.ANDREJEVICI_BUILD || ''
 /**
  * Returns `true` if the given object has no own enumerable properties.
  *

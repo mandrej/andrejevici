@@ -1,8 +1,10 @@
 <template>
-  <Menu />
-  <q-space />
-  <ManageSelection v-if="route.name === 'list'" />
-  <SendMessage v-if="route.name === 'admin' || route.name === 'add'" class="q-my-md" />
+  <div class="flex flex-col h-full">
+    <Menu />
+    <div class="flex-grow"></div>
+    <ManageSelection v-if="route.name === 'list'" />
+    <SendMessage v-if="route.name === 'admin' || route.name === 'add'" class="my-4" />
+  </div>
 </template>
 
 <script setup lang="ts">

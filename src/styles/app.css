@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #1976d2;
+  --color-secondary: #0fd3bf;
+  --color-accent: #c830e2;
+  --color-positive: #71eb8e;
+  --color-negative: #c10015;
+  --color-info: #31ccec;
+  --color-warning: #f2c037;
+  --color-light: #eeecec;
+  --color-dark: #121212;
+  --color-light-page: #ffffff;
+  --color-dark-page: #1a1a2e;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-light-page);
+    color: var(--color-dark);
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dark body {
+    background-color: var(--color-dark-page);
+    color: var(--color-light);
+  }
+
+  /* Material Symbols font */
+  .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+}
+
+@layer components {
+  /* Fade transition for vue transition-group */
+  .fade-move,
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+  }
+
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+    transform: scale(0.3) translateY(100px);
+  }
+
+  .fade-leave-active {
+    position: absolute;
+  }
+
+  /* Bounce animation for card highlight */
+  .bounce {
+    animation: bounce 0.75s both;
+  }
+
+  /* Link utility */
+  .link {
+    color: inherit;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  /* Card base */
+  .card {
+    position: relative;
+    background-color: var(--color-light-page);
+    outline: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .dark .card {
+    background-color: #2d2d44;
+    outline-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Notification layer always on top */
+  .notifications-layer {
+    position: fixed;
+    z-index: 10000000;
+    pointer-events: none;
+  }
+
+  /* Hide Firebase emulator banner */
+  .firebase-emulator-warning {
+    display: none;
+  }
+}
+
+/* PhotoSwipe active state — disable scroll */
+body.swiper-view-active {
+  overflow: hidden !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+body.swiper-view-active::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-30px); }
+  60% { transform: translateY(-15px); }
+}

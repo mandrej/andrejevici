@@ -1,58 +1,57 @@
 <template>
-  <div style="background-color: var(--q-my-toolbar-bg)">
-    <q-input
+  <div class="bg-light dark:bg-dark p-2">
+    <AppInput
       v-if="user?.isAuthorized"
       v-model="headlineToApply"
       label="Headline to apply"
-      class="q-px-md q-mb-md"
+      class="px-2 mb-4"
       clearable
-      :dense="$q.screen.lt.sm"
     />
     <TagsMerge
       v-if="user?.isAuthorized"
-      class="q-px-md q-mb-md"
+      class="px-2 mb-4"
       :label="`Tags to apply`"
-      :dense="$q.screen.lt.sm"
     />
 
     <div
       v-if="selected.length > 0"
-      class="q-px-md column"
-      :class="{ 'q-gutter-sm': $q.screen.gt.sm }"
+      class="px-2 flex flex-col gap-2"
+      :class="{ 'gap-3': screen.gtSm }"
     >
-      <div class="text-caption text-center">{{ selected.length }} items selected</div>
-      <q-btn
+      <div class="text-xs text-center text-gray-500">{{ selected.length }} items selected</div>
+
+      <AppButton
         v-if="tagsToApply && tagsToApply.length > 0"
         flat
-        align="right"
         label="Merge Tags"
-        icon-right="sym_r_merge"
+        icon="sym_r_merge"
         @click="applyTags"
-        :loading="busy"
+        :disabled="busy"
+        class="justify-end"
       />
-      <q-btn
+      <AppButton
         v-if="headlineToApply"
         flat
-        align="right"
         label="Apply Headline"
-        icon-right="sym_r_find_replace"
+        icon="sym_r_find_replace"
         @click="applyHeadline"
-        :loading="busy"
+        :disabled="busy"
+        class="justify-end"
       />
-      <q-btn
+      <AppButton
         color="negative"
-        align="right"
         label="Delete Selected"
-        icon-right="sym_r_delete"
+        icon="sym_r_delete"
         @click="deleteSelected"
-        :loading="busy"
+        :disabled="busy"
+        class="justify-end"
       />
-      <q-btn
+      <AppButton
         flat
-        align="right"
         label="Clear Selection"
-        icon-right="sym_r_clear_all"
+        icon="sym_r_clear_all"
         @click="clearSelected"
+        class="justify-end"
       />
     </div>
   </div>
@@ -64,19 +63,19 @@ import { useAppStore } from '../../stores/app'
 import { useUserStore } from '../../stores/user'
 import { useValuesStore } from '../../stores/values'
 import TagsMerge from '../TagsMerge.vue'
+import AppButton from '../atoms/AppButton.vue'
+import AppInput from '../atoms/AppInput.vue'
+import { useScreen } from '../../composables/useScreen'
 
 const app = useAppStore()
 const auth = useUserStore()
 const meta = useValuesStore()
+const screen = useScreen()
 
 const { selected, busy } = storeToRefs(app)
 const { user } = storeToRefs(auth)
 const { headlineToApply, tagsToApply } = storeToRefs(meta)
 
-/**
- * Merges `tagsToApply` into each selected photo record and saves the
- * updated records to Firestore, then clears the selection.
- */
 const applyTags = async () => {
   for (const item of selected.value) {
     const rec = { ...item }
@@ -86,10 +85,6 @@ const applyTags = async () => {
   clearSelected()
 }
 
-/**
- * Overwrites the headline of every selected photo with `headlineToApply`
- * and saves each record to Firestore, then clears the selection.
- */
 const applyHeadline = async () => {
   if (!headlineToApply.value) return
   for (const item of selected.value) {
@@ -100,10 +95,6 @@ const applyHeadline = async () => {
   clearSelected()
 }
 
-/**
- * Deletes all currently selected photo records from Firestore and Storage,
- * then clears the selection.
- */
 const deleteSelected = async () => {
   const toDelete = [...selected.value]
   for (const item of toDelete) {
@@ -112,9 +103,6 @@ const deleteSelected = async () => {
   clearSelected()
 }
 
-/**
- * Empties the `selected` array in the app store.
- */
 const clearSelected = () => {
   selected.value = []
 }

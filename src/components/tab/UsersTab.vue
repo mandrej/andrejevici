@@ -3,185 +3,175 @@
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
-  <q-banner class="q-pa-md">
-    <template v-slot:avatar>
-      <q-icon name="sym_r_person" />
-    </template>
-    <span class="text-h6">Users</span>
-  </q-banner>
+  <AppBanner color="info" class="p-4">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-rounded text-2xl">sym_r_person</span>
+      <span class="text-lg font-semibold">Users</span>
+    </div}
+  </AppBanner>
 
-  <div class="q-px-md q-pb-md">
+  <div class="px-4 pb-4">
     <LocalSearch v-model="search" label="Search users" :options="nickValues" />
   </div>
 
-  <q-scroll-area class="q-pa-md" style="height: 65vh">
-    <q-list separator :dense="$q.screen.xs">
+  <div class="p-4 overflow-y-auto" style="height: 65vh">
+    <div :class="['flex flex-col gap-2', screen.xs ? 'gap-1' : '']">
       <template v-if="busy">
-        <q-item v-for="n in 5" :key="n">
-          <q-item-section avatar>
-            <q-skeleton type="QBadge" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label>
-              <q-skeleton type="text" width="35%" />
-            </q-item-label>
-            <q-item-label caption>
-              <q-skeleton type="text" width="65%" />
-            </q-item-label>
-          </q-item-section>
-
-          <q-item-section side v-if="$q.screen.gt.xs">
-            <div class="row no-wrap">
-              <q-skeleton type="QBadge" v-for="i in 2" :key="i" class="q-ml-xs" />
-            </div>
-          </q-item-section>
-
-          <q-item-section side>
-            <div :class="$q.screen.xs ? 'column' : 'row'">
-              <q-skeleton type="QCheckbox" v-for="i in 3" :key="i" />
-            </div>
-          </q-item-section>
-        </q-item>
+        <div v-for="n in 5" :key="n" class="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse">
+          <div class="flex-shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
+          <div class="flex-grow">
+            <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
+          </div>
+          <div v-if="screen.gtXs" class="flex gap-1 ml-auto">
+            <div class="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+            <div class="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+          </div>
+          <div class="flex gap-1 ml-auto" :class="screen.xs ? 'flex-col' : 'flex-row'">
+            <div class="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+            <div class="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+            <div class="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          </div>
+        </div>
       </template>
 
-      <q-item v-for="item in filteredResult" :key="item.uid" v-else>
-        <q-item-section avatar>
-          <q-badge class="text-body1" color="warning" text-color="black">
+      <div v-for="item in filteredResult" :key="item.uid" v-else class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <div class="flex-shrink-0 mr-3">
+          <AppBadge color="warning" textColor="black" class="text-sm px-2 py-1">
             {{ contribution(item.nick) }}
-          </q-badge>
-        </q-item-section>
+          </AppBadge>
+        </div>
 
-        <q-item-section>
-          <q-item-label class="text-h6 row items-center">
+        <div class="flex-grow">
+          <div class="flex items-center gap-1 text-base font-semibold">
             {{ item.nick || '???' }}
-            <q-btn
+            <AppButton
               v-if="contribution(item.nick) === 0"
               flat
               round
               dense
               icon="sym_r_edit"
               color="primary"
-              class="q-ml-sm"
               @click="openNickDialog(item)"
             >
-              <q-tooltip>Change nickname</q-tooltip>
-            </q-btn>
-            <q-btn
+              <span class="text-xs">Change nickname</span>
+            </AppButton>
+            <AppButton
               v-if="contribution(item.nick) === 0"
               flat
               round
               dense
               icon="sym_r_delete"
               color="negative"
-              class="q-ml-xs"
               @click="confirmDeleteUser(item)"
             >
-              <q-tooltip>Delete user</q-tooltip>
-            </q-btn>
-          </q-item-label>
-          <q-item-label caption>{{ item.email }}</q-item-label>
-          <q-item-label caption>subscribed {{ ageDays(item.timestamp) }} days ago</q-item-label>
-        </q-item-section>
-
-        <q-item-section side v-if="$q.screen.gt.xs">
-          <q-item-label>
-            <template v-if="item.timestamps?.length">
-              <q-badge
-                v-for="(timestamp, index) in item.timestamps"
-                :key="index"
-                color="secondary"
-                text-color="black"
-                class="q-ml-xs"
-              >
-                {{ ageDays(timestamp) }}
-              </q-badge>
-            </template>
-            <q-badge v-else color="grey-3" text-color="grey-7">no tokens</q-badge>
-          </q-item-label>
-        </q-item-section>
-
-        <q-item-section side>
-          <div :class="$q.screen.xs ? 'column' : 'row'">
-            <q-checkbox
-              :dense="$q.screen.xs"
-              v-model="item.isAdmin"
-              :disable="user?.email === item.email || !item.nick"
-              color="negative"
-              label="Admin"
-              @update:model-value="(val) => toggleAdmin(item, val as boolean)"
-            />
-            <q-checkbox
-              :dense="$q.screen.xs"
-              v-model="item.isAuthorized"
-              :disable="!item.nick"
-              color="primary"
-              label="Editor"
-              @click="item.nick ? auth.updateUser(item, 'isAuthorized') : null"
-            />
-            <q-checkbox
-              :dense="$q.screen.xs"
-              v-model="item.allowPush"
-              :disable="!item.nick"
-              color="secondary"
-              label="Push"
-              @click="item.nick ? auth.updateUser(item, 'allowPush') : null"
-            />
+              <span class="text-xs">Delete user</span>
+            </AppButton>
           </div>
-        </q-item-section>
-      </q-item>
-    </q-list>
-  </q-scroll-area>
+          <div class="text-xs text-gray-500">{{ item.email }}</div>
+          <div class="text-xs text-gray-400">subscribed {{ ageDays(item.timestamp) }} days ago</div>
+        </div>
+
+        <div v-if="screen.gtXs" class="flex-shrink-0 ml-3 flex gap-1">
+          <template v-if="item.timestamps?.length">
+            <AppBadge
+              v-for="(timestamp, index) in item.timestamps"
+              :key="index"
+              color="secondary"
+              textColor="black"
+            >
+              {{ ageDays(timestamp) }}
+            </AppBadge>
+          </template>
+          <AppBadge v-else color="grey" textColor="black">no tokens</AppBadge>
+        </div>
+
+        <div class="flex-shrink-0 ml-3 flex gap-x-3" :class="screen.xs ? 'flex-col gap-y-1' : 'flex-row'">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="item.isAdmin"
+              :disabled="user?.email === item.email || !item.nick"
+              class="w-4 h-4 rounded border-gray-300 text-negative focus:ring-negative"
+              @change="toggleAdmin(item, item.isAdmin)"
+            />
+            <span class="text-xs">Admin</span>
+          </label>
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="item.isAuthorized"
+              :disabled="!item.nick"
+              class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              @change="item.nick ? auth.updateUser(item, 'isAuthorized') : null"
+            />
+            <span class="text-xs">Editor</span>
+          </label>
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="item.allowPush"
+              :disabled="!item.nick"
+              class="w-4 h-4 rounded border-gray-300 text-secondary focus:ring-secondary"
+              @change="item.nick ? auth.updateUser(item, 'allowPush') : null"
+            />
+            <span class="text-xs">Push</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Delete User Confirmation Dialog -->
-  <q-dialog v-model="showDeleteDialog" persistent>
-    <q-card style="min-width: 350px">
-      <q-card-section>
-        <div class="text-h6">Delete user?</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
-        Remove <strong>{{ userToDelete?.nick }}</strong> ({{ userToDelete?.email }})? This cannot be
-        undone.
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="doDeleteUser" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+  <Dialog :open="showDeleteDialog" @close="showDeleteDialog = false" class="relative z-50">
+    <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <DialogPanel class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="p-6">
+          <div class="text-lg font-bold mb-2">Delete user?</div>
+          <p class="text-gray-600 dark:text-gray-400">
+            Remove <strong class="text-black dark:text-white">{{ userToDelete?.nick }}</strong> ({{ userToDelete?.email }})? This cannot be undone.
+          </p>
+        </div>
+        <div class="flex justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700">
+          <AppButton flat label="Cancel" @click="showDeleteDialog = false" />
+          <AppButton flat label="Delete" color="negative" @click="doDeleteUser" />
+        </div>
+      </DialogPanel>
+    </div>
+  </Dialog>
 
   <!-- Nickname Edit Dialog -->
-  <q-dialog v-model="showNickDialog" persistent>
-    <q-card style="min-width: 350px">
-      <q-card-section>
-        <div class="text-h6">Change nickname for {{ userToEdit?.email }}</div>
-      </q-card-section>
-
-      <q-card-section class="q-pt-none">
-        <q-input
-          v-model="tempNick"
-          label="New nickname"
-          autofocus
-          clearable
-          :rules="[
-            (v) => !!v || 'Nickname cannot be empty',
-            (v) => !nickValues.includes(v) || 'Nickname already taken',
-          ]"
-          @keyup.enter="saveNick"
-        />
-      </q-card-section>
-
-      <q-card-actions align="right" class="text-primary">
-        <q-btn flat label="Cancel" v-close-popup />
-        <q-btn
-          flat
-          label="Save"
-          @click="saveNick"
-          :disable="!tempNick || nickValues.includes(tempNick)"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+  <Dialog :open="showNickDialog" @close="showNickDialog = false" class="relative z-50">
+    <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <DialogPanel class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="p-6">
+          <div class="text-lg font-bold mb-4">Change nickname for {{ userToEdit?.email }}</div>
+          <AppInput
+            v-model="tempNick"
+            label="New nickname"
+            autofocus
+            clearable
+            :rules="[
+              (v) => !!v || 'Nickname cannot be empty',
+              (v) => !nickValues.includes(v) || 'Nickname already taken',
+            ]"
+            @keyup.enter="saveNick"
+          />
+        </div>
+        <div class="flex justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-700">
+          <AppButton flat label="Cancel" @click="showNickDialog = false" />
+          <AppButton
+            flat
+            label="Save"
+            @click="saveNick"
+            :disabled="!tempNick || nickValues.includes(tempNick)"
+          />
+        </div>
+      </DialogPanel>
+    </div>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -198,9 +188,17 @@ import type { Timestamp } from '@google-cloud/firestore'
 import LocalSearch from '../LocalSearch.vue'
 import notify from '../../helpers/notify'
 
+import AppBanner from '../atoms/AppBanner.vue'
+import AppBadge from '../atoms/AppBadge.vue'
+import AppButton from '../atoms/AppButton.vue'
+import AppInput from '../atoms/AppInput.vue'
+import { Dialog, DialogPanel } from '@headlessui/vue'
+import { useScreen } from '../../composables/useScreen'
+
 const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
+const screen = useScreen()
 
 const { busy, error } = storeToRefs(app)
 const { user } = storeToRefs(auth)
@@ -208,10 +206,6 @@ const { nickValues, nickWithCount } = storeToRefs(meta)
 const result = ref<UsersAndDevices[]>([])
 const search = ref('')
 
-/**
- * The user list filtered by the current search input (matches nick or email,
- * case-insensitive).
- */
 const filteredResult = computed(() => {
   if (!search.value) return result.value
   const query = search.value.toLowerCase()
@@ -220,7 +214,6 @@ const filteredResult = computed(() => {
   )
 })
 
-/** The number of users in the result list that currently have admin status. */
 const adminCount = computed(() => result.value.filter((u) => u.isAdmin).length)
 
 const showNickDialog = ref(false)
@@ -230,20 +223,11 @@ const tempNick = ref('')
 const showDeleteDialog = ref(false)
 const userToDelete = ref<UsersAndDevices | null>(null)
 
-/**
- * Opens the delete-confirmation dialog for the specified user.
- *
- * @param user - The user record the admin wants to delete.
- */
 const confirmDeleteUser = (user: UsersAndDevices) => {
   userToDelete.value = user
   showDeleteDialog.value = true
 }
 
-/**
- * Executes the user deletion after confirmation. Prevents deleting the last
- * remaining admin. Refreshes the user list on success.
- */
 const doDeleteUser = async () => {
   if (userToDelete.value) {
     if (userToDelete.value.isAdmin && adminCount.value === 1) {
@@ -257,10 +241,6 @@ const doDeleteUser = async () => {
   }
 }
 
-/**
- * Fetches the joined users-and-devices list from Firestore and populates
- * the local `result` ref. Sets `busy` and `error` flags throughout.
- */
 const fetchList = async () => {
   busy.value = true
   error.value = ''
@@ -270,46 +250,22 @@ const fetchList = async () => {
   error.value = result.value.length === 0 ? 'No subscribers found' : ''
 }
 
-/**
- * Opens the nickname-edit dialog pre-filled with the user's current nickname.
- *
- * @param user - The user record whose nickname should be changed.
- */
 const openNickDialog = (user: UsersAndDevices) => {
   userToEdit.value = user
   tempNick.value = user.nick
   showNickDialog.value = true
 }
 
-/**
- * Toggles the admin status of a user, preventing removal of the last admin.
- * Reverts the checkbox UI if the guard fires.
- *
- * @param item - The user record being toggled.
- * @param val - The new boolean admin state requested by the checkbox.
- */
 const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
-  // If we are trying to remove admin status and there's only one admin left
-  if (!val && adminCount.value === 0) {
-    // Note: adminCount is computed from result.value.
-    // If the checkbox already changed the value in the object, adminCount might already be 0.
-    // Let's check more carefully.
-  }
-
-  // Re-calculating count excluding the current item if we are turning it off
   const remainingAdmins = result.value.filter((u) => u.isAdmin).length
   if (!val && remainingAdmins === 0) {
     notify({ type: 'negative', message: 'Cannot remove the last administrator' })
-    item.isAdmin = true // Revert
+    item.isAdmin = true
     return
   }
-
   await auth.updateUser(item, 'isAdmin')
 }
 
-/**
- * Saves the edited nickname to Firestore and closes the nickname dialog.
- */
 const saveNick = async () => {
   if (userToEdit.value && tempNick.value) {
     userToEdit.value.nick = tempNick.value
@@ -320,23 +276,11 @@ const saveNick = async () => {
 
 onMounted(fetchList)
 
-/**
- * Returns the number of whole days elapsed since the given Firestore timestamp.
- *
- * @param timestamp - A Firestore `Timestamp` value.
- * @returns The number of days (floored) since that timestamp.
- */
 const ageDays = (timestamp: Timestamp) => {
   const diff = Date.now() - timestamp.toMillis()
   return Math.floor(diff / 86400000)
 }
-/**
- * Returns the number of photos contributed by the given nickname,
- * or `0` if the nick is not found in the values store.
- *
- * @param nick - The contributor's nickname.
- * @returns The photo count, or `0`.
- */
+
 const contribution = (nick: string) => {
   const entry = nickWithCount.value[nick]
   return entry ? entry : 0

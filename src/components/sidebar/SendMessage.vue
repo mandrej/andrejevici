@@ -1,12 +1,20 @@
 <template>
-  <q-item clickable>
-    <q-item-section>
-      <q-input v-model="message" label="Send message to subscribers" color="secondary" />
-    </q-item-section>
-    <q-item-section side>
-      <q-btn :disabled="!token" label="Send" @click="send" color="secondary" text-color="black" />
-    </q-item-section>
-  </q-item>
+  <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
+    <div class="flex-grow">
+      <AppInput
+        v-model="message"
+        label="Send message to subscribers"
+      />
+    </div>
+    <div class="flex items-center">
+      <AppButton
+        :disabled="!token"
+        label="Send"
+        @click="send"
+        color="secondary"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -15,16 +23,13 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '../../stores/user'
 import CONFIG from '../../config'
 import notify from '../../helpers/notify'
+import AppButton from '../atoms/AppButton.vue'
+import AppInput from '../atoms/AppInput.vue'
 
 const auth = useUserStore()
 const { token } = storeToRefs(auth)
 const message = ref('TEST')
 
-/**
- * Validates the message input and POSTs it to the notify Cloud Function.
- * Shows a success notification with the server's response text on success,
- * or an error notification if the request fails.
- */
 const send = () => {
   const msg = message.value.trim()
   if (msg === '') {
@@ -47,7 +52,6 @@ const send = () => {
       return response.text()
     })
     .then((text) => {
-      // Use 'positive' type (green) and a fallback message if text is empty
       notify({
         type: 'positive',
         message: text || 'Notification sent successfully',

@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-light-page text-dark transition-colors duration-300;
+  }
+  .dark body {
+    @apply bg-dark-page text-light;
+  }
+}
+
+@layer components {
+  .fade-enter-active,
+  .fade-leave-active {
+    @apply transition-all duration-500 ease-in-out;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    @apply opacity-0 scale-30 translate-y-[100px];
+  }
+  .fade-leave-active {
+    @apply absolute;
+  }
+
+  .bounce {
+    animation: bounce 0.75s both;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-30px); }
+  60% { transform: translateY(-15px); }
+}
+
+/* Ensure notifications are on top */
+.notifications-layer {
+  z-index: 10000000 !important;
+}
+
+/* PhotoSwipe active state */
+body.swiper-view-active {
+  overflow: hidden !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+body.swiper-view-active ::-webkit-scrollbar {
+  display: none;
+}

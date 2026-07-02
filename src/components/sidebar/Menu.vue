@@ -1,61 +1,71 @@
 <template>
-  <q-list class="q-mt-lg" :dense="$q.screen.lt.sm">
-    <q-item clickable v-ripple to="/" :active="$route.name === 'home'">
-      <q-item-section avatar>
-        <q-icon name="sym_r_home" />
-      </q-item-section>
+  <nav class="mt-6 px-2 space-y-1">
+    <router-link
+      to="/"
+      :class="[
+        'flex items-center p-3 rounded-lg transition-colors duration-200',
+        $route.name === 'home' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+      ]"
+    >
+      <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
+        <span class="material-symbols-rounded text-2xl">sym_r_home</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-medium text-sm">Start</span>
+        <span class="text-xs text-gray-500"></span>
+      </div>
+    </router-link>
 
-      <q-item-section>
-        <q-item-label>Start</q-item-label>
-        <q-item-label caption></q-item-label>
-      </q-item-section>
-    </q-item>
+    <router-link
+      to="/list"
+      :class="[
+        'flex items-center p-3 rounded-lg transition-colors duration-200',
+        $route.name === 'list' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+      ]"
+    >
+      <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
+        <span class="material-symbols-rounded text-2xl">sym_r_grid_view</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-medium text-sm">Browse</span>
+        <span class="text-xs text-gray-500">You can filter results</span>
+      </div>
+    </router-link>
 
-    <q-item clickable v-ripple to="/list" :active="$route.name === 'list'">
-      <q-item-section avatar>
-        <q-icon name="sym_r_grid_view" />
-      </q-item-section>
-
-      <q-item-section>
-        <q-item-label>Browse</q-item-label>
-        <q-item-label caption>You can filter results</q-item-label>
-      </q-item-section>
-    </q-item>
-
-    <q-item
-      clickable
-      v-ripple
+    <router-link
       v-show="user && user.isAuthorized && user.nick"
       to="/add"
-      :active="$route.name === 'add'"
+      :class="[
+        'flex items-center p-3 rounded-lg transition-colors duration-200',
+        $route.name === 'add' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+      ]"
     >
-      <q-item-section avatar>
-        <q-icon name="sym_r_add_a_photo" />
-      </q-item-section>
+      <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
+        <span class="material-symbols-rounded text-2xl">sym_r_add_a_photo</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-medium text-sm">Add</span>
+        <span class="text-xs text-gray-500">jpeg images less then 4 Mb</span>
+      </div>
+    </router-link>
 
-      <q-item-section>
-        <q-item-label>Add</q-item-label>
-        <q-item-label caption>jpeg images less then 4 Mb</q-item-label>
-      </q-item-section>
-    </q-item>
-
-    <q-item
-      clickable
-      v-ripple
+    <router-link
       v-show="user && user.isAdmin"
       to="/admin"
-      :active="$route.name === 'admin'"
+      :class="[
+        'flex items-center p-3 rounded-lg transition-colors duration-200',
+        $route.name === 'admin' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'
+      ]"
     >
-      <q-item-section avatar>
-        <q-icon name="sym_r_settings" />
-      </q-item-section>
-
-      <q-item-section>
-        <q-item-label>Admin</q-item-label>
-        <q-item-label caption>rebuild, repair, tags, subscribers</q-item-label>
-      </q-item-section>
-    </q-item>
-  </q-list>
+      <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
+        <span class="material-symbols-rounded text-2xl">sym_r_settings</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-medium text-sm">Admin</span>
+        <span class="text-xs text-gray-500">rebuild, repair, tags, subscribers</span>
+      </div>
+    </router-link>
+  </nav>
 </template>
 
 <script setup lang="ts">

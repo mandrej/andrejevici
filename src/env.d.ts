@@ -1,15 +1,20 @@
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
 interface Window {
   dataLayer?: Record<string, unknown>[]
 }
 
 declare function gtag(...args: unknown[]): void
 
-declare namespace NodeJS {
-  interface ProcessEnv {
-    NODE_ENV: string
-    VUE_ROUTER_MODE: 'hash' | 'history' | 'abstract' | undefined
-    VUE_ROUTER_BASE: string | undefined
-    ANDREJEVICI_BUILD: string
-    SERVICE_WORKER_FILE: 'sw.js'
-  }
+interface ImportMetaEnv {
+  readonly VITE_ANDREJEVICI_BUILD?: string
+  readonly ANDREJEVICI_BUILD?: string
+  readonly DEV: boolean
+  readonly PROD: boolean
+  readonly MODE: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }
