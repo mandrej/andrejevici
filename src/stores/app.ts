@@ -1,6 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { storage } from '../firebase'
-import { LocalStorage, Dark } from 'quasar'
 import {
   doc,
   query,
@@ -39,7 +38,7 @@ import type {
 } from '@firebase/firestore'
 import type { FindType, PhotoType, AppStoreState, VideoType } from '../helpers/models'
 import { photoCollection } from '../helpers/collections'
-import readExif from 'src/helpers/exif'
+import readExif from '../helpers/exif'
 
 /**
  * Retrieves the data of the first document from a QuerySnapshot, or null if the snapshot is empty.
@@ -58,9 +57,17 @@ const getRec = (snapshot: QuerySnapshot<DocumentData>) =>
  */
 const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 
-/** Applies the theme to Quasar's Dark mode */
-const applyTheme = (theme: 'light' | 'dark' | 'auto') =>
-  Dark.set(theme === 'auto' ? 'auto' : theme === 'dark')
+/** Applies the theme via CSS class on <html> element */
+const applyTheme = (theme: 'light' | 'dark' | 'auto') => {
+  const root = document.documentElement
+  root.classList.remove('light', 'dark')
+  if (theme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    root.classList.toggle('dark', prefersDark)
+  } else {
+    root.classList.add(theme)
+  }
+}
 
 /**
  * Creates a Pinia store for the application.
@@ -89,7 +96,7 @@ export const useAppStore = defineStore('app', {
     addTab: 'photo',
     metaTab: 'tags',
     selected: [],
-    theme: (LocalStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
+    theme: (localStorage.getItem('theme') as 'light' | 'dark' | 'auto') || 'auto',
   }),
   persist: {
     pick: ['lastRecord', 'find', 'uploaded', 'adminTab', 'addTab', 'metaTab', 'theme'],
@@ -191,7 +198,7 @@ export const useAppStore = defineStore('app', {
 
       this.error = this.objects.length === 0 ? 'empty' : ''
       this.busy = false
-      if (process.env.DEV)
+      if (import.meta.env.DEV)
         console.log('FETCH ' + JSON.stringify(this.find, null, 2) + ' with next: ' + this.next)
     },
 
@@ -255,7 +262,7 @@ export const useAppStore = defineStore('app', {
         notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'sym_r_check' })
       } else {
         // set thumbnail url = publish
-        if (process.env.DEV) {
+        if (import.meta.env.DEV) {
           try {
             const thumbRef = storageRef(storage, thumbName(obj.filename))
             obj.thumb = await getDownloadURL(thumbRef)
@@ -399,7 +406,7 @@ export const useAppStore = defineStore('app', {
      */
     setTheme(theme: 'light' | 'dark' | 'auto') {
       this.theme = theme
-      LocalStorage.set('theme', theme)
+      localStorage.setItem('theme', theme)
       applyTheme(theme)
     },
 

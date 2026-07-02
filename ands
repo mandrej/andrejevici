@@ -30,7 +30,7 @@ else
     build)
       # MacPorts, sudo port install gsed
       gsed -i "s/^ANDREJEVICI_BUILD=.*/ANDREJEVICI_BUILD='$version'/" .env
-      quasar build -m pwa
+      npm run build
       exit ;;
     deploy)
       firebase deploy --except functions,extensions

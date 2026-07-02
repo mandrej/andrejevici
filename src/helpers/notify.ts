@@ -1,12 +1,12 @@
-import { Notify } from 'quasar'
-import type { QNotifyOptions } from 'quasar'
+import { toasts } from '../composables/useNotify'
+import type { NotifyOptions } from '../composables/useNotify'
 
 const darkTextTypes = new Set(['info', 'warning', 'positive'])
 
 /**
  * Sends a notification to the user.
  *
- * @param {QNotifyOptions} options - The options for the notification.
+ * @param {NotifyOptions} options - The options for the notification.
  * @return {void} This function does not return anything.
  */
 export default function notify({
@@ -21,23 +21,40 @@ export default function notify({
   actions = [],
   caption = '',
   icon = '',
-}: QNotifyOptions) {
-  const textColor = darkTextTypes.has(type) ? 'dark' : 'white'
-  for (const action of actions) {
-    action.color = textColor
+}: NotifyOptions) {
+  const _textColor = darkTextTypes.has(type) ? 'dark' : 'white'
+  let _nextId = toasts.value.length > 0 ? Math.max(...toasts.value.map((t) => t.id)) + 1 : 0
+
+  // Deduplicate by group key
+  if (group) {
+    const existing = toasts.value.find((t) => t.group === group)
+    if (existing) {
+      existing.message = message
+      return
+    }
   }
-  Notify.create({
+
+  const toast = {
+    id: _nextId++,
     type,
-    textColor,
     message,
-    multiLine,
+    caption,
+    icon,
     timeout,
     spinner,
     group,
     html,
+    multiLine,
     position,
     actions,
-    caption,
-    icon,
-  })
+    _textColor,
+  }
+  toasts.value.push(toast)
+
+  if (timeout > 0) {
+    setTimeout(() => {
+      const idx = toasts.value.findIndex((t) => t.id === toast.id)
+      if (idx !== -1) toasts.value.splice(idx, 1)
+    }, timeout)
+  }
 }

@@ -1,135 +1,120 @@
 <template>
-  <q-tab-panels v-model="adminTab" class="body">
-    <q-tab-panel name="repair" class="q-pa-none">
-      <q-banner class="q-pa-md">
-        <template v-slot:avatar>
-          <q-icon name="sym_r_construction" />
-        </template>
-        <span class="text-h6">Rebuild / Repair</span>
-      </q-banner>
-
-      <div class="row q-col-gutter-md q-pa-md">
-        <!-- Bucket Card -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <AdminCard
-            icon="sym_r_storage"
-            color="primary"
-            title="Bucket Status"
-            description="Current total storage usage and file count. Updated via cron job every 3 days."
-          >
-            <template #details>
-              <div class="text-center q-py-sm">
-                <q-badge color="warning" class="text-h6 text-black q-pa-md rounded-borders">
-                  <span>{{ Intl.NumberFormat().format(bucket.count) }} photos</span>
-                  <span class="q-mx-xs">/</span>
-                  <span>{{ formatBytes(bucket.size) }}</span>
-                </q-badge>
-              </div>
-            </template>
-            <template #action>
-              <q-btn label="Calculate" @click="bucketStore.bucketBuild" color="primary" flat />
-            </template>
-          </AdminCard>
-        </div>
-
-        <!-- Field Values Card -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <AdminCard
-            icon="sym_r_schema"
-            color="secondary"
-            title="Metadata Counters"
-            description="Rebuild index counters for all metadata fields. Updated via cron job every 3 days."
-          >
-            <template #details>
-              <div class="row q-gutter-xs">
-                <q-badge
-                  v-for="(val, key) in values"
-                  :key="key"
-                  color="secondary"
-                  class="text-subtitle1 text-black"
-                >
-                  {{ key }}: {{ Object.keys(val).length }}
-                </q-badge>
-              </div>
-            </template>
-            <template #action>
-              <q-btn label="Build" @click="countersBuild" color="secondary" flat />
-            </template>
-          </AdminCard>
-        </div>
-
-        <!-- Dimensions Card -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <AdminCard
-            icon="sym_r_aspect_ratio"
-            color="accent"
-            title="Add photo kind"
-            description="Populates kind 'photo' where missing in Photo collection."
-          >
-            <template #details>
-              <div class="q-mt-sm">
-                <q-badge color="accent" icon="event" class="text-subtitle1">
-                  Last run: {{ formatDatum('2026-05-05', 'DD.MM.YYYY') }}
-                </q-badge>
-              </div>
-            </template>
-            <template #action>
-              <q-btn color="accent" label="Run Fix" @click="fix" flat />
-            </template>
-          </AdminCard>
-        </div>
-
-        <!-- Thumbnails Card -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <AdminCard
-            icon="sym_r_image_not_supported"
-            color="orange"
-            title="Missing Thumbs"
-            description="Scan storage for images that are missing generated thumbnails."
-          >
-            <template #action>
-              <q-btn label="Scan" color="orange" @click="missingThumbnails" flat />
-            </template>
-          </AdminCard>
-        </div>
-
-        <!-- Mismatch Card -->
-        <div class="col-12 col-sm-6 col-md-4">
-          <AdminCard
-            icon="sym_r_sync_problem"
-            color="negative"
-            title="Storage Mismatch"
-            description="Resolve inconsistencies between Cloud Storage and Firestore."
-          >
-            <template #action>
-              <q-btn color="negative" label="Resolve" @click="mismatch" flat />
-            </template>
-          </AdminCard>
-        </div>
+  <!-- Tab panels driven by adminTab store -->
+  <div class="min-h-full">
+    <!-- Repair panel -->
+    <template v-if="adminTab === 'repair'">
+      <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <span class="material-symbols-rounded text-2xl text-primary">construction</span>
+        <span class="text-lg font-semibold text-gray-900 dark:text-white">Rebuild / Repair</span>
       </div>
 
-      <!-- <div class="q-pa-md row q-gutter-sm items-center">
-        <div class="text-subtitle2 text-grey-7 q-mr-md">Debug Notifications:</div>
-        <q-btn flat round dense color="primary" icon="sym_r_info" @click="show" />
-        <q-btn flat round dense color="secondary" icon="sym_r_warning" @click="show" />
-        <q-btn flat round dense color="accent" icon="sym_r_stars" @click="show" />
-        <q-btn flat round dense color="positive" icon="sym_r_check_circle" @click="show" />
-        <q-btn flat round dense color="negative" icon="sym_r_error" @click="show" />
-        <q-btn flat round dense color="dark" icon="sym_r_visibility" @click="show" />
-      </div> -->
-    </q-tab-panel>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <!-- Bucket Card -->
+        <AdminCard
+          icon="storage"
+          color="primary"
+          title="Bucket Status"
+          description="Current total storage usage and file count. Updated via cron job every 3 days."
+        >
+          <template #details>
+            <div class="text-center py-2">
+              <AppBadge color="warning" textColor="black" class="text-base px-4 py-2">
+                {{ Intl.NumberFormat().format(bucket.count) }} photos
+                &nbsp;/&nbsp;
+                {{ formatBytes(bucket.size) }}
+              </AppBadge>
+            </div>
+          </template>
+          <template #action>
+            <AppButton flat label="Calculate" @click="bucketStore.bucketBuild" color="primary" />
+          </template>
+        </AdminCard>
 
-    <q-tab-panel name="meta" class="q-pa-none">
+        <!-- Field Values Card -->
+        <AdminCard
+          icon="schema"
+          color="secondary"
+          title="Metadata Counters"
+          description="Rebuild index counters for all metadata fields. Updated via cron job every 3 days."
+        >
+          <template #details>
+            <div class="flex flex-wrap gap-1">
+              <AppBadge
+                v-for="(val, key) in values"
+                :key="key"
+                color="secondary"
+                textColor="black"
+                class="text-sm"
+              >
+                {{ key }}: {{ Object.keys(val).length }}
+              </AppBadge>
+            </div>
+          </template>
+          <template #action>
+            <AppButton flat label="Build" @click="countersBuild" color="secondary" />
+          </template>
+        </AdminCard>
+
+        <!-- Dimensions Card -->
+        <AdminCard
+          icon="aspect_ratio"
+          color="accent"
+          title="Add photo kind"
+          description="Populates kind 'photo' where missing in Photo collection."
+        >
+          <template #details>
+            <div class="mt-2">
+              <AppBadge color="accent" class="text-sm">
+                Last run: {{ formatDatum('2026-05-05', 'DD.MM.YYYY') }}
+              </AppBadge>
+            </div>
+          </template>
+          <template #action>
+            <AppButton flat color="accent" label="Run Fix" @click="fix" />
+          </template>
+        </AdminCard>
+
+        <!-- Thumbnails Card -->
+        <AdminCard
+          icon="image_not_supported"
+          color="warning"
+          title="Missing Thumbs"
+          description="Scan storage for images that are missing generated thumbnails."
+        >
+          <template #action>
+            <AppButton flat label="Scan" color="warning" @click="missingThumbnails" />
+          </template>
+        </AdminCard>
+
+        <!-- Mismatch Card -->
+        <AdminCard
+          icon="sync_problem"
+          color="negative"
+          title="Storage Mismatch"
+          description="Resolve inconsistencies between Cloud Storage and Firestore."
+        >
+          <template #action>
+            <AppButton flat color="negative" label="Resolve" @click="mismatch" />
+          </template>
+        </AdminCard>
+      </div>
+    </template>
+
+    <!-- Meta panel -->
+    <template v-else-if="adminTab === 'meta'">
       <MetaTab />
-    </q-tab-panel>
+    </template>
 
-    <q-tab-panel name="users" class="q-pa-none">
+    <!-- Users panel -->
+    <template v-else-if="adminTab === 'users'">
       <UsersTab />
-    </q-tab-panel>
-    <q-tab-panel name="messages" class="q-pa-none">
+    </template>
+
+    <!-- Messages panel -->
+    <template v-else-if="adminTab === 'messages'">
       <MessagesTab />
-    </q-tab-panel>
-  </q-tab-panels>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -138,12 +123,12 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
 import { useBucketStore } from '../stores/bucket'
-import { formatDatum } from '../helpers'
-import { formatBytes } from '../helpers'
+import { formatDatum, formatBytes } from '../helpers'
 import AdminCard from '../components/AdminCard.vue'
+import AppBadge from '../components/atoms/AppBadge.vue'
+import AppButton from '../components/atoms/AppButton.vue'
 import { mismatch, missingThumbnails, fix } from '../helpers/remedy'
-import CONFIG from 'src/config'
-// import notify from 'src/helpers/notify'
+import CONFIG from '../config'
 
 const MetaTab = defineAsyncComponent(() => import('../components/tab/MetaTab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/tab/UsersTab.vue'))
@@ -153,32 +138,15 @@ const app = useAppStore()
 const meta = useValuesStore()
 const bucketStore = useBucketStore()
 const { bucket } = storeToRefs(bucketStore)
-
 const { adminTab } = storeToRefs(app)
 const values = computed(() => meta.values)
 
 /**
- * Rebuilds Firestore counter documents for every field defined in
- * `CONFIG.photo_filter` sequentially.
+ * Rebuilds Firestore counter documents for every field defined in CONFIG.photo_filter sequentially.
  */
 const countersBuild = async () => {
   for (const field of CONFIG.photo_filter) {
     await meta.countersBuild(field)
   }
 }
-
-// const show = () => {
-//   const colors = ['info', 'warning', 'positive', 'negative', 'ongoing', 'external'] as const
-//   for (const color of colors) {
-//     notify({
-//       type: color,
-//       html: true,
-//       message: `${color}<br>Testing notification system`,
-//       actions: [{ icon: 'sym_r_close' }],
-//       caption: 'System Test',
-//     })
-//   }
-// }
 </script>
-
-<style scoped></style>

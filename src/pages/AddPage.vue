@@ -1,47 +1,40 @@
 <template>
-  <q-banner class="q-pa-md">
-    <template v-slot:avatar>
-      <q-icon :name="addTab === 'photo' ? 'sym_r_upload' : 'sym_r_video_library'" />
-    </template>
-    <span class="text-h6">{{
-      addTab === 'photo' ? 'Upload / publish images' : 'Link videos'
-    }}</span>
-  </q-banner>
+  <!-- Page header banner -->
+  <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <span class="material-symbols-rounded text-2xl text-primary">
+      {{ addTab === 'photo' ? 'upload' : 'video_library' }}
+    </span>
+    <span class="text-lg font-semibold text-gray-900 dark:text-white">
+      {{ addTab === 'photo' ? 'Upload / publish images' : 'Link videos' }}
+    </span>
+  </div>
 
   <template v-if="canAddPhoto">
-    <q-tab-panels v-model="addTab" animated>
-      <q-tab-panel name="photo">
-        <PhotoTab />
-      </q-tab-panel>
+    <!-- Tab panels driven by addTab store -->
+    <div class="p-4">
+      <PhotoTab v-if="addTab === 'photo'" />
+      <VideoTab v-else-if="addTab === 'video'" />
+    </div>
 
-      <q-tab-panel name="video">
-        <VideoTab />
-      </q-tab-panel>
-    </q-tab-panels>
-
-    <div class="q-px-md q-pb-md" style="background-color: var(--q-my-toolbar-bg)">
-      <div class="row q-col-gutter-md">
-        <div class="col-12 col-sm-6">
-          <q-input
-            v-model="headlineToApply"
-            label="Headline to apply"
-            :hint="`If no headline supplied, '${CONFIG.noTitle}' apply`"
-            clearable
-          />
-        </div>
-        <div class="col-12 col-sm-6">
-          <TagsMerge :label="`Tags to apply`" :hint="`You can add / remove tag later`" />
-        </div>
+    <!-- Headline + tags inputs -->
+    <div class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4 bg-gray-50 dark:bg-gray-800">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AppInput
+          v-model="headlineToApply"
+          label="Headline to apply"
+          :placeholder="`If empty, '${CONFIG.noTitle}' is used`"
+          clearable
+        />
+        <TagsMerge :label="`Tags to apply`" :hint="`You can add / remove tag later`" />
       </div>
     </div>
   </template>
-  <div v-else class="q-pa-md text-center">
-    <q-banner class="bg-warning text-white rounded-borders">
-      <template #avatar>
-        <q-icon name="sym_r_warning" size="md" />
-      </template>
-      Only authorized users with a defined nickname can upload photos.
-    </q-banner>
+
+  <div v-else class="p-4 text-center">
+    <div class="flex items-center gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200">
+      <span class="material-symbols-rounded text-2xl flex-shrink-0">warning</span>
+      <span class="text-sm">Only authorized users with a defined nickname can upload photos.</span>
+    </div>
   </div>
 </template>
 
@@ -55,6 +48,7 @@ import CONFIG from '../config'
 import TagsMerge from '../components/TagsMerge.vue'
 import VideoTab from '../components/tab/VideoTab.vue'
 import PhotoTab from '../components/tab/PhotoTab.vue'
+import AppInput from '../components/atoms/AppInput.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()

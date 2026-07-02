@@ -1,105 +1,117 @@
 <template>
   <EditRecord v-if="showEdit" :rec="currentEdit" @edit-ok="editOk" />
-  <q-dialog
-    v-model="showConfirm"
-    transition-show="slide-down"
-    transition-hide="slide-up"
-    persistent
-  >
-    <q-card flat>
-      <q-toolbar>
-        <q-toolbar-title>Confirm Delete</q-toolbar-title>
-      </q-toolbar>
-      <q-card-section class="q-px-md q-pt-md">
-        Would you like to delete {{ formatBytes(select2delete?.size || 0) }} photo named '{{
-          select2delete?.headline
-        }}'?
-      </q-card-section>
-      <q-card-actions class="justify-between q-pa-md">
-        <q-btn color="primary" label="OK" @click="confirmOk(select2delete as PhotoType)" />
-        <q-btn flat label="Close" style="color: var(--q-my-text)" @click="showConfirm = false" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 
-  <ErrorBanner :inquiry="!busy && error == 'empty'">
+  <!-- Confirm Delete Dialog -->
+  <AppDialog v-model="showConfirm" max-width="max-w-sm">
+    <div class="p-6">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Confirm Delete</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
+        Would you like to delete {{ formatBytes(select2delete?.size || 0) }} photo named
+        '{{ select2delete?.headline }}'?
+      </p>
+      <div class="flex justify-between gap-3">
+        <AppButton color="primary" label="OK" @click="confirmOk(select2delete as PhotoType)" />
+        <AppButton flat label="Close" @click="showConfirm = false" />
+      </div>
+    </div>
+  </AppDialog>
+
+  <ErrorBanner :inquiry="!busy && error === 'empty'">
     <template #title>No data found</template>
-    <template #detail>for current filter/ search</template>
+    <template #detail>for current filter / search</template>
   </ErrorBanner>
 
-  <ErrorBanner :inquiry="!busy && error != '' && error != 'empty'">
+  <ErrorBanner :inquiry="!busy && error !== '' && error !== 'empty'">
     <template #title>Something went wrong ...</template>
     <template #detail>{{ error }}</template>
   </ErrorBanner>
 
   <SwiperView v-if="showCarousel" :index="index" @carousel-cancel="carouselCancel" />
 
-  <div class="q-pa-md q-mb-md">
-    <q-infinite-scroll ref="scrollRef" @load="onLoad" :debounce="500" :offset="500">
-      <transition-group tag="div" class="row q-col-gutter-md" name="fade">
-        <div
-          v-for="item in objects"
-          :key="item.filename"
-          class="col"
-          style="min-width: 250px; max-width: 400px"
+  <div class="p-4 pb-16">
+    <!-- Photo grid with transition-group -->
+    <transition-group tag="div" class="flex flex-wrap gap-4" name="fade">
+      <div
+        v-for="item in objects"
+        :key="item.filename"
+        class="flex-shrink-0"
+        style="min-width: 250px; max-width: 400px; flex: 1"
+      >
+        <PictureCard
+          :rec="item"
+          @carousel-show="carouselShow(item.filename)"
+          @carousel-cancel="carouselCancel"
         >
-          <PictureCard
-            :rec="item"
-            @carousel-show="carouselShow(item.filename)"
-            @carousel-cancel="carouselCancel"
-          >
-            <template #action>
-              <q-card-actions
-                v-if="isAuthorOrAdmin(user, item)"
-                class="absolute-right column no-wrap"
+          <template #action>
+            <div
+              v-if="isAuthorOrAdmin(user, item)"
+              class="absolute top-2 right-2 flex flex-col gap-1"
+            >
+              <!-- Batch select checkbox -->
+              <AppCheckbox
+                v-if="user?.isAdmin || user?.email === item.email"
+                v-model="selected"
+                :val="item"
+                class="bg-white/80 dark:bg-black/60 rounded-full p-1 backdrop-blur-sm"
+              />
+              <!-- Edit button -->
+              <button
+                class="bg-white/80 dark:bg-black/60 rounded-full p-1.5 backdrop-blur-sm text-secondary hover:scale-110 transition-transform"
+                @click="editRecord(item)"
               >
-                <!-- Batch actions -->
-                <q-checkbox
-                  v-if="user?.isAdmin || user?.email === item.email"
-                  v-model="selected"
-                  :val="item"
-                  color="secondary"
-                  keep-color
-                />
+                <span class="material-symbols-rounded text-xl leading-none">edit</span>
+              </button>
+            </div>
+          </template>
+        </PictureCard>
+      </div>
+    </transition-group>
 
-                <!-- Both admin and author can edit -->
-                <q-btn flat round icon="sym_r_edit" color="secondary" @click="editRecord(item)" />
-              </q-card-actions>
-            </template>
-          </PictureCard>
-        </div>
-      </transition-group>
-      <template v-slot:loading>
-        <div class="row justify-center q-my-xl">
-          <q-spinner-dots color="primary" size="40px" />
-        </div>
-      </template>
-    </q-infinite-scroll>
+    <!-- Infinite scroll sentinel -->
+    <div ref="sentinel" class="h-1" />
 
-    <div v-if="!next && objects.length > 0" class="text-center q-pa-xl">
-      <div class="text-overline text-grey q-mb-sm">End of list ({{ objects.length }} records)</div>
+    <!-- Loading spinner -->
+    <div v-if="loading" class="flex justify-center py-8">
+      <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+
+    <!-- End of list -->
+    <div v-if="!next && objects.length > 0" class="text-center py-10">
+      <span class="text-xs uppercase tracking-widest text-gray-400">
+        End of list ({{ objects.length }} records)
+      </span>
     </div>
   </div>
 
-  <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
-    <q-btn fab icon="sym_r_arrow_upward" color="warning" />
-  </q-page-scroller>
+  <!-- Scroll-to-top button -->
+  <Transition name="fade">
+    <button
+      v-if="showScrollTop"
+      class="fixed bottom-5 right-5 z-50 p-3 rounded-full bg-warning text-black shadow-lg hover:scale-110 active:scale-95 transition-all"
+      @click="scrollToTop"
+    >
+      <span class="material-symbols-rounded text-2xl">arrow_upward</span>
+    </button>
+  </Transition>
 </template>
 
 <script setup lang="ts">
-import { scroll, debounce } from 'quasar'
-import { ref, onMounted, defineAsyncComponent, watch, nextTick } from 'vue'
+import { ref, onMounted, defineAsyncComponent, watch, nextTick, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useRoute } from 'vue-router'
 import { fakeHistory, isAuthorOrAdmin, formatBytes } from '../helpers'
+import { useInfiniteScroll } from '../composables/useInfiniteScroll'
 import notify from '../helpers/notify'
 import type { PhotoType } from '../helpers/models'
 
 import PictureCard from '../components/PictureCard.vue'
 import SwiperView from '../components/dialog/SwiperView.vue'
 import ErrorBanner from '../components/ErrorBanner.vue'
+import AppDialog from '../components/atoms/AppDialog.vue'
+import AppButton from '../components/atoms/AppButton.vue'
+import AppCheckbox from '../components/atoms/AppCheckbox.vue'
 const EditRecord = defineAsyncComponent(() => import('../components/dialog/EditRecord.vue'))
 
 const app = useAppStore()
@@ -119,13 +131,12 @@ const {
   currentEdit,
   selected,
 } = storeToRefs(app)
-const scrollRef = ref<{ reset: () => void } | null>(null)
+
 const select2delete = ref<PhotoType | null>(null)
 const { user } = storeToRefs(auth)
-const { getScrollTarget, setVerticalScrollPosition } = scroll
+const showScrollTop = ref(false)
+
 let skipNextFindFetch = false
-let queuedLoadDone: ((stop?: boolean) => void) | null = null
-let stopBusyWatch: (() => void) | null = null
 
 // Close dialogs on back button
 window.onpopstate = () => {
@@ -134,37 +145,72 @@ window.onpopstate = () => {
   showCarousel.value = false
 }
 
+// Scroll-to-top tracking
+const onScroll = () => {
+  showScrollTop.value = window.scrollY > 150
+}
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+
+// Infinite scroll via IntersectionObserver
+const { sentinel, loading, reset } = useInfiniteScroll(async (done) => {
+  if (busy.value) {
+    // Wait for busy to clear
+    const unwatch = watch(busy, (val) => {
+      if (!val) {
+        unwatch()
+        void onLoad(done)
+      }
+    })
+    return
+  }
+  await onLoad(done)
+})
+
+const onLoad = async (done: (stop?: boolean) => void) => {
+  if (error.value === 'empty' || (objects.value.length > 0 && !next.value)) {
+    done(true)
+    return
+  }
+  try {
+    const isInitial = objects.value.length === 0
+    await app.fetchRecords(isInitial)
+    done(!next.value)
+  } catch (err) {
+    console.error('Infinite scroll error:', err)
+    done(true)
+  }
+}
+
 watch(
   find,
   async () => {
-    // Reset scroll and objects for a fresh search
-    scrollRef.value?.reset()
+    reset()
     await nextTick()
     if (skipNextFindFetch) {
       skipNextFindFetch = false
       return
     }
-    // Initial fetch for the first page
     await app.fetchRecords(true)
   },
   { deep: true },
 )
 
 onMounted(() => {
+  window.addEventListener('scroll', onScroll)
   if (route.hash) {
     const filename = route.hash.substring(2)
-    debounce(() => {
-      findPhoto(filename)
-    }, 1000)()
+    setTimeout(() => findPhoto(filename), 1000)
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
 })
 
 /**
  * Locates a photo by filename in the already-loaded object list or fetches it
  * from Firestore, then adjusts the active filter to its year/month and opens
  * the carousel at the photo's index. Shows a warning notification when not found.
- *
- * @param c - The filename of the photo to find and display.
  */
 const findPhoto = async (c: string) => {
   let rec: PhotoType | null | undefined = objects.value.find((x) => x.filename === c)
@@ -181,7 +227,6 @@ const findPhoto = async (c: string) => {
 
   index.value = objects.value.findIndex((x) => x.filename === c)
   if (index.value !== -1) {
-    // removeHash
     window.history.replaceState(history.state, '', history.state.current.replace(/#(.*)?/, ''))
     showCarousel.value = true
   } else {
@@ -190,55 +235,7 @@ const findPhoto = async (c: string) => {
 }
 
 /**
- * `q-infinite-scroll` load callback. Waits for any in-progress fetch to settle
- * before requesting the next page. Calls `done(true)` to stop the scroller when
- * the end of results is reached or an error occurs.
- *
- * @param index - The current scroll page index (provided by Quasar, not used directly).
- * @param done - Callback to signal Quasar that loading is complete; pass `true` to stop.
- */
-const onLoad = async (index: number, done: (stop?: boolean) => void) => {
-  // If we're already busy fetching, wait for it to finish and then check if we need more
-  if (busy.value) {
-    queuedLoadDone = done
-    if (!stopBusyWatch) {
-      stopBusyWatch = watch(busy, (val) => {
-        if (!val) {
-          stopBusyWatch?.()
-          stopBusyWatch = null
-          const nextDone = queuedLoadDone
-          queuedLoadDone = null
-          if (nextDone) {
-            void onLoad(index, nextDone)
-          }
-        }
-      })
-    }
-    return
-  }
-
-  // If we already know there are no results, or we reached the end, stop
-  if (error.value === 'empty' || (objects.value.length > 0 && !next.value)) {
-    done(true)
-    return
-  }
-
-  try {
-    const isInitial = objects.value.length === 0
-    await app.fetchRecords(isInitial)
-    // done(true) stops the scroll if next is empty
-    done(!next.value)
-  } catch (err) {
-    console.error('Infinite scroll error:', err)
-    done(true) // stop on error to avoid infinite loops
-  }
-}
-
-/**
- * Executes the confirmed deletion. Also closes the carousel if the deleted
- * photo was the last remaining record in the list.
- *
- * @param rec - The photo record to delete.
+ * Executes the confirmed deletion.
  */
 const confirmOk = (rec: PhotoType) => {
   showConfirm.value = false
@@ -251,37 +248,25 @@ const confirmOk = (rec: PhotoType) => {
 
 /**
  * Opens the edit dialog for the given photo record.
- *
- * @param rec - The photo record to edit.
  */
 const editRecord = (rec: PhotoType) => {
   currentEdit.value = rec
   fakeHistory()
   showEdit.value = true
 }
+
 /**
- * Handles the `edit-ok` event from the edit dialog. Scrolls the updated card
- * into view and briefly plays a bounce animation.
- *
- * @param filename - The filename (used as HTML `id`) of the updated photo card.
+ * Handles the `edit-ok` event from the edit dialog.
  */
 const editOk = (filename: string) => {
-  // Yes, an HTML id attribute can technically contain a dot (.).
-  // document.getElementById('my.id')
-  // document.querySelector('#my\\.id')
   const el = document.getElementById(filename)
   if (!el) return
   el.classList.add('bounce')
-  setTimeout(() => {
-    el.classList.remove('bounce')
-  }, 2000)
+  setTimeout(() => el.classList.remove('bounce'), 2000)
 }
 
 /**
- * Opens the carousel at the photo with the given filename. Inserts a fake
- * history entry so the browser back button can close the carousel.
- *
- * @param c - The filename of the photo to open in the carousel.
+ * Opens the carousel at the photo with the given filename.
  */
 const carouselShow = (c: string) => {
   index.value = objects.value.findIndex((x) => x.filename === c)
@@ -292,29 +277,16 @@ const carouselShow = (c: string) => {
     notify({ type: 'warning', message: 'Photo not found' })
   }
 }
+
 /**
  * Closes the carousel and scrolls the page back to the previously viewed card.
- *
- * @param hash - A hash string (e.g. `'#_abc123.jpg'`) identifying the card to
- *   scroll back to. The leading `'#'` is stripped before querying the DOM.
  */
 const carouselCancel = (hash: string) => {
   showCarousel.value = false
   index.value = -1
-  const el = document.getElementById(hash.replace('#', ''))
+  const el = document.getElementById(hash?.replace('#', '') ?? '')
   if (el) {
-    const target = getScrollTarget(el)
-    setVerticalScrollPosition(target, el.offsetTop, 400)
+    window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' })
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.q-btn,
-.q-icon {
-  color: $grey-3;
-}
-.q-btn.disabled {
-  opacity: 0.2 !important;
-}
-</style>

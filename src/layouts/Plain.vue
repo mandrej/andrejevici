@@ -1,62 +1,52 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <q-page-container>
-      <q-page class="row">
-        <div
-          v-if="isEmpty(nickValues)"
-          class="column justify-center items-center col-xs-12 col-md-6 relative-position"
-          :style="{ minHeight: $q.screen.gt.sm ? '100vh' : '50vh' }"
-        >
-          <div class="text-center" style="max-width: 65%">
-            There are no photos posted yet...<br />
-            To add some you need to sign-in with your Google account. Only authorized users can add,
-            delete or edit photos.
-            <div class="q-my-md">
-              <q-btn
-                class="q-ml-md"
-                v-if="user?.isAuthorized && user?.nick"
-                to="/add"
-                color="primary"
-                rounded
-                label="Add photos / videos"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="column col-xs-12 col-md-6 relative-position">
-          <router-link
-            class="half-container"
-            :to="{ path: '/list' }"
-            v-ripple.early="{ color: 'purple' }"
-          >
-            <div
-              class="lastrec-image"
-              :style="showUrl ? { backgroundImage: `url(${showUrl})` } : {}"
-            ></div>
-            <div class="logo-overlay"></div>
-          </router-link>
-          <q-btn
+  <div class="flex flex-col md:flex-row min-h-screen bg-light-page dark:bg-dark-page">
+    <!-- Left half: hero image or empty state -->
+    <div
+      v-if="isEmpty(nickValues)"
+      class="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen"
+    >
+      <div class="text-center max-w-xs px-6 text-sm text-gray-600 dark:text-gray-300">
+        There are no photos posted yet...<br />
+        To add some you need to sign-in with your Google account. Only authorized users can add,
+        delete or edit photos.
+        <div class="mt-4">
+          <AppButton
             v-if="user?.isAuthorized && user?.nick"
             to="/add"
-            icon="sym_r_add"
-            size="lg"
-            round
-            unelevated
-            color="warning"
-            text-color="black"
-            :class="['q-ma-md', $q.screen.gt.sm ? 'absolute-bottom-left' : 'absolute-bottom-right']"
+            color="primary"
+            label="Add photos / videos"
           />
         </div>
+      </div>
+    </div>
+
+    <div v-else class="relative md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden">
+      <router-link :to="{ path: '/list' }" class="block absolute inset-0">
         <div
-          class="column col-xs-12 col-md-6 justify-center items-center"
-          :style="{ minHeight: $q.screen.gt.sm ? '100vh' : '50vh' }"
-        >
-          <router-view />
-        </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
+          :style="showUrl ? { backgroundImage: `url(${showUrl})` } : {}"
+        />
+        <div class="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" />
+      </router-link>
+
+      <!-- Add photos button -->
+      <AppButton
+        v-if="user?.isAuthorized && user?.nick"
+        to="/add"
+        icon="add"
+        color="warning"
+        round
+        class="absolute bottom-4 right-4 md:bottom-4 md:left-4 md:right-auto !p-3"
+      />
+    </div>
+
+    <!-- Right half: router-view (sign-in, etc.) -->
+    <div
+      class="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen"
+    >
+      <router-view />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -67,6 +57,7 @@ import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { isEmpty, getYouTubeMaxResUrl } from '../helpers'
 import type { PhotoType } from '../helpers/models'
+import AppButton from '../components/atoms/AppButton.vue'
 
 const app = useAppStore()
 const auth = useUserStore()
@@ -81,27 +72,3 @@ const showUrl = computed(() => {
   return rec.kind === 'video' ? getYouTubeMaxResUrl(rec.url) : rec.url
 })
 </script>
-
-<style scoped>
-.half-container {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  min-height: 50vh;
-}
-
-.lastrec-image {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.logo-overlay {
-  position: absolute;
-  inset: 0;
-  background: url('/logo.svg') center / contain no-repeat;
-  opacity: 0.5;
-}
-</style>

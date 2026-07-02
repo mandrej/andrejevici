@@ -1,20 +1,24 @@
 <template>
-  <q-card flat bordered class="full-height column">
-    <q-card-section class="col">
-      <div class="row items-center no-wrap q-mb-sm">
-        <q-icon :name="icon" :color="color" size="sm" class="q-mr-sm" />
-        <div class="text-subtitle1 text-weight-bold">{{ title }}</div>
+  <div class="flex flex-col h-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center gap-2 p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <span class="material-symbols-rounded text-xl" :class="`text-${color}`">{{ icon }}</span>
+      <div>
+        <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ title }}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ description }}</div>
       </div>
-      <div class="text-caption text-grey-7 q-mb-sm">
-        {{ description }}
-      </div>
-      <slot name="details"></slot>
-    </q-card-section>
-    <q-separator />
-    <q-card-actions align="right">
-      <slot name="action"></slot>
-    </q-card-actions>
-  </q-card>
+    </div>
+
+    <!-- Details slot -->
+    <div class="flex-1 p-3">
+      <slot name="details" />
+    </div>
+
+    <!-- Action slot -->
+    <div class="flex justify-end p-3 border-t border-gray-200 dark:border-gray-700">
+      <slot name="action" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">

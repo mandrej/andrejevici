@@ -1,50 +1,48 @@
 <template>
-  <q-btn
+  <AppButton
     :label="user ? `Hi ${user.name}` : 'Sign in'"
     color="primary"
     @click="auth.signIn"
     :flat="user !== null"
-    rounded
-    class="q-mb-md"
+    class="mb-4"
   />
-  <div class="text-caption">Build {{ build }}</div>
-  <div class="text-h4 text-weight-thin">
+
+  <div class="text-xs text-gray-400 mb-1">Build {{ build }}</div>
+  <h1 class="text-4xl font-thin text-gray-900 dark:text-white mb-2">
     {{ $route.meta.title }}
-  </div>
-  <div v-if="bucket.count > 0" class="text-body2">
+  </h1>
+  <div v-if="bucket.count > 0" class="text-sm text-gray-600 dark:text-gray-400 mb-4">
     {{ bucket.count }} photos since {{ sinceYear }} and counting
   </div>
 
-  <div class="flex flex-wrap justify-center q-gutter-sm q-mt-sm q-mx-md">
-    <q-btn
+  <!-- Top photographers -->
+  <div class="flex flex-wrap justify-center gap-2 mt-2 mx-4">
+    <AppButton
       v-for="nick in topNicks"
       :key="nick"
       :label="nick"
-      rounded
       color="secondary"
-      text-color="black"
       @click="app.searchBy({ nick })"
       to="/list"
     />
   </div>
 
-  <div class="fixed-bottom-right q-pa-md z-max">
-    <q-btn-toggle
-      v-model="theme"
-      flat
-      dense
-      rounded
-      toggle-color="primary"
-      color="grey-7"
-      size="sm"
-      padding="4px"
-      :options="[
-        { icon: 'sym_r_light_mode', value: 'light', slot: 'light' },
-        { icon: 'sym_r_dark_mode', value: 'dark', slot: 'dark' },
-        { icon: 'sym_r_brightness_6', value: 'auto', slot: 'auto' },
+  <!-- Theme toggle -->
+  <div class="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 shadow-lg bg-white dark:bg-gray-800">
+    <button
+      v-for="opt in themeOptions"
+      :key="opt.value"
+      :class="[
+        'flex items-center justify-center w-9 h-9 transition-colors text-sm',
+        theme === opt.value
+          ? 'bg-primary text-white'
+          : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700',
       ]"
+      :title="opt.label"
+      @click="theme = opt.value"
     >
-    </q-btn-toggle>
+      <span class="material-symbols-rounded text-lg">{{ opt.icon }}</span>
+    </button>
   </div>
 </template>
 
@@ -56,6 +54,7 @@ import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useValuesStore } from '../stores/values'
 import { useBucketStore } from '../stores/bucket'
+import AppButton from '../components/atoms/AppButton.vue'
 
 const app = useAppStore()
 const meta = useValuesStore()
@@ -63,32 +62,23 @@ const bucketStore = useBucketStore()
 const auth = useUserStore()
 const { user } = storeToRefs(auth)
 
-/** Per-nick photo count map, sorted by count descending. */
 const nickWithCount = computed(() => meta.nickWithCount)
 const topNicks = Object.keys(nickWithCount.value).slice(0, 5)
-
-/** The oldest year in the archive (last element of yearValues). */
 const sinceYear = computed(() => meta.yearValues[meta.yearValues.length - 1])
 const { bucket } = storeToRefs(bucketStore)
 const { theme: appTheme } = storeToRefs(app)
 
+const themeOptions = [
+  { value: 'light', icon: 'light_mode', label: 'Light' },
+  { value: 'dark', icon: 'dark_mode', label: 'Dark' },
+  { value: 'auto', icon: 'brightness_6', label: 'Auto' },
+] as const
+
 /**
- * Two-way computed that proxies the app store's `theme` setting.
- * Reading returns the current theme; writing calls `app.setTheme` so that
- * the value is persisted and Quasar Dark mode is updated immediately.
+ * Two-way computed proxy for the app store's theme setting.
  */
 const theme = computed({
-  /**
-   * Gets the bound value.
-   */
   get: () => appTheme.value,
-  /**
-   * Sets the bound value.
-   *
-   * @param val - The val value.
-   */
-  set: (val: 'light' | 'dark' | 'auto') => {
-    app.setTheme(val)
-  },
+  set: (val: 'light' | 'dark' | 'auto') => app.setTheme(val),
 })
 </script>
