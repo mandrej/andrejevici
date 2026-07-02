@@ -47,7 +47,7 @@ export const useBucketStore = defineStore('bucket', {
       }
 
       setDoc(bucketRef, this.bucket, { merge: true })
-      if (process.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
+      if (import.meta.env.DEV) console.log('BUCKET: ' + JSON.stringify(this.bucket, null, 2))
     },
 
     /**

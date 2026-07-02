@@ -8,7 +8,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import { U, getYouTubeId } from '../../helpers'
-import { useQuasar, copyToClipboard } from 'quasar'
+// native clipboard + fullscreen APIs — no Quasar needed
 import notify from '../../helpers/notify'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
 import 'photoswipe/style.css'
@@ -19,7 +19,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits(['carouselCancel'])
 
-const $q = useQuasar()
 const app = useAppStore()
 const { objects, showCarousel } = storeToRefs(app)
 
@@ -65,7 +64,7 @@ const onShare = async () => {
     const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
     try {
-      await copyToClipboard(url)
+      await navigator.clipboard.writeText(url)
       notify({ type: 'positive', message: 'URL copied to clipboard', icon: 'sym_r_check' })
     } catch (e) {
       console.error('Share error:', e)
@@ -172,7 +171,7 @@ const initLightbox = () => {
           const currSlide = pswp.currSlide
           if (currSlide && currSlide.data.obj) {
             const obj = currSlide.data.obj as PhotoType
-            el.innerHTML = `<div class="text-white text-center q-pa-sm ellipsis" style="background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000;">${getCaption(obj, $q.screen.gt.sm)}</div>`
+            el.innerHTML = `<div class="text-white text-center" style="padding: 8px; background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${getCaption(obj, window.innerWidth > 600)}</div>`
           }
         })
       },
@@ -189,7 +188,7 @@ const initLightbox = () => {
       order: 6,
       isButton: true,
       tagName: 'button',
-      html: '<i class="q-icon material-symbols-rounded">share</i>',
+      html: '<i class="material-symbols-rounded" style="font-size:24px;user-select:none">share</i>',
       /**
        * Handles on click.
        */
@@ -211,12 +210,16 @@ const initLightbox = () => {
       order: 5,
       isButton: true,
       tagName: 'button',
-      html: '<i class="q-icon material-symbols-rounded">fullscreen</i>',
+      html: '<i class="material-symbols-rounded" style="font-size:24px;user-select:none">fullscreen</i>',
       /**
        * Handles on click.
        */
       onClick: () => {
-        $q.fullscreen.toggle()
+        if (document.fullscreenElement) {
+          document.exitFullscreen()
+        } else {
+          document.documentElement.requestFullscreen()
+        }
       },
       appendTo: 'root',
       onInit: (el) => {
@@ -231,7 +234,7 @@ const initLightbox = () => {
       order: 4,
       isButton: true,
       tagName: 'button',
-      html: '<i class="q-icon material-symbols-rounded">download</i>',
+      html: '<i class="material-symbols-rounded" style="font-size:24px;user-select:none">download</i>',
       onClick: () => {
         const curr = pswp.currSlide?.data.obj as PhotoType | undefined
         // Track event

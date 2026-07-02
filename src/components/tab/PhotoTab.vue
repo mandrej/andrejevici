@@ -1,66 +1,81 @@
 <template>
   <EditRecord v-if="showEdit" :rec="currentEdit" />
 
-  <q-form @submit="onSubmit">
-    <q-item class="q-pa-none">
-      <q-item-section>
-        <q-file
+  <!-- File upload form -->
+  <form @submit.prevent="onSubmit">
+    <div class="flex flex-col sm:flex-row gap-4 items-start">
+      <!-- Drop zone + file input -->
+      <label
+        class="flex-1 flex flex-col items-center justify-center min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer transition-colors"
+        :class="isDragging
+          ? 'border-primary bg-primary/5'
+          : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800'"
+        @dragover.prevent="isDragging = true"
+        @dragleave.prevent="isDragging = false"
+        @drop.prevent="onDrop"
+      >
+        <input
+          ref="fileInput"
+          type="file"
           name="photos"
-          v-model="files"
-          use-chips
+          class="hidden"
           multiple
           :accept="CONFIG.fileType"
-          :max-file-size="CONFIG.fileSize"
-          :max-files="CONFIG.fileMax"
-          label="Select images to upload"
-          :hint="`Drag your images above to upload, or click to browse and select. Then
-            publish image on site. Accepts maximum ${CONFIG.fileMax} jpg, jpeg, png, or gif files
-            less then ${formatBytes(CONFIG.fileSize)} in size.`"
-          @rejected="onValidationError"
+          @change="onFileChange"
         />
-      </q-item-section>
-      <q-item-section side class="q-gutter-sm">
-        <q-btn
+        <span class="material-symbols-rounded text-4xl text-gray-400 dark:text-gray-500 mb-2">cloud_upload</span>
+        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
+          {{ files.length > 0 ? `${files.length} file(s) selected` : 'Drop images here, or click to browse' }}
+        </span>
+        <span class="text-xs text-gray-400 dark:text-gray-500 mt-1 text-center px-4">
+          Max {{ CONFIG.fileMax }} jpg/jpeg/png/gif files, each under {{ formatBytes(CONFIG.fileSize) }}
+        </span>
+      </label>
+
+      <!-- Action buttons -->
+      <div class="flex flex-col gap-2 min-w-[120px]">
+        <AppButton
           v-if="trackers.size > 0"
           label="Cancel all"
           type="button"
           color="negative"
-          style="width: 120px"
           @click="cancelAll"
         />
-        <q-btn
+        <AppButton
           v-if="files.length > 0"
           label="Upload"
           type="submit"
           color="primary"
-          style="width: 120px"
         />
-      </q-item-section>
-    </q-item>
-    <div class="row q-py-md q-mt-md justify-end">
-      <q-btn
-        :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
-        @click="publishSelected"
-        color="primary"
-        :disable="uploaded.length === 0"
-        style="width: 120px"
-      />
+        <AppButton
+          :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
+          @click="publishSelected"
+          color="primary"
+          :disabled="uploaded.length === 0"
+        />
+      </div>
     </div>
-  </q-form>
+  </form>
 
-  <transition-group tag="div" class="row q-col-gutter-md" name="fade">
+  <!-- Uploaded (unpublished) photo cards -->
+  <transition-group tag="div" class="flex flex-wrap gap-4 mt-4" name="fade">
     <div
       v-for="rec in uploaded"
       :key="rec.filename"
-      class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2"
+      class="flex-shrink-0"
+      style="min-width: 200px; max-width: 300px; flex: 1"
     >
       <PictureCard :rec="rec">
         <template #action>
-          <q-card-actions class="justify-between">
-            <q-btn flat round icon="sym_r_delete" @click="deleteRec(rec)" />
-            <q-checkbox v-model="selection" :val="rec.filename" />
-            <q-btn flat round icon="sym_r_publish" @click="editRecord(rec)" />
-          </q-card-actions>
+          <div class="absolute top-2 right-2 flex items-center gap-1">
+            <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-negative hover:scale-110 transition-transform" @click="deleteRec(rec)">
+              <span class="material-symbols-rounded text-xl leading-none">delete</span>
+            </button>
+            <AppCheckbox v-model="selection" :val="rec.filename" class="bg-white/80 dark:bg-black/60 rounded-full p-1 backdrop-blur-sm" />
+            <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-primary hover:scale-110 transition-transform" @click="editRecord(rec)">
+              <span class="material-symbols-rounded text-xl leading-none">publish</span>
+            </button>
+          </div>
         </template>
       </PictureCard>
     </div>
@@ -81,6 +96,8 @@ import CONFIG from '../../config'
 import notify from '../../helpers/notify'
 import PictureCard from '../../components/PictureCard.vue'
 import { UploadTracker } from '../../helpers/uploadTracker'
+import AppButton from '../atoms/AppButton.vue'
+import AppCheckbox from '../atoms/AppCheckbox.vue'
 import type { UploadTaskSnapshot } from 'firebase/storage'
 import type { PhotoType } from '../../helpers/models'
 
@@ -94,6 +111,8 @@ const { showEdit, currentEdit } = storeToRefs(app)
 const { headlineToApply, tagsToApply } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
 const selection = ref<string[]>([])
+const isDragging = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 interface ValidationErrors {
   file: File
@@ -107,22 +126,39 @@ onMounted(() => {
 const files = ref<File[]>([])
 const trackers = reactive(new Map<string, UploadTracker>())
 
-/**
- * Cancels all active (non-terminal) upload tasks tracked in the `trackers` map.
- */
+const onFileChange = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (!input.files) return
+  const newFiles = [...input.files]
+  const rejected: ValidationErrors[] = []
+  for (const f of newFiles) {
+    if (CONFIG.fileSize && f.size > CONFIG.fileSize) {
+      rejected.push({ file: f, failedPropValidation: 'max-file-size' })
+    } else if (files.value.length >= CONFIG.fileMax) {
+      rejected.push({ file: f, failedPropValidation: 'max-files' })
+    } else {
+      files.value.push(f)
+    }
+  }
+  if (rejected.length) onValidationError(rejected)
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+const onDrop = (e: DragEvent) => {
+  isDragging.value = false
+  if (!e.dataTransfer?.files) return
+  const newFiles = [...e.dataTransfer.files]
+  for (const f of newFiles) {
+    if (files.value.length < CONFIG.fileMax) files.value.push(f)
+  }
+}
+
 const cancelAll = (): void => {
   trackers.forEach((tracker) => {
-    if (!tracker.isTerminal()) {
-      tracker.cancel()
-    }
+    if (!tracker.isTerminal()) tracker.cancel()
   })
 }
 
-/**
- * Handles the upload form submission. Initiates an upload task for each
- * selected file, shows success/failure notifications, and cleans up state
- * once all uploads settle.
- */
 const onSubmit = async (): Promise<void> => {
   const promises: Promise<unknown>[] = []
 
@@ -130,9 +166,7 @@ const onSubmit = async (): Promise<void> => {
     const p = uploadTask(file)
       .then((val) => {
         notify({ type: 'positive', message: `Uploaded ${val}.`, icon: 'sym_r_check' })
-        if (typeof val === 'string') {
-          trackers.delete(val)
-        }
+        if (typeof val === 'string') trackers.delete(val)
         return val
       })
       .catch((err: Error) => {
@@ -144,9 +178,7 @@ const onSubmit = async (): Promise<void> => {
         const reason = err.message
         if (typeof reason === 'string') {
           const tracker = trackers.get(reason)
-          if (tracker && !tracker.isTerminal()) {
-            tracker.cancel()
-          }
+          if (tracker && !tracker.isTerminal()) tracker.cancel()
           trackers.delete(reason)
         }
         files.value.push(file)
@@ -160,25 +192,15 @@ const onSubmit = async (): Promise<void> => {
   app.progressInfo = {}
 }
 
-/**
- * Uploads a single file to Firebase Storage with resumable upload support.
- * Tracks progress via an {@link UploadTracker}, updates `app.progressInfo`,
- * and appends the resulting photo record to `app.uploaded` on success.
- *
- * @param file - The `File` object to upload.
- * @returns A promise that resolves with the stored filename on success,
- *   or rejects with an `Error` whose message is the filename on failure.
- */
 const uploadTask = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const id: string = uuidv4().substring(0, 8)
     const filename = `${id}_${file.name}`
     const _ref = storageRef(storage, filename)
-
     const tracker = new UploadTracker(filename)
     trackers.set(filename, tracker)
-
     app.progressInfo[filename] = 0
+
     const uploadTaskObj = uploadBytesResumable(_ref, file, {
       contentType: file.type,
       cacheControl: 'public, max-age=604800',
@@ -211,7 +233,7 @@ const uploadTask = (file: File): Promise<string> => {
             }
             uploaded.value.push(data)
             resolve(filename)
-            if (process.env.DEV) console.log('uploaded', filename)
+            if (import.meta.env.DEV) console.log('uploaded', filename)
           })
           .catch((err) => {
             tracker.markError(err)
@@ -222,13 +244,6 @@ const uploadTask = (file: File): Promise<string> => {
   })
 }
 
-/**
- * Displays a persistent warning notification for each file that failed
- * Quasar's file-input validation (size, type, or count constraints).
- *
- * @param rejectedEntries - Array of rejection descriptors containing the
- *   rejected `File` and the name of the failed validation property.
- */
 const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   rejectedEntries.forEach((it) => {
     notify({
@@ -240,12 +255,6 @@ const onValidationError = (rejectedEntries: ValidationErrors[]) => {
   })
 }
 
-/**
- * Enriches the given photo record with EXIF metadata and global tag/headline
- * defaults, then opens the {@link EditRecord} dialog for manual editing.
- *
- * @param rec - The uploaded photo record to edit.
- */
 const editRecord = async (rec: PhotoType): Promise<void> => {
   const newRec: PhotoType = await app.completePhoto(
     rec,
@@ -257,23 +266,11 @@ const editRecord = async (rec: PhotoType): Promise<void> => {
   currentEdit.value = newRec
 }
 
-/**
- * Removes a photo record from the upload queue and deselects it if it was
- * part of the current selection.
- *
- * @param rec - The photo record to delete.
- */
 const deleteRec = (rec: PhotoType): void => {
   selection.value = selection.value.filter((item) => item !== rec.filename)
   app.deleteRecord(rec)
 }
 
-/**
- * Publishes the selected uploaded photos (or all of them when nothing is
- * explicitly selected). Each record is first enriched via `completePhoto`,
- * then saved to Firestore. Successfully published records are removed from
- * the upload queue; failures are reported as notifications.
- */
 const publishSelected = async () => {
   if (selection.value.length === 0) {
     selection.value = app.uploaded.map((item) => item.filename)

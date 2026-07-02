@@ -15,11 +15,11 @@ const functions = getFunctions(firebaseApp)
 const messaging =
   typeof window !== 'undefined' ? getMessaging(firebaseApp) : (null as unknown as Messaging)
 // const analytics =
-//   typeof window !== 'undefined' && !process.env.DEV
+//   typeof window !== 'undefined' && !import.meta.env.DEV
 //     ? getAnalytics(firebaseApp)
 //     : (null as unknown as Analytics)
 
-if (process.env.DEV) {
+if (import.meta.env.DEV) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099')
   connectFirestoreEmulator(db, '127.0.0.1', 8080)
   connectStorageEmulator(storage, '127.0.0.1', 9199)

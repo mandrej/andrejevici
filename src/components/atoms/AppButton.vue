@@ -1,53 +1,88 @@
 <template>
+  <!-- Polymorphic button: renders <router-link>, <a>, or <button> based on props -->
   <component
-    :is="to ? 'router-link' : 'button'"
-    :to="to"
-    :disabled="disabled"
-    :class="[
-      'inline-flex items-center justify-center px-3 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2',
-      colorClasses[color] || 'bg-gray-200 text-gray-800',
-      flat ? 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800' : '',
-      round ? 'rounded-full px-2' : '',
-      dense ? 'px-2 py-1 text-xs' : '',
-      disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-    ]"
+    :is="tag"
+    v-bind="tagProps"
+    :type="tag === 'button' ? type : undefined"
+    :disabled="disabled || undefined"
+    :class="classes"
+    v-on="handlers"
   >
-    <span v-if="icon" class="material-symbols-rounded text-xl" :class="round && !label ? 'text-2xl' : ''">
-      {{ icon }}
-    </span>
-    <span v-if="label" :class="icon ? 'ml-2' : ''">{{ label }}</span>
+    <span v-if="icon && !label" class="material-symbols-rounded text-xl leading-none">{{ icon }}</span>
+    <span v-if="icon && label" class="material-symbols-rounded text-xl leading-none mr-1.5">{{ icon }}</span>
+    <span v-if="label">{{ label }}</span>
     <slot />
   </component>
 </template>
 
 <script setup lang="ts">
-interface Props {
-  label?: string
-  color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | string
-  flat?: boolean
-  round?: boolean
-  dense?: boolean
-  icon?: string
-  disabled?: boolean
-  to?: string | object
-}
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 
-withDefaults(defineProps<Props>(), {
-  color: 'primary',
-  flat: false,
-  round: false,
-  dense: false,
-  disabled: false,
+const props = withDefaults(
+  defineProps<{
+    label?: string
+    icon?: string
+    color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | string
+    flat?: boolean
+    round?: boolean
+    disabled?: boolean
+    type?: 'button' | 'submit' | 'reset'
+    to?: string | Record<string, unknown>
+    href?: string
+    size?: 'sm' | 'md' | 'lg'
+  }>(),
+  {
+    color: 'default',
+    flat: false,
+    round: false,
+    disabled: false,
+    type: 'button',
+    size: 'md',
+  },
+)
+
+const emit = defineEmits<{
+  (e: 'click', ev: MouseEvent): void
+}>()
+
+const tag = computed(() => {
+  if (props.to) return RouterLink
+  if (props.href) return 'a'
+  return 'button'
 })
 
-const colorClasses = {
-  primary: 'bg-primary text-white hover:bg-blue-700',
-  secondary: 'bg-secondary text-black hover:bg-teal-400',
-  accent: 'bg-accent text-white hover:bg-purple-700',
-  positive: 'bg-positive text-black hover:bg-green-400',
-  negative: 'bg-negative text-white hover:bg-red-700',
-  info: 'bg-info text-white hover:bg-cyan-600',
-  warning: 'bg-warning text-black hover:bg-yellow-500',
-  grey: 'bg-gray-300 text-gray-800 hover:bg-gray-400',
+const tagProps = computed(() => {
+  if (props.to) return { to: props.to }
+  if (props.href) return { href: props.href, target: '_blank', rel: 'noopener' }
+  return {}
+})
+
+const handlers = computed(() => ({
+  click: (ev: MouseEvent) => {
+    if (!props.disabled) emit('click', ev)
+  },
+}))
+
+const sizeMap = { sm: 'text-xs px-2.5 py-1', md: 'text-sm px-3.5 py-1.5', lg: 'text-base px-5 py-2.5' }
+const sizeCls = computed(() => sizeMap[props.size])
+
+const colorMap: Record<string, { solid: string; flat: string }> = {
+  primary: { solid: 'bg-primary text-white hover:bg-primary/90', flat: 'text-primary hover:bg-primary/10' },
+  secondary: { solid: 'bg-secondary text-black hover:bg-secondary/90', flat: 'text-secondary hover:bg-secondary/10' },
+  warning: { solid: 'bg-warning text-black hover:bg-warning/90', flat: 'text-warning hover:bg-warning/10' },
+  negative: { solid: 'bg-negative text-white hover:bg-negative/90', flat: 'text-negative hover:bg-negative/10' },
+  positive: { solid: 'bg-positive text-white hover:bg-positive/90', flat: 'text-positive hover:bg-positive/10' },
+  accent: { solid: 'bg-accent text-white hover:bg-accent/90', flat: 'text-accent hover:bg-accent/10' },
+  default: { solid: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600', flat: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' },
 }
+
+const classes = computed(() => {
+  const c = colorMap[props.color] ?? colorMap.default
+  const base = 'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-95'
+  const shape = props.round ? 'rounded-full' : 'rounded-lg'
+  const variant = props.flat ? c.flat : c.solid
+  const dis = props.disabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'
+  return [base, shape, sizeCls.value, variant, dis]
+})
 </script>

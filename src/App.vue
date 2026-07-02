@@ -1,5 +1,7 @@
 <template>
   <router-view />
+  <!-- Global toast notification overlay -->
+  <AppToast />
 </template>
 
 <script lang="ts" setup>
@@ -13,6 +15,7 @@ import { messaging } from './firebase'
 import notify from './helpers/notify'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { onMessage } from 'firebase/messaging'
+import AppToast from './components/atoms/AppToast.vue'
 
 const app = useAppStore()
 const auth = useUserStore()
@@ -74,7 +77,7 @@ onMessage(messaging, (payload) => {
       caption: payload.messageId,
     })
   } else {
-    if (process.env.DEV) console.log('FCM message received:', payload)
+    if (import.meta.env.DEV) console.log('FCM message received:', payload)
   }
 })
 </script>

@@ -1,198 +1,144 @@
 <template>
-  <q-banner class="q-pa-none q-px-md">
-    <template v-slot:avatar>
-      <q-icon :name="activeTabIcon" class="q-py-md" />
-    </template>
-    <q-select
+  <!-- Header: tab selector -->
+  <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <span class="material-symbols-rounded text-xl text-primary">{{ activeTabIcon }}</span>
+    <AppSelect
       v-model="app.metaTab"
-      :options="metaOptions"
-      emit-value
-      map-options
-      borderless
-      class="text-h6"
-    >
-      <template v-slot:selected>
-        {{ activeTabLabel }}
-      </template>
-      <template v-slot:option="scope">
-        <q-item v-bind="scope.itemProps">
-          <q-item-section avatar>
-            <q-icon :name="scope.opt.icon" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>{{ scope.opt.label }}</q-item-label>
-          </q-item-section>
-        </q-item>
-      </template>
-    </q-select>
-  </q-banner>
-
-  <div class="row q-px-md q-pt-sm">
-    <div class="col-12">
-      <div class="row no-wrap items-start">
-        <q-input
-          ref="newValueRef"
-          v-model="newValue"
-          :label="`Add new ${activeTabShort.toLowerCase()}`"
-          :rules="[(val: string) => currentValueList.indexOf(val) === -1 || 'Already exists']"
-          :dense="$q.screen.xs"
-          clearable
-          class="col"
-        />
-        <q-btn
-          label="Add"
-          @click="addValue"
-          color="primary"
-          class="q-ml-sm q-mt-sm"
-          style="width: 100px"
-        />
-        <q-btn
-          flat
-          label="Rebuild"
-          icon="sym_r_build"
-          @click="rebuildCounts"
-          color="primary"
-          class="q-ml-sm q-mt-sm no-wrap"
-        >
-          <q-tooltip>Rebuild {{ app.metaTab.toLowerCase() }} counts</q-tooltip>
-        </q-btn>
-      </div>
-    </div>
+      :options="metaOptions.map(o => ({ label: o.label, value: o.value }))"
+      class="flex-1 max-w-xs"
+    />
   </div>
 
-  <div class="q-px-md row items-center no-wrap">
+  <!-- Add new value + rebuild -->
+  <div class="flex gap-2 px-4 pt-3 items-start">
+    <div class="flex-1">
+      <AppInput
+        ref="newValueInputRef"
+        v-model="newValue"
+        :label="`Add new ${activeTabShort.toLowerCase()}`"
+        clearable
+      />
+      <p v-if="newValue && currentValueList.includes(newValue)" class="text-xs text-negative mt-1">Already exists</p>
+    </div>
+    <AppButton label="Add" @click="addValue" color="primary" class="mt-1" />
+    <AppButton
+      flat
+      icon="build"
+      label="Rebuild"
+      @click="rebuildCounts"
+      color="primary"
+      class="mt-1 whitespace-nowrap"
+      :title="`Rebuild ${app.metaTab.toLowerCase()} counts`"
+    />
+  </div>
+
+  <!-- Search -->
+  <div class="px-4 py-2">
     <LocalSearch
       v-model="search"
       :label="`Search ${activeTabShort.toLowerCase()}`"
       :options="currentValueList"
-      class="col"
     />
   </div>
 
-  <q-table
-    flat
-    :rows="tableRows"
-    :columns="columns"
-    row-key="name"
-    class="sticky-header-table q-mx-md q-mb-md"
-    style="height: 60vh"
-    :pagination="{ rowsPerPage: 0 }"
-    hide-bottom
-    binary-state-sort
-  >
-    <template v-slot:body-cell-name="props">
-      <q-td
-        :props="props"
-        @click="
-          app.searchBy({
-            [app.metaTab]: app.metaTab === 'tags' ? [props.row.name] : props.row.name,
-          })
-        "
-        class="cursor-pointer text-body1"
-      >
-        {{ props.row.name }}
-      </q-td>
-    </template>
-
-    <template v-slot:body-cell-count="props">
-      <q-td :props="props">
-        <q-badge align="middle" class="bg-secondary text-body2 text-black">
-          {{ props.row.count }}
-        </q-badge>
-      </q-td>
-    </template>
-
-    <template v-slot:body-cell-delete="props">
-      <q-td :props="props">
-        <q-btn
-          v-if="app.metaTab === 'tags'"
-          flat
-          round
-          dense
-          color="negative"
-          icon="sym_r_delete"
-          @click="confirmDelete(props.row.name)"
-          :disable="props.row.name === 'flash'"
+  <!-- Data table -->
+  <div class="overflow-auto mx-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg" style="height: 58vh">
+    <table class="w-full text-sm border-collapse">
+      <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+        <tr>
+          <th class="text-left px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none" @click="toggleSort('name')">
+            Name <span class="text-xs">{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</span>
+          </th>
+          <th class="text-right px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none" @click="toggleSort('count')">
+            Count <span class="text-xs">{{ sortField === 'count' ? (sortAsc ? '↑' : '↓') : '' }}</span>
+          </th>
+          <th class="px-3 py-2 w-10" />
+          <th class="px-3 py-2 w-10" />
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <tr
+          v-for="row in sortedRows"
+          :key="row.name"
+          class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
         >
-          <q-tooltip>Remove {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
-        </q-btn>
-      </q-td>
-    </template>
+          <td
+            class="px-3 py-2 cursor-pointer text-primary hover:underline"
+            @click="app.searchBy({ [app.metaTab]: app.metaTab === 'tags' ? [row.name] : row.name })"
+          >{{ row.name }}</td>
+          <td class="px-3 py-2 text-right">
+            <AppBadge color="secondary" textColor="black" class="text-xs">{{ row.count }}</AppBadge>
+          </td>
+          <td class="px-3 py-2 text-right">
+            <button
+              v-if="app.metaTab === 'tags'"
+              class="text-negative hover:opacity-80 transition-opacity disabled:opacity-30"
+              :disabled="row.name === 'flash'"
+              :title="`Remove ${activeTabShort.toLowerCase()}`"
+              @click="confirmDelete(row.name)"
+            >
+              <span class="material-symbols-rounded text-xl">delete</span>
+            </button>
+          </td>
+          <td class="px-3 py-2 text-right">
+            <button
+              class="text-primary hover:opacity-80 transition-opacity disabled:opacity-30"
+              :disabled="(app.metaTab === 'tags' && row.name === 'flash') || (app.metaTab === 'model' && row.name === CONFIG.unknownModel)"
+              :title="`Rename ${activeTabShort.toLowerCase()}`"
+              @click="openRenameDialog(row.name)"
+            >
+              <span class="material-symbols-rounded text-xl">edit</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <template v-slot:body-cell-rename="props">
-      <q-td :props="props">
-        <q-btn
-          flat
-          round
-          dense
-          color="primary"
-          icon="sym_r_edit"
-          @click="openRenameDialog(props.row.name)"
-          :disable="
-            (app.metaTab === 'tags' && props.row.name === 'flash') ||
-            (app.metaTab === 'model' && props.row.name === CONFIG.unknownModel)
-          "
-        >
-          <q-tooltip>Rename {{ activeTabLabel.toLowerCase().slice(0, -1) }}</q-tooltip>
-        </q-btn>
-      </q-td>
-    </template>
-  </q-table>
-
-  <q-dialog v-model="showRenameDialog" persistent>
-    <q-card style="min-width: 350px">
-      <q-card-section>
-        <div class="text-h6">Rename {{ activeTabShort.toLowerCase() }} "{{ valueToRename }}"</div>
-      </q-card-section>
-
-      <q-card-section class="q-pt-none">
-        <q-input
-          v-model="newTagName"
-          :label="`New ${activeTabShort.toLowerCase()} name`"
-          autofocus
-          clearable
-          :rules="[
-            (val: string) => !!val || 'Field is required',
-            (val: string) =>
-              app.metaTab !== 'tags' || val.indexOf('/') === -1 || 'Cannot use / in tags',
-          ]"
-          @keyup.enter="performRename"
-        >
-          <template v-slot:hint>
-            <span :class="isValueInUse ? 'text-negative' : 'text-positive'">
-              {{ isValueInUse ? 'Name exists (will merge)' : 'Name available' }}
-            </span>
-          </template>
-        </q-input>
-      </q-card-section>
-
-      <q-card-actions align="right" class="text-primary">
-        <q-btn flat label="Cancel" v-close-popup />
-        <q-btn
+  <!-- Rename Dialog -->
+  <AppDialog v-model="showRenameDialog" max-width="max-w-sm">
+    <div class="p-6">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-4">
+        Rename {{ activeTabShort.toLowerCase() }} "{{ valueToRename }}"
+      </h2>
+      <AppInput
+        v-model="newTagName"
+        :label="`New ${activeTabShort.toLowerCase()} name`"
+        autofocus
+        clearable
+        @keyup.enter="performRename"
+      />
+      <p v-if="newTagName" :class="['text-xs mt-1', isValueInUse ? 'text-negative' : 'text-positive']">
+        {{ isValueInUse ? 'Name exists (will merge)' : 'Name available' }}
+      </p>
+      <div class="flex justify-end gap-3 mt-6">
+        <AppButton flat label="Cancel" @click="showRenameDialog = false" />
+        <AppButton
           flat
           :label="isValueInUse ? 'Merge' : 'Rename'"
           @click="performRename"
-          :disable="!newTagName"
+          :disabled="!newTagName"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </div>
+    </div>
+  </AppDialog>
 
-  <q-dialog v-model="showDeleteDialog" persistent>
-    <q-card style="min-width: 350px">
-      <q-card-section>
-        <div class="text-h6">Remove "{{ valueToDelete }}"</div>
-      </q-card-section>
-      <q-card-section class="q-pt-none">
+  <!-- Delete Dialog -->
+  <AppDialog v-model="showDeleteDialog" max-width="max-w-sm">
+    <div class="p-6">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white mb-2">
+        Remove "{{ valueToDelete }}"
+      </h2>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
         Are you sure you want to remove {{ activeTabShort.toLowerCase() }}
         <strong>"{{ valueToDelete }}"</strong>?<br />Operation can't be undone.
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" v-close-popup />
-        <q-btn flat label="Remove" color="negative" @click="removeValueAction" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+      </p>
+      <div class="flex justify-end gap-3">
+        <AppButton flat label="Cancel" @click="showDeleteDialog = false" />
+        <AppButton flat label="Remove" color="negative" @click="removeValueAction" />
+      </div>
+    </div>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
@@ -200,11 +146,15 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '../../stores/app'
 import { useValuesStore } from '../../stores/values'
 import LocalSearch from '../LocalSearch.vue'
-import CONFIG from 'src/config'
+import CONFIG from '../../config'
+import AppInput from '../atoms/AppInput.vue'
+import AppButton from '../atoms/AppButton.vue'
+import AppBadge from '../atoms/AppBadge.vue'
+import AppSelect from '../atoms/AppSelect.vue'
+import AppDialog from '../atoms/AppDialog.vue'
 
 import { renameValue, deleteValue, addValue as addCounterValue } from '../../helpers/remedy'
 import notify from '../../helpers/notify'
-import type { QInput, QTableColumn } from 'quasar'
 import type { MetaOption } from '../../helpers/models'
 
 const meta = useValuesStore()
@@ -217,254 +167,114 @@ const metaOptions: MetaOption[] = [
   { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
 ]
 
-/** The display label for the currently selected metadata management tab. */
-const activeTabLabel = computed(() => {
-  return metaOptions.find((opt) => opt.value === app.metaTab)?.label || 'Metadata'
-})
-
-/** The singular short noun for the active tab's value type (e.g. "Tag", "Camera"). */
-const activeTabShort = computed(() => {
-  return metaOptions.find((opt) => opt.value === app.metaTab)?.short || 'Value'
-})
-
-/** The Material icon name for the currently active metadata tab. */
-const activeTabIcon = computed(() => {
-  return metaOptions.find((opt) => opt.value === app.metaTab)?.icon || 'sym_r_settings'
-})
+const activeTabLabel = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.label || 'Metadata')
+const activeTabShort = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.short || 'Value')
+const activeTabIcon = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.icon || 'settings')
 
 const values = computed(() => meta.values)
 const currentCounts = computed(() => values.value[app.metaTab] || {})
 const currentValueList = computed(() => Object.keys(currentCounts.value).sort())
 
-const newValueRef = ref<InstanceType<typeof QInput> | null>(null),
-  newValue = ref(''),
-  search = ref('')
+const newValueInputRef = ref<HTMLInputElement | null>(null)
+const newValue = ref('')
+const search = ref('')
 
 const showRenameDialog = ref(false)
 const valueToRename = ref('')
 const newTagName = ref('')
-
 const showDeleteDialog = ref(false)
 const valueToDelete = ref('')
 
-const columns: QTableColumn[] = [
-  { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
-  { name: 'count', label: 'Count', field: 'count', align: 'right', sortable: true },
-  { name: 'delete', label: '', field: 'delete', align: 'right' },
-  { name: 'rename', label: '', field: 'rename', align: 'right' },
-]
+// Client-side sort
+type SortField = 'name' | 'count'
+const sortField = ref<SortField>('count')
+const sortAsc = ref(false)
+const toggleSort = (field: SortField) => {
+  if (sortField.value === field) sortAsc.value = !sortAsc.value
+  else { sortField.value = field; sortAsc.value = false }
+}
 
-/**
- * Computed table row data: the filtered value list mapped to `{ name, count }` objects.
- */
 const tableRows = computed(() => {
-  return filteredValues.value.map((val) => ({
-    name: val,
-    count: currentCounts.value[val] || 0,
-  }))
+  let list = currentValueList.value
+  if (search.value) list = list.filter((v) => v.toLowerCase().includes(search.value.toLowerCase()))
+  return list.map((val) => ({ name: val, count: currentCounts.value[val] || 0 }))
 })
 
-/**
- * The value list filtered by the current search input (case-insensitive substring match).
- */
-const filteredValues = computed(() => {
-  let list = [...currentValueList.value]
-
-  if (search.value) {
-    list = list.filter((v) => v.toLowerCase().includes(search.value.toLowerCase()))
-  }
-
-  return list
+const sortedRows = computed(() => {
+  const rows = [...tableRows.value]
+  rows.sort((a, b) => {
+    const dir = sortAsc.value ? 1 : -1
+    if (sortField.value === 'name') return a.name.localeCompare(b.name) * dir
+    return (a.count - b.count) * dir
+  })
+  return rows
 })
 
-/**
- * `true` when the new rename value is already present in the active tab's
- * value list (i.e. the rename would merge two existing values).
- */
-const isValueInUse = computed(() => {
-  if (!newTagName.value) return false
-  return (
-    currentValueList.value.includes(newTagName.value) && newTagName.value !== valueToRename.value
-  )
-})
+const isValueInUse = computed(() =>
+  !!(newTagName.value && currentValueList.value.includes(newTagName.value) && newTagName.value !== valueToRename.value)
+)
 
-/**
- * Adds a new value to the active tab's counter collection and shows a
- * notification. Validates that the value is non-empty and not already in use.
- */
 const addValue = async () => {
-  if (newValue.value !== '' && currentValueList.value.indexOf(newValue.value) === -1) {
+  if (newValue.value !== '' && !currentValueList.value.includes(newValue.value)) {
     try {
       await addCounterValue(app.metaTab, newValue.value)
-      notify({
-        type: 'positive',
-        message: `${activeTabShort.value} "${newValue.value}" added`,
-        icon: 'sym_r_check',
-      })
+      notify({ type: 'positive', message: `${activeTabShort.value} "${newValue.value}" added`, icon: 'sym_r_check' })
       newValue.value = ''
     } catch (error) {
-      notify({
-        type: 'negative',
-        message: `Failed to add ${activeTabShort.value.toLowerCase()}: ${error instanceof Error ? error.message : String(error)}`,
-      })
+      notify({ type: 'negative', message: `Failed to add: ${error instanceof Error ? error.message : String(error)}` })
     }
-  }
-  if (newValueRef.value) {
-    newValueRef.value.resetValidation()
   }
 }
 
-/**
- * Opens the delete-confirmation dialog for a metadata value, guarding against
- * deleting protected values such as `'flash'` and the unknown camera model.
- *
- * @param val - The metadata value the user wants to delete.
- */
 const confirmDelete = (val: string) => {
-  if (app.metaTab === 'tags' && val === 'flash') {
-    notify({ type: 'warning', message: 'Cannot remove "flash"' })
-    return
-  }
-  if (app.metaTab === 'model' && val === CONFIG.unknownModel) {
-    notify({ type: 'warning', message: `Cannot remove "${CONFIG.unknownModel}"` })
-    return
-  }
+  if (app.metaTab === 'tags' && val === 'flash') { notify({ type: 'warning', message: 'Cannot remove "flash"' }); return }
+  if (app.metaTab === 'model' && val === CONFIG.unknownModel) { notify({ type: 'warning', message: `Cannot remove "${CONFIG.unknownModel}"` }); return }
   valueToDelete.value = val
   showDeleteDialog.value = true
 }
 
-/**
- * Executes the deletion of the pending value after user confirmation. Removes
- * the value from all photo documents and rebuilds counters for the active field.
- */
 const removeValueAction = async () => {
   const val = valueToDelete.value
   showDeleteDialog.value = false
   try {
     await deleteValue(app.metaTab, val)
     await meta.countersBuild(app.metaTab)
-    notify({
-      type: 'positive',
-      message: `${activeTabShort.value} "${val}" removed`,
-      icon: 'sym_r_check',
-    })
+    notify({ type: 'positive', message: `${activeTabShort.value} "${val}" removed`, icon: 'sym_r_check' })
   } catch (error) {
-    notify({
-      type: 'negative',
-      message: `Failed to remove ${activeTabShort.value.toLowerCase()}: ${error instanceof Error ? error.message : String(error)}`,
-    })
+    notify({ type: 'negative', message: `Failed to remove: ${error instanceof Error ? error.message : String(error)}` })
   }
 }
 
-/**
- * Triggers a full counter rebuild for the currently active metadata field
- * and shows the result as a notification.
- */
 const rebuildCounts = async () => {
   try {
     await meta.countersBuild(app.metaTab)
-    notify({
-      type: 'positive',
-      message: `Successfully rebuilt ${app.metaTab} counts`,
-      icon: 'sym_r_check',
-    })
+    notify({ type: 'positive', message: `Successfully rebuilt ${app.metaTab} counts`, icon: 'sym_r_check' })
   } catch (error) {
-    notify({
-      message: `Failed to rebuild ${app.metaTab} counts: ${error instanceof Error ? error.message : String(error)}`,
-      type: 'negative',
-    })
+    notify({ message: `Failed to rebuild: ${error instanceof Error ? error.message : String(error)}`, type: 'negative' })
   }
 }
 
-/**
- * Opens the rename dialog pre-filled with the selected value. Protected
- * values (`'flash'`, unknown camera model) cannot be renamed.
- *
- * @param val - The current value to rename.
- */
 const openRenameDialog = (val: string) => {
   if (app.metaTab === 'tags' && val === 'flash') return
   if (app.metaTab === 'model' && val === CONFIG.unknownModel) return
-
   valueToRename.value = val
   newTagName.value = val
   showRenameDialog.value = true
 }
 
-/**
- * Validates input and executes the rename (or merge when the new name already
- * exists). Updates both Firestore documents and rebuilds counters for the
- * active field before closing the dialog.
- */
 const performRename = async () => {
-  if (valueToRename.value === '' || newTagName.value === '') return
-  if (valueToRename.value === newTagName.value) {
-    showRenameDialog.value = false
-    return
-  }
-
-  if (app.metaTab === 'tags' && valueToRename.value === 'flash') {
-    notify({
-      type: 'warning',
-      message: `Cannot change "flash"`,
-    })
-    return
-  }
-
-  if (app.metaTab === 'model' && valueToRename.value === CONFIG.unknownModel) {
-    notify({
-      type: 'warning',
-      message: `Cannot change "${CONFIG.unknownModel}"`,
-    })
-    return
-  }
+  if (!valueToRename.value || !newTagName.value) return
+  if (valueToRename.value === newTagName.value) { showRenameDialog.value = false; return }
+  if (app.metaTab === 'tags' && valueToRename.value === 'flash') { notify({ type: 'warning', message: 'Cannot change "flash"' }); return }
+  if (app.metaTab === 'model' && valueToRename.value === CONFIG.unknownModel) { notify({ type: 'warning', message: `Cannot change "${CONFIG.unknownModel}"` }); return }
 
   try {
-    const existing = valueToRename.value
-    const changed = newTagName.value
-
-    await renameValue(app.metaTab, existing, changed)
+    await renameValue(app.metaTab, valueToRename.value, newTagName.value)
     await meta.countersBuild(app.metaTab)
-
-    notify({
-      type: 'positive',
-      message: `${existing} successfully renamed to ${changed}`,
-      icon: 'sym_r_check',
-    })
-
+    notify({ type: 'positive', message: `${valueToRename.value} renamed to ${newTagName.value}`, icon: 'sym_r_check' })
     showRenameDialog.value = false
   } catch (error) {
-    notify({
-      message: `Failed to rename: ${error instanceof Error ? error.message : String(error)}`,
-      type: 'negative',
-    })
+    notify({ message: `Failed to rename: ${error instanceof Error ? error.message : String(error)}`, type: 'negative' })
   }
 }
 </script>
-
-<style scoped>
-.sticky-header-table {
-  height: 60vh;
-}
-
-:deep(.q-table__middle) {
-  max-height: 100%;
-}
-
-:deep(.q-table__card) {
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.q-table thead tr th) {
-  position: sticky;
-  z-index: 1;
-  top: 0;
-  background-color: var(--q-my-page-bg);
-  color: var(--q-my-text);
-}
-
-:deep(.q-field__native) {
-  overflow: visible !important;
-}
-</style>

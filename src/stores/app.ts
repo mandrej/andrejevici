@@ -288,7 +288,7 @@ export const useAppStore = defineStore('app', {
         notify({ type: 'positive', message: `${obj.filename} published`, icon: 'sym_r_check' })
       }
       this.currentEdit = obj
-      // if (process.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
+      // if (import.meta.env.DEV) console.log('RECORD: ' + JSON.stringify(obj, null, 2))
       return obj
     },
 

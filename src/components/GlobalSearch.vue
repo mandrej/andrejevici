@@ -1,105 +1,83 @@
 <template>
-  <div class="global-search">
-    <div class="search-wrapper">
-      <q-select
-        v-model="dummySelect"
-        v-model:input-value="searchInput"
-        use-input
-        multiple
-        hide-selected
-        input-debounce="0"
-        :options="filteredSuggestions"
-        :placeholder="hasActiveFilters ? '' : 'by tag: beograd year: 2022 etc...'"
-        borderless
-        standout
-        hide-dropdown-icon
-        class="search-input"
-        option-value="key"
-        @filter="onFilter"
-        @update:model-value="onSelect"
-        @keydown.enter="handleKeyDownEnter"
+  <div class="relative flex-1 flex items-center min-w-0">
+    <!-- Active filter chips row + input -->
+    <div
+      class="flex flex-1 flex-wrap items-center gap-1 min-h-[36px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all"
+    >
+      <!-- Active filter chips -->
+      <span v-if="tmp.text" class="chip" @click="removeFilter('text')">{{ tmp.text }}&nbsp;✕</span>
+      <span v-if="tmp.kind" class="chip" @click="removeFilter('kind')">{{ tmp.kind }}&nbsp;✕</span>
+      <template v-if="tmp.tags">
+        <span v-for="tag in tmp.tags" :key="tag" class="chip" @click="removeTag(tag)">{{ tag }}&nbsp;✕</span>
+      </template>
+      <span v-if="tmp.year" class="chip" @click="removeFilter('year')">{{ tmp.year }}&nbsp;✕</span>
+      <span v-if="tmp.month" class="chip" @click="removeFilter('month')">{{ getMonthName(tmp.month) }}&nbsp;✕</span>
+      <span v-if="tmp.day" class="chip" @click="removeFilter('day')">{{ tmp.day }}&nbsp;✕</span>
+      <span v-if="tmp.model" class="chip" @click="removeFilter('model')">{{ tmp.model }}&nbsp;✕</span>
+      <span v-if="tmp.lens" class="chip" @click="removeFilter('lens')">{{ tmp.lens }}&nbsp;✕</span>
+      <span v-if="tmp.nick" class="chip" @click="removeFilter('nick')">{{ tmp.nick }}&nbsp;✕</span>
+
+      <!-- Text input -->
+      <input
+        v-model="searchInput"
+        type="text"
+        class="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
+        :placeholder="hasActiveFilters ? '' : 'by tag: beograd year: 2022 etc…'"
+        @keydown.enter="handleEnter"
+        @input="onInput"
+        @focus="showDropdown = true"
+        @blur="onBlur"
+      />
+
+      <!-- Clear all button -->
+      <button
+        v-if="hasActiveFilters"
+        type="button"
+        class="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors"
+        @click="clearAll"
+        title="Clear all filters"
       >
-        <template #prepend>
-          <!-- Active Filters as Chips Inside Input -->
-          <div class="active-filters-row">
-            <q-chip v-if="tmp.text" removable @remove="removeFilter('text')">
-              {{ tmp.text }}
-            </q-chip>
-
-            <q-chip v-if="tmp.kind" removable @remove="removeFilter('kind')">
-              {{ tmp.kind }}
-            </q-chip>
-
-            <q-chip v-for="tag in tmp.tags" :key="tag" removable @remove="removeTag(tag)">
-              {{ tag }}
-            </q-chip>
-
-            <q-chip v-if="tmp.year" removable @remove="removeFilter('year')">
-              {{ tmp.year }}
-            </q-chip>
-
-            <q-chip v-if="tmp.month" removable @remove="removeFilter('month')">
-              {{ getMonthName(tmp.month) }}
-            </q-chip>
-
-            <q-chip v-if="tmp.day" removable @remove="removeFilter('day')">
-              {{ tmp.day }}
-            </q-chip>
-
-            <q-chip v-if="tmp.model" removable @remove="removeFilter('model')">
-              {{ tmp.model }}
-            </q-chip>
-
-            <q-chip v-if="tmp.lens" removable @remove="removeFilter('lens')">
-              {{ tmp.lens }}
-            </q-chip>
-
-            <q-chip v-if="tmp.nick" removable @remove="removeFilter('nick')">
-              {{ tmp.nick }}
-            </q-chip>
-          </div>
-        </template>
-
-        <template #option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label v-if="scope.opt.field === 'title'">
-                <strong>title:</strong> {{ scope.opt.value }}
-              </q-item-label>
-              <q-item-label v-else>
-                <strong>{{ scope.opt.field }}:</strong> {{ scope.opt.value }}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-
-        <template #no-option>
-          <q-item v-if="searchInput.length >= 3">
-            <q-item-section class="text-grey">
-              Press Enter to search in headlines for "{{ searchInput }}"
-            </q-item-section>
-          </q-item>
-        </template>
-        <template #append>
-          <q-btn
-            v-if="hasActiveFilters"
-            round
-            dense
-            flat
-            icon="sym_r_clear_all"
-            class="clear-button"
-            @click="clearAll"
-          >
-            <q-tooltip>Clear all filters</q-tooltip>
-          </q-btn>
-        </template>
-      </q-select>
+        <span class="material-symbols-rounded text-xl">clear_all</span>
+      </button>
     </div>
+
+    <!-- Dropdown suggestions -->
+    <Transition
+      enter-active-class="transition duration-100 ease-out"
+      enter-from-class="opacity-0 translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-75 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <ul
+        v-if="showDropdown && filteredSuggestions.length > 0"
+        class="absolute top-full left-0 right-0 mt-1 z-50 max-h-60 overflow-y-auto rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl py-1"
+      >
+        <li
+          v-for="(sug, idx) in filteredSuggestions"
+          :key="sug.key"
+          :class="[
+            'px-4 py-2 text-sm cursor-pointer select-none',
+            activeIdx === idx
+              ? 'bg-primary/10 text-primary'
+              : 'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700',
+          ]"
+          @mousedown.prevent="onSelect(sug)"
+        >
+          <strong>{{ sug.field === 'title' ? 'title' : sug.field }}:</strong>
+          {{ sug.value }}
+        </li>
+        <li v-if="searchInput.length >= 3 && filteredSuggestions.length === 0" class="px-4 py-2 text-sm text-gray-500">
+          Press Enter to search in headlines for "{{ searchInput }}"
+        </li>
+      </ul>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useValuesStore } from '../stores/values'
@@ -108,277 +86,106 @@ import type { FindType, Suggestion } from '../helpers/models'
 
 const app = useAppStore()
 const meta = useValuesStore()
-
 const { find } = storeToRefs(app)
 const { allSuggestions } = storeToRefs(meta)
-const tmp = ref({ ...(find.value as FindType) })
+
+const tmp = ref<FindType>({ ...(find.value as FindType) })
 const searchInput = ref('')
-const dummySelect = ref<Suggestion[]>([])
 const filteredSuggestions = ref<Suggestion[]>([])
+const showDropdown = ref(false)
+const activeIdx = ref(-1)
 
-/**
- * Quasar `@filter` callback that populates `filteredSuggestions` based on the
- * typed input. Supports `field: value` colon-separated syntax and falls back
- * to a generic substring match. Appends a free-text suggestion when no
- * structured results are found and the query is at least 3 characters long.
- *
- * @param val - The current text in the search input.
- * @param update - Quasar's callback that must be called to commit the filtered list.
- */
-const onFilter = (val: string, update: (callback: () => void) => void) => {
-  update(() => {
-    if (!val || val.length < 1) {
-      filteredSuggestions.value = []
-      return
-    }
+watch(find, (val) => { tmp.value = { ...(val as FindType) } }, { deep: true })
 
-    const lowerValue = val.toLowerCase()
-    const colonIndex = lowerValue.indexOf(':')
+const hasActiveFilters = computed(() => Object.keys(tmp.value).length > 0)
 
-    if (colonIndex > 0) {
-      const fieldPart = lowerValue.substring(0, colonIndex).trim()
-      const valuePart = lowerValue.substring(colonIndex + 1).trim()
+const onInput = () => {
+  activeIdx.value = -1
+  const val = searchInput.value
+  if (!val || val.length < 1) { filteredSuggestions.value = []; return }
 
-      filteredSuggestions.value = allSuggestions.value
-        .filter((s) => {
-          const fieldMatch =
-            s.field.toLowerCase().startsWith(fieldPart) ||
-            (s.field === 'author' && 'nick'.startsWith(fieldPart))
-          const valueMatch = valuePart === '' || s.value.toLowerCase().includes(valuePart)
-          return fieldMatch && valueMatch
-        })
-        .slice(0, 20)
-    } else {
-      filteredSuggestions.value = allSuggestions.value
-        .filter((s) => {
-          return (
-            s.field.toLowerCase().includes(lowerValue) || s.value.toLowerCase().includes(lowerValue)
-          )
-        })
-        .slice(0, 20)
-    }
+  const lower = val.toLowerCase()
+  const colonIdx = lower.indexOf(':')
 
-    // Add explicit text search option if typed enough
-    if (filteredSuggestions.value.length === 0 && lowerValue.length >= 3) {
-      filteredSuggestions.value.push({
-        key: 'text-search',
-        field: 'title',
-        value: val,
-      })
-    }
-  })
-}
-
-/**
- * Handles a suggestion being selected from the dropdown. Normalises the
- * selected field name, applies it to the active filter state, clears the
- * text input, and triggers a search submission.
- *
- * @param val - The array of currently selected `Suggestion` objects (Quasar passes all).
- */
-const onSelect = (val: Suggestion[]) => {
-  if (!val || val.length === 0) return
-
-  // Get the last suggestion selected
-  const suggestion = val[val.length - 1]
-  if (!suggestion) return
-
-  const field = suggestion.field === 'author' ? 'nick' : suggestion.field
-
-  if (field === 'tags') {
-    if (!tmp.value.tags) {
-      tmp.value.tags = []
-    }
-    if (!tmp.value.tags.includes(suggestion.value)) {
-      tmp.value.tags.push(suggestion.value)
-    }
-  } else if (field === 'month') {
-    const monthIndex = months.findIndex((m) => m.toLowerCase() === suggestion.value.toLowerCase())
-    if (monthIndex !== -1) {
-      tmp.value.month = monthIndex + 1
-    }
-  } else if (field === 'day') {
-    tmp.value.day = parseInt(suggestion.value)
-  } else if (field === 'year') {
-    tmp.value.year = parseInt(suggestion.value)
-  } else if (field === 'title') {
-    tmp.value.text = suggestion.value
+  if (colonIdx > 0) {
+    const fieldPart = lower.substring(0, colonIdx).trim()
+    const valuePart = lower.substring(colonIdx + 1).trim()
+    filteredSuggestions.value = allSuggestions.value
+      .filter((s) => (s.field.toLowerCase().startsWith(fieldPart) || (s.field === 'author' && 'nick'.startsWith(fieldPart))) && (valuePart === '' || s.value.toLowerCase().includes(valuePart)))
+      .slice(0, 20)
   } else {
-    tmp.value[field as keyof FindType] = suggestion.value as never
+    filteredSuggestions.value = allSuggestions.value
+      .filter((s) => s.field.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower))
+      .slice(0, 20)
   }
 
-  searchInput.value = ''
-  dummySelect.value = [] // clear current selections
-  submit()
-}
-
-/**
- * Keyboard handler for the Enter key. When no dropdown suggestions are visible
- * and the query is at least 3 characters, falls through to a headline text search.
- *
- * @param e - The native keyboard event (unused but required by Quasar's `@keydown` binding).
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const handleKeyDownEnter = (e: KeyboardEvent) => {
-  // If no suggestions are visible, we search in headlines
-  if (filteredSuggestions.value.length === 0 && searchInput.value.length >= 3) {
-    searchInHeadline()
+  if (filteredSuggestions.value.length === 0 && lower.length >= 3) {
+    filteredSuggestions.value = [{ key: 'text-search', field: 'title', value: val }]
   }
-  // Otherwise, QSelect will handle it natively
+  showDropdown.value = true
 }
 
-/**
- * Applies the current text input as a headline (`text`) filter and submits the
- * search. Only fires when the input is at least 3 characters long.
- */
-const searchInHeadline = () => {
-  if (searchInput.value && searchInput.value.length >= 3) {
+const onBlur = () => {
+  setTimeout(() => { showDropdown.value = false }, 150)
+}
+
+const handleEnter = (e: KeyboardEvent) => {
+  if (activeIdx.value >= 0 && filteredSuggestions.value[activeIdx.value]) {
+    e.preventDefault()
+    onSelect(filteredSuggestions.value[activeIdx.value])
+    return
+  }
+  if (searchInput.value.length >= 3) {
     tmp.value.text = searchInput.value
     searchInput.value = ''
+    filteredSuggestions.value = []
+    showDropdown.value = false
     submit()
   }
 }
 
-/**
- * Converts a 1-based month number to its English month name.
- *
- * @param monthNum - A month number between 1 and 12.
- * @returns The month name string (e.g. `'January'`), or an empty string for out-of-range values.
- */
-const getMonthName = (monthNum: number): string => {
-  return months[monthNum - 1] || ''
-}
-
-// watch removed
-import { watch } from 'vue'
-watch(
-  find,
-  (val) => {
-    tmp.value = { ...(val as FindType) }
-  },
-  { deep: true },
-)
-
-/**
- * Applies the current `tmp` filter state to the app store and triggers a
- * Firestore fetch.
- */
-const submit = () => {
-  app.searchBy(tmp.value)
-}
-
-/**
- * Removes a single field from the active filter state and resubmits.
- *
- * @param field - The `FindType` key to remove.
- */
-const removeFilter = (field: keyof FindType) => {
-  delete tmp.value[field]
+const onSelect = (sug: Suggestion) => {
+  const field = sug.field === 'author' ? 'nick' : sug.field
+  if (field === 'tags') {
+    if (!tmp.value.tags) tmp.value.tags = []
+    if (!tmp.value.tags.includes(sug.value)) tmp.value.tags.push(sug.value)
+  } else if (field === 'month') {
+    const idx = months.findIndex((m) => m.toLowerCase() === sug.value.toLowerCase())
+    if (idx !== -1) tmp.value.month = idx + 1
+  } else if (field === 'day') {
+    tmp.value.day = parseInt(sug.value)
+  } else if (field === 'year') {
+    tmp.value.year = parseInt(sug.value)
+  } else if (field === 'title') {
+    tmp.value.text = sug.value
+  } else {
+    tmp.value[field as keyof FindType] = sug.value as never
+  }
+  searchInput.value = ''
+  filteredSuggestions.value = []
+  showDropdown.value = false
   submit()
 }
 
-/**
- * Removes a single tag from the active `tags` filter array and resubmits.
- * Also deletes the `tags` key entirely when the array becomes empty.
- *
- * @param tag - The tag string to remove.
- */
+const getMonthName = (monthNum: number) => months[monthNum - 1] || ''
+
+const removeFilter = (field: keyof FindType) => { delete tmp.value[field]; submit() }
+
 const removeTag = (tag: string) => {
   if (tmp.value.tags) {
     tmp.value.tags = tmp.value.tags.filter((t) => t !== tag)
-    if (tmp.value.tags.length === 0) {
-      delete tmp.value.tags
-    }
+    if (tmp.value.tags.length === 0) delete tmp.value.tags
     submit()
   }
 }
-/**
- * Clears all active filters and resubmits with an empty criteria object.
- */
-const clearAll = () => {
-  tmp.value = {}
-  submit()
-}
 
-/** `true` when at least one filter field is active in the current search state. */
-const hasActiveFilters = computed(() => {
-  return Object.keys(tmp.value).length > 0
-})
+const clearAll = () => { tmp.value = {}; submit() }
+
+const submit = () => { app.searchBy(tmp.value) }
 </script>
 
-<style scoped lang="scss">
-.global-search {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-}
-
-.search-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.search-input {
-  border-radius: 0;
-  width: 100%;
-  height: 100%;
-
-  :deep(.q-field__control) {
-    height: 100%;
-    min-height: 50px;
-    padding: 0;
-  }
-
-  :deep(.q-field__prepend) {
-    max-width: 95%;
-    min-width: 0;
-    flex-shrink: 1;
-    overflow: hidden;
-  }
-
-  :deep(.q-field__native) {
-    min-width: 20px;
-    padding: 8px 0;
-  }
-
-  .active-filters-row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 4px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    width: 100%;
-    max-width: 100%;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-
-  :deep(.q-chip) {
-    margin: 2px;
-    font-size: 13px;
-    font-weight: 500;
-    height: auto;
-    min-height: 32px;
-    color: var(--q-dark);
-    background-color: var(--q-secondary);
-  }
-
-  :deep(.q-chip__content) {
-    white-space: nowrap;
-  }
-
-  .clear-button {
-    color: var(--q-primary);
-    opacity: 0.7;
-    transition: opacity 0.2s;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
+<style scoped>
+.chip {
+  @apply inline-flex items-center px-2 py-0.5 bg-secondary/20 text-secondary dark:text-secondary text-xs font-medium rounded-full cursor-pointer hover:bg-secondary/30 transition-colors select-none whitespace-nowrap;
 }
 </style>

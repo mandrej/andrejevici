@@ -121,7 +121,7 @@ export const useUserStore = defineStore('auth', {
           this.askPush = true
         }
       } catch (err) {
-        if (process.env.DEV) console.warn('FCM token refresh failed:', err)
+        if (import.meta.env.DEV) console.warn('FCM token refresh failed:', err)
         // Don't surface this as an error to the user — it's a background operation
       }
     },
@@ -190,7 +190,7 @@ export const useUserStore = defineStore('auth', {
       } else {
         try {
           const result = await signInWithPopup(auth, provider)
-          if (process.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
+          if (import.meta.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
         } catch (err) {
           notify({
             type: 'negative',

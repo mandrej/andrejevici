@@ -376,7 +376,7 @@ export const useValuesStore = defineStore('meta', {
         } else {
           batch.update(counterRef, { count: increment(1) })
         }
-        if (process.env.DEV) console.log('increase', key, currentCount + 1)
+        if (import.meta.env.DEV) console.log('increase', key, currentCount + 1)
       }
 
       for (const key of toRemove) {
@@ -388,11 +388,11 @@ export const useValuesStore = defineStore('meta', {
         if (newCount <= 0) {
           delete this.values[field][value]
           batch.delete(counterRef)
-          if (process.env.DEV) console.log('decrease and delete', key, 0)
+          if (import.meta.env.DEV) console.log('decrease and delete', key, 0)
         } else {
           this.values[field][value] = newCount
           batch.update(counterRef, { count: increment(-1) })
-          if (process.env.DEV) console.log('decrease', key, newCount)
+          if (import.meta.env.DEV) console.log('decrease', key, newCount)
         }
       }
 
