@@ -52,14 +52,13 @@
                 v-if="user?.isAdmin || user?.email === item.email"
                 v-model="selected"
                 :val="item"
-                class="bg-white/80 dark:bg-black/60 rounded-full p-1 backdrop-blur-sm"
+                class="drop-shadow-md"
               />
-              <!-- Edit button -->
               <button
-                class="bg-white/80 dark:bg-black/60 rounded-full p-1.5 backdrop-blur-sm text-secondary hover:scale-110 transition-transform"
+                class="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                 @click="editRecord(item)"
               >
-                <AppIcon name="edit" class="w-5 h-5 leading-none" />
+                <AppIcon name="edit" class="w-6 h-6 leading-none" />
               </button>
             </div>
           </template>

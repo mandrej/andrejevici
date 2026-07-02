@@ -374,13 +374,43 @@ onUnmounted(() => {
   padding: 0;
 }
 
-.pswp__custom-bottom-btn .q-icon {
-  font-size: 24px;
+/* Make custom bottom bar SVGs white */
+.pswp__custom-bottom-btn svg {
   color: white;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
+  stroke: white;
 }
+
+/* Override built-in close button with Heroicons XMarkIcon (white) */
+.pswp__button--close {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 18 18 6M6 6l12 12'/%3E%3C/svg%3E") !important;
+  background-size: 24px 24px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+.pswp__button--close svg { display: none; }
+
+/* Override built-in prev arrow with Heroicons ChevronLeftIcon (white) */
+.pswp__button--arrow--prev {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 19.5 8.25 12l7.5-7.5'/%3E%3C/svg%3E") !important;
+  background-size: 32px 32px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+.pswp__button--arrow--prev svg,
+.pswp__button--arrow--prev::before { display: none !important; }
+
+/* Override built-in next arrow with Heroicons ChevronRightIcon (white) */
+.pswp__button--arrow--next {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m8.25 4.5 7.5 7.5-7.5 7.5'/%3E%3C/svg%3E") !important;
+  background-size: 32px 32px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+.pswp__button--arrow--next svg,
+.pswp__button--arrow--next::before { display: none !important; }
+
+/* Zoom button hidden (zoom disabled) */
+.pswp__button--zoom { display: none !important; }
 
 .pswp {
   -ms-overflow-style: none;

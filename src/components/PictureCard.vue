@@ -18,7 +18,7 @@
         v-if="rec.kind === 'video'"
         class="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none"
       >
-        <AppIcon name="play_circle" class="w-16 h-16 text-white drop-shadow-lg" />
+        <AppIcon name="play_circle" class="w-16 h-16 text-white/60 drop-shadow-lg" />
       </div>
     </div>
 
@@ -29,18 +29,22 @@
     <div class="px-3 py-1 text-sm font-medium truncate text-gray-900 dark:text-gray-100">
       {{ rec.headline }}
     </div>
-    <div class="flex items-center justify-between px-3 pb-2 text-xs text-gray-500 dark:text-gray-400">
+    <div
+      class="flex items-center justify-between px-3 pb-2 text-xs text-gray-500 dark:text-gray-400"
+    >
       <span>
         <a
           href="#"
           class="link hover:text-primary transition-colors"
           @click.prevent="app.searchBy({ nick: rec.nick })"
-        >{{ rec.nick }}</a>,
+          >{{ rec.nick }}</a
+        >,
         <a
           href="#"
           class="link hover:text-primary transition-colors"
           @click.prevent="app.searchBy({ year: rec.year, month: rec.month, day: rec.day })"
-        >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</a>
+          >{{ rec.date ? formatDatum(rec.date, 'DD.MM.YYYY HH:mm') : '' }}</a
+        >
       </span>
       <button
         v-if="rec.loc"

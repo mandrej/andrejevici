@@ -37,7 +37,6 @@ import {
   MoonIcon,
   PencilIcon,
   PhotoIcon,
-  PlayCircleIcon,
   PlusIcon,
   RectangleStackIcon,
   ShareIcon,
@@ -53,6 +52,8 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/outline'
+
+import { PlayIcon as SolidPlayIcon } from '@heroicons/vue/24/solid'
 
 defineOptions({ inheritAttrs: false })
 
@@ -83,7 +84,7 @@ const iconMap: Record<string, IconComponent> = {
   publish: ArrowUpTrayIcon,
   content_copy: DocumentDuplicateIcon,
   content_paste: ClipboardDocumentIcon,
-  play_circle: PlayCircleIcon,
+  play_circle: SolidPlayIcon,
   image: PhotoIcon,
   broken_image: PhotoIcon,
   video_library: FilmIcon,

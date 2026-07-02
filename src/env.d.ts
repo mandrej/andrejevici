@@ -8,8 +8,7 @@ interface Window {
 declare function gtag(...args: unknown[]): void
 
 interface ImportMetaEnv {
-  readonly VITE_ANDREJEVICI_BUILD?: string
-  readonly ANDREJEVICI_BUILD?: string
+  readonly VITE_BUILD?: string
   readonly DEV: boolean
   readonly PROD: boolean
   readonly MODE: string

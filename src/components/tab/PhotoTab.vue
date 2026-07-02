@@ -67,13 +67,13 @@
     >
       <PictureCard :rec="rec">
         <template #action>
-          <div class="absolute top-2 right-2 flex items-center gap-1">
-            <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-negative hover:scale-110 transition-transform" @click="deleteRec(rec)">
-              <AppIcon name="delete" class="w-5 h-5 leading-none" />
+          <div class="absolute top-2 right-2 flex items-center gap-2">
+            <button class="text-white hover:text-red-400 drop-shadow-md hover:scale-110 transition-all p-1" @click="deleteRec(rec)">
+              <AppIcon name="delete" class="w-6 h-6 leading-none" />
             </button>
-            <AppCheckbox v-model="selection" :val="rec.filename" class="bg-white/80 dark:bg-black/60 rounded-full p-1 backdrop-blur-sm" />
-            <button class="bg-white/80 dark:bg-black/60 backdrop-blur-sm rounded-full p-1 text-primary hover:scale-110 transition-transform" @click="editRecord(rec)">
-              <AppIcon name="publish" class="w-5 h-5 leading-none" />
+            <AppCheckbox v-model="selection" :val="rec.filename" class="drop-shadow-md" />
+            <button class="text-white hover:text-blue-400 drop-shadow-md hover:scale-110 transition-all p-1" @click="editRecord(rec)">
+              <AppIcon name="publish" class="w-6 h-6 leading-none" />
             </button>
           </div>
         </template>
