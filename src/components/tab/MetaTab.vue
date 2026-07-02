@@ -167,7 +167,6 @@ const metaOptions: MetaOption[] = [
   { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
 ]
 
-const activeTabLabel = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.label || 'Metadata')
 const activeTabShort = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.short || 'Value')
 const activeTabIcon = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.icon || 'settings')
 

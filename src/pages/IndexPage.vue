@@ -28,7 +28,9 @@
   </div>
 
   <!-- Theme toggle -->
-  <div class="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 shadow-lg bg-white dark:bg-gray-800">
+  <div
+    class="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 shadow-lg bg-white dark:bg-gray-800"
+  >
     <button
       v-for="opt in themeOptions"
       :key="opt.value"

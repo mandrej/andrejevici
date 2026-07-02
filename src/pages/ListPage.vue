@@ -199,7 +199,7 @@ onMounted(() => {
   window.addEventListener('scroll', onScroll)
   if (route.hash) {
     const filename = route.hash.substring(2)
-    setTimeout(() => findPhoto(filename), 1000)
+    setTimeout(() => { void findPhoto(filename) }, 1000)
   }
 })
 

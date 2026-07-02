@@ -18,3 +18,7 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+declare module 'register-service-worker' {
+  export function register(swUrl: string, hooks?: unknown): void
+}

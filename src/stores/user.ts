@@ -243,9 +243,9 @@ export const useUserStore = defineStore('auth', {
       for (const dev of devices) {
         const list = deviceMap.get(dev.email)
         if (list) {
-          list.push(dev.timestamp as Timestamp)
+          list.push(dev.timestamp)
         } else {
-          deviceMap.set(dev.email, [dev.timestamp as Timestamp])
+          deviceMap.set(dev.email, [dev.timestamp])
         }
       }
 

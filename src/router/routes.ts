@@ -4,27 +4,18 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Plain.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: 'home',
-        /**
-         * Loads the route component.
-         */
         component: () => import('../pages/IndexPage.vue'),
       },
     ],
   },
   {
     path: '/list',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Default.vue'),
     meta: { title: 'Album' },
     children: [
@@ -32,17 +23,8 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'list',
         components: {
-          /**
-           * Loads the default layout component.
-           */
           default: () => import('../pages/ListPage.vue'),
-          /**
-           * Loads the sidebar component.
-           */
           sidebar: () => import('../components/sidebar/Sidebar.vue'),
-          /**
-           * Loads the toolbar component.
-           */
           toolbar: () => import('../components/toolbar/ListToolbar.vue'),
         },
       },
@@ -50,9 +32,6 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/add',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Default.vue'),
     meta: { title: 'Add', requiresAuth: true },
     children: [
@@ -60,17 +39,8 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'add',
         components: {
-          /**
-           * Loads the default layout component.
-           */
           default: () => import('../pages/AddPage.vue'),
-          /**
-           * Loads the sidebar component.
-           */
           sidebar: () => import('../components/sidebar/Sidebar.vue'),
-          /**
-           * Loads the toolbar component.
-           */
           toolbar: () => import('../components/toolbar/AddToolbar.vue'),
         },
       },
@@ -78,9 +48,6 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Default.vue'),
     meta: { title: 'Administration', requiresAdmin: true },
     children: [
@@ -88,17 +55,8 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'admin',
         components: {
-          /**
-           * Loads the default layout component.
-           */
           default: () => import('../pages/AdminPage.vue'),
-          /**
-           * Loads the sidebar component.
-           */
           sidebar: () => import('../components/sidebar/Sidebar.vue'),
-          /**
-           * Loads the toolbar component.
-           */
           toolbar: () => import('../components/toolbar/AdminToolbar.vue'),
         },
       },
@@ -106,18 +64,12 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/401',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Plain.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: '401',
-        /**
-         * Loads the route component.
-         */
         component: () => import('../pages/ErrorPage.vue'),
         props: { code: 401 },
       },
@@ -125,18 +77,12 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    /**
-     * Loads the route component.
-     */
     component: () => import('../layouts/Plain.vue'),
     meta: { title: CONFIG.title },
     children: [
       {
         path: '',
         name: '404',
-        /**
-         * Loads the route component.
-         */
         component: () => import('../pages/ErrorPage.vue'),
         props: { code: 404 },
       },

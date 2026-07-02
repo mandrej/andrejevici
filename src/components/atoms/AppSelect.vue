@@ -23,8 +23,8 @@
           class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-1 shadow-xl focus:outline-none"
         >
           <ListboxOption
-            v-for="option in options"
-            :key="optionValue(option)"
+            v-for="(option, index) in options"
+            :key="String(optionValue(option)) + '-' + index"
             :value="optionValue(option)"
             v-slot="{ active, selected }"
           >
@@ -52,13 +52,15 @@
 import { computed } from 'vue'
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from '@headlessui/vue'
 
+type ModelValue = string | number | boolean | object | null | undefined
+
 interface SelectOption {
   label?: string
-  value?: unknown
+  value?: ModelValue
 }
 
 const props = defineProps<{
-  modelValue?: unknown
+  modelValue?: ModelValue
   options: (string | number | SelectOption)[]
   label?: string
   emitValue?: boolean
@@ -66,17 +68,23 @@ const props = defineProps<{
 }>()
 
 defineEmits<{
-  (e: 'update:modelValue', v: unknown): void
+  (e: 'update:modelValue', v: ModelValue): void
 }>()
 
 const optionValue = (opt: string | number | SelectOption) =>
   typeof opt === 'object' && opt !== null && 'value' in opt ? opt.value : opt
 
-const optionLabel = (opt: string | number | SelectOption) =>
-  typeof opt === 'object' && opt !== null && 'label' in opt ? opt.label : String(opt)
-
+const optionLabel = (opt: string | number | SelectOption) => {
+  if (typeof opt === 'object' && opt !== null) {
+    return opt.label ?? (typeof opt.value === 'string' || typeof opt.value === 'number' ? String(opt.value) : '—')
+  }
+  return String(opt)
+}
 const displayValue = computed(() => {
   const found = props.options.find((o) => optionValue(o) === props.modelValue)
-  return found ? optionLabel(found) : props.modelValue ? String(props.modelValue) : '—'
+  if (found) return optionLabel(found)
+  return typeof props.modelValue === 'string' || typeof props.modelValue === 'number'
+    ? String(props.modelValue)
+    : '—'
 })
 </script>

@@ -21,7 +21,7 @@ const router = createRouter({
    */
   scrollBehavior: () => ({ left: 0, top: 0 }),
   routes,
-  history: createWebHistory(process.env.VUE_ROUTER_BASE),
+  history: createWebHistory(import.meta.env.BASE_URL),
 })
 
 /**

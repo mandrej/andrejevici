@@ -23,7 +23,7 @@ const props = withDefaults(
   defineProps<{
     label?: string
     icon?: string
-    color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | string
+    color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | (string & {})
     flat?: boolean
     round?: boolean
     disabled?: boolean

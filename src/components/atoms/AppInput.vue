@@ -49,7 +49,7 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false })
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     modelValue?: string | number | null
     label?: string

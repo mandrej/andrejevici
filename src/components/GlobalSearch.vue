@@ -184,7 +184,9 @@ const clearAll = () => { tmp.value = {}; submit() }
 const submit = () => { app.searchBy(tmp.value) }
 </script>
 
-<style scoped>
+<style lang="postcss" scoped>
+@reference "../../styles/app.css";
+
 .chip {
   @apply inline-flex items-center px-2 py-0.5 bg-secondary/20 text-secondary dark:text-secondary text-xs font-medium rounded-full cursor-pointer hover:bg-secondary/30 transition-colors select-none whitespace-nowrap;
 }

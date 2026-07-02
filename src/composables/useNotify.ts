@@ -11,7 +11,7 @@ export interface NotifyOptions {
   html?: boolean
   multiLine?: boolean
   position?: string
-  actions?: Array<{ icon?: string; color?: string; handler?: () => void }>
+  actions?: Array<{ label?: string; icon?: string; color?: string; handler?: () => void }>
 }
 
 export interface Toast extends NotifyOptions {

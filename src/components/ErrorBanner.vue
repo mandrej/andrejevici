@@ -8,7 +8,7 @@
       <span class="material-symbols-rounded text-6xl">sym_r_error_outline</span>
       <div class="text-xl font-bold"><slot name="title"></slot></div>
       <div><slot name="detail"></slot></div>
-    </div}
+    </div>
   </AppBanner>
 </template>
 

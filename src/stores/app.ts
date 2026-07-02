@@ -343,7 +343,7 @@ export const useAppStore = defineStore('app', {
         await Promise.all(promises)
       } catch (err) {
         notify({
-          type: 'error',
+          type: 'negative',
           group: obj.filename,
           message: `${obj.filename} ${String(err)}`,
         })
