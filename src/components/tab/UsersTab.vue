@@ -3,14 +3,16 @@
     <template #title>{{ error }}</template>
   </ErrorBanner>
 
-  <AppBanner color="info" class="p-4">
-    <div class="flex items-center gap-3">
-      <AppIcon name="sym_r_person" class="w-6 h-6" />
-      <span class="text-lg font-semibold">Users</span>
-    </div>
-  </AppBanner>
+  <!-- Header banner -->
+  <div
+    class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+  >
+    <AppIcon name="sym_r_person" class="w-6 h-6 text-primary" />
+    <span class="text-lg font-semibold text-gray-900 dark:text-white">Users</span>
+  </div>
 
-  <div class="px-4 pb-4">
+  <!-- Search -->
+  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
     <LocalSearch v-model="search" label="Search users" :options="nickValues" />
   </div>
 
@@ -87,12 +89,11 @@
               v-for="(timestamp, index) in item.timestamps"
               :key="index"
               color="secondary"
-              textColor="black"
             >
               {{ ageDays(timestamp) }}
             </AppBadge>
           </template>
-          <AppBadge v-else color="grey" textColor="black">no tokens</AppBadge>
+          <AppBadge v-else color="grey">no tokens</AppBadge>
         </div>
 
         <div
@@ -206,7 +207,6 @@ import type { Timestamp } from 'firebase/firestore'
 import LocalSearch from '../LocalSearch.vue'
 import notify from '../../helpers/notify'
 
-import AppBanner from '../atoms/AppBanner.vue'
 import AppBadge from '../atoms/AppBadge.vue'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'

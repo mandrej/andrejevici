@@ -1,11 +1,12 @@
 <template>
   <!-- Header: tab selector -->
   <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-    <AppIcon :name="activeTabIcon" class="w-5 h-5 text-primary" />
+    <AppIcon :name="activeTabIcon" class="w-6 h-6 text-primary" />
     <AppSelect
       v-model="app.metaTab"
       :options="metaOptions.map(o => ({ label: o.label, value: o.value }))"
       class="flex-1 max-w-xs"
+      flat
     />
   </div>
 

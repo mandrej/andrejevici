@@ -1,12 +1,12 @@
 <template>
-  <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
+  <div class="flex items-end gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
     <div class="flex-grow">
       <AppInput
         v-model="message"
         label="Send message to subscribers"
       />
     </div>
-    <div class="flex items-center">
+    <div class="flex items-end">
       <AppButton
         :disabled="!token"
         label="Send"

@@ -6,10 +6,15 @@
         {{ label }}
       </ListboxLabel>
       <ListboxButton
-        class="relative w-full cursor-pointer rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 py-2 pl-3 pr-10 text-left text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+        :class="[
+          'relative w-full cursor-pointer text-left focus:outline-none transition-colors',
+          flat
+            ? 'py-0 pr-6 text-lg font-semibold text-gray-900 dark:text-white bg-transparent'
+            : 'rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 py-2 pl-3 pr-10 text-sm shadow-sm focus:ring-2 focus:ring-primary'
+        ]"
       >
         <span class="block truncate">{{ displayValue }}</span>
-        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+        <span :class="['pointer-events-none absolute inset-y-0 right-0 flex items-center', flat ? '' : 'pr-2']">
           <AppIcon name="unfold_more" class="w-5 h-5 text-gray-400" />
         </span>
       </ListboxButton>
@@ -66,6 +71,7 @@ const props = defineProps<{
   label?: string
   emitValue?: boolean
   mapOptions?: boolean
+  flat?: boolean
 }>()
 
 defineEmits<{

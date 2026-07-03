@@ -8,12 +8,18 @@
       <span v-if="tmp.text" class="chip" @click="removeFilter('text')">{{ tmp.text }}&nbsp;✕</span>
       <span v-if="tmp.kind" class="chip" @click="removeFilter('kind')">{{ tmp.kind }}&nbsp;✕</span>
       <template v-if="tmp.tags">
-        <span v-for="tag in tmp.tags" :key="tag" class="chip" @click="removeTag(tag)">{{ tag }}&nbsp;✕</span>
+        <span v-for="tag in tmp.tags" :key="tag" class="chip" @click="removeTag(tag)"
+          >{{ tag }}&nbsp;✕</span
+        >
       </template>
       <span v-if="tmp.year" class="chip" @click="removeFilter('year')">{{ tmp.year }}&nbsp;✕</span>
-      <span v-if="tmp.month" class="chip" @click="removeFilter('month')">{{ getMonthName(tmp.month) }}&nbsp;✕</span>
+      <span v-if="tmp.month" class="chip" @click="removeFilter('month')"
+        >{{ getMonthName(tmp.month) }}&nbsp;✕</span
+      >
       <span v-if="tmp.day" class="chip" @click="removeFilter('day')">{{ tmp.day }}&nbsp;✕</span>
-      <span v-if="tmp.model" class="chip" @click="removeFilter('model')">{{ tmp.model }}&nbsp;✕</span>
+      <span v-if="tmp.model" class="chip" @click="removeFilter('model')"
+        >{{ tmp.model }}&nbsp;✕</span
+      >
       <span v-if="tmp.lens" class="chip" @click="removeFilter('lens')">{{ tmp.lens }}&nbsp;✕</span>
       <span v-if="tmp.nick" class="chip" @click="removeFilter('nick')">{{ tmp.nick }}&nbsp;✕</span>
 
@@ -68,7 +74,10 @@
           <strong>{{ sug.field === 'title' ? 'title' : sug.field }}:</strong>
           {{ sug.value }}
         </li>
-        <li v-if="searchInput.length >= 3 && filteredSuggestions.length === 0" class="px-4 py-2 text-sm text-gray-500">
+        <li
+          v-if="searchInput.length >= 3 && filteredSuggestions.length === 0"
+          class="px-4 py-2 text-sm text-gray-500"
+        >
           Press Enter to search in headlines for "{{ searchInput }}"
         </li>
       </ul>
@@ -96,14 +105,23 @@ const filteredSuggestions = ref<Suggestion[]>([])
 const showDropdown = ref(false)
 const activeIdx = ref(-1)
 
-watch(find, (val) => { tmp.value = { ...(val as FindType) } }, { deep: true })
+watch(
+  find,
+  (val) => {
+    tmp.value = { ...(val as FindType) }
+  },
+  { deep: true },
+)
 
 const hasActiveFilters = computed(() => Object.keys(tmp.value).length > 0)
 
 const onInput = () => {
   activeIdx.value = -1
   const val = searchInput.value
-  if (!val || val.length < 1) { filteredSuggestions.value = []; return }
+  if (!val || val.length < 1) {
+    filteredSuggestions.value = []
+    return
+  }
 
   const lower = val.toLowerCase()
   const colonIdx = lower.indexOf(':')
@@ -112,7 +130,12 @@ const onInput = () => {
     const fieldPart = lower.substring(0, colonIdx).trim()
     const valuePart = lower.substring(colonIdx + 1).trim()
     filteredSuggestions.value = allSuggestions.value
-      .filter((s) => (s.field.toLowerCase().startsWith(fieldPart) || (s.field === 'author' && 'nick'.startsWith(fieldPart))) && (valuePart === '' || s.value.toLowerCase().includes(valuePart)))
+      .filter(
+        (s) =>
+          (s.field.toLowerCase().startsWith(fieldPart) ||
+            (s.field === 'author' && 'nick'.startsWith(fieldPart))) &&
+          (valuePart === '' || s.value.toLowerCase().includes(valuePart)),
+      )
       .slice(0, 20)
   } else {
     filteredSuggestions.value = allSuggestions.value
@@ -127,7 +150,9 @@ const onInput = () => {
 }
 
 const onBlur = () => {
-  setTimeout(() => { showDropdown.value = false }, 150)
+  setTimeout(() => {
+    showDropdown.value = false
+  }, 150)
 }
 
 const handleEnter = (e: KeyboardEvent) => {
@@ -170,7 +195,10 @@ const onSelect = (sug: Suggestion) => {
 
 const getMonthName = (monthNum: number) => months[monthNum - 1] || ''
 
-const removeFilter = (field: keyof FindType) => { delete tmp.value[field]; submit() }
+const removeFilter = (field: keyof FindType) => {
+  delete tmp.value[field]
+  submit()
+}
 
 const removeTag = (tag: string) => {
   if (tmp.value.tags) {
@@ -180,15 +208,20 @@ const removeTag = (tag: string) => {
   }
 }
 
-const clearAll = () => { tmp.value = {}; submit() }
+const clearAll = () => {
+  tmp.value = {}
+  submit()
+}
 
-const submit = () => { app.searchBy(tmp.value) }
+const submit = () => {
+  app.searchBy(tmp.value)
+}
 </script>
 
 <style lang="postcss" scoped>
 @reference "../styles/app.css";
 
 .chip {
-  @apply inline-flex items-center px-2 py-0.5 bg-secondary/20 text-secondary dark:text-secondary text-xs font-medium rounded-full cursor-pointer hover:bg-secondary/30 transition-colors select-none whitespace-nowrap;
+  @apply inline-flex items-center px-2 py-1 bg-secondary text-black text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap;
 }
 </style>

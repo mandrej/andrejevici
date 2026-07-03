@@ -4,7 +4,9 @@
       to="/"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'home' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
+        $route.name === 'home'
+          ? 'bg-primary text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -20,7 +22,9 @@
       to="/list"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'list' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
+        $route.name === 'list'
+          ? 'bg-primary text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -37,7 +41,9 @@
       to="/add"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'add' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
+        $route.name === 'add'
+          ? 'bg-primary text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">
@@ -54,7 +60,9 @@
       to="/admin"
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
-        $route.name === 'admin' ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100',
+        $route.name === 'admin'
+          ? 'bg-primary text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
       <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mr-3">

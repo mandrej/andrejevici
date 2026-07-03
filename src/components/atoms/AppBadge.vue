@@ -24,21 +24,23 @@ const props = withDefaults(
 )
 
 const bgMap: Record<string, string> = {
-  primary: 'bg-primary/10 dark:bg-primary/20',
-  secondary: 'bg-secondary/10 dark:bg-secondary/20',
-  warning: 'bg-warning/20',
-  negative: 'bg-negative/10',
-  positive: 'bg-positive/10',
-  accent: 'bg-accent/10',
+  primary: 'bg-primary',
+  secondary: 'bg-secondary',
+  warning: 'bg-warning',
+  negative: 'bg-negative',
+  positive: 'bg-positive',
+  accent: 'bg-accent',
+  grey: 'bg-gray-500',
 }
 
 const textMap: Record<string, string> = {
-  primary: 'text-primary',
-  secondary: 'text-secondary',
-  warning: 'text-warning dark:text-yellow-400',
-  negative: 'text-negative',
-  positive: 'text-positive',
-  accent: 'text-accent',
+  primary: 'text-white',
+  secondary: 'text-white',
+  warning: 'text-gray-900',
+  negative: 'text-white',
+  positive: 'text-white',
+  accent: 'text-white',
+  grey: 'text-white',
   white: 'text-white',
   black: 'text-gray-900',
   dark: 'text-gray-900',

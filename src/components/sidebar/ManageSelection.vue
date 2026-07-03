@@ -1,17 +1,13 @@
 <template>
   <div class="bg-light dark:bg-dark p-2">
-    <AppInput
-      v-if="user?.isAuthorized"
-      v-model="headlineToApply"
-      label="Headline to apply"
-      class="px-2 mb-4"
-      clearable
-    />
-    <TagsMerge
-      v-if="user?.isAuthorized"
-      class="px-2 mb-4"
-      :label="`Tags to apply`"
-    />
+    <div v-if="user?.isAuthorized" class="px-2 mb-4">
+      <AppInput
+        v-model="headlineToApply"
+        label="Headline to apply"
+        clearable
+      />
+    </div>
+    <TagsMerge v-if="user?.isAuthorized" class="px-2 mb-4" :label="`Tags to apply`" />
 
     <div
       v-if="selected.length > 0"
