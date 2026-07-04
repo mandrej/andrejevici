@@ -22,6 +22,7 @@
       :key="nick"
       :label="nick"
       color="secondary"
+      class="!bg-secondary/15 hover:!bg-secondary/30 !text-teal-800 dark:!text-secondary"
       @click="app.searchBy({ nick })"
       to="/list"
     />

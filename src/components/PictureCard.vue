@@ -35,7 +35,7 @@
       <span>
         <a
           href="#"
-          class="link hover:text-primary transition-colors"
+          class="link text-secondary hover:text-secondary/80 transition-colors"
           @click.prevent="app.searchBy({ nick: rec.nick })"
           >{{ rec.nick }}</a
         >,

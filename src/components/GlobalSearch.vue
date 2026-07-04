@@ -58,7 +58,7 @@
       >
       <span
         v-if="tmp.nick"
-        class="chip bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
+        class="chip bg-secondary/20 text-teal-800 dark:bg-secondary/30 dark:text-secondary"
         @click="removeFilter('nick')"
         >{{ tmp.nick }}&nbsp;✕</span
       >
