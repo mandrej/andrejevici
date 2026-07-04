@@ -5,23 +5,63 @@
       class="flex flex-1 flex-wrap items-center gap-1 min-h-[36px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all"
     >
       <!-- Active filter chips -->
-      <span v-if="tmp.text" class="chip" @click="removeFilter('text')">{{ tmp.text }}&nbsp;✕</span>
-      <span v-if="tmp.kind" class="chip" @click="removeFilter('kind')">{{ tmp.kind }}&nbsp;✕</span>
+      <span
+        v-if="tmp.text"
+        class="chip bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+        @click="removeFilter('text')"
+        >{{ tmp.text }}&nbsp;✕</span
+      >
+      <span
+        v-if="tmp.kind"
+        class="chip bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+        @click="removeFilter('kind')"
+        >{{ tmp.kind }}&nbsp;✕</span
+      >
       <template v-if="tmp.tags">
-        <span v-for="tag in tmp.tags" :key="tag" class="chip" @click="removeTag(tag)"
+        <span
+          v-for="tag in tmp.tags"
+          :key="tag"
+          class="chip bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+          @click="removeTag(tag)"
           >{{ tag }}&nbsp;✕</span
         >
       </template>
-      <span v-if="tmp.year" class="chip" @click="removeFilter('year')">{{ tmp.year }}&nbsp;✕</span>
-      <span v-if="tmp.month" class="chip" @click="removeFilter('month')"
+      <span
+        v-if="tmp.year"
+        class="chip bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+        @click="removeFilter('year')"
+        >{{ tmp.year }}&nbsp;✕</span
+      >
+      <span
+        v-if="tmp.month"
+        class="chip bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+        @click="removeFilter('month')"
         >{{ getMonthName(tmp.month) }}&nbsp;✕</span
       >
-      <span v-if="tmp.day" class="chip" @click="removeFilter('day')">{{ tmp.day }}&nbsp;✕</span>
-      <span v-if="tmp.model" class="chip" @click="removeFilter('model')"
+      <span
+        v-if="tmp.day"
+        class="chip bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+        @click="removeFilter('day')"
+        >{{ tmp.day }}&nbsp;✕</span
+      >
+      <span
+        v-if="tmp.model"
+        class="chip bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300"
+        @click="removeFilter('model')"
         >{{ tmp.model }}&nbsp;✕</span
       >
-      <span v-if="tmp.lens" class="chip" @click="removeFilter('lens')">{{ tmp.lens }}&nbsp;✕</span>
-      <span v-if="tmp.nick" class="chip" @click="removeFilter('nick')">{{ tmp.nick }}&nbsp;✕</span>
+      <span
+        v-if="tmp.lens"
+        class="chip bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
+        @click="removeFilter('lens')"
+        >{{ tmp.lens }}&nbsp;✕</span
+      >
+      <span
+        v-if="tmp.nick"
+        class="chip bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
+        @click="removeFilter('nick')"
+        >{{ tmp.nick }}&nbsp;✕</span
+      >
 
       <!-- Text input -->
       <input
@@ -222,6 +262,6 @@ const submit = () => {
 @reference "../styles/app.css";
 
 .chip {
-  @apply inline-flex items-center px-2 py-1 bg-secondary text-black text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap;
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap;
 }
 </style>
