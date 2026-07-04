@@ -149,10 +149,20 @@ window.onpopstate = () => {
 }
 
 // Scroll-to-top tracking
-const onScroll = () => {
-  showScrollTop.value = window.scrollY > 150
+const onScroll = (e: Event) => {
+  const target = e.target as HTMLElement
+  if (target && target.tagName === 'MAIN') {
+    showScrollTop.value = target.scrollTop > 150
+  }
 }
-const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+const scrollToTop = () => {
+  const main = document.querySelector('main')
+  if (main) {
+    main.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
 
 // Infinite scroll via IntersectionObserver
 const { sentinel, loading, reset } = useInfiniteScroll(async (done) => {
@@ -199,7 +209,7 @@ watch(
 )
 
 onMounted(() => {
-  window.addEventListener('scroll', onScroll)
+  window.addEventListener('scroll', onScroll, true)
   if (route.hash) {
     const filename = route.hash.substring(2)
     setTimeout(() => {
@@ -209,7 +219,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('scroll', onScroll, true)
 })
 
 /**
@@ -291,7 +301,12 @@ const carouselCancel = (hash: string) => {
   index.value = -1
   const el = document.getElementById(hash?.replace('#', '') ?? '')
   if (el) {
-    window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' })
+    const main = document.querySelector('main')
+    if (main) {
+      main.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' })
+    } else {
+      window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' })
+    }
   }
 }
 </script>
