@@ -1,7 +1,10 @@
 <template>
   <!-- Title -->
   <div class="flex-1 flex items-center gap-2 min-w-0">
-    <router-link to="/" class="text-base font-semibold whitespace-nowrap link hover:opacity-80 transition-opacity">
+    <router-link
+      to="/"
+      class="text-base font-semibold whitespace-nowrap link hover:opacity-80 transition-opacity"
+    >
       {{ $route.meta.title }}
     </router-link>
   </div>
@@ -15,7 +18,7 @@
       <div
         v-for="(value, name) in progressInfo"
         :key="name"
-        :style="{ width: (100 / Object.keys(progressInfo).length) + '%' }"
+        :style="{ width: 100 / Object.keys(progressInfo).length + '%' }"
         class="h-0.5 overflow-hidden bg-gray-200 dark:bg-gray-700"
       >
         <AppProgress :value="value" color="warning" :height="2" />

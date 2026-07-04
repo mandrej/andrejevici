@@ -2,7 +2,7 @@
   <AppBanner
     v-if="inquiry"
     color="warning"
-    class="fixed inset-0 m-auto w-max max-w-md text-center z-[100] rounded-xl shadow-lg"
+    class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 max-w-[calc(100vw-2rem)] text-center z-[100] rounded-xl shadow-lg"
   >
     <div class="flex flex-col items-center gap-2">
       <AppIcon name="sym_r_error_outline" class="w-16 h-16" />

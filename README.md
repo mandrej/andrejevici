@@ -7,6 +7,7 @@ Andrejevici is a modern photo album application built with **Vue 3 (Quasar Frame
 ### Prerequisites
 
 Ensure you have the following tools installed on your system:
+
 - **Node.js** (Latest LTS recommended)
 - **Firebase Tools**: `npm install -g firebase-tools`
 - **Inkscape**: Required for generating PWA icons.
@@ -25,16 +26,18 @@ Ensure you have the following tools installed on your system:
 To run the application locally, you need both the Firebase emulators and the Quasar development server running.
 
 1. **Start Backend Emulators**:
+
    ```bash
    ./ands run
    ```
-   *This starts the Firebase emulators and imports local data from the `./data` directory.*
+
+   _This starts the Firebase emulators and imports local data from the `./data` directory._
 
 2. **Start Frontend Dev Server**:
    ```bash
    npm run dev
    ```
-   *Alternatively: `quasar dev -m pwa`*
+   _Alternatively: `quasar dev -m pwa`_
 
 ---
 
@@ -42,14 +45,14 @@ To run the application locally, you need both the Firebase emulators and the Qua
 
 The project uses a helper script, [`./ands`](./ands), to simplify common development and deployment tasks.
 
-| Command | Action | Description |
-| :--- | :--- | :--- |
-| `./ands run` | Backend | Starts Firebase emulators with local data import/export. |
-| `./ands build` | Build | Updates the build version in `.env` and builds the Quasar PWA. |
-| `./ands deploy` | Deploy | Deploys the client-side application to Firebase (excluding functions/extensions). |
-| `./ands functions` | Backend | Builds and deploys `functionNotify`, `functionCron`, and `functionThumb`. |
-| `./ands icons` | Assets | Generates PWA icons from `AppIcon.svg` using Inkscape and IconGenie. |
-| `./ands test` | Quality | Runs TypeScript utility tests (e.g., slug generation, EXIF parsing). |
+| Command            | Action  | Description                                                                       |
+| :----------------- | :------ | :-------------------------------------------------------------------------------- |
+| `./ands run`       | Backend | Starts Firebase emulators with local data import/export.                          |
+| `./ands build`     | Build   | Updates the build version in `.env` and builds the Quasar PWA.                    |
+| `./ands deploy`    | Deploy  | Deploys the client-side application to Firebase (excluding functions/extensions). |
+| `./ands functions` | Backend | Builds and deploys `functionNotify`, `functionCron`, and `functionThumb`.         |
+| `./ands icons`     | Assets  | Generates PWA icons from `AppIcon.svg` using Inkscape and IconGenie.              |
+| `./ands test`      | Quality | Runs TypeScript utility tests (e.g., slug generation, EXIF parsing).              |
 
 ---
 

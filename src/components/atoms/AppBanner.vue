@@ -3,7 +3,7 @@
     :class="[
       'flex items-center p-4 rounded-lg border-l-4 transition-colors',
       colorClasses[color] || 'bg-gray-100 border-gray-400 text-gray-800',
-      'dark:bg-gray-800 dark:text-gray-200'
+      'dark:bg-gray-800 dark:text-gray-200',
     ]"
   >
     <div v-if="icon" class="flex-shrink-0 mr-3">
@@ -21,7 +21,16 @@
 <script setup lang="ts">
 import AppIcon from './AppIcon.vue'
 interface Props {
-  color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | (string & {})
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'positive'
+    | 'negative'
+    | 'info'
+    | 'warning'
+    | 'grey'
+    | (string & {})
   icon?: string
 }
 

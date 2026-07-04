@@ -49,6 +49,10 @@ const textMap: Record<string, string> = {
 const sizeMap = { xs: 'text-xs px-1.5 py-0.5', sm: 'text-xs px-2 py-0.5', md: 'text-sm px-3 py-1' }
 
 const bgClass = computed(() => bgMap[props.color] ?? 'bg-gray-100 dark:bg-gray-700')
-const textColorClass = computed(() => (props.textColor ? (textMap[props.textColor] ?? `text-${props.textColor}`) : textMap[props.color] ?? 'text-gray-800 dark:text-gray-200'))
+const textColorClass = computed(() =>
+  props.textColor
+    ? (textMap[props.textColor] ?? `text-${props.textColor}`)
+    : (textMap[props.color] ?? 'text-gray-800 dark:text-gray-200'),
+)
 const sizeClass = computed(() => sizeMap[props.size])
 </script>

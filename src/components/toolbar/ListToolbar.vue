@@ -13,10 +13,7 @@
 
   <!-- Indeterminate progress bar at bottom of header -->
   <Teleport to="body">
-    <div
-      v-if="busy"
-      class="fixed top-14 left-0 right-0 z-30 h-0.5 overflow-hidden"
-    >
+    <div v-if="busy" class="fixed top-14 left-0 right-0 z-30 h-0.5 overflow-hidden">
       <AppProgress indeterminate color="warning" :height="2" />
     </div>
   </Teleport>

@@ -1,7 +1,9 @@
 <template>
   <AppDialog v-model="showEdit" max-width="max-w-3xl">
     <!-- Toolbar -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+    <div
+      class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700"
+    >
       <div class="flex items-center gap-2">
         <AppButton type="button" color="primary" label="Save" @click="onSubmit" />
         <AppButton
@@ -15,7 +17,10 @@
       <span v-if="tmp.kind !== 'video'" class="text-xs text-gray-500 dark:text-gray-400">
         {{ formatBytes(tmp.size) }} {{ tmp.dim }}
       </span>
-      <button class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors" @click="onCancel">
+      <button
+        class="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+        @click="onCancel"
+      >
         <AppIcon name="close" class="w-6 h-6" />
       </button>
     </div>
@@ -32,7 +37,10 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- Thumbnail preview -->
           <div class="hidden sm:block sm:col-span-1">
-            <div class="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800" style="padding-top: 100%">
+            <div
+              class="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
+              style="padding-top: 100%"
+            >
               <img
                 :src="thumbUrl"
                 :alt="tmp.headline"
@@ -66,11 +74,7 @@
               :options="emailValues"
               hint="Admin can add friend's photo and email"
             />
-            <AppInput
-              v-model="tmp.date"
-              label="Date taken"
-              type="datetime-local"
-            />
+            <AppInput v-model="tmp.date" label="Date taken" type="datetime-local" />
           </div>
 
           <!-- Tags row (full width) -->
@@ -83,7 +87,10 @@
                 canadd
                 multiple
                 :hint="tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply : ''"
-                @new-value="(value: string, done: (v: string) => void) => meta.addNewValue(value, 'tags', done)"
+                @new-value="
+                  (value: string, done: (v: string) => void) =>
+                    meta.addNewValue(value, 'tags', done)
+                "
               />
             </div>
             <div class="flex flex-col gap-1 mt-1">
@@ -113,14 +120,18 @@
               v-model="tmp.model"
               :options="modelValues"
               canadd
-              @new-value="(value: string, done: (v: string) => void) => meta.addNewValue(value, 'model', done)"
+              @new-value="
+                (value: string, done: (v: string) => void) => meta.addNewValue(value, 'model', done)
+              "
             />
             <AutoComplete
               label="Camera Lens"
               v-model="tmp.lens"
               :options="lensValues"
               canadd
-              @new-value="(value: string, done: (v: string) => void) => meta.addNewValue(value, 'lens', done)"
+              @new-value="
+                (value: string, done: (v: string) => void) => meta.addNewValue(value, 'lens', done)
+              "
             />
             <AppInput v-model="tmp.focal_length" type="number" label="Focal length [mm]" />
             <AppInput v-model="tmp.iso" type="number" label="ISO [ASA]" />
@@ -204,7 +215,9 @@ const isValidEmail = (val: string) => {
 /**
  * Copies the given tag array to `tagsToApply`.
  */
-const copyTags = (source: string[]) => { tagsToApply.value = source }
+const copyTags = (source: string[]) => {
+  tagsToApply.value = source
+}
 
 /**
  * Merges `tagsToApply` into the current record's tags.
@@ -217,9 +230,13 @@ const mergeTags = (source: string[]) => {
   }
 }
 
-window.onpopstate = function () { showEdit.value = false }
+window.onpopstate = function () {
+  showEdit.value = false
+}
 
-const onCancel = () => { showEdit.value = false }
+const onCancel = () => {
+  showEdit.value = false
+}
 
 /**
  * Validates and saves the edited record.

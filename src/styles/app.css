@@ -27,7 +27,9 @@
   body {
     background-color: var(--color-light-page);
     color: var(--color-dark);
-    transition: background-color 0.3s, color 0.3s;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
     font-family: 'Inter', 'Roboto', system-ui, sans-serif;
     margin: 0;
     padding: 0;
@@ -107,7 +109,17 @@ body.swiper-view-active::-webkit-scrollbar {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-30px); }
-  60% { transform: translateY(-15px); }
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
 }

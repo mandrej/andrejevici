@@ -43,12 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogPanel,
-} from '@headlessui/vue'
+import { TransitionRoot, TransitionChild, Dialog, DialogPanel } from '@headlessui/vue'
 
 withDefaults(
   defineProps<{

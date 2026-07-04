@@ -1,10 +1,12 @@
 <template>
   <!-- Header: tab selector -->
-  <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+  <div
+    class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+  >
     <AppIcon :name="activeTabIcon" class="w-6 h-6 text-primary" />
     <AppSelect
       v-model="app.metaTab"
-      :options="metaOptions.map(o => ({ label: o.label, value: o.value }))"
+      :options="metaOptions.map((o) => ({ label: o.label, value: o.value }))"
       class="flex-1 max-w-xs"
       flat
     />
@@ -19,7 +21,9 @@
         :label="`Add new ${activeTabShort.toLowerCase()}`"
         clearable
       />
-      <p v-if="newValue && currentValueList.includes(newValue)" class="text-xs text-negative mt-1">Already exists</p>
+      <p v-if="newValue && currentValueList.includes(newValue)" class="text-xs text-negative mt-1">
+        Already exists
+      </p>
     </div>
     <AppButton label="Add" @click="addValue" color="primary" class="mt-1" />
     <AppButton
@@ -43,15 +47,26 @@
   </div>
 
   <!-- Data table -->
-  <div class="overflow-auto mx-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg" style="height: 58vh">
+  <div
+    class="overflow-auto mx-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+    style="height: 58vh"
+  >
     <table class="w-full text-sm border-collapse">
       <thead class="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
         <tr>
-          <th class="text-left px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none" @click="toggleSort('name')">
-            Name <span class="text-xs">{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</span>
+          <th
+            class="text-left px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+            @click="toggleSort('name')"
+          >
+            Name
+            <span class="text-xs">{{ sortField === 'name' ? (sortAsc ? '↑' : '↓') : '' }}</span>
           </th>
-          <th class="text-right px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none" @click="toggleSort('count')">
-            Count <span class="text-xs">{{ sortField === 'count' ? (sortAsc ? '↑' : '↓') : '' }}</span>
+          <th
+            class="text-right px-3 py-2 font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+            @click="toggleSort('count')"
+          >
+            Count
+            <span class="text-xs">{{ sortField === 'count' ? (sortAsc ? '↑' : '↓') : '' }}</span>
           </th>
           <th class="px-3 py-2 w-10" />
           <th class="px-3 py-2 w-10" />
@@ -66,7 +81,9 @@
           <td
             class="px-3 py-2 cursor-pointer text-primary hover:underline"
             @click="app.searchBy({ [app.metaTab]: app.metaTab === 'tags' ? [row.name] : row.name })"
-          >{{ row.name }}</td>
+          >
+            {{ row.name }}
+          </td>
           <td class="px-3 py-2 text-right">
             <AppBadge color="secondary" textColor="black" class="text-xs">{{ row.count }}</AppBadge>
           </td>
@@ -84,7 +101,10 @@
           <td class="px-3 py-2 text-right">
             <button
               class="text-primary hover:opacity-80 transition-opacity disabled:opacity-30"
-              :disabled="(app.metaTab === 'tags' && row.name === 'flash') || (app.metaTab === 'model' && row.name === CONFIG.unknownModel)"
+              :disabled="
+                (app.metaTab === 'tags' && row.name === 'flash') ||
+                (app.metaTab === 'model' && row.name === CONFIG.unknownModel)
+              "
               :title="`Rename ${activeTabShort.toLowerCase()}`"
               @click="openRenameDialog(row.name)"
             >
@@ -109,7 +129,10 @@
         clearable
         @keyup.enter="performRename"
       />
-      <p v-if="newTagName" :class="['text-xs mt-1', isValueInUse ? 'text-negative' : 'text-positive']">
+      <p
+        v-if="newTagName"
+        :class="['text-xs mt-1', isValueInUse ? 'text-negative' : 'text-positive']"
+      >
         {{ isValueInUse ? 'Name exists (will merge)' : 'Name available' }}
       </p>
       <div class="flex justify-end gap-3 mt-6">
@@ -169,8 +192,12 @@ const metaOptions: MetaOption[] = [
   { label: 'Manage Lenses', value: 'lens', icon: 'sym_r_camera', short: 'Lens' },
 ]
 
-const activeTabShort = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.short || 'Value')
-const activeTabIcon = computed(() => metaOptions.find((o) => o.value === app.metaTab)?.icon || 'settings')
+const activeTabShort = computed(
+  () => metaOptions.find((o) => o.value === app.metaTab)?.short || 'Value',
+)
+const activeTabIcon = computed(
+  () => metaOptions.find((o) => o.value === app.metaTab)?.icon || 'settings',
+)
 
 const values = computed(() => meta.values)
 const currentCounts = computed(() => values.value[app.metaTab] || {})
@@ -192,7 +219,10 @@ const sortField = ref<SortField>('count')
 const sortAsc = ref(false)
 const toggleSort = (field: SortField) => {
   if (sortField.value === field) sortAsc.value = !sortAsc.value
-  else { sortField.value = field; sortAsc.value = false }
+  else {
+    sortField.value = field
+    sortAsc.value = false
+  }
 }
 
 const tableRows = computed(() => {
@@ -211,25 +241,43 @@ const sortedRows = computed(() => {
   return rows
 })
 
-const isValueInUse = computed(() =>
-  !!(newTagName.value && currentValueList.value.includes(newTagName.value) && newTagName.value !== valueToRename.value)
+const isValueInUse = computed(
+  () =>
+    !!(
+      newTagName.value &&
+      currentValueList.value.includes(newTagName.value) &&
+      newTagName.value !== valueToRename.value
+    ),
 )
 
 const addValue = async () => {
   if (newValue.value !== '' && !currentValueList.value.includes(newValue.value)) {
     try {
       await addCounterValue(app.metaTab, newValue.value)
-      notify({ type: 'positive', message: `${activeTabShort.value} "${newValue.value}" added`, icon: 'sym_r_check' })
+      notify({
+        type: 'positive',
+        message: `${activeTabShort.value} "${newValue.value}" added`,
+        icon: 'sym_r_check',
+      })
       newValue.value = ''
     } catch (error) {
-      notify({ type: 'negative', message: `Failed to add: ${error instanceof Error ? error.message : String(error)}` })
+      notify({
+        type: 'negative',
+        message: `Failed to add: ${error instanceof Error ? error.message : String(error)}`,
+      })
     }
   }
 }
 
 const confirmDelete = (val: string) => {
-  if (app.metaTab === 'tags' && val === 'flash') { notify({ type: 'warning', message: 'Cannot remove "flash"' }); return }
-  if (app.metaTab === 'model' && val === CONFIG.unknownModel) { notify({ type: 'warning', message: `Cannot remove "${CONFIG.unknownModel}"` }); return }
+  if (app.metaTab === 'tags' && val === 'flash') {
+    notify({ type: 'warning', message: 'Cannot remove "flash"' })
+    return
+  }
+  if (app.metaTab === 'model' && val === CONFIG.unknownModel) {
+    notify({ type: 'warning', message: `Cannot remove "${CONFIG.unknownModel}"` })
+    return
+  }
   valueToDelete.value = val
   showDeleteDialog.value = true
 }
@@ -240,18 +288,32 @@ const removeValueAction = async () => {
   try {
     await deleteValue(app.metaTab, val)
     await meta.countersBuild(app.metaTab)
-    notify({ type: 'positive', message: `${activeTabShort.value} "${val}" removed`, icon: 'sym_r_check' })
+    notify({
+      type: 'positive',
+      message: `${activeTabShort.value} "${val}" removed`,
+      icon: 'sym_r_check',
+    })
   } catch (error) {
-    notify({ type: 'negative', message: `Failed to remove: ${error instanceof Error ? error.message : String(error)}` })
+    notify({
+      type: 'negative',
+      message: `Failed to remove: ${error instanceof Error ? error.message : String(error)}`,
+    })
   }
 }
 
 const rebuildCounts = async () => {
   try {
     await meta.countersBuild(app.metaTab)
-    notify({ type: 'positive', message: `Successfully rebuilt ${app.metaTab} counts`, icon: 'sym_r_check' })
+    notify({
+      type: 'positive',
+      message: `Successfully rebuilt ${app.metaTab} counts`,
+      icon: 'sym_r_check',
+    })
   } catch (error) {
-    notify({ message: `Failed to rebuild: ${error instanceof Error ? error.message : String(error)}`, type: 'negative' })
+    notify({
+      message: `Failed to rebuild: ${error instanceof Error ? error.message : String(error)}`,
+      type: 'negative',
+    })
   }
 }
 
@@ -265,17 +327,33 @@ const openRenameDialog = (val: string) => {
 
 const performRename = async () => {
   if (!valueToRename.value || !newTagName.value) return
-  if (valueToRename.value === newTagName.value) { showRenameDialog.value = false; return }
-  if (app.metaTab === 'tags' && valueToRename.value === 'flash') { notify({ type: 'warning', message: 'Cannot change "flash"' }); return }
-  if (app.metaTab === 'model' && valueToRename.value === CONFIG.unknownModel) { notify({ type: 'warning', message: `Cannot change "${CONFIG.unknownModel}"` }); return }
+  if (valueToRename.value === newTagName.value) {
+    showRenameDialog.value = false
+    return
+  }
+  if (app.metaTab === 'tags' && valueToRename.value === 'flash') {
+    notify({ type: 'warning', message: 'Cannot change "flash"' })
+    return
+  }
+  if (app.metaTab === 'model' && valueToRename.value === CONFIG.unknownModel) {
+    notify({ type: 'warning', message: `Cannot change "${CONFIG.unknownModel}"` })
+    return
+  }
 
   try {
     await renameValue(app.metaTab, valueToRename.value, newTagName.value)
     await meta.countersBuild(app.metaTab)
-    notify({ type: 'positive', message: `${valueToRename.value} renamed to ${newTagName.value}`, icon: 'sym_r_check' })
+    notify({
+      type: 'positive',
+      message: `${valueToRename.value} renamed to ${newTagName.value}`,
+      icon: 'sym_r_check',
+    })
     showRenameDialog.value = false
   } catch (error) {
-    notify({ message: `Failed to rename: ${error instanceof Error ? error.message : String(error)}`, type: 'negative' })
+    notify({
+      message: `Failed to rename: ${error instanceof Error ? error.message : String(error)}`,
+      type: 'negative',
+    })
   }
 }
 </script>

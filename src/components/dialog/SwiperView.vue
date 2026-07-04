@@ -387,7 +387,9 @@ onUnmounted(() => {
   background-repeat: no-repeat !important;
   background-position: center !important;
 }
-.pswp__button--close svg { display: none; }
+.pswp__button--close svg {
+  display: none;
+}
 
 /* Override built-in prev arrow with Heroicons ChevronLeftIcon (white) */
 .pswp__button--arrow--prev {
@@ -397,7 +399,9 @@ onUnmounted(() => {
   background-position: center !important;
 }
 .pswp__button--arrow--prev svg,
-.pswp__button--arrow--prev::before { display: none !important; }
+.pswp__button--arrow--prev::before {
+  display: none !important;
+}
 
 /* Override built-in next arrow with Heroicons ChevronRightIcon (white) */
 .pswp__button--arrow--next {
@@ -407,10 +411,14 @@ onUnmounted(() => {
   background-position: center !important;
 }
 .pswp__button--arrow--next svg,
-.pswp__button--arrow--next::before { display: none !important; }
+.pswp__button--arrow--next::before {
+  display: none !important;
+}
 
 /* Zoom button hidden (zoom disabled) */
-.pswp__button--zoom { display: none !important; }
+.pswp__button--zoom {
+  display: none !important;
+}
 
 .pswp {
   -ms-overflow-style: none;

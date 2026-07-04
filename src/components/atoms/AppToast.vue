@@ -1,6 +1,8 @@
 <template>
   <Teleport to="body">
-    <div class="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-[10000000] pointer-events-none w-80 max-w-[calc(100vw-2rem)]">
+    <div
+      class="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-[10000000] pointer-events-none w-80 max-w-[calc(100vw-2rem)]"
+    >
       <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2">
         <div
           v-for="toast in toasts"
@@ -14,7 +16,10 @@
         >
           <!-- Spinner or Icon -->
           <div class="flex-shrink-0 mt-0.5">
-            <span v-if="toast.spinner" class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <span
+              v-if="toast.spinner"
+              class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+            />
             <AppIcon v-else-if="toast.icon" :name="toast.icon" class="w-5 h-5 leading-none" />
             <AppIcon v-else :name="defaultIcon(toast.type)" class="w-5 h-5 leading-none" />
           </div>
@@ -27,8 +32,10 @@
               v-html="toast.message"
             />
             <div v-else class="text-sm font-medium leading-snug">{{ toast.message }}</div>
-            <div v-if="toast.caption" class="text-xs opacity-75 mt-0.5 truncate">{{ toast.caption }}</div>
-            
+            <div v-if="toast.caption" class="text-xs opacity-75 mt-0.5 truncate">
+              {{ toast.caption }}
+            </div>
+
             <!-- Actions -->
             <div v-if="toast.actions && toast.actions.length > 0" class="flex flex-wrap gap-2 mt-3">
               <button
@@ -36,7 +43,11 @@
                 :key="i"
                 @click.stop="handleAction(toast.id, action.handler)"
                 class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1"
-                :class="toast.type === 'warning' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'"
+                :class="
+                  toast.type === 'warning'
+                    ? 'bg-black/10 hover:bg-black/20'
+                    : 'bg-white/20 hover:bg-white/30'
+                "
                 :style="action.color ? { color: action.color } : {}"
               >
                 <AppIcon v-if="action.icon" :name="action.icon" class="w-4 h-4" />

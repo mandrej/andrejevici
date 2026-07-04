@@ -4,7 +4,9 @@
   </ErrorBanner>
 
   <!-- Header banner -->
-  <div class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+  <div
+    class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+  >
     <div class="flex items-center gap-2">
       <AppIcon name="add_alert" class="w-5 h-5 text-primary" />
       <span class="text-base font-semibold text-gray-900 dark:text-white">Messages</span>
@@ -28,7 +30,11 @@
   <div class="overflow-y-auto" style="height: 65vh">
     <!-- Skeleton loading -->
     <template v-if="busy">
-      <div v-for="n in 5" :key="n" class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
+      <div
+        v-for="n in 5"
+        :key="n"
+        class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800"
+      >
         <div class="w-6 h-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
         <div class="flex-1">
           <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/5 mb-2 animate-pulse" />
@@ -51,7 +57,9 @@
       />
 
       <div class="flex-1 min-w-0">
-        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ item.message }}</div>
+        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+          {{ item.message }}
+        </div>
         <div class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ item.text }}</div>
         <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
           {{ formatDatum(item.timestamp.toDate(), 'DD.MM.YYYY HH:mm') }}

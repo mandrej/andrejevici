@@ -1,7 +1,10 @@
 <template>
   <!-- Simple search input with icon + clear — replaces q-select use-input mode -->
   <div class="relative flex items-center w-full">
-    <AppIcon name="search" class="absolute left-3 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+    <AppIcon
+      name="search"
+      class="absolute left-3 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none"
+    />
     <input
       type="text"
       :value="modelValue"

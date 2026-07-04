@@ -1,10 +1,6 @@
 <template>
   <!-- Headless UI TabGroup — replaces q-tabs / q-tab-panels pattern -->
-  <TabGroup
-    :selected-index="selectedIndex"
-    @change="onTabChange"
-    :vertical="vertical"
-  >
+  <TabGroup :selected-index="selectedIndex" @change="onTabChange" :vertical="vertical">
     <slot :TabList="TabList" :Tab="Tab" :TabPanels="TabPanels" :TabPanel="TabPanel" />
   </TabGroup>
 </template>

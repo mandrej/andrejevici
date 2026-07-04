@@ -85,11 +85,7 @@
 
         <div v-if="screen.gtXs" class="flex-shrink-0 ml-3 flex gap-1">
           <template v-if="item.timestamps?.length">
-            <AppBadge
-              v-for="(timestamp, index) in item.timestamps"
-              :key="index"
-              color="secondary"
-            >
+            <AppBadge v-for="(timestamp, index) in item.timestamps" :key="index" color="secondary">
               {{ ageDays(timestamp) }}
             </AppBadge>
           </template>

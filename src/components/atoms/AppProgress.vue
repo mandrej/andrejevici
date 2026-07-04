@@ -44,9 +44,15 @@ const colorClass = colorMap[props.color] ?? 'bg-primary'
 
 <style scoped>
 @keyframes progress-indeterminate {
-  0% { transform: translateX(-100%) scaleX(1); }
-  50% { transform: translateX(100%) scaleX(1.5); }
-  100% { transform: translateX(300%) scaleX(1); }
+  0% {
+    transform: translateX(-100%) scaleX(1);
+  }
+  50% {
+    transform: translateX(100%) scaleX(1.5);
+  }
+  100% {
+    transform: translateX(300%) scaleX(1);
+  }
 }
 .animate-progress-indeterminate {
   animation: progress-indeterminate 1.5s linear infinite;

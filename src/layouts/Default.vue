@@ -26,7 +26,9 @@
     <!-- Main content area -->
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
       <!-- Header toolbar -->
-      <header class="flex-shrink-0 relative flex items-center h-14 px-4 gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm z-20">
+      <header
+        class="flex-shrink-0 relative flex items-center h-14 px-4 gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm z-20"
+      >
         <!-- Hamburger (mobile) or close (mobile open) -->
         <button
           class="flex-shrink-0 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -52,7 +54,9 @@
     <div class="p-6">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Accept notifications</h2>
       <AppProgress v-if="wait" indeterminate color="warning" class="mb-3" />
-      <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Would you like to enable push notifications?</p>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
+        Would you like to enable push notifications?
+      </p>
       <div class="flex justify-between gap-3">
         <AppButton flat label="Disable" :disabled="wait" @click="onDisable" />
         <AppButton color="primary" label="Enable" :disabled="wait" @click="onEnable" />

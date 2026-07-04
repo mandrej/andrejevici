@@ -7,9 +7,11 @@
       <!-- Drop zone + file input -->
       <label
         class="flex-1 flex flex-col items-center justify-center min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer transition-colors"
-        :class="isDragging
-          ? 'border-primary bg-primary/5'
-          : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800'"
+        :class="
+          isDragging
+            ? 'border-primary bg-primary/5'
+            : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+        "
         @dragover.prevent="isDragging = true"
         @dragleave.prevent="isDragging = false"
         @drop.prevent="onDrop"
@@ -25,10 +27,15 @@
         />
         <AppIcon name="cloud_upload" class="w-10 h-10 text-gray-400 dark:text-gray-500 mb-2" />
         <span class="text-sm font-medium text-gray-600 dark:text-gray-300">
-          {{ files.length > 0 ? `${files.length} file(s) selected` : 'Drop images here, or click to browse' }}
+          {{
+            files.length > 0
+              ? `${files.length} file(s) selected`
+              : 'Drop images here, or click to browse'
+          }}
         </span>
         <span class="text-xs text-gray-400 dark:text-gray-500 mt-1 text-center px-4">
-          Max {{ CONFIG.fileMax }} jpg/jpeg/png/gif files, each under {{ formatBytes(CONFIG.fileSize) }}
+          Max {{ CONFIG.fileMax }} jpg/jpeg/png/gif files, each under
+          {{ formatBytes(CONFIG.fileSize) }}
         </span>
       </label>
 
@@ -41,12 +48,7 @@
           color="negative"
           @click="cancelAll"
         />
-        <AppButton
-          v-if="files.length > 0"
-          label="Upload"
-          type="submit"
-          color="primary"
-        />
+        <AppButton v-if="files.length > 0" label="Upload" type="submit" color="primary" />
         <AppButton
           :label="selection.length === 0 ? 'Publish all' : 'Publish selected'"
           @click="publishSelected"
@@ -68,11 +70,17 @@
       <PictureCard :rec="rec">
         <template #action>
           <div class="absolute top-2 right-2 flex items-center gap-2">
-            <button class="text-white hover:text-red-400 drop-shadow-md hover:scale-110 transition-all p-1" @click="deleteRec(rec)">
+            <button
+              class="text-white hover:text-red-400 drop-shadow-md hover:scale-110 transition-all p-1"
+              @click="deleteRec(rec)"
+            >
               <AppIcon name="delete" class="w-6 h-6 leading-none" />
             </button>
             <AppCheckbox v-model="selection" :val="rec.filename" class="drop-shadow-md" />
-            <button class="text-white hover:text-blue-400 drop-shadow-md hover:scale-110 transition-all p-1" @click="editRecord(rec)">
+            <button
+              class="text-white hover:text-blue-400 drop-shadow-md hover:scale-110 transition-all p-1"
+              @click="editRecord(rec)"
+            >
               <AppIcon name="publish" class="w-6 h-6 leading-none" />
             </button>
           </div>

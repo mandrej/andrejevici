@@ -3,7 +3,9 @@
   <div class="min-h-full">
     <!-- Repair panel -->
     <template v-if="adminTab === 'repair'">
-      <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div
+        class="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+      >
         <AppIcon name="construction" class="w-6 h-6 text-primary" />
         <span class="text-lg font-semibold text-gray-900 dark:text-white">Rebuild / Repair</span>
       </div>
@@ -19,8 +21,7 @@
           <template #details>
             <div class="text-center py-2">
               <AppBadge color="warning" textColor="black" class="text-base px-4 py-2">
-                {{ Intl.NumberFormat().format(bucket.count) }} photos
-                &nbsp;/&nbsp;
+                {{ Intl.NumberFormat().format(bucket.count) }} photos &nbsp;/&nbsp;
                 {{ formatBytes(bucket.size) }}
               </AppBadge>
             </div>
@@ -44,7 +45,7 @@
                 :key="key"
                 color="secondary"
                 textColor="black"
-                class="text-sm"
+                class="text-base px-4 py-2"
               >
                 {{ key }}: {{ Object.keys(val).length }}
               </AppBadge>
@@ -63,8 +64,8 @@
           description="Populates kind 'photo' where missing in Photo collection."
         >
           <template #details>
-            <div class="mt-2">
-              <AppBadge color="accent" class="text-sm">
+            <div class="text-center mt-2">
+              <AppBadge color="accent" class="text-base px-4 py-2">
                 Last run: {{ formatDatum('2026-05-05', 'DD.MM.YYYY') }}
               </AppBadge>
             </div>

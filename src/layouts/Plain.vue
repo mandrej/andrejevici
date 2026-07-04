@@ -26,7 +26,9 @@
           class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
           :style="showUrl ? { backgroundImage: `url(${showUrl})` } : {}"
         />
-        <div class="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" />
+        <div
+          class="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40"
+        />
       </router-link>
 
       <!-- Add photos button -->
@@ -41,9 +43,7 @@
     </div>
 
     <!-- Right half: router-view (sign-in, etc.) -->
-    <div
-      class="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen"
-    >
+    <div class="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen">
       <router-view />
     </div>
   </div>

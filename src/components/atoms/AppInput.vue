@@ -4,7 +4,9 @@
     class="relative flex flex-col gap-1 w-full"
     :class="{ 'opacity-50 pointer-events-none': disabled }"
   >
-    <span v-if="label" class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ label }}</span>
+    <span v-if="label" class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
+      label
+    }}</span>
 
     <div
       class="relative flex items-center w-full rounded-lg border bg-white dark:bg-gray-800 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent"
@@ -41,7 +43,9 @@
       </button>
     </div>
 
-    <span v-if="hint && !error" class="text-[10px] text-gray-400 dark:text-gray-500">{{ hint }}</span>
+    <span v-if="hint && !error" class="text-[10px] text-gray-400 dark:text-gray-500">{{
+      hint
+    }}</span>
     <span v-if="error" class="text-[10px] text-negative">{{ error }}</span>
   </label>
 </template>

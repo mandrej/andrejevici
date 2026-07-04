@@ -1,7 +1,9 @@
 <template>
   <!-- Headless UI Combobox — replaces q-select with use-input / AutoComplete -->
   <div class="flex flex-col gap-1 w-full">
-    <label v-if="label" class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ label }}</label>
+    <label v-if="label" class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
+      label
+    }}</label>
 
     <Combobox
       :model-value="modelValue"
@@ -22,7 +24,11 @@
               class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full"
             >
               {{ item }}
-              <button type="button" @click.stop="removeItem(item)" class="hover:text-red-500 transition-colors">
+              <button
+                type="button"
+                @click.stop="removeItem(item)"
+                class="hover:text-red-500 transition-colors"
+              >
                 <AppIcon name="close" class="w-3.5 h-3.5" />
               </button>
             </span>
@@ -67,7 +73,12 @@
               :value="query"
               v-slot="{ active }"
             >
-              <li :class="['px-4 py-2 text-sm cursor-pointer flex items-center gap-2', active ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-200']">
+              <li
+                :class="[
+                  'px-4 py-2 text-sm cursor-pointer flex items-center gap-2',
+                  active ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-200',
+                ]"
+              >
                 <AppIcon name="add" class="w-4 h-4" />
                 Add "{{ query }}"
               </li>
@@ -85,8 +96,13 @@
                   active ? 'bg-primary/10 text-primary' : 'text-gray-900 dark:text-gray-100',
                 ]"
               >
-                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{ option }}</span>
-                <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                <span :class="['block truncate', selected ? 'font-semibold' : 'font-normal']">{{
+                  option
+                }}</span>
+                <span
+                  v-if="selected"
+                  class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary"
+                >
                   <AppIcon name="check" class="w-4 h-4" />
                 </span>
               </li>
@@ -175,7 +191,10 @@ const onEnter = () => {
 
 const removeItem = (item: string) => {
   if (Array.isArray(props.modelValue)) {
-    emit('update:modelValue', props.modelValue.filter((v) => v !== item))
+    emit(
+      'update:modelValue',
+      props.modelValue.filter((v) => v !== item),
+    )
   }
 }
 
