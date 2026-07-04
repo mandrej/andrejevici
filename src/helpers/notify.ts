@@ -1,5 +1,5 @@
 import { toasts } from '../composables/useNotify'
-import type { NotifyOptions } from '../composables/useNotify'
+import type { NotifyOptions, Toast } from '../composables/useNotify'
 
 const darkTextTypes = new Set(['info', 'warning', 'positive'])
 
@@ -23,18 +23,41 @@ export default function notify({
   icon = '',
 }: NotifyOptions) {
   const _textColor = darkTextTypes.has(type) ? 'dark' : 'white'
-  let _nextId = toasts.value.length > 0 ? Math.max(...toasts.value.map((t) => t.id)) + 1 : 0
 
   // Deduplicate by group key
   if (group) {
     const existing = toasts.value.find((t) => t.group === group)
     if (existing) {
-      existing.message = message
+      if (existing._timer) {
+        clearTimeout(existing._timer)
+        delete existing._timer
+      }
+      Object.assign(existing, {
+        type,
+        message,
+        caption,
+        icon,
+        timeout,
+        spinner,
+        html,
+        multiLine,
+        position,
+        actions,
+        _textColor,
+      })
+      if (timeout > 0) {
+        existing._timer = setTimeout(() => {
+          const idx = toasts.value.findIndex((t) => t.id === existing.id)
+          if (idx !== -1) toasts.value.splice(idx, 1)
+        }, timeout)
+      }
       return
     }
   }
 
-  const toast = {
+  let _nextId = toasts.value.length > 0 ? Math.max(...toasts.value.map((t) => t.id)) + 1 : 0
+
+  const toast: Toast = {
     id: _nextId++,
     type,
     message,
@@ -52,7 +75,7 @@ export default function notify({
   toasts.value.push(toast)
 
   if (timeout > 0) {
-    setTimeout(() => {
+    toast._timer = setTimeout(() => {
       const idx = toasts.value.findIndex((t) => t.id === toast.id)
       if (idx !== -1) toasts.value.splice(idx, 1)
     }, timeout)

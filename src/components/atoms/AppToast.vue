@@ -28,6 +28,21 @@
             />
             <div v-else class="text-sm font-medium leading-snug">{{ toast.message }}</div>
             <div v-if="toast.caption" class="text-xs opacity-75 mt-0.5 truncate">{{ toast.caption }}</div>
+            
+            <!-- Actions -->
+            <div v-if="toast.actions && toast.actions.length > 0" class="flex flex-wrap gap-2 mt-3">
+              <button
+                v-for="(action, i) in toast.actions"
+                :key="i"
+                @click.stop="handleAction(toast.id, action.handler)"
+                class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1"
+                :class="toast.type === 'warning' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'"
+                :style="action.color ? { color: action.color } : {}"
+              >
+                <AppIcon v-if="action.icon" :name="action.icon" class="w-4 h-4" />
+                <span v-if="action.label">{{ action.label }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Close -->
@@ -48,6 +63,11 @@ import AppIcon from './AppIcon.vue'
 const dismiss = (id: number) => {
   const idx = toasts.value.findIndex((t) => t.id === id)
   if (idx !== -1) toasts.value.splice(idx, 1)
+}
+
+const handleAction = (id: number, handler?: () => void) => {
+  if (handler) handler()
+  dismiss(id)
 }
 
 const toastClass = (type: Toast['type']) => {

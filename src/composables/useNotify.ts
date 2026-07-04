@@ -17,6 +17,7 @@ export interface NotifyOptions {
 export interface Toast extends NotifyOptions {
   id: number
   _timer?: ReturnType<typeof setTimeout>
+  _textColor?: 'dark' | 'white'
 }
 
 let _nextId = 0
