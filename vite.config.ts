@@ -77,6 +77,7 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: 'dist/pwa',
     rollupOptions: {
       output: {
         manualChunks(id) {

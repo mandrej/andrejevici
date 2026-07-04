@@ -5,7 +5,7 @@ version=`date +%d.%m.%Y\ %H:%M`
 function syntax {
   echo $"Usage:"
   echo $"$0 run    - Run development server"
-  echo $"$0 icons  - Build icons"
+  # echo $"$0 icons  - Build icons"
   echo $"$0 build  - Build client"
   echo $"$0 deploy - Deploy"
   echo $"$0 functions - Deploy functions only"
@@ -23,10 +23,10 @@ else
       firebase emulators:start --import ./data --export-on-exit ./data
       # quasar dev -m pwa
       exit ;;
-    icons)
-      inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
-      icongenie g -i AppIcon.png --skip-trim
-      exit ;;
+    # icons)
+    #   inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
+    #   icongenie g -i AppIcon.png --skip-trim
+    #   exit ;;
     build)
       # MacPorts, sudo port install gsed
       gsed -i "s/^VITE_BUILD=.*/VITE_BUILD='$version'/" .env
