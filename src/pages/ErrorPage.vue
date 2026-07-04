@@ -1,19 +1,23 @@
 <template>
   <div class="w-full max-w-sm mx-auto px-4">
     <div class="text-center py-6">
+      <div class="mb-4 text-gray-300 dark:text-gray-600 flex justify-center">
+        <AppIcon :name="iconName" class="w-20 h-20" />
+      </div>
       <div class="text-8xl font-thin text-gray-300 dark:text-gray-600 mb-2">{{ props.code }}</div>
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ text }}</p>
     </div>
     <hr class="border-gray-200 dark:border-gray-700 mb-4" />
-    <div class="flex justify-end">
+    <div class="flex justify-center">
       <AppButton to="/" flat label="Go Home" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import AppButton from '../components/atoms/AppButton.vue'
+import AppIcon from '../components/atoms/AppIcon.vue'
 
 const props = defineProps({
   code: {
@@ -26,4 +30,8 @@ const errors: Record<number, string> = {
   401: 'Insufficient credentials...',
 }
 const text = ref(errors[props.code])
+
+const iconName = computed(() => {
+  return props.code === 401 ? 'priority_high' : 'warning'
+})
 </script>

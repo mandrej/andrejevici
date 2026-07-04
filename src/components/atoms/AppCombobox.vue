@@ -21,7 +21,12 @@
             <span
               v-for="item in modelValue"
               :key="String(item)"
-              class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full"
+              :class="[
+                'inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full',
+                isTagsInput
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'bg-primary/10 text-primary',
+              ]"
             >
               {{ item }}
               <button
@@ -127,6 +132,10 @@ import {
   TransitionRoot,
 } from '@headlessui/vue'
 import AppIcon from './AppIcon.vue'
+
+const isTagsInput = computed(() => {
+  return props.label?.toLowerCase().includes('tags') ?? false
+})
 
 const props = withDefaults(
   defineProps<{

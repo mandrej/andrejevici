@@ -5,7 +5,7 @@
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
         $route.name === 'home'
-          ? 'bg-primary text-white'
+          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
@@ -23,7 +23,7 @@
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
         $route.name === 'list'
-          ? 'bg-primary text-white'
+          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
@@ -42,7 +42,7 @@
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
         $route.name === 'add'
-          ? 'bg-primary text-white'
+          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
@@ -61,7 +61,7 @@
       :class="[
         'flex items-center p-3 rounded-lg transition-colors duration-200',
         $route.name === 'admin'
-          ? 'bg-primary text-white'
+          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
       ]"
     >
