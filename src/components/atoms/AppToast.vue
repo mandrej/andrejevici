@@ -8,14 +8,14 @@
           v-for="toast in toasts"
           :key="toast.id"
           :class="[
-            'flex items-start gap-3 px-4 py-3 rounded-xl shadow-2xl pointer-events-auto cursor-pointer',
+            'flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl pointer-events-auto cursor-pointer',
             'backdrop-blur-sm border border-white/10',
             toastClass(toast.type),
           ]"
           @click="dismiss(toast.id)"
         >
           <!-- Spinner or Icon -->
-          <div class="flex-shrink-0 mt-0.5">
+          <div class="flex-shrink-0">
             <span
               v-if="toast.spinner"
               class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"

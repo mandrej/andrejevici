@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="onVideoSubmit" ref="videoFormRef">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div>
         <AppInput
           v-model="videoUrl"
@@ -18,7 +18,7 @@
           hint="Select recording date and time"
         />
       </div>
-      <div class="self-end flex justify-end">
+      <div class="self-end lg:self-center flex justify-end sm:col-start-2 lg:col-start-auto">
         <AppButton label="Link Video" type="submit" color="primary" />
       </div>
     </div>
