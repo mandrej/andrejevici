@@ -40,7 +40,7 @@ export interface ExifType {
   loc?: string
 }
 export interface PhotoType extends ExifType {
-  readonly filename: string
+  filename: string
   url: string
   size: number
   email: string

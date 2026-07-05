@@ -149,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, ref } from 'vue'
+import { reactive, computed, ref, watch } from 'vue'
 import { U, formatBytes, sliceSlug, getYouTubeId } from '../../helpers'
 import CONFIG from '../../config'
 import readExif from '../../helpers/exif'
@@ -179,6 +179,21 @@ const imgError = ref(false)
 const { showEdit } = storeToRefs(app)
 const { tagsValues, tagsToApply, modelValues, lensValues, emailValues } = storeToRefs(meta)
 const { user } = storeToRefs(auth)
+
+watch(
+  () => tmp.url,
+  (newUrl) => {
+    if (tmp.kind === 'video' && newUrl) {
+      const id = getYouTubeId(newUrl)
+      if (id) {
+        tmp.filename = id
+        tmp.thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+      } else {
+        tmp.thumb = ''
+      }
+    }
+  }
+)
 
 const thumbUrl = computed(() => {
   if (tmp.thumb) return tmp.thumb
@@ -274,6 +289,18 @@ const onSubmit = async () => {
   if (typeof emailValid === 'string') {
     notify({ type: 'negative', message: emailValid })
     return
+  }
+
+  const rec = props.rec
+  if (tmp.kind === 'video' && rec && tmp.filename !== rec.filename) {
+    try {
+      const { photoCollection } = await import('../../helpers/collections')
+      const { doc, deleteDoc } = await import('firebase/firestore')
+      await deleteDoc(doc(photoCollection, rec.filename))
+      app.objects = app.objects.filter((x) => x.filename !== rec.filename)
+    } catch (e) {
+      console.error('Failed to delete old video document:', e)
+    }
   }
 
   try {

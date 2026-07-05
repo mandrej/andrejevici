@@ -49,7 +49,7 @@ body,
   position: absolute;
 }
 /* bounce effect */
-@keyframes bounce {
+@keyframes card-bounce {
   0%,
   20%,
   50%,
@@ -65,7 +65,7 @@ body,
   }
 }
 .bounce {
-  animation-name: bounce;
+  animation-name: card-bounce;
   animation-duration: 0.75s;
   animation-fill-mode: both;
 }

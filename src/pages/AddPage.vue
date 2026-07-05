@@ -36,7 +36,7 @@
     <div
       class="flex items-center gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 text-amber-800 dark:text-amber-200"
     >
-      <AppIcon name="warning" class="w-6 h-6 flex-shrink-0" />
+      <AppIcon name="warning" class="w-6 h-6 shrink-0" />
       <span class="text-sm">Only authorized users with a defined nickname can upload photos.</span>
     </div>
   </div>

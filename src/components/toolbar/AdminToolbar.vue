@@ -2,7 +2,6 @@
   <!-- Title -->
   <div class="flex-1 flex items-center gap-2 min-w-0">
     <router-link
-      v-if="screen.gtXs"
       to="/"
       class="text-base font-semibold whitespace-nowrap link hover:opacity-80 transition-opacity"
     >
@@ -32,7 +31,7 @@
       @click="adminTab = tab.name"
     >
       <AppIcon :name="tab.icon" class="w-4 h-4" />
-      <span v-if="screen.gtXs" class="hidden sm:inline">{{ tab.label }}</span>
+      <span class="hidden md:inline">{{ tab.label }}</span>
     </button>
   </div>
 </template>
@@ -40,13 +39,11 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
-import { useScreen } from '../../composables/useScreen'
 import AppProgress from '../atoms/AppProgress.vue'
 import AppIcon from '../atoms/AppIcon.vue'
 
 const app = useAppStore()
 const { busy, adminTab } = storeToRefs(app)
-const screen = useScreen()
 
 const tabs = [
   { name: 'repair', icon: 'construction', label: 'Repair' },

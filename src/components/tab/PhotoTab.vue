@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row gap-4 items-start">
       <!-- Drop zone + file input -->
       <label
-        class="flex-1 flex flex-col items-center justify-center min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer transition-colors"
+        class="w-full sm:w-auto flex-1 flex flex-col items-center justify-center min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer transition-colors"
         :class="
           isDragging
             ? 'border-primary bg-primary/5'

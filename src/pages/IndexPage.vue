@@ -22,7 +22,7 @@
       :key="nick"
       :label="nick"
       color="secondary"
-      class="!bg-secondary/15 hover:!bg-secondary/30 !text-teal-800 dark:!text-secondary"
+      class="bg-secondary/15! hover:bg-secondary/30! text-teal-800! dark:text-secondary! shadow-lg"
       @click="app.searchBy({ nick })"
       to="/list"
     />
@@ -30,7 +30,7 @@
 
   <!-- Theme toggle -->
   <div
-    class="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 shadow-lg bg-white dark:bg-gray-800"
+    class="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
   >
     <button
       v-for="opt in themeOptions"

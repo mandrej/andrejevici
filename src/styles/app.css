@@ -61,7 +61,7 @@
 
   /* Bounce animation for card highlight */
   .bounce {
-    animation: bounce 0.75s both;
+    animation: card-bounce 0.75s both;
   }
 
   /* Link utility */
@@ -108,7 +108,7 @@ body.swiper-view-active::-webkit-scrollbar {
   display: none;
 }
 
-@keyframes bounce {
+@keyframes card-bounce {
   0%,
   20%,
   50%,

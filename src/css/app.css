@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 @layer base {
   body {
@@ -25,11 +23,11 @@
   }
 
   .bounce {
-    animation: bounce 0.75s both;
+    animation: card-bounce 0.75s both;
   }
 }
 
-@keyframes bounce {
+@keyframes card-bounce {
   0%,
   20%,
   50%,

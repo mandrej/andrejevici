@@ -9,14 +9,7 @@
           required
         />
       </div>
-      <div>
-        <AppInput
-          v-model="videoFilename"
-          label="Filename"
-          hint="A filename for this video"
-          required
-        />
-      </div>
+
       <div>
         <AppInput
           v-model="videoDate"
@@ -33,13 +26,12 @@
 </template>
 
 <script setup lang="ts">
-import { v4 as uuidv4 } from 'uuid'
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import { useValuesStore } from '../../stores/values'
 import { useUserStore } from '../../stores/user'
-import { sliceSlug, formatDatum } from '../../helpers'
+import { sliceSlug, formatDatum, getYouTubeId } from '../../helpers'
 import CONFIG from '../../config'
 import notify from '../../helpers/notify'
 import AppInput from '../atoms/AppInput.vue'
@@ -54,7 +46,7 @@ const { user } = storeToRefs(auth)
 const videoFormRef = ref<HTMLFormElement | null>(null)
 
 const videoUrl = ref('')
-const videoFilename = ref('')
+
 // datetime-local format: YYYY-MM-DDThh:mm
 const videoDate = ref(
   (() => {
@@ -68,16 +60,22 @@ const videoDate = ref(
  * Validates the form and saves the video record to Firestore.
  */
 const onVideoSubmit = async () => {
-  if (!videoUrl.value || !videoFilename.value || !videoDate.value) return
+  if (!videoUrl.value || !videoDate.value) return
   if (!videoFormRef.value?.checkValidity()) {
     videoFormRef.value?.reportValidity()
+    return
+  }
+
+  const ytId = getYouTubeId(videoUrl.value)
+  if (!ytId) {
+    notify({ type: 'negative', message: 'Invalid YouTube URL' })
     return
   }
 
   const datum = new Date(videoDate.value)
   const video: VideoType = {
     url: videoUrl.value,
-    filename: `${uuidv4().substring(0, 8)}_${videoFilename.value}`,
+    filename: ytId,
     email: user.value!.email,
     nick: user.value!.nick,
     headline: headlineToApply.value || CONFIG.noTitle,
@@ -93,7 +91,7 @@ const onVideoSubmit = async () => {
   try {
     await app.saveVideo(video)
     videoUrl.value = ''
-    videoFilename.value = ''
+
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     videoDate.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`

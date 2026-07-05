@@ -1,5 +1,5 @@
 <template>
-  <nav class="mt-6 px-2 space-y-1">
+  <nav class="mt-2 px-2 space-y-1">
     <router-link
       to="/"
       :class="[

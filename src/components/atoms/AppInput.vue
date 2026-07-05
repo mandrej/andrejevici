@@ -9,12 +9,15 @@
     }}</span>
 
     <div
-      class="relative flex items-center w-full rounded-lg border bg-white dark:bg-gray-800 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent"
-      :class="
+      class="relative flex items-center w-full rounded-lg border transition-colors"
+      :class="[
+        readonly
+          ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'
+          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent',
         error
           ? 'border-negative focus-within:ring-negative'
-          : 'border-gray-300 dark:border-gray-600'
-      "
+          : ''
+      ]"
     >
       <input
         v-bind="$attrs"
@@ -27,6 +30,7 @@
         :autofocus="autofocus"
         :step="step"
         class="flex-1 min-w-0 px-3 py-2 bg-transparent text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none rounded-lg"
+        :class="readonly ? 'cursor-default text-gray-500 dark:text-gray-400' : ''"
         @input="onInput"
         @change="onChange"
       />

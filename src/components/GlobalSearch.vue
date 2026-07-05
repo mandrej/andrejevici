@@ -2,7 +2,7 @@
   <div class="relative flex-1 flex items-center min-w-0">
     <!-- Active filter chips row + input -->
     <div
-      class="flex flex-1 flex-wrap items-center gap-1 min-h-[36px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all"
+      class="search-container flex flex-1 items-center gap-1 min-h-[36px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all overflow-x-auto"
     >
       <!-- Active filter chips -->
       <span
@@ -262,6 +262,14 @@ const submit = () => {
 @reference "../styles/app.css";
 
 .chip {
-  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap;
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap flex-shrink-0;
+}
+
+.search-container {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.search-container::-webkit-scrollbar {
+  display: none;
 }
 </style>
