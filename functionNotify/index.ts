@@ -21,6 +21,7 @@ export const notify = onRequest(
     region: ['us-central1'],
     cors: [
       'https://andrejevici.web.app',
+      'http://localhost:5173',
       'http://localhost:9200',
       'http://localhost:9000',
       'http://localhost:8080',
@@ -53,10 +54,7 @@ export const notify = onRequest(
 
       querySnapshot.forEach((docSnap) => {
         registrationTokens.push(docSnap.id)
-        deviceData.set(
-          docSnap.id,
-          docSnap.data() as { email?: string; timestamp?: FirebaseFirestore.Timestamp },
-        )
+        deviceData.set(docSnap.id, docSnap.data())
       })
 
       const message = {
