@@ -1,15 +1,11 @@
 <template>
   <div class="bg-light dark:bg-dark p-2">
-    <div v-if="user?.isAuthorized" class="px-2 mb-4">
+    <div v-if="user?.isAuthorized" class="mb-4">
       <AppInput v-model="headlineToApply" label="Headline to apply" clearable />
     </div>
-    <TagsMerge v-if="user?.isAuthorized" class="px-2 mb-4" :label="`Tags to apply`" />
+    <TagsMerge v-if="user?.isAuthorized" class="mb-4" :label="`Tags to apply`" />
 
-    <div
-      v-if="selected.length > 0"
-      class="px-2 flex flex-col gap-2"
-      :class="{ 'gap-3': screen.gtSm }"
-    >
+    <div v-if="selected.length > 0" class="flex flex-col gap-2" :class="{ 'gap-3': screen.gtSm }">
       <div class="text-xs text-center text-gray-500">{{ selected.length }} items selected</div>
 
       <AppButton

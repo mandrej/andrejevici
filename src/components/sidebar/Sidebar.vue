@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full mt-4">
     <Menu />
     <div class="flex-grow"></div>
     <ManageSelection v-if="route.name === 'list'" />

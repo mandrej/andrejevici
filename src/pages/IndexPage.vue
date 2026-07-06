@@ -16,13 +16,13 @@
   </div>
 
   <!-- Top photographers -->
-  <div class="flex flex-wrap justify-center gap-2 mt-2 mx-4">
+  <div class="flex flex-wrap justify-center gap-2 mt-2 mx-8">
     <AppButton
       v-for="nick in topNicks"
       :key="nick"
       :label="nick"
       color="secondary"
-      class="bg-secondary/15! hover:bg-secondary/30! text-teal-800! dark:text-secondary! shadow-lg"
+      class="bg-secondary/15! hover:bg-secondary/30! text-teal-800! dark:text-secondary! shadow-lg border border-gray-300 dark:border-gray-600"
       @click="app.searchBy({ nick })"
       to="/list"
     />

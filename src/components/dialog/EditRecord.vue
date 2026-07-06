@@ -192,7 +192,7 @@ watch(
         tmp.thumb = ''
       }
     }
-  }
+  },
 )
 
 const thumbUrl = computed(() => {

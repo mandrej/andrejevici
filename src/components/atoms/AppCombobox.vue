@@ -55,7 +55,8 @@
             v-if="clearable && (multiple ? (modelValue as unknown[]).length > 0 : modelValue)"
             type="button"
             @click.stop="onClear"
-            class="absolute right-7 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            class="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            :class="multiple ? 'right-2' : 'right-7'"
           >
             <AppIcon name="close" class="w-5 h-5" />
           </button>

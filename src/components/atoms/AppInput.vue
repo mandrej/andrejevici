@@ -14,9 +14,7 @@
         readonly
           ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'
           : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent',
-        error
-          ? 'border-negative focus-within:ring-negative'
-          : ''
+        error ? 'border-negative focus-within:ring-negative' : '',
       ]"
     >
       <input
