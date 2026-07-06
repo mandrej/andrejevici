@@ -35,24 +35,47 @@ const send = () => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ text: msg }),
+    body: JSON.stringify({ text: msg, from: auth.user?.email || '' }),
   })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
-      return response.text()
+      return response.json()
     })
-    .then((text) => {
-      notify({
-        type: 'positive',
-        message: text || 'Notification sent successfully',
-        icon: 'sym_r_check',
-      })
+    .then((results) => {
+      if (Array.isArray(results)) {
+        if (results.length === 0) {
+          notify({
+            type: 'info',
+            message: 'No subscribers found',
+            icon: 'sym_r_info',
+          })
+          return
+        }
+        results.forEach((res) => {
+          let msgText = `From: ${res.from}\nTo: ${res.to}\nStatus: ${res.status ? 'Success' : 'Failed'}`
+          if (!res.status && typeof res.days === 'number') {
+            msgText += `\nExpired token: ${res.days} days ago`
+          }
+          notify({
+            type: res.status ? 'positive' : 'negative',
+            message: msgText,
+            multiLine: true,
+            icon: res.status ? 'sym_r_check' : 'sym_r_error',
+          })
+        })
+      } else {
+        notify({
+          type: 'positive',
+          message: 'Notification sent successfully',
+          icon: 'sym_r_check',
+        })
+      }
     })
     .catch((error) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      notify({ type: 'negative', message: `Failed to send message: ${errorMessage}` })
+      notify({ type: 'negative', timeout: 0, message: `Failed to send message: ${errorMessage}` })
     })
 }
 </script>

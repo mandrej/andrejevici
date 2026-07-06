@@ -11,14 +11,6 @@
       <AppIcon name="add_alert" class="w-5 h-5 text-primary" />
       <span class="text-base font-semibold text-gray-900 dark:text-white">Messages</span>
     </div>
-    <AppButton
-      flat
-      color="negative"
-      icon="delete"
-      label="Delete Selected"
-      :disabled="selectedItems.length === 0"
-      @click="deleteMessages(selectedItems)"
-    />
   </div>
 
   <!-- Search -->
@@ -51,13 +43,30 @@
       :key="group.message"
       class="border-b border-gray-100 dark:border-gray-800"
     >
-      <div class="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20">
-        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
-          {{ group.message }}
+      <div
+        class="flex items-start justify-between px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20 gap-2"
+      >
+        <div class="flex-grow min-w-0">
+          <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
+            {{ group.message }}
+          </div>
+          <div
+            class="flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 mt-1"
+          >
+            <span>{{ formatDatum(group.latestTimestamp.toDate(), 'DD.MM.YYYY HH:mm') }}</span>
+            <span v-if="group.from" class="font-medium text-gray-500 dark:text-gray-400"
+              >from {{ group.from }}</span
+            >
+          </div>
         </div>
-        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-          {{ formatDatum(group.latestTimestamp.toDate(), 'DD.MM.YYYY HH:mm') }}
-        </div>
+        <AppButton
+          flat
+          round
+          size="sm"
+          color="negative"
+          icon="delete"
+          @click="deleteMessages(group.items.map((i) => i.key))"
+        />
       </div>
 
       <div class="divide-y divide-gray-50 dark:divide-gray-800/40">
@@ -74,8 +83,6 @@
           <div class="flex-1 min-w-0">
             <div class="text-xs text-gray-600 dark:text-gray-400 break-words">{{ item.text }}</div>
           </div>
-
-          <AppCheckbox v-model="selectedItems" :val="item.key" />
         </div>
       </div>
     </div>
@@ -91,7 +98,6 @@ import ErrorBanner from '../ErrorBanner.vue'
 import type { MessageType } from '../../helpers/models'
 import LocalSearch from '../LocalSearch.vue'
 import AppButton from '../atoms/AppButton.vue'
-import AppCheckbox from '../atoms/AppCheckbox.vue'
 import AppIcon from '../atoms/AppIcon.vue'
 import { doc, query, limit, orderBy, writeBatch, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
@@ -101,7 +107,6 @@ import notify from '../../helpers/notify'
 const app = useAppStore()
 const { busy, error } = storeToRefs(app)
 const result = ref<MessageType[]>([])
-const selectedItems = ref<string[]>([])
 const search = ref('')
 
 const options = computed(() => {
@@ -131,6 +136,7 @@ const groupedResult = computed(() => {
       return {
         message,
         latestTimestamp: sorted[0]?.timestamp,
+        from: sorted[0]?.from || '',
         items: sorted,
       }
     })
@@ -148,7 +154,6 @@ const deleteMessages = async (keys: string[]) => {
   }
   await batch.commit()
   notify({ type: 'positive', message: `Deleted ${keys.length} messages`, icon: 'sym_r_check' })
-  selectedItems.value = []
 }
 
 let unsubscribe: (() => void) | null = null

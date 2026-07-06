@@ -39,7 +39,7 @@ export const notify = onRequest(
       const querySnapshot = await db().collection('Device').select('email', 'timestamp').get()
 
       if (querySnapshot.empty) {
-        res.status(200).send('No subscribers found')
+        res.status(200).json([])
         return
       }
 
@@ -84,6 +84,12 @@ export const notify = onRequest(
       // Collect all Firestore writes into batched operations
       const MAX_BATCH = 500
       const ops: Array<(batch: FirebaseFirestore.WriteBatch) => void> = []
+      const results: Array<{
+        from: string
+        to: string
+        status: boolean
+        days?: number
+      }> = []
 
       response.responses.forEach((resp, idx) => {
         if (!resp || idx >= registrationTokens.length) return
@@ -92,25 +98,36 @@ export const notify = onRequest(
         if (!token) return
 
         const data = deviceData.get(token)
+        const email = data?.email || ''
 
         let statusText: string
+        let days: number | undefined
         if (resp.success) {
-          statusText = 'successfully sent to ' + data?.email
-          logger.info(`Message sent to ${data?.email}`)
+          statusText = 'successfully sent to ' + email
+          logger.info(`Message sent to ${email}`)
         } else {
           const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
-          statusText = 'removed token for ' + data?.email + ' age ' + Math.floor(diff / 86400000)
-          logger.info(`Removed token for ${data?.email} age ${Math.floor(diff / 86400000)}`)
+          days = Math.floor(diff / 86400000)
+          statusText = 'removed token for ' + email + ' age ' + days
+          logger.info(`Removed token for ${email} age ${days}`)
           // Queue delete of stale token
           ops.push((batch) => {
             batch.delete(db().collection('Device').doc(token))
           })
         }
 
+        results.push({
+          from: req.body.from || '',
+          to: email,
+          status: resp.success,
+          ...(days !== undefined ? { days } : {}),
+        })
+
         // Queue Message log entry
         ops.push((batch) => {
           batch.set(db().collection('Message').doc(), {
-            email: data?.email,
+            from: req.body.from || '',
+            to: email,
             message: text,
             status: resp.success,
             text: statusText,
@@ -120,7 +137,7 @@ export const notify = onRequest(
       })
 
       if (ops.length === 0) {
-        res.status(200).send('No active subscribers found')
+        res.status(200).json([])
         logger.info('No active subscribers found. No message sent')
         return
       }
@@ -137,7 +154,7 @@ export const notify = onRequest(
       }
       await Promise.all(batchPromises)
 
-      res.status(200).send(`Message sent successfully to ${registrationTokens.length} devices`)
+      res.status(200).json(results)
     } catch (error) {
       logger.error('Error sending multicast message:', error)
       res.status(500).json({ error: (error as Error).message })
