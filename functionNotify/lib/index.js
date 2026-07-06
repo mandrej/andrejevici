@@ -52,10 +52,8 @@ exports.notify = (0, https_1.onRequest)(
     region: ['us-central1'],
     cors: [
         'https://andrejevici.web.app',
+        'https://andrejevici.firebaseapp.com', // (Highly recommended in case users access via firebaseapp.com)
         'http://localhost:5173',
-        'http://localhost:9200',
-        'http://localhost:9000',
-        'http://localhost:8080',
     ],
 }, async (req, res) => {
     logger.info('Notify request received', { body: req.body });
@@ -86,7 +84,23 @@ exports.notify = (0, https_1.onRequest)(
                 link: 'https://andrejevici.web.app/',
             },
         };
-        const response = await messaging().sendEachForMulticast(message);
+        let response;
+        if (process.env.FUNCTIONS_EMULATOR === 'true') {
+            logger.info('Running in emulator environment. Mocking multicast messaging response.', {
+                message,
+            });
+            response = {
+                responses: registrationTokens.map(() => ({
+                    success: true,
+                    messageId: 'mock-message-id-' + Math.random().toString(36).substring(2, 9),
+                })),
+                successCount: registrationTokens.length,
+                failureCount: 0,
+            };
+        }
+        else {
+            response = await messaging().sendEachForMulticast(message);
+        }
         // Collect all Firestore writes into batched operations
         const MAX_BATCH = 500;
         const ops = [];
