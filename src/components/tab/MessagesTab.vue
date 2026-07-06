@@ -47,26 +47,37 @@
 
     <!-- Actual items -->
     <div
-      v-for="item in filteredResult"
-      :key="item.key"
-      class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      v-for="group in groupedResult"
+      :key="group.message"
+      class="border-b border-gray-100 dark:border-gray-800"
     >
-      <AppIcon
-        :name="item.status ? 'check' : 'priority_high'"
-        :class="['w-5 h-5 flex-shrink-0', item.status ? 'text-positive' : 'text-negative']"
-      />
-
-      <div class="flex-1 min-w-0">
-        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-          {{ item.message }}
+      <div class="px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20">
+        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
+          {{ group.message }}
         </div>
-        <div class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ item.text }}</div>
-        <div class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-          {{ formatDatum(item.timestamp.toDate(), 'DD.MM.YYYY HH:mm') }}
+        <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          {{ formatDatum(group.latestTimestamp.toDate(), 'DD.MM.YYYY HH:mm') }}
         </div>
       </div>
 
-      <AppCheckbox v-model="selectedItems" :val="item.key" />
+      <div class="divide-y divide-gray-50 dark:divide-gray-800/40">
+        <div
+          v-for="item in group.items"
+          :key="item.key"
+          class="flex items-center gap-3 pl-8 pr-4 py-2 hover:bg-gray-50/20 dark:hover:bg-gray-800/10 transition-colors"
+        >
+          <AppIcon
+            :name="item.status ? 'check' : 'priority_high'"
+            :class="['w-4 h-4 flex-shrink-0', item.status ? 'text-positive' : 'text-negative']"
+          />
+
+          <div class="flex-1 min-w-0">
+            <div class="text-xs text-gray-600 dark:text-gray-400 break-words">{{ item.text }}</div>
+          </div>
+
+          <AppCheckbox v-model="selectedItems" :val="item.key" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -103,6 +114,31 @@ const filteredResult = computed(() => {
   return result.value.filter((item) =>
     item.message.toLowerCase().includes(search.value.toLowerCase()),
   )
+})
+
+const groupedResult = computed(() => {
+  const groups: { [message: string]: MessageType[] } = {}
+  for (const item of filteredResult.value) {
+    if (!groups[item.message]) {
+      groups[item.message] = []
+    }
+    groups[item.message].push(item)
+  }
+
+  return Object.entries(groups)
+    .map(([message, items]) => {
+      const sorted = [...items].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())
+      return {
+        message,
+        latestTimestamp: sorted[0]?.timestamp,
+        items: sorted,
+      }
+    })
+    .sort((a, b) => {
+      const aTime = a.latestTimestamp?.toMillis() ?? 0
+      const bTime = b.latestTimestamp?.toMillis() ?? 0
+      return bTime - aTime
+    })
 })
 
 const deleteMessages = async (keys: string[]) => {
