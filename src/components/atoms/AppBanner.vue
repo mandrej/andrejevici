@@ -1,15 +1,15 @@
 <template>
   <div
     :class="[
-      'flex items-center p-4 rounded-lg border-l-4 transition-colors',
+      'flex items-center p-4 rounded-lg transition-colors',
       colorClasses[color] || 'bg-gray-100 border-gray-400 text-gray-800',
       'dark:bg-gray-800 dark:text-gray-200',
     ]"
   >
-    <div v-if="icon" class="flex-shrink-0 mr-3">
+    <div v-if="icon" class="shrink-0 mr-3">
       <AppIcon :name="icon" class="w-6 h-6" />
     </div>
-    <div class="flex-grow">
+    <div class="grow">
       <slot />
     </div>
     <div v-if="$slots.default && $slots.actions" class="flex items-center gap-2">
@@ -45,7 +45,7 @@ const colorClasses: Record<string, string> = {
   positive: 'bg-green-50 border-green-500 text-green-800',
   negative: 'bg-red-50 border-red-500 text-red-800',
   info: 'bg-blue-100 border-blue-400 text-blue-900',
-  warning: 'bg-yellow-50 border-yellow-500 text-yellow-800',
+  warning: 'bg-orange-100 border-orange-500 text-orange-800',
   grey: 'bg-gray-100 border-gray-400 text-gray-700',
 }
 </script>

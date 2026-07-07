@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-light dark:bg-dark p-2">
+  <div class="bg-gray-50 dark:bg-gray-800 transition-colors p-2">
     <div v-if="user?.isAuthorized" class="mb-4">
       <AppInput v-model="headlineToApply" label="Headline to apply" clearable />
     </div>

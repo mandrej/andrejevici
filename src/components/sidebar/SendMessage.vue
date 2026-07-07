@@ -1,6 +1,8 @@
 <template>
-  <div class="flex items-end gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
-    <div class="flex-grow">
+  <div
+    class="flex items-end gap-2 p-2 pb-6 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors"
+  >
+    <div class="grow">
       <AppInput v-model="message" label="Send message to subscribers" />
     </div>
     <div class="flex items-end">

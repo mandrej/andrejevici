@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-col h-full mt-4">
     <Menu />
-    <div class="flex-grow"></div>
+    <div class="grow"></div>
     <ManageSelection v-if="route.name === 'list'" />
-    <SendMessage v-if="route.name === 'admin' || route.name === 'add'" class="my-4" />
+    <SendMessage v-if="route.name === 'admin' || route.name === 'add'" />
   </div>
 </template>
 
