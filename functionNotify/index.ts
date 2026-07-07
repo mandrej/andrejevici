@@ -63,7 +63,23 @@ export const notify = onRequest(
           link: 'https://andrejevici.web.app/',
         },
       }
-      const response = await messaging().sendEachForMulticast(message)
+
+      let response
+      if (process.env.FUNCTIONS_EMULATOR === 'true') {
+        logger.info('Running in emulator environment. Mocking multicast messaging response.', {
+          message,
+        })
+        response = {
+          responses: registrationTokens.map(() => ({
+            success: true,
+            messageId: 'mock-message-id-' + Math.random().toString(36).substring(2, 9),
+          })),
+          successCount: registrationTokens.length,
+          failureCount: 0,
+        }
+      } else {
+        response = await messaging().sendEachForMulticast(message)
+      }
 
       // Collect all Firestore writes into batched operations
       const MAX_BATCH = 500
