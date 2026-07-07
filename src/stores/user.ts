@@ -108,10 +108,8 @@ export const useUserStore = defineStore('auth', {
      */
     async refreshToken(): Promise<void> {
       try {
-        const registration = await navigator.serviceWorker?.getRegistration()
         const token = await getToken(messaging, {
           vapidKey: CONFIG.firebase.vapidKey,
-          ...(registration ? { serviceWorkerRegistration: registration } : {}),
         })
         if (token) {
           this.token = token

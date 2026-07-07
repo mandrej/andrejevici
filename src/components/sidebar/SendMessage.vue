@@ -54,9 +54,11 @@ const send = () => {
           return
         }
         results.forEach((res) => {
-          let msgText = `From: ${res.from}\nTo: ${res.to}\nStatus: ${res.status ? 'Success' : 'Failed'}`
+          let msgText
           if (!res.status && typeof res.days === 'number') {
-            msgText += `\nExpired token: ${res.days} days ago`
+            msgText = `Removed expired token for ${res.to}, ${res.days} days old`
+          } else {
+            msgText = `Successfully sent to ${res.to}`
           }
           notify({
             type: res.status ? 'positive' : 'negative',

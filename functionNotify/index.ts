@@ -63,23 +63,7 @@ export const notify = onRequest(
           link: 'https://andrejevici.web.app/',
         },
       }
-
-      let response
-      if (process.env.FUNCTIONS_EMULATOR === 'true') {
-        logger.info('Running in emulator environment. Mocking multicast messaging response.', {
-          message,
-        })
-        response = {
-          responses: registrationTokens.map(() => ({
-            success: true,
-            messageId: 'mock-message-id-' + Math.random().toString(36).substring(2, 9),
-          })),
-          successCount: registrationTokens.length,
-          failureCount: 0,
-        }
-      } else {
-        response = await messaging().sendEachForMulticast(message)
-      }
+      const response = await messaging().sendEachForMulticast(message)
 
       // Collect all Firestore writes into batched operations
       const MAX_BATCH = 500
@@ -103,13 +87,11 @@ export const notify = onRequest(
         let statusText: string
         let days: number | undefined
         if (resp.success) {
-          statusText = 'successfully sent to ' + email
-          logger.info(`Message sent to ${email}`)
+          statusText = `Successfully sent to ${email}`
         } else {
           const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
           days = Math.floor(diff / 86400000)
-          statusText = 'removed token for ' + email + ' age ' + days
-          logger.info(`Removed token for ${email} age ${days}`)
+          statusText = `Removed expired token for ${email}, ${days} days old`
           // Queue delete of stale token
           ops.push((batch) => {
             batch.delete(db().collection('Device').doc(token))

@@ -68,16 +68,18 @@ onAuthStateChanged(getAuth(), (usr) => {
 /**
  * Handles foreground FCM messages and surfaces them as in-app notifications.
  */
-onMessage(messaging, (payload) => {
-  if (payload.data?.body) {
-    notify({
-      type: 'external',
-      message: payload.data.body,
-      icon: 'sym_r_notifications',
-      caption: payload.messageId,
-    })
-  } else {
-    if (import.meta.env.DEV) console.log('FCM message received:', payload)
-  }
-})
+if (messaging) {
+  onMessage(messaging, (payload) => {
+    console.log('FCM message received:', payload)
+    const body = payload.data?.body || payload.notification?.body
+    if (body) {
+      notify({
+        type: 'external',
+        message: body,
+        icon: 'sym_r_notifications',
+        caption: payload.data?.title || payload.notification?.title || payload.messageId,
+      })
+    }
+  })
+}
 </script>
