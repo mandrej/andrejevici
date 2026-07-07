@@ -91,8 +91,6 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useAppStore } from '../../stores/app'
 import { formatDatum } from '../../helpers'
 import ErrorBanner from '../ErrorBanner.vue'
 import type { MessageType } from '../../helpers/models'
@@ -104,8 +102,8 @@ import { db } from '../../firebase'
 import { messageCollection } from '../../helpers/collections'
 import notify from '../../helpers/notify'
 
-const app = useAppStore()
-const { busy, error } = storeToRefs(app)
+const busy = ref(false)
+const error = ref('')
 const result = ref<MessageType[]>([])
 const search = ref('')
 

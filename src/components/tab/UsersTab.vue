@@ -192,7 +192,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAppStore } from '../../stores/app'
 import { useValuesStore } from '../../stores/values'
 import { useUserStore } from '../../stores/user'
 
@@ -210,12 +209,12 @@ import AppIcon from '../atoms/AppIcon.vue'
 import { Dialog, DialogPanel } from '@headlessui/vue'
 import { useScreen } from '../../composables/useScreen'
 
-const app = useAppStore()
 const meta = useValuesStore()
 const auth = useUserStore()
 const screen = useScreen()
 
-const { busy, error } = storeToRefs(app)
+const busy = ref(false)
+const error = ref('')
 const { user } = storeToRefs(auth)
 const { nickValues, nickWithCount } = storeToRefs(meta)
 const result = ref<UsersAndDevices[]>([])

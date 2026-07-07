@@ -103,8 +103,9 @@ src/
 │   ├── notify.ts                    # Push notification handler
 │   ├── remedy.ts                    # Data repair & cleanup utilities
 │   └── uploadTracker.ts             # Upload progress tracking
-└── css/
-    └── app.scss                     # Global styles
+└── styles/
+    └── app.css                      # Global Tailwind CSS styles
+
 
 src-pwa/                            # PWA-specific files
 ├── custom-service-worker.ts         # Service worker (Workbox + Firebase Messaging)
