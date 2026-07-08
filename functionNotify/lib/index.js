@@ -113,15 +113,15 @@ exports.notify = (0, https_1.onRequest)(
                 return;
             const data = deviceData.get(token);
             const email = data?.email || '';
-            let statusText;
+            let statusText = `sent to ${email}`;
             let days;
             if (resp.success) {
-                statusText = `Successfully sent to ${email}`;
+                statusText += ` successfully`;
             }
             else {
                 const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now());
                 days = Math.floor(diff / 86400000);
-                statusText = `Removed expired token for ${email}, ${days} days old`;
+                statusText += ` removed expired token ${days} days old`;
                 // Queue delete of stale token
                 ops.push((batch) => {
                     batch.delete(db().collection('Device').doc(token));
