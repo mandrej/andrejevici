@@ -1,5 +1,6 @@
 {
   "root": true,
+  "ignorePatterns": ["lib/"],
   "env": {
     "es6": true,
     "node": true
