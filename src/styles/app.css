@@ -13,6 +13,12 @@
   --color-dark: #121212;
   --color-light-page: #ffffff;
   --color-dark-page: #1a1a2e;
+
+  --breakpoint-xs: 600px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1536px;
 }
 
 @layer base {

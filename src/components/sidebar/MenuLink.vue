@@ -8,7 +8,7 @@
         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
     ]"
   >
-    <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center mx-1">
+    <div class="shrink-0 w-10 h-10 flex items-center justify-center mx-1">
       <AppIcon :name="icon" class="w-6 h-6" />
     </div>
     <div class="flex flex-col">

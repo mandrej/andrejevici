@@ -15,7 +15,7 @@
       to="/add"
       icon="sym_r_add_a_photo"
       title="Add"
-      subtitle="jpeg images less then 4 Mb"
+      subtitle="jpeg images less then 5 Mb"
       active-route-name="add"
     />
 

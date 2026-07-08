@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div
-      class="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-[10000000] pointer-events-none w-80 max-w-[calc(100vw-2rem)]"
+      class="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-10000000 pointer-events-none w-80 max-w-[calc(100vw-2rem)]"
     >
       <TransitionGroup name="toast" tag="div" class="flex flex-col gap-2">
         <div
@@ -15,7 +15,7 @@
           @click="dismiss(toast.id)"
         >
           <!-- Spinner or Icon -->
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <span
               v-if="toast.spinner"
               class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
@@ -57,7 +57,7 @@
           </div>
 
           <!-- Close -->
-          <button class="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity">
+          <button class="shrink-0 opacity-60 hover:opacity-100 transition-opacity">
             <AppIcon name="close" class="w-4 h-4" />
           </button>
         </div>
@@ -88,7 +88,7 @@ const toastClass = (type: Toast['type']) => {
     warning: 'bg-amber-500/95 text-black',
     info: 'bg-sky-500/95 text-white',
     ongoing: 'bg-blue-600/95 text-white',
-    external: 'bg-violet-600/95 text-white',
+    external: 'bg-stone-600/95 text-white',
   }
   return map[type ?? 'info'] ?? 'bg-gray-800/95 text-white'
 }

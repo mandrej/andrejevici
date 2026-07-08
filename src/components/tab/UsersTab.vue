@@ -24,7 +24,7 @@
           :key="n"
           class="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
         >
-          <div class="flex-shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
+          <div class="shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
           <div class="flex-grow">
             <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
             <div class="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
@@ -47,7 +47,7 @@
         v-else
         class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
-        <div class="flex-shrink-0 mr-3">
+        <div class="shrink-0 mr-3">
           <AppBadge color="warning" textColor="black" class="text-sm px-2 py-1">
             {{ contribution(item.nick) }}
           </AppBadge>
@@ -83,7 +83,7 @@
           <div class="text-xs text-gray-400">subscribed {{ ageDays(item.timestamp) }} days ago</div>
         </div>
 
-        <div v-if="screen.gtXs" class="flex-shrink-0 ml-3 flex gap-1">
+        <div v-if="screen.gtXs" class="shrink-0 ml-3 flex gap-1">
           <template v-if="item.timestamps?.length">
             <AppBadge v-for="(timestamp, index) in item.timestamps" :key="index" color="secondary">
               {{ ageDays(timestamp) }}
@@ -93,7 +93,7 @@
         </div>
 
         <div
-          class="flex-shrink-0 ml-3 flex gap-x-3"
+          class="shrink-0 ml-3 flex gap-x-3"
           :class="screen.xs ? 'flex-col gap-y-1' : 'flex-row'"
         >
           <label class="flex items-center gap-1 cursor-pointer">

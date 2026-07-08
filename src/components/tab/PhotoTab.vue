@@ -64,7 +64,7 @@
     <div
       v-for="rec in uploaded"
       :key="rec.filename"
-      class="flex-shrink-0"
+      class="shrink-0"
       style="min-width: 200px; max-width: 300px; flex: 1"
     >
       <PictureCard :rec="rec">

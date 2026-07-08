@@ -77,7 +77,7 @@
         >
           <AppIcon
             :name="item.status ? 'check' : 'priority_high'"
-            :class="['w-4 h-4 flex-shrink-0', item.status ? 'text-positive' : 'text-negative']"
+            :class="['w-4 h-4 shrink-0', item.status ? 'text-positive' : 'text-negative']"
           />
 
           <div class="flex-1 min-w-0">

@@ -79,7 +79,7 @@
       <button
         v-if="hasActiveFilters"
         type="button"
-        class="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors"
+        class="shrink-0 text-gray-400 hover:text-red-500 transition-colors"
         @click="clearAll"
         title="Clear all filters"
       >
@@ -262,7 +262,7 @@ const submit = () => {
 @reference "../styles/app.css";
 
 .chip {
-  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap flex-shrink-0;
+  @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0;
 }
 
 .search-container {

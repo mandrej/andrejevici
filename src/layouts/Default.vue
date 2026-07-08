@@ -3,11 +3,11 @@
     <!-- Sidebar (desktop always visible, mobile overlay) -->
     <aside
       :class="[
-        'flex-shrink-0 flex flex-col h-full transition-transform duration-300 z-40',
+        'shrink-0 flex flex-col h-full transition-transform duration-300 z-40',
         'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700',
         'w-80',
         // Mobile: slide in/out
-        'fixed md:relative',
+        'fixed min-[769px]:relative',
         drawer || isDesktop ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
@@ -18,7 +18,7 @@
     <Transition name="fade">
       <div
         v-if="drawer && !isDesktop"
-        class="fixed inset-0 bg-black/40 z-30 md:hidden"
+        class="fixed inset-0 bg-black/40 z-30 min-[769px]:hidden"
         @click="drawer = false"
       />
     </Transition>
@@ -27,11 +27,11 @@
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
       <!-- Header toolbar -->
       <header
-        class="flex-shrink-0 relative flex items-center h-14 px-4 gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm z-20"
+        class="shrink-0 relative flex items-center h-14 px-4 gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm z-20"
       >
         <!-- Hamburger (mobile) or close (mobile open) -->
         <button
-          class="flex-shrink-0 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          class="shrink-0 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           :aria-label="drawer ? 'Close menu' : 'Open menu'"
           @click="drawer = !drawer"
         >
@@ -66,29 +66,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '../stores/user'
 import AppDialog from '../components/atoms/AppDialog.vue'
 import AppButton from '../components/atoms/AppButton.vue'
 import AppProgress from '../components/atoms/AppProgress.vue'
 import AppIcon from '../components/atoms/AppIcon.vue'
+import { useScreen } from '../composables/useScreen'
 
 const auth = useUserStore()
 const { askPush } = storeToRefs(auth)
+const screen = useScreen()
 
 const drawer = ref(false)
 const wait = ref(false)
-const isDesktop = ref(window.innerWidth >= 768)
+const isDesktop = computed(() => screen.gtSm)
 
-// Track resize to auto-open drawer on desktop
-const onResize = () => {
-  isDesktop.value = window.innerWidth >= 768
-  if (isDesktop.value) drawer.value = false
-}
-
-onMounted(() => window.addEventListener('resize', onResize))
-onUnmounted(() => window.removeEventListener('resize', onResize))
+// Track resize to auto-open/close drawer on desktop transition
+watch(isDesktop, (val) => {
+  if (val) drawer.value = false
+})
 
 // Show the dialog whenever askPush becomes true
 const showConsent = ref('Notification' in window && askPush.value)

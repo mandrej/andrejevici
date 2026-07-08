@@ -35,7 +35,7 @@
       <div
         v-for="item in objects"
         :key="item.filename"
-        class="flex-shrink-0"
+        class="shrink-0"
         style="min-width: 250px; max-width: 400px; flex: 1"
       >
         <PictureCard
