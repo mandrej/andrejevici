@@ -24,62 +24,61 @@ const auth = useUserStore()
 const { token } = storeToRefs(auth)
 const message = ref('TEST')
 
-const send = () => {
+const send = async () => {
   const msg = message.value.trim()
   if (msg === '') {
     notify({ type: 'warning', message: 'No message provided' })
     return
   }
 
-  fetch(CONFIG.notifyUrl, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ text: msg, from: auth.user?.email || '' }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-      return response.json()
+  try {
+    const response = await fetch(CONFIG.notifyUrl, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: msg, from: auth.user?.email || '' }),
     })
-    .then((results) => {
-      if (Array.isArray(results)) {
-        if (results.length === 0) {
-          notify({
-            type: 'info',
-            message: 'No subscribers found',
-            icon: 'sym_r_info',
-          })
-          return
-        }
-        results.forEach((res) => {
-          let msgText
-          if (!res.status && typeof res.days === 'number') {
-            msgText = `Removed expired token for ${res.to}, ${res.days} days old`
-          } else {
-            msgText = `Successfully sent to ${res.to}`
-          }
-          notify({
-            type: res.status ? 'positive' : 'negative',
-            message: msgText,
-            multiLine: true,
-            icon: res.status ? 'sym_r_check' : 'sym_r_error',
-          })
-        })
-      } else {
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    const results = await response.json()
+
+    if (Array.isArray(results)) {
+      if (results.length === 0) {
         notify({
-          type: 'positive',
-          message: 'Notification sent successfully',
-          icon: 'sym_r_check',
+          type: 'info',
+          message: 'No subscribers found',
+          icon: 'sym_r_info',
         })
+        return
       }
+      results.forEach((res) => {
+        let msgText = `sent to ${res.to}`
+        msgText +=
+          !res.status && typeof res.days === 'number'
+            ? ` removed expired token ${res.days} days old`
+            : ` successfully`
+        gtag('event', 'push_message', {
+          from: auth.user?.nick,
+          timestamp: Date.now(),
+          message: msg,
+          to: res.to,
+          text: msgText,
+        })
+      })
+    }
+    notify({
+      type: 'positive',
+      message: 'Notification sent successfully',
+      icon: 'sym_r_check',
     })
-    .catch((error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      notify({ type: 'negative', timeout: 0, message: `Failed to send message: ${errorMessage}` })
-    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    notify({ type: 'negative', timeout: 0, message: `Failed to send message: ${errorMessage}` })
+  }
 }
 </script>

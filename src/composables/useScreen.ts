@@ -8,15 +8,15 @@ let initialized = false
 function initBreakpoints() {
   if (initialized || typeof window === 'undefined') return
   const style = window.getComputedStyle(document.documentElement)
-  
+
   const xsVal = parseInt(style.getPropertyValue('--breakpoint-xs'), 10)
   const smVal = parseInt(style.getPropertyValue('--breakpoint-sm'), 10)
   const mdVal = parseInt(style.getPropertyValue('--breakpoint-md'), 10)
-  
+
   if (!isNaN(xsVal)) breakpointXs = xsVal
   if (!isNaN(smVal)) breakpointSm = smVal
   if (!isNaN(mdVal)) breakpointMd = mdVal
-  
+
   initialized = true
 }
 
@@ -60,5 +60,3 @@ export function useScreen() {
     },
   }
 }
-
-
