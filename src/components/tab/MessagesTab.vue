@@ -46,7 +46,7 @@
       <div
         class="flex items-start justify-between px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20 gap-2"
       >
-        <div class="flex-grow min-w-0">
+        <div class="grow min-w-0">
           <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 wrap-break-word">
             {{ group.message }}
           </div>
