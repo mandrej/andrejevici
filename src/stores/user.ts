@@ -49,12 +49,14 @@ export const useUserStore = defineStore('auth', {
     token: string | null
     allowPush: boolean
     askPush: boolean
+    isFreshLogin: boolean
   } {
     return {
       user: null,
       token: null,
       allowPush: false, // persisted in db
       askPush: false, // ephemeral — show consent dialog
+      isFreshLogin: false,
     }
   },
   persist: {
@@ -76,15 +78,30 @@ export const useUserStore = defineStore('auth', {
         const data = userSnap.data() as MyUserType
         this.allowPush = data.allowPush
 
-        // If last login is older than loginDays, prompt for push consent again
+        // If last login is older than loginDays, log out if not a fresh login;
+        // otherwise prompt for push consent again
         const lastLogin = data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0
-        this.askPush = Date.now() - lastLogin > CONFIG.loginDays * 86400000
+        const isExpired = Date.now() - lastLogin > CONFIG.loginDays * 86400000
+
+        if (isExpired && !this.isFreshLogin) {
+          await auth.signOut()
+          this.user = null
+          this.token = null
+          this.askPush = false
+          this.allowPush = false
+          resolveAuthReady()
+          return
+        }
+
+        this.askPush = isExpired
+        this.isFreshLogin = false
 
         data.timestamp = now
         this.user = data
       } else {
         const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
         this.allowPush = this.askPush = isFirstUser
+        this.isFreshLogin = false
         this.user = {
           name: user.displayName || '',
           email,
@@ -187,9 +204,11 @@ export const useUserStore = defineStore('auth', {
         void router.push({ name: 'home' })
       } else {
         try {
+          this.isFreshLogin = true
           const result = await signInWithPopup(auth, provider)
           if (import.meta.env.DEV) console.log(`Auth user: ${result.user.displayName}`)
         } catch (err) {
+          this.isFreshLogin = false
           notify({
             type: 'negative',
             message: 'An error occurred during sign-in. ' + String(err),
