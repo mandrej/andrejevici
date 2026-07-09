@@ -100,14 +100,14 @@ export const notify = onRequest(
         const data = deviceData.get(token)
         const email = data?.email || ''
 
-        let statusText = `sent to ${email}`
+        let statusText: string
         let days: number | undefined
         if (resp.success) {
-          statusText += ` successfully`
+          statusText = `sent successfully`
         } else {
           const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
           days = Math.floor(diff / 86400000)
-          statusText += ` removed expired token ${days} days old`
+          statusText = `removed expired token ${days} days old`
           // Queue delete of stale token
           ops.push((batch) => {
             batch.delete(db().collection('Device').doc(token))
