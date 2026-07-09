@@ -47,7 +47,7 @@
         class="flex items-start justify-between px-4 py-3 bg-gray-50/50 dark:bg-gray-800/20 gap-2"
       >
         <div class="flex-grow min-w-0">
-          <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 break-words">
+          <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 wrap-break-word">
             {{ group.message }}
           </div>
           <div
@@ -81,7 +81,9 @@
           />
 
           <div class="flex-1 min-w-0">
-            <div class="text-xs text-gray-600 dark:text-gray-400 break-words">{{ item.text }}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-400 wrap-break-word">
+              {{ item.to }}: {{ item.text }}
+            </div>
           </div>
         </div>
       </div>

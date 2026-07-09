@@ -25,7 +25,7 @@
           class="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
         >
           <div class="shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
-          <div class="flex-grow">
+          <div class="grow">
             <div class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
             <div class="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
           </div>
@@ -53,7 +53,7 @@
           </AppBadge>
         </div>
 
-        <div class="flex-grow">
+        <div class="grow">
           <div class="flex items-center gap-1 text-base font-semibold">
             {{ item.nick || '???' }}
             <AppButton

@@ -19,6 +19,7 @@ import CONFIG from '../../config'
 import notify from '../../helpers/notify'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'
+import { formatDatum, getNickFromEmail } from '../../helpers'
 
 const auth = useUserStore()
 const { token } = storeToRefs(auth)
@@ -64,9 +65,9 @@ const send = async () => {
             : ` successfully`
         gtag('event', 'push_message', {
           from: auth.user?.nick,
-          timestamp: Date.now(),
+          when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           message: msg,
-          to: res.to,
+          to: getNickFromEmail(res.to),
           text: msgText,
         })
       })
