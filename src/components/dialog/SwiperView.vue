@@ -7,8 +7,8 @@
 import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
-import { U, getYouTubeId } from '../../helpers'
-// native clipboard + fullscreen APIs — no Quasar needed
+import { useUserStore } from '../../stores/user'
+import { U, dummy, formatDatum, getYouTubeId } from '../../helpers'
 import notify from '../../helpers/notify'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
 import 'photoswipe/style.css'
@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits(['carouselCancel'])
 
 const app = useAppStore()
+const auth = useUserStore()
 const { objects, showCarousel } = storeToRefs(app)
 
 let lightbox: PhotoSwipeLightbox | null = null
@@ -237,14 +238,15 @@ const initLightbox = () => {
       html: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px;height:24px;user-select:none"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>',
       onClick: () => {
         const curr = pswp.currSlide?.data.obj as PhotoType | undefined
-        // Track event
-        gtag('event', 'image_download', {
-          nickname: curr?.nick,
-          filename: curr?.filename,
-          headline: curr?.headline,
-        })
-        // Trigger download
         if (curr) {
+          // Track event
+          gtag('event', 'image_download', {
+            when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+            who: auth.user?.email ? dummy(auth.user?.email) : 'anonimous',
+            filename: curr?.filename,
+            headline: curr?.headline,
+          })
+          // Trigger download
           const download = async () => {
             try {
               const response = await fetch(curr.url)

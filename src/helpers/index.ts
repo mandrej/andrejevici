@@ -150,7 +150,7 @@ export const reFilename = /^(.*?)(\.[^.]*)?$/
  * @param email - The email address.
  * @returns The part of the email before the '@' symbol.
  */
-export const getNickFromEmail = (email: string | undefined | null): string => {
+export const dummy = (email: string | undefined | null): string => {
   return (email || '').split('@')[0] || ''
 }
 

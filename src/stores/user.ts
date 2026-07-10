@@ -22,7 +22,7 @@ import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
 import notify from '../helpers/notify'
 import { deviceCollection, userCollection } from '../helpers/collections'
-import { getNickFromEmail } from '../helpers'
+import { dummy } from '../helpers'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -105,7 +105,7 @@ export const useUserStore = defineStore('auth', {
         this.user = {
           name: user.displayName || '',
           email,
-          nick: isFirstUser ? 'admin' : getNickFromEmail(email),
+          nick: isFirstUser ? 'admin' : dummy(email),
           uid: user.uid,
           isAuthorized: isFirstUser,
           isAdmin: isFirstUser,
