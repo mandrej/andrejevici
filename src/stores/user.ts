@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import CONFIG from '../config'
-import { auth, db, messaging } from '../firebase'
+import { auth, db, messaging, logAnalyticsEvent } from '../firebase'
 import {
   doc,
   setDoc,
@@ -22,7 +22,7 @@ import type { User } from 'firebase/auth'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../helpers/models'
 import notify from '../helpers/notify'
 import { deviceCollection, userCollection } from '../helpers/collections'
-import { dummy } from '../helpers'
+import { dummy, formatDatum } from '../helpers'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -94,6 +94,13 @@ export const useUserStore = defineStore('auth', {
         }
 
         this.askPush = isExpired
+        if (this.isFreshLogin) {
+          logAnalyticsEvent('login', {
+            method: 'Google',
+            when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+            who: email ? dummy(email) : 'anonymous',
+          })
+        }
         this.isFreshLogin = false
 
         data.timestamp = now
@@ -101,6 +108,11 @@ export const useUserStore = defineStore('auth', {
       } else {
         const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
         this.allowPush = this.askPush = isFirstUser
+        logAnalyticsEvent('sign_up', {
+          method: 'Google',
+          when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+          who: email ? dummy(email) : 'anonymous',
+        })
         this.isFreshLogin = false
         this.user = {
           name: user.displayName || '',

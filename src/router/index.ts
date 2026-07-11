@@ -6,6 +6,7 @@ import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
 import type { MyUserType } from '../helpers/models'
 import CONFIG from '../config'
+import { logAnalyticsEvent } from '../firebase'
 
 /*
  * If not building with SSR mode, you can
@@ -50,6 +51,11 @@ router.afterEach((to: RouteLocationNormalized) => {
   // Use next tick to handle router history correctly
   void nextTick(() => {
     document.title = (to.meta.title as string) || CONFIG.title
+    logAnalyticsEvent('page_view', {
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: to.fullPath,
+    })
   })
 })
 

@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import { useUserStore } from '../../stores/user'
 import { U, dummy, formatDatum, getYouTubeId } from '../../helpers'
+import { logAnalyticsEvent } from '../../firebase'
 import notify from '../../helpers/notify'
 import PhotoSwipeLightbox from 'photoswipe/lightbox'
 import 'photoswipe/style.css'
@@ -67,6 +68,12 @@ const onShare = async () => {
     try {
       await navigator.clipboard.writeText(url)
       notify({ type: 'positive', message: 'URL copied to clipboard', icon: 'sym_r_check' })
+      logAnalyticsEvent('image_share', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
+        filename: obj.filename,
+        headline: obj.headline || '',
+      })
     } catch (e) {
       console.error('Share error:', e)
       notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
@@ -173,6 +180,13 @@ const initLightbox = () => {
           if (currSlide && currSlide.data.obj) {
             const obj = currSlide.data.obj as PhotoType
             el.innerHTML = `<div class="text-white text-center" style="padding: 8px; background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${getCaption(obj, window.innerWidth > 600)}</div>`
+            logAnalyticsEvent('image_view', {
+              when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+              who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
+              filename: obj.filename,
+              headline: obj.headline || '',
+              kind: obj.kind,
+            })
           }
         })
       },
@@ -240,9 +254,9 @@ const initLightbox = () => {
         const curr = pswp.currSlide?.data.obj as PhotoType | undefined
         if (curr) {
           // Track event
-          gtag('event', 'image_download', {
+          logAnalyticsEvent('image_download', {
             when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-            who: auth.user?.email ? dummy(auth.user?.email) : 'anonimous',
+            who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
             filename: curr?.filename,
             headline: curr?.headline,
           })
