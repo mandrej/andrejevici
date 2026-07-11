@@ -84,16 +84,6 @@ export interface ValuesState {
     kind: { [key: string]: number }
   }
 }
-export interface MessageType {
-  key: string
-  from: string
-  to: string
-  message: string
-  status: boolean
-  text: string
-  timestamp: Timestamp
-}
-
 export interface FileProgress {
   // {file.name: progress 0..1, ...}
   [key: string]: number

@@ -110,11 +110,6 @@
     <template v-else-if="adminTab === 'users'">
       <UsersTab />
     </template>
-
-    <!-- Messages panel -->
-    <template v-else-if="adminTab === 'messages'">
-      <MessagesTab />
-    </template>
   </div>
 </template>
 
@@ -134,7 +129,6 @@ import CONFIG from '../config'
 
 const MetaTab = defineAsyncComponent(() => import('../components/tab/MetaTab.vue'))
 const UsersTab = defineAsyncComponent(() => import('../components/tab/UsersTab.vue'))
-const MessagesTab = defineAsyncComponent(() => import('../components/tab/MessagesTab.vue'))
 
 const app = useAppStore()
 const meta = useValuesStore()

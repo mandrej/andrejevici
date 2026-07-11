@@ -49,6 +49,5 @@ const tabs = [
   { name: 'repair', icon: 'construction', label: 'Repair' },
   { name: 'meta', icon: 'schema', label: 'Metadata' },
   { name: 'users', icon: 'group', label: 'Users' },
-  { name: 'messages', icon: 'chat', label: 'Messages' },
 ] as const
 </script>

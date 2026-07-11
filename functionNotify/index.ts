@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase-admin/app'
-import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { getMessaging, type Messaging } from 'firebase-admin/messaging'
 import { onRequest } from 'firebase-functions/v2/https'
 import type { Request } from 'firebase-functions/v2/https'
@@ -100,14 +100,10 @@ export const notify = onRequest(
         const data = deviceData.get(token)
         const email = data?.email || ''
 
-        let statusText: string
         let days: number | undefined
-        if (resp.success) {
-          statusText = `sent successfully`
-        } else {
+        if (!resp.success) {
           const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
           days = Math.floor(diff / 86400000)
-          statusText = `removed expired token ${days} days old`
           // Queue delete of stale token
           ops.push((batch) => {
             batch.delete(db().collection('Device').doc(token))
@@ -120,37 +116,21 @@ export const notify = onRequest(
           status: resp.success,
           ...(days !== undefined ? { days } : {}),
         })
-
-        // Queue Message log entry
-        ops.push((batch) => {
-          batch.set(db().collection('Message').doc(), {
-            from: req.body.from || '',
-            to: email,
-            message: text,
-            status: resp.success,
-            text: statusText,
-            timestamp: FieldValue.serverTimestamp(),
-          })
-        })
       })
 
-      if (ops.length === 0) {
-        res.status(200).json([])
-        logger.info('No active subscribers found. No message sent')
-        return
-      }
-
-      // Commit all writes in parallel batches of 500
-      const batchPromises: Promise<FirebaseFirestore.WriteResult[]>[] = []
-      for (let i = 0; i < ops.length; i += MAX_BATCH) {
-        const batch = db().batch()
-        const chunk = ops.slice(i, i + MAX_BATCH)
-        for (const op of chunk) {
-          op(batch)
+      if (ops.length > 0) {
+        // Commit all writes in parallel batches of 500
+        const batchPromises: Promise<FirebaseFirestore.WriteResult[]>[] = []
+        for (let i = 0; i < ops.length; i += MAX_BATCH) {
+          const batch = db().batch()
+          const chunk = ops.slice(i, i + MAX_BATCH)
+          for (const op of chunk) {
+            op(batch)
+          }
+          batchPromises.push(batch.commit())
         }
-        batchPromises.push(batch.commit())
+        await Promise.all(batchPromises)
       }
-      await Promise.all(batchPromises)
 
       res.status(200).json(results)
     } catch (error) {
