@@ -4,7 +4,7 @@ import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'
 import { getMessaging, type Messaging } from 'firebase/messaging'
-import { getAnalytics, logEvent, type Analytics } from 'firebase/analytics'
+import { getAnalytics, logEvent, initializeAnalytics, type Analytics } from 'firebase/analytics'
 import CONFIG from './config'
 
 const firebaseApp = initializeApp(CONFIG.firebase)
@@ -15,8 +15,10 @@ const functions = getFunctions(firebaseApp)
 const messaging =
   typeof window !== 'undefined' ? getMessaging(firebaseApp) : (null as unknown as Messaging)
 const analytics =
-  typeof window !== 'undefined' && !import.meta.env.DEV
-    ? getAnalytics(firebaseApp)
+  typeof window !== 'undefined'
+    ? import.meta.env.DEV
+      ? initializeAnalytics(firebaseApp, { config: { debug_mode: true } })
+      : getAnalytics(firebaseApp)
     : (null as unknown as Analytics)
 
 /**
@@ -26,7 +28,8 @@ const analytics =
 function logAnalyticsEvent(eventName: string, eventParams?: Record<string, unknown>) {
   if (analytics) {
     logEvent(analytics, eventName, eventParams)
-  } else if (import.meta.env.DEV) {
+  }
+  if (import.meta.env.DEV) {
     console.log(`[Analytics Dev] Event: ${eventName}`, eventParams)
   }
 }
