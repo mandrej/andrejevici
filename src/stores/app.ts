@@ -253,6 +253,7 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       const bucket = useBucketStore()
+      const userStore = useUserStore()
       if (!obj.kind) obj.kind = 'photo'
 
       if (obj.thumb) {
@@ -282,6 +283,13 @@ export const useAppStore = defineStore('app', {
         meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
+        logAnalyticsEvent('published', {
+          when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+          who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
+          filename: obj.filename,
+          headline: obj.headline,
+          kind: obj.kind,
+        })
 
         // set find on new added image and fetch
         this.find = { year: obj.year, month: obj.month, day: obj.day }
@@ -308,9 +316,18 @@ export const useAppStore = defineStore('app', {
       }
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
+      const userStore = useUserStore()
       await setDoc(docRef, obj, { merge: true })
       this.updateLastRecord(obj)
       meta.updateCounters(null, obj)
+
+      logAnalyticsEvent('published', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
+        filename: obj.filename,
+        headline: obj.headline,
+        kind: obj.kind,
+      })
 
       // set find on new added image and fetch
       this.find = { year: obj.year, month: obj.month, day: obj.day }
