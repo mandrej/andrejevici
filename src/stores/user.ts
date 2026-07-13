@@ -95,8 +95,8 @@ export const useUserStore = defineStore('auth', {
 
         this.askPush = isExpired
         if (this.isFreshLogin) {
-          logAnalyticsEvent('login', {
-            method: 'Google',
+          logAnalyticsEvent('sign_in', {
+            text: 'existing fresh',
             when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
             who: email ? dummy(email) : 'anonymous',
           })
@@ -108,8 +108,8 @@ export const useUserStore = defineStore('auth', {
       } else {
         const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
         this.allowPush = this.askPush = isFirstUser
-        logAnalyticsEvent('sign_up', {
-          method: 'Google',
+        logAnalyticsEvent('sign_in', {
+          text: 'new user',
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: email ? dummy(email) : 'anonymous',
         })

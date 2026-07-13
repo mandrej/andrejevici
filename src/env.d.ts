@@ -1,12 +1,6 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 
-interface Window {
-  dataLayer?: Record<string, unknown>[]
-}
-
-declare function gtag(...args: unknown[]): void
-
 interface ImportMetaEnv {
   readonly VITE_BUILD?: string
   readonly DEV: boolean

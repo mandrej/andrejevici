@@ -54,8 +54,6 @@ import TagsMerge from '../TagsMerge.vue'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'
 import { useScreen } from '../../composables/useScreen'
-import { dummy, formatDatum } from '@/helpers'
-import { logAnalyticsEvent } from '@/firebase'
 
 const app = useAppStore()
 const auth = useUserStore()
@@ -88,13 +86,6 @@ const applyHeadline = async () => {
 const deleteSelected = async () => {
   const toDelete = [...selected.value]
   for (const item of toDelete) {
-    logAnalyticsEvent('image_delete', {
-      when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-      who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
-      filename: item.filename,
-      headline: item.headline || '',
-      kind: item.kind,
-    })
     await app.deleteRecord(item)
   }
   clearSelected()

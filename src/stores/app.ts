@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { storage } from '../firebase'
+import { storage, logAnalyticsEvent } from '../firebase'
 import {
   doc,
   query,
@@ -22,11 +22,13 @@ import {
   fixQuery,
   getYouTubeId,
   formatDatum,
+  dummy,
 } from '../helpers'
 import CONFIG from '../config'
 import notify from '../helpers/notify'
 import { useValuesStore } from './values'
 import { useBucketStore } from './bucket'
+import { useUserStore } from './user'
 import router from '../router'
 import type {
   QuerySnapshot,
@@ -331,6 +333,15 @@ export const useAppStore = defineStore('app', {
       const docRef = doc(photoCollection, obj.filename)
       const meta = useValuesStore()
       const bucket = useBucketStore()
+      const userStore = useUserStore()
+
+      logAnalyticsEvent('image_delete', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
+        filename: obj.filename,
+        headline: obj.headline || '',
+        kind: obj.kind,
+      })
 
       try {
         const promises: Promise<void>[] = [deleteDoc(docRef)]
@@ -342,6 +353,9 @@ export const useAppStore = defineStore('app', {
         }
         await Promise.all(promises)
       } catch (err) {
+        if (import.meta.env.DEV) {
+          console.error('deleteRecord failed with error:', err)
+        }
         notify({
           type: 'negative',
           group: obj.filename,

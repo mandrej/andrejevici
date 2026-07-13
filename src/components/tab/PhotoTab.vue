@@ -93,13 +93,13 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { computed, defineAsyncComponent, onMounted, ref, reactive } from 'vue'
-import { storage, logAnalyticsEvent } from '../../firebase'
+import { storage } from '../../firebase'
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../../stores/app'
 import { useValuesStore } from '../../stores/values'
 import { useUserStore } from '../../stores/user'
-import { dummy, fakeHistory, formatBytes, formatDatum } from '../../helpers'
+import { fakeHistory, formatBytes } from '../../helpers'
 import CONFIG from '../../config'
 import notify from '../../helpers/notify'
 import PictureCard from '../../components/PictureCard.vue'
@@ -241,14 +241,7 @@ const uploadTask = (file: File): Promise<string> => {
               kind: 'photo',
             }
             uploaded.value.push(data)
-            logAnalyticsEvent('image_upload', {
-              when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-              who: user.value!.email ? dummy(user.value!.email) : 'anonymous',
-              filename: filename,
-              size: file.size,
-            })
             resolve(filename)
-            if (import.meta.env.DEV) console.log('uploaded', filename)
           })
           .catch((err) => {
             tracker.markError(err)
@@ -302,12 +295,6 @@ const publishSelected = async () => {
     )
     promises.push(app.saveRecord(newRec))
   }
-
-  logAnalyticsEvent('image_publish', {
-    when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-    who: user.value!.email ? dummy(user.value!.email) : 'anonymous',
-    count: targets.length,
-  })
 
   const results = await Promise.allSettled(promises)
   const successfulFilenames: string[] = []

@@ -1,12 +1,9 @@
-import { nextTick } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { authReady } from '../stores/user'
 import routes from './routes'
 import type { RouteLocationNormalized } from 'vue-router'
 import type { MyUserType } from '../helpers/models'
-import CONFIG from '../config'
-import { logAnalyticsEvent } from '../firebase'
 
 /*
  * If not building with SSR mode, you can
@@ -42,21 +39,6 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
   } else if (to.meta.requiresAdmin && !(user && user.isAdmin)) {
     return { name: '401', replace: true }
   }
-})
-/**
- * Updates the browser tab title to the matched route's `meta.title` after
- * each navigation, with `CONFIG.title` as the fallback.
- */
-router.afterEach((to: RouteLocationNormalized) => {
-  // Use next tick to handle router history correctly
-  void nextTick(() => {
-    document.title = (to.meta.title as string) || CONFIG.title
-    logAnalyticsEvent('page_view', {
-      page_title: document.title,
-      page_location: window.location.href,
-      page_path: to.fullPath,
-    })
-  })
 })
 
 export default router
