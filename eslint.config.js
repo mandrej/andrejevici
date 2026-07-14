@@ -53,6 +53,7 @@ export default defineConfigWithVueTs(
         ...globals.node, // SSR, Electron, config files
         process: 'readonly', // process.env.*
         ga: 'readonly', // Google Analytics
+        gtag: 'readonly',
         cordova: 'readonly',
         Capacitor: 'readonly',
         chrome: 'readonly', // BEX related
