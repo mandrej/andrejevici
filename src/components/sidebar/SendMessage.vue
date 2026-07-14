@@ -20,7 +20,6 @@ import notify from '../../helpers/notify'
 import AppButton from '../atoms/AppButton.vue'
 import AppInput from '../atoms/AppInput.vue'
 import { formatDatum, dummy } from '../../helpers'
-import { logAnalyticsEvent } from '../../firebase'
 
 const auth = useUserStore()
 const { token } = storeToRefs(auth)
@@ -61,7 +60,7 @@ const send = async () => {
       results.forEach((res) => {
         let msgText = `${dummy(res.to)}`
         msgText += !res.status && typeof res.days === 'number' ? ` ${res.days} days old` : ``
-        logAnalyticsEvent('push_message', {
+        gtag('event', 'push_message', {
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: dummy(auth.user?.email),
           message: msg,

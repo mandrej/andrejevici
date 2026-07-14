@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { storage, logAnalyticsEvent } from '../firebase'
+import { storage } from '../firebase'
 import {
   doc,
   query,
@@ -283,7 +283,7 @@ export const useAppStore = defineStore('app', {
         meta.updateCounters(null, obj)
         // delete uploaded
         removeFromList(this.uploaded, obj)
-        logAnalyticsEvent('published', {
+        gtag('event', 'published', {
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
           filename: obj.filename,
@@ -321,7 +321,7 @@ export const useAppStore = defineStore('app', {
       this.updateLastRecord(obj)
       meta.updateCounters(null, obj)
 
-      logAnalyticsEvent('published', {
+      gtag('event', 'published', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
         filename: obj.filename,
@@ -352,7 +352,7 @@ export const useAppStore = defineStore('app', {
       const bucket = useBucketStore()
       const userStore = useUserStore()
 
-      logAnalyticsEvent('image_delete', {
+      gtag('event', 'image_delete', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
         filename: obj.filename,

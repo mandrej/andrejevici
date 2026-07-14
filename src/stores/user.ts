@@ -1,6 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import CONFIG from '../config'
-import { auth, db, messaging, logAnalyticsEvent } from '../firebase'
+import { auth, db, messaging } from '../firebase'
 import {
   doc,
   setDoc,
@@ -95,7 +95,7 @@ export const useUserStore = defineStore('auth', {
 
         this.askPush = isExpired
         if (this.isFreshLogin) {
-          logAnalyticsEvent('sign_in', {
+          gtag('event', 'sign_in', {
             text: 'existing fresh',
             when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
             who: email ? dummy(email) : 'anonymous',
@@ -108,7 +108,7 @@ export const useUserStore = defineStore('auth', {
       } else {
         const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
         this.allowPush = this.askPush = isFirstUser
-        logAnalyticsEvent('sign_in', {
+        gtag('event', 'sign_in', {
           text: 'new user',
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: email ? dummy(email) : 'anonymous',
