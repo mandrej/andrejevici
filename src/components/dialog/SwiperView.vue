@@ -181,13 +181,6 @@ const initLightbox = () => {
           if (currSlide && currSlide.data.obj) {
             const obj = currSlide.data.obj as PhotoType
             el.innerHTML = `<div class="text-white text-center" style="padding: 8px; background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${getCaption(obj, window.innerWidth > 600)}</div>`
-            logAnalyticsEvent('detailed_view', {
-              when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-              who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
-              filename: obj.filename,
-              headline: obj.headline || '',
-              kind: obj.kind,
-            })
           }
         })
       },

@@ -103,9 +103,10 @@ import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/app'
 import { useUserStore } from '../stores/user'
 import { useRoute } from 'vue-router'
-import { fakeHistory, isAuthorOrAdmin, formatBytes } from '../helpers'
+import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '../helpers'
 import { useInfiniteScroll } from '../composables/useInfiniteScroll'
 import notify from '../helpers/notify'
+import { logAnalyticsEvent } from '../firebase'
 import type { PhotoType } from '../helpers/models'
 
 import PictureCard from '../components/PictureCard.vue'
@@ -288,6 +289,14 @@ const carouselShow = (c: string) => {
   if (index.value !== -1) {
     fakeHistory()
     showCarousel.value = true
+    const obj = objects.value[index.value]
+    logAnalyticsEvent('detailed_view', {
+      when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+      who: auth.user?.email ? dummy(auth.user?.email) : 'anonymous',
+      filename: obj.filename,
+      headline: obj.headline || '',
+      kind: obj.kind,
+    })
   } else {
     notify({ type: 'warning', message: 'Photo not found' })
   }
