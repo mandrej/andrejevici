@@ -252,6 +252,18 @@ For Cloud Functions: `./ands functions`
 - Push permission dialog triggered if login interval (config `loginDays`) elapsed
 - Message handler in `App.vue` displays in-app notifications
 
+### Analytics Event Logging
+
+Analytics events are logged using `logAnalyticsEvent` (defined in `src/firebase.ts`). The following key events are tracked:
+
+- `'detailed_view'`: Logged when a user opens a photo in the carousel view (triggered by `carouselShow` in `ListPage.vue`).
+- `'share'`: Logged when a user copies a link to share a photo (in `SwiperView.vue`).
+- `'image_download'`: Logged when a user downloads an image (in `SwiperView.vue`).
+- `'push_message'`: Logged when an admin sends a push message (in `SendMessage.vue`).
+- `'sign_in'`: Logged on user sign-in (in `stores/user.ts`).
+- `'published'`: Logged when a photo record is published or updated (in `stores/app.ts`).
+- `'image_delete'`: Logged when a photo is deleted (in `stores/app.ts`).
+
 ### Photo Data Pipeline
 
 1. **Upload**: Photo uploaded via `AddPage.vue`

@@ -291,7 +291,6 @@ const initLightbox = () => {
             el.classList.toggle('hidden', obj.kind === 'video')
           }
         }
-
         // Initialize visibility
         updateVisibility()
 
