@@ -2,8 +2,8 @@
 .thumbs.db
 node_modules
 
-# Quasar core related directories
-.quasar
+/.quasar
+/.next
 /dist
 /data
 /firebase-export-*

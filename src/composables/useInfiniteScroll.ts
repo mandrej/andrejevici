@@ -1,59 +1,45 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useEffect, useRef, useState } from 'react'
 
-/**
- * Composable that fires `onLoad` when the sentinel element scrolls into view.
- * Replaces Quasar's `q-infinite-scroll`.
- *
- * @param onLoad - Async callback called when more items should be loaded.
- *   Receives a `done(stop?)` function; call done(true) to stop the observer.
- * @param options - IntersectionObserver options (threshold, rootMargin, etc.)
- */
 export function useInfiniteScroll(
   onLoad: (done: (stop?: boolean) => void) => Promise<void>,
   options: IntersectionObserverInit = { rootMargin: '400px' },
 ) {
-  const sentinel = ref<HTMLElement | null>(null)
-  const loading = ref(false)
-  const stopped = ref(false)
-  let observer: IntersectionObserver | null = null
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [stopped, setStopped] = useState(false)
+  const onLoadRef = useRef(onLoad)
+  onLoadRef.current = onLoad
 
-  const trigger = async () => {
-    if (loading.value || stopped.value) return
-    loading.value = true
+  useEffect(() => {
+    if (stopped || typeof window === 'undefined') return
 
-    await onLoad((stop = false) => {
-      loading.value = false
-      if (stop) {
-        stopped.value = true
-        observer?.disconnect()
-      }
-    })
-  }
-
-  /** Reset the scroller so it can fire again (e.g. after a filter change). */
-  const reset = () => {
-    stopped.value = false
-    loading.value = false
-    if (sentinel.value && observer) {
-      observer.disconnect()
-      observer.observe(sentinel.value)
-    }
-  }
-
-  onMounted(() => {
-    observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        void trigger()
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !loading) {
+        setLoading(true)
+        onLoadRef.current((stop = false) => {
+          setLoading(false)
+          if (stop) {
+            setStopped(true)
+          }
+        })
       }
     }, options)
 
-    if (sentinel.value) observer.observe(sentinel.value)
-  })
+    const el = sentinelRef.current
+    if (el) observer.observe(el)
 
-  onUnmounted(() => {
-    observer?.disconnect()
-    observer = null
-  })
+    return () => {
+      if (el) {
+        observer.unobserve(el)
+      }
+      observer.disconnect()
+    }
+  }, [stopped, loading, options])
 
-  return { sentinel, loading, stopped, reset }
+  const reset = () => {
+    setStopped(false)
+    setLoading(false)
+  }
+
+  return { sentinelRef, loading, stopped, reset }
 }

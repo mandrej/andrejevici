@@ -29,7 +29,7 @@ else
     #   exit ;;
     build)
       # MacPorts, sudo port install gsed
-      gsed -i "s/^VITE_BUILD=.*/VITE_BUILD='$version'/" .env
+      gsed -i "s/^NEXT_PUBLIC_BUILD=.*/NEXT_PUBLIC_BUILD='$version'/" .env
       npm run build
       exit ;;
     deploy)
