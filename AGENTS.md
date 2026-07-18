@@ -338,8 +338,9 @@ npm test test/exif.ts         # Test EXIF extraction
 2. **Firestore queries**: Use helpers in `collections.ts` (pre-built query refs)
 3. **EXIF extraction**: `extractExif()` in `helpers/exif.ts` returns structured metadata
 4. **Component naming**: Multi-word except App, Default, Plain, Menu, Sidebar
-5. **Icons**: `material-symbols-rounded` in Quasar (auto-loaded)
+5. **Icons**: **material-symbols-rounded** in Quasar (auto-loaded)
 6. **Error handling**: Use `errorBanner` from app store for user-facing errors
+7. **Command Execution Rules**: Always run package management commands (like `npm install` and `npm uninstall`) in the foreground (synchronously, with a high `WaitMsBeforeAsync` value or no background scheduling) to ensure completion before dependent tasks start.
 
 ## Environment & Configuration
 
@@ -357,3 +358,4 @@ npm test test/exif.ts         # Test EXIF extraction
 | Hot reload not working           | Verify Quasar dev server is running on port 5173                           |
 | Linting errors block dev         | Run `npm run format` to auto-fix most issues                               |
 | Tests fail with module errors    | Ensure `tsx` is installed (dev dependency); try `npm install`              |
+
