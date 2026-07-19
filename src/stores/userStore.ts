@@ -38,6 +38,7 @@ interface UserStore {
   allowPush: boolean
   askPush: boolean
   isFreshLogin: boolean
+  initialized: boolean
   storeUser: (user: User) => Promise<void>
   refreshToken: () => Promise<void>
   enableNotifications: () => Promise<void>
@@ -63,6 +64,7 @@ export const useUserStore = create<UserStore>()(
       allowPush: false,
       askPush: false,
       isFreshLogin: false,
+      initialized: false,
 
       storeUser: async (user: User) => {
         const userRef = doc(userCollection, user.uid)
@@ -97,6 +99,7 @@ export const useUserStore = create<UserStore>()(
             allowPush: data.allowPush,
             askPush,
             isFreshLogin: false,
+            initialized: true,
           })
         } else {
           const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
@@ -125,6 +128,7 @@ export const useUserStore = create<UserStore>()(
             allowPush,
             askPush,
             isFreshLogin: false,
+            initialized: true,
           })
         }
 
@@ -330,6 +334,7 @@ export const useUserStore = create<UserStore>()(
           token: null,
           allowPush: false,
           askPush: false,
+          initialized: true,
         })
       },
     }),

@@ -1,10 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import DefaultLayout from '../../components/layouts/DefaultLayout'
 import { useAppStore } from '../../stores/appStore'
 import { useValuesStore } from '../../stores/valuesStore'
 import { useBucketStore } from '../../stores/bucketStore'
+import { useUserStore } from '../../stores/userStore'
 import { formatDatum, formatBytes } from '../../helpers'
 import AdminCard from '../../components/AdminCard'
 import AppBadge from '../../components/atoms/AppBadge'
@@ -16,11 +18,24 @@ import { mismatch, missingThumbnails, fix } from '../../helpers/remedy'
 import CONFIG from '../../config'
 
 export default function AdminPage() {
+  const router = useRouter()
   const adminTab = useAppStore((state) => state.adminTab)
   const values = useValuesStore((state) => state.values)
   const countersBuildAll = useValuesStore((state) => state.countersBuild)
   const bucket = useBucketStore((state) => state.bucket)
   const bucketBuild = useBucketStore((state) => state.bucketBuild)
+  const user = useUserStore((state) => state.user)
+  const initialized = useUserStore((state) => state.initialized)
+
+  useEffect(() => {
+    if (initialized && !user?.isAdmin) {
+      router.replace('/401')
+    }
+  }, [initialized, user, router])
+
+  if (!initialized || !user?.isAdmin) {
+    return null
+  }
 
   const handleCountersBuild = async () => {
     for (const field of CONFIG.photo_filter) {

@@ -21,5 +21,6 @@ declare module 'register-service-worker' {
 declare namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_BUILD?: string
+    NEXT_PUBLIC_PWA_DEV?: string
   }
 }

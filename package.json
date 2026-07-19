@@ -1,6 +1,6 @@
 {
   "name": "andrejevici",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "Andrejevici photo album",
   "productName": "Andrejevici",
   "author": "mandrej <milan.andrejevic@gmail.com>",
@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,tsx,css,html,md,json}\" --ignore-path .gitignore",
     "dev": "next dev",
+    "dev:pwa": "node scripts/build-pwa.js && NEXT_PUBLIC_PWA_DEV=true next dev",
     "build": "next build --webpack && node scripts/build-pwa.js",
     "start": "next start",
     "test": "tsx --test"

@@ -74,8 +74,11 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       })
     }
 
-    // Register PWA service worker in production
-    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+    // Register PWA service worker in production or if explicitly enabled in dev
+    const isPwaEnabled =
+      process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_PWA_DEV === 'true'
+
+    if (isPwaEnabled && 'serviceWorker' in navigator) {
       const registerSW = () => {
         navigator.serviceWorker
           .register('/sw.js')
