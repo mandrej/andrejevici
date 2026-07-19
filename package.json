@@ -21,11 +21,11 @@
     "exifreader": "^4.26.0",
     "firebase": "^11.2.0",
     "next": "^16.2.10",
-    "photoswipe": "^5.4.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "transliteration": "^2.3.5",
     "uuid": "^13.0.0",
+    "yet-another-react-lightbox": "^3.32.1",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

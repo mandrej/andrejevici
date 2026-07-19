@@ -12,6 +12,8 @@ import {
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   ChevronUpDownIcon,
   CircleStackIcon,
   ClipboardDocumentIcon,
@@ -68,6 +70,8 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   arrow_upward: ArrowUpIcon,
   clear_all: XCircleIcon,
   unfold_more: ChevronUpDownIcon,
+  chevron_left: ChevronLeftIcon,
+  chevron_right: ChevronRightIcon,
 
   // Files & media
   cloud_upload: CloudArrowUpIcon,

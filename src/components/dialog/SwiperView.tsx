@@ -1,26 +1,39 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
 import { U, dummy, formatDatum, getYouTubeId } from '../../helpers'
 import { logAnalyticsEvent } from '../../firebase'
 import notify from '../../helpers/notify'
-import PhotoSwipeLightbox from 'photoswipe/lightbox'
-import 'photoswipe/style.css'
 import type { PhotoType } from '../../helpers/models'
+import Lightbox, { IconButton } from 'yet-another-react-lightbox'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import 'yet-another-react-lightbox/styles.css'
+import AppIcon from '../atoms/AppIcon'
 
 interface SwiperViewProps {
   index: number
   onCarouselCancel: (hash: string | null) => void
 }
 
+const ShareIcon: React.FC = (props) => <AppIcon name="share" className="w-6 h-6" {...props} />
+
+const DownloadIcon: React.FC = (props) => <AppIcon name="download" className="w-6 h-6" {...props} />
+
+const PrevIcon: React.FC = (props) => <AppIcon name="chevron_left" className="w-8 h-8" {...props} />
+
+const NextIcon: React.FC = (props) => (
+  <AppIcon name="chevron_right" className="w-8 h-8" {...props} />
+)
+
 export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel }) => {
   const objects = useAppStore((state) => state.objects)
   const setShowCarousel = useAppStore((state) => state.setShowCarousel)
   const user = useUserStore((state) => state.user)
 
-  const lightboxRef = useRef<PhotoSwipeLightbox | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(index)
+  const zoomRef = useRef<any>(null)
 
   const getCaption = (rec: PhotoType, showExtra: boolean): string => {
     if (rec.kind === 'video') return rec.headline || ''
@@ -38,66 +51,20 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
     return tmp
   }
 
-  const onShare = async () => {
-    const lightbox = lightboxRef.current
-    if (!lightbox || !lightbox.pswp) return
-    const currSlide = lightbox.pswp.currSlide
-    if (currSlide && currSlide.data.obj) {
-      const obj = currSlide.data.obj as PhotoType
-      const hash = U + obj.filename
-      const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
-
-      try {
-        await navigator.clipboard.writeText(url)
-        notify({ type: 'positive', message: 'URL copied to clipboard', icon: 'sym_r_check' })
-        logAnalyticsEvent('share', {
-          when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-          who: user?.email ? dummy(user.email) : 'anonymous',
-          filename: obj.filename,
-          headline: obj.headline || '',
-          kind: obj.kind || 'photo',
-        })
-      } catch (e) {
-        console.error('Share error:', e)
-        notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
-      }
-    }
-  }
-
-  const pauseAllVideos = () => {
-    const iframes = document.querySelectorAll<HTMLIFrameElement>('.pswp .video-wrapper iframe')
-    iframes.forEach((iframe) => {
-      iframe.contentWindow?.postMessage(
-        JSON.stringify({ event: 'command', func: 'pauseVideo' }),
-        '*',
-      )
-    })
-  }
-
-  useEffect(() => {
-    // Prevent default context menu
-    const preventDefault = (e: Event) => e.preventDefault()
-    document.body.classList.add('swiper-view-active')
-    window.addEventListener('contextmenu', preventDefault)
-
-    // Handle browser popstate to cancel carousel
-    const handlePopState = () => {
-      onCarouselCancel(null)
-    }
-    window.addEventListener('popstate', handlePopState)
-
-    // Prepare data source
-    const dataSource = objects.map((obj) => {
+  const slides = useMemo(() => {
+    return objects.map((obj) => {
       if (obj.kind === 'video') {
         const id = getYouTubeId(obj.url)
         return {
-          html: `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${id}?autoplay=0&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`,
+          type: 'video' as const,
+          src: `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&iv_load_policy=3&controls=0&playlist=${id}&loop=1&enablejsapi=1`,
           obj: obj,
         }
       }
       const w = obj.dim ? obj.dim[0] : 0
       const h = obj.dim ? obj.dim[1] : 0
       return {
+        type: 'image' as const,
         src: obj.url,
         width: w,
         height: h,
@@ -105,282 +72,196 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
         obj: obj,
       }
     })
+  }, [objects])
 
-    const lightbox = new PhotoSwipeLightbox({
-      dataSource,
-      index,
-      closeOnVerticalDrag: false,
-      wheelToZoom: false,
-      bgOpacity: 1,
-      zoom: false,
-      initialZoomLevel: 'fit',
-      secondaryZoomLevel: 1,
-      pswpModule: () => import('photoswipe'),
-    })
+  const handleShare = async () => {
+    const obj = objects[currentIndex]
+    if (!obj) return
+    const hash = U + obj.filename
+    const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
-    lightboxRef.current = lightbox
+    try {
+      await navigator.clipboard.writeText(url)
+      notify({ type: 'positive', message: 'URL copied to clipboard', icon: 'sym_r_check' })
+      logAnalyticsEvent('share', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: user?.email ? dummy(user.email) : 'anonymous',
+        filename: obj.filename,
+        headline: obj.headline || '',
+        kind: obj.kind || 'photo',
+      })
+    } catch (e) {
+      console.error('Share error:', e)
+      notify({ type: 'warning', message: 'Unable to copy URL to clipboard' })
+    }
+  }
 
-    // Register custom UI
-    lightbox.on('uiRegister', () => {
-      const pswp = lightbox.pswp
-      if (!pswp) return
+  const handleDownload = () => {
+    const curr = objects[currentIndex]
+    if (curr && curr.kind !== 'video') {
+      logAnalyticsEvent('image_download', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: user?.email ? dummy(user.email) : 'anonymous',
+        filename: curr.filename,
+        headline: curr.headline,
+      })
 
-      const appendToBottomBar = (el: HTMLElement) => {
-        let bar = pswp.element?.querySelector('.my-bottom-bar') as HTMLElement | null
-        if (!bar && pswp.element) {
-          bar = document.createElement('div')
-          bar.className = 'my-bottom-bar'
-          bar.style.cssText =
-            'position: absolute; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 2000; pointer-events: none;'
-          pswp.element.appendChild(bar)
-        }
-        if (bar) {
-          setTimeout(() => {
-            el.style.position = 'static'
-            el.style.pointerEvents = 'auto'
-            bar!.appendChild(el)
-          }, 0)
+      const download = async () => {
+        try {
+          const response = await fetch(curr.url)
+          const blob = await response.blob()
+          const blobUrl = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = blobUrl
+          a.download = curr.filename
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(blobUrl)
+        } catch (e) {
+          console.error('Download failed, falling back to direct link:', e)
+          const a = document.createElement('a')
+          a.href = curr.url
+          a.target = '_blank'
+          a.download = curr.filename
+          a.click()
         }
       }
+      void download()
+    }
+  }
 
-      // Caption
-      pswp.ui?.registerElement({
-        name: 'custom-caption',
-        order: 9,
-        isButton: false,
-        appendTo: 'root',
-        html: '',
-        onInit: (el) => {
-          pswp.on('change', () => {
-            const currSlide = pswp.currSlide
-            if (currSlide && currSlide.data.obj) {
-              const obj = currSlide.data.obj as PhotoType
-              el.innerHTML = `<div class="text-white text-center" style="padding: 8px; background: rgba(0,0,0,0.5); width: 100%; position: absolute; top: 0; left: 0; z-index: 2000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${getCaption(
-                obj,
-                window.innerWidth > 600,
-              )}</div>`
-            }
-          })
-        },
-      })
+  const handleClose = () => {
+    zoomRef.current?.changeZoom(1)
+    const curr = objects[currentIndex]
+    const hash = curr ? U + curr.filename : null
+    onCarouselCancel(hash)
+    setShowCarousel(false)
+  }
 
-      // Share Button
-      pswp.ui?.registerElement({
-        name: 'share-btn',
-        order: 6,
-        isButton: true,
-        tagName: 'button',
-        html: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px;height:24px;user-select:none"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185z" /></svg>',
-        onClick: () => {
-          onShare()
-        },
-        appendTo: 'root',
-        onInit: (el) => {
-          el.classList.add('pswp__custom-bottom-btn')
-          appendToBottomBar(el)
-        },
-      })
+  useEffect(() => {
+    const preventDefault = (e: Event) => e.preventDefault()
+    document.body.classList.add('swiper-view-active')
+    window.addEventListener('contextmenu', preventDefault)
 
-      // Fullscreen Button
-      pswp.ui?.registerElement({
-        name: 'fs-btn',
-        order: 5,
-        isButton: true,
-        tagName: 'button',
-        html: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px;height:24px;user-select:none"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>',
-        onClick: () => {
-          if (document.fullscreenElement) {
-            document.exitFullscreen()
-          } else {
-            document.documentElement.requestFullscreen()
-          }
-        },
-        appendTo: 'root',
-        onInit: (el) => {
-          el.classList.add('pswp__custom-bottom-btn')
-          appendToBottomBar(el)
-        },
-      })
-
-      // Download Button
-      pswp.ui?.registerElement({
-        name: 'download-btn',
-        order: 4,
-        isButton: true,
-        tagName: 'button',
-        html: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px;height:24px;user-select:none"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>',
-        onClick: () => {
-          const curr = pswp.currSlide?.data.obj as PhotoType | undefined
-          if (curr) {
-            logAnalyticsEvent('image_download', {
-              when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
-              who: user?.email ? dummy(user.email) : 'anonymous',
-              filename: curr.filename,
-              headline: curr.headline,
-            })
-
-            const download = async () => {
-              try {
-                const response = await fetch(curr.url)
-                const blob = await response.blob()
-                const blobUrl = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = blobUrl
-                a.download = curr.filename
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-                URL.revokeObjectURL(blobUrl)
-              } catch (e) {
-                console.error('Download failed, falling back to direct link:', e)
-                const a = document.createElement('a')
-                a.href = curr.url
-                a.target = '_blank'
-                a.download = curr.filename
-                a.click()
-              }
-            }
-            void download()
-          }
-        },
-        appendTo: 'root',
-        onInit: (el) => {
-          el.classList.add('pswp__custom-bottom-btn')
-          appendToBottomBar(el)
-
-          const updateVisibility = () => {
-            const currSlide = pswp.currSlide
-            const obj = (currSlide?.data.obj as PhotoType | undefined) || objects[index]
-            if (obj) {
-              el.classList.toggle('hidden', obj.kind === 'video')
-            }
-          }
-          updateVisibility()
-          pswp.on('change', updateVisibility)
-        },
-      })
-    })
-
-    // Pause videos when swiping away
-    lightbox.on('contentDeactivate', () => {
-      pauseAllVideos()
-    })
-
-    // Handle Close
-    lightbox.on('close', () => {
-      pauseAllVideos()
-      const curr = lightboxRef.current?.pswp?.currSlide?.data.obj as PhotoType | undefined
-      const hash = curr ? U + curr.filename : null
-      onCarouselCancel(hash)
-      setShowCarousel(false)
-    })
-
-    // Handle images with unknown dimensions
-    lightbox.on('contentLoad', (e) => {
-      const { content } = e
-      if (content.data.html) return
-
-      const width = content.data.width
-      const height = content.data.height
-
-      if ((!width || !height) && content.data.src) {
-        const img = new Image()
-        img.onload = () => {
-          content.data.width = img.width
-          content.data.height = img.height
-          if (lightbox.pswp) {
-            lightbox.pswp.refreshSlideContent(content.index)
-          }
-        }
-        img.src = content.data.src
-      }
-    })
-
-    lightbox.init()
-    lightbox.loadAndOpen(index)
+    const handlePopState = () => {
+      onCarouselCancel(null)
+    }
+    window.addEventListener('popstate', handlePopState)
 
     return () => {
       document.body.classList.remove('swiper-view-active')
       window.removeEventListener('contextmenu', preventDefault)
       window.removeEventListener('popstate', handlePopState)
-      if (lightboxRef.current) {
-        lightboxRef.current.destroy()
-        lightboxRef.current = null
-      }
     }
-  }, [index, objects, onCarouselCancel, setShowCarousel, user])
+  }, [onCarouselCancel])
+
+  const currentSlide = slides[currentIndex]
+  const isImage = currentSlide?.type === 'image'
+
+  const toolbarButtons = useMemo(() => {
+    const buttons: React.ReactNode[] = []
+
+    if (isImage) {
+      buttons.push(
+        <IconButton key="share" label={'Share' as any} icon={ShareIcon} onClick={handleShare} />,
+      )
+      buttons.push(
+        <IconButton
+          key="download"
+          label={'Download' as any}
+          icon={DownloadIcon}
+          onClick={handleDownload}
+        />,
+      )
+    }
+
+    return buttons
+  }, [isImage, currentIndex, handleShare, handleDownload])
 
   return (
     <>
-      <div style={{ display: 'none' }} />
+      <Lightbox
+        open={true}
+        index={currentIndex}
+        slides={slides as any}
+        plugins={[Zoom]}
+        zoom={{ ref: zoomRef }}
+        carousel={{ padding: 0 }}
+        toolbar={{
+          buttons: toolbarButtons,
+        }}
+        on={{
+          view: ({ index: newIndex }: { index: number }) => {
+            zoomRef.current?.changeZoom(1) // Reset zoom when changing slides
+            setCurrentIndex(newIndex)
+          },
+        }}
+        close={handleClose}
+        render={{
+          iconPrev: () => <PrevIcon />,
+          iconNext: () => <NextIcon />,
+          slideHeader: ({ slide }: { slide: any }) => {
+            const obj = slide.obj as PhotoType
+            if (!obj) return null
+            return (
+              <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-4 z-2000 flex items-center min-h-[44px]">
+                <div className="flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap px-10">
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: getCaption(
+                        obj,
+                        typeof window !== 'undefined' ? window.innerWidth > 600 : true,
+                      ),
+                    }}
+                  />
+                </div>
+                <button
+                  className="absolute right-4 text-white/80 hover:text-white transition-colors flex items-center justify-center p-1"
+                  onClick={handleClose}
+                  aria-label="Close"
+                >
+                  <AppIcon name="close" className="w-6 h-6" />
+                </button>
+              </div>
+            )
+          },
+          slide: ({ slide }: { slide: any }) => {
+            if (slide.type === 'video') {
+              return (
+                <div className="video-wrapper w-full h-full flex items-center justify-center">
+                  <iframe
+                    src={slide.src}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full aspect-video"
+                  />
+                </div>
+              )
+            }
+            return undefined // use default image rendering
+          },
+        }}
+      />
       <style
         dangerouslySetInnerHTML={{
           __html: `
-          .pswp__button--share-btn,
-          .pswp__button--fs-btn,
-          .pswp__custom-bottom-btn {
-            background: none !important;
-            width: 44px;
-            height: 44px;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            cursor: pointer;
-            border: none;
-            padding: 0;
-          }
-          .pswp__custom-bottom-btn svg {
-            color: white;
-            stroke: white;
-          }
-          .pswp__button--close {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 18 18 6M6 6l12 12'/%3E%3C/svg%3E") !important;
-            background-size: 24px 24px !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-          }
-          .pswp__button--close svg {
-            display: none;
-          }
-          .pswp__button--arrow--prev {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M15.75 19.5 8.25 12l7.5-7.5'/%3E%3C/svg%3E") !important;
-            background-size: 32px 32px !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-          }
-          .pswp__button--arrow--prev svg,
-          .pswp__button--arrow--prev::before {
-            display: none !important;
-          }
-          .pswp__button--arrow--next {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m8.25 4.5 7.5 7.5-7.5 7.5'/%3E%3C/svg%3E") !important;
-            background-size: 32px 32px !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-          }
-          .pswp__button--arrow--next svg,
-          .pswp__button--arrow--next::before {
-            display: none !important;
-          }
-          .pswp__button--zoom {
-            display: none !important;
-          }
-          .pswp {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          .pswp::-webkit-scrollbar {
-            display: none;
+          .yarl__slide_image {
+            -webkit-transform: none !important;
           }
           .video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 100vw;
+            max-height: 100vh;
+            aspect-ratio: 16/9;
+          }
+          .video-wrapper iframe {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-          }
-          .video-wrapper iframe {
             width: 100%;
             height: 100%;
           }
@@ -388,8 +269,28 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             -webkit-touch-callout: none !important;
             user-select: none !important;
           }
-          .pswp__custom-bottom-btn.hidden {
+          .yarl__toolbar {
+            top: auto !important;
+            bottom: 24px !important;
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
             display: none !important;
+            justify-content: center !important;
+            gap: 12px !important;
+            padding: 4px 16px !important;
+            background-color: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 9999px !important;
+          }
+          .yarl__toolbar:has(.yarl__button) {
+            display: flex !important;
+          }
+          .yarl__toolbar .yarl__button {
+            filter: none !important;
+            padding: 8px !important;
           }
         `,
         }}

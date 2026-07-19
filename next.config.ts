@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     unoptimized: true, // Required for static exports
   },
   reactStrictMode: true,
+  devIndicators: false,
 }
 
 export default nextConfig
