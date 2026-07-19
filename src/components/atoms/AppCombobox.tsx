@@ -99,13 +99,13 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
     return String(modelValue ?? '')
   }, [multiple, query, modelValue])
 
-  const hasValue = multiple
-    ? Array.isArray(modelValue) && modelValue.length > 0
-    : !!modelValue
+  const hasValue = multiple ? Array.isArray(modelValue) && modelValue.length > 0 : !!modelValue
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && <label className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</label>}
+      {label && (
+        <label className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</label>
+      )}
 
       <Combobox value={modelValue} onChange={onUpdate} multiple={multiple as any}>
         <div className="relative">
@@ -206,7 +206,9 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
                           focus ? 'bg-primary/10 text-primary' : 'text-gray-900 dark:text-gray-100'
                         }`}
                       >
-                        <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                        <span
+                          className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
+                        >
                           {option}
                         </span>
                         {selected && (

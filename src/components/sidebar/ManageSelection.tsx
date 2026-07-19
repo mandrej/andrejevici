@@ -81,10 +81,8 @@ export const ManageSelection: React.FC = () => {
           />
         </div>
       )}
-      
-      {user?.isAuthorized && (
-        <TagsMerge label="Tags to apply" className="mb-4" />
-      )}
+
+      {user?.isAuthorized && <TagsMerge label="Tags to apply" className="mb-4" />}
 
       {selected.length > 0 && (
         <div className={`flex flex-col gap-2 ${screen.gtSm ? 'gap-3' : ''}`}>

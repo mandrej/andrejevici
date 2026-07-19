@@ -3,7 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
-import { useValuesStore, selectTagsValues, selectModelValues, selectLensValues, selectEmailValues } from '../../stores/valuesStore'
+import {
+  useValuesStore,
+  selectTagsValues,
+  selectModelValues,
+  selectLensValues,
+  selectEmailValues,
+} from '../../stores/valuesStore'
 import { U, formatBytes, sliceSlug, getYouTubeId } from '../../helpers'
 import CONFIG from '../../config'
 import readExif from '../../helpers/exif'
@@ -265,11 +271,15 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
                 <AutoComplete
                   label="Tags"
                   modelValue={tmp.tags}
-                  onChange={(val) => setTmp((prev) => ({ ...prev, tags: Array.isArray(val) ? val : [] }))}
+                  onChange={(val) =>
+                    setTmp((prev) => ({ ...prev, tags: Array.isArray(val) ? val : [] }))
+                  }
                   options={tagsValues}
                   canadd
                   multiple
-                  hint={tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply.join(', ') : ''}
+                  hint={
+                    tagsToApply && tagsToApply.length ? 'merge with ' + tagsToApply.join(', ') : ''
+                  }
                   onNewValue={(value, done) => addNewValue(value, 'tags', done)}
                 />
               </div>
@@ -314,7 +324,9 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
                 />
                 <AppInput
                   modelValue={tmp.focal_length}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, focal_length: Number(val) }))}
+                  onChangeValue={(val) =>
+                    setTmp((prev) => ({ ...prev, focal_length: Number(val) }))
+                  }
                   type="number"
                   label="Focal length [mm]"
                 />

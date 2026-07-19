@@ -3,7 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { storage } from '../../firebase'
-import { ref as storageRef, uploadBytesResumable, getDownloadURL, type UploadTaskSnapshot } from 'firebase/storage'
+import {
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+  type UploadTaskSnapshot,
+} from 'firebase/storage'
 import { useAppStore } from '../../stores/appStore'
 import { useValuesStore } from '../../stores/valuesStore'
 import { useUserStore } from '../../stores/userStore'
@@ -313,27 +318,24 @@ export const PhotoTab: React.FC = () => {
               accept={CONFIG.fileType}
               onChange={onFileChange}
             />
-            <AppIcon name="cloud_upload" className="w-10 h-10 text-gray-400 dark:text-gray-500 mb-2" />
+            <AppIcon
+              name="cloud_upload"
+              className="w-10 h-10 text-gray-400 dark:text-gray-500 mb-2"
+            />
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               {files.length > 0
                 ? `${files.length} file(s) selected`
                 : 'Drop images here, or click to browse'}
             </span>
             <span className="text-xs text-gray-400 dark:text-gray-500 mt-1 text-center px-4">
-              Max {CONFIG.fileMax} jpg/jpeg/png/gif files, each under{' '}
-              {formatBytes(CONFIG.fileSize)}
+              Max {CONFIG.fileMax} jpg/jpeg/png/gif files, each under {formatBytes(CONFIG.fileSize)}
             </span>
           </label>
 
           {/* Action buttons */}
           <div className="flex flex-col gap-2 min-w-[120px] w-full sm:w-auto">
             {activeTrackerNames.length > 0 && (
-              <AppButton
-                label="Cancel all"
-                type="button"
-                color="negative"
-                onClick={cancelAll}
-              />
+              <AppButton label="Cancel all" type="button" color="negative" onClick={cancelAll} />
             )}
             {files.length > 0 && <AppButton label="Upload" type="submit" color="primary" />}
             <AppButton

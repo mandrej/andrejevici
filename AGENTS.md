@@ -358,4 +358,3 @@ npm test test/exif.ts         # Test EXIF extraction
 | Hot reload not working           | Verify Quasar dev server is running on port 5173                           |
 | Linting errors block dev         | Run `npm run format` to auto-fix most issues                               |
 | Tests fail with module errors    | Ensure `tsx` is installed (dev dependency); try `npm install`              |
-

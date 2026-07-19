@@ -18,8 +18,9 @@ export default [
       '.gemini/**',
       '.quasar/**',
       'function*/**',
-      'public/firebase-messaging-sw.js'
-    ]
+      'public/firebase-messaging-sw.js',
+      'public/sw.js',
+    ],
   },
   {
     files: ['src/**/*.{ts,tsx}', 'src-pwa/**/*.{ts,tsx}'],
@@ -27,35 +28,44 @@ export default [
       parser: tsParser,
       parserOptions: {
         ecmaFeatures: {
-          jsx: true
-        }
+          jsx: true,
+        },
       },
       globals: {
         ...globals.browser,
         ...globals.node,
         ...globals.serviceworker,
         process: 'readonly',
-        ga: 'readonly',
-        gtag: 'readonly'
-      }
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
-      'react': reactPlugin,
+      react: reactPlugin,
       'react-hooks': hooksPlugin,
-      '@next/next': nextPlugin
+      '@next/next': nextPlugin,
     },
     rules: {
       'no-undef': 'off', // TypeScript compiles and checks this better than ESLint
       'no-unused-vars': 'off', // Handled by @typescript-eslint/no-unused-vars
       'react/react-in-jsx-scope': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        ignoreRestSiblings: true
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'off',
-      'react/no-unescaped-entities': 'off'
-    }
-  }
+      'react/no-unescaped-entities': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
 ]

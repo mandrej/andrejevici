@@ -50,7 +50,10 @@ export const AppToast: React.FC = () => {
               {toast.spinner ? (
                 <span className="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                <AppIcon name={toast.icon || defaultIcon(toast.type)} className="w-5 h-5 leading-none" />
+                <AppIcon
+                  name={toast.icon || defaultIcon(toast.type)}
+                  className="w-5 h-5 leading-none"
+                />
               )}
             </div>
 
@@ -65,9 +68,7 @@ export const AppToast: React.FC = () => {
                 <div className="text-sm font-medium leading-snug">{toast.message}</div>
               )}
               {toast.caption && (
-                <div className="text-xs opacity-75 mt-0.5 truncate">
-                  {toast.caption}
-                </div>
+                <div className="text-xs opacity-75 mt-0.5 truncate">{toast.caption}</div>
               )}
 
               {/* Actions */}

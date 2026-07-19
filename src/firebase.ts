@@ -16,7 +16,7 @@ const messaging =
   typeof window !== 'undefined' ? getMessaging(firebaseApp) : (null as unknown as Messaging)
 const analytics =
   typeof window !== 'undefined'
-    ? import.meta.env.DEV
+    ? process.env.NODE_ENV === 'development'
       ? initializeAnalytics(firebaseApp, { config: { debug_mode: true } })
       : getAnalytics(firebaseApp)
     : (null as unknown as Analytics)
@@ -29,12 +29,12 @@ function logAnalyticsEvent(eventName: string, eventParams?: Record<string, unkno
   if (analytics) {
     logEvent(analytics, eventName, eventParams)
   }
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`[Analytics Dev] Event: ${eventName}`, eventParams)
   }
 }
 
-if (import.meta.env.DEV) {
+if (process.env.NODE_ENV === 'development') {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099')
   connectFirestoreEmulator(db, '127.0.0.1', 8080)
   connectStorageEmulator(storage, '127.0.0.1', 9199)

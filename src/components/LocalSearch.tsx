@@ -45,7 +45,7 @@ export const LocalSearch: React.FC<LocalSearchProps> = ({
           <option key={opt} value={opt} />
         ))}
       </datalist>
-      
+
       {modelValue && (
         <button
           type="button"

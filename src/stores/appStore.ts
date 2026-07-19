@@ -38,7 +38,15 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from 'firebase/firestore'
-import type { FindType, PhotoType, AppStoreState, VideoType, AssetKind, ValuesState, FileProgress } from '../helpers/models'
+import type {
+  FindType,
+  PhotoType,
+  AppStoreState,
+  VideoType,
+  AssetKind,
+  ValuesState,
+  FileProgress,
+} from '../helpers/models'
 import { photoCollection } from '../helpers/collections'
 import readExif from '../helpers/exif'
 
@@ -62,7 +70,9 @@ const applyTheme = (theme: 'light' | 'dark' | 'auto') => {
 interface AppStoreActions {
   searchBy: (criteria: FindType, onNavigate?: () => void) => void
   fetchPhoto: (filename: string) => Promise<PhotoType | null>
-  fetchRecords: (reset?: boolean) => Promise<{ objects: PhotoType[]; error: string | null; next: string | null } | void>
+  fetchRecords: (
+    reset?: boolean,
+  ) => Promise<{ objects: PhotoType[]; error: string | null; next: string | null } | void>
   completePhoto: (rec: PhotoType, tags: string[], headline: string) => Promise<PhotoType>
   saveRecord: (obj: PhotoType) => Promise<PhotoType>
   saveVideo: (obj: VideoType) => Promise<VideoType>
@@ -113,13 +123,19 @@ export const useAppStore = create<AppStore>()(
       setShowEdit: (showEdit) => set({ showEdit }),
       setShowConfirm: (showConfirm) => set({ showConfirm }),
       setShowCarousel: (showCarousel) => set({ showCarousel }),
-      setSelected: (selected) => set((state) => ({ selected: typeof selected === 'function' ? selected(state.selected) : selected })),
+      setSelected: (selected) =>
+        set((state) => ({
+          selected: typeof selected === 'function' ? selected(state.selected) : selected,
+        })),
       setAdminTab: (adminTab) => set({ adminTab }),
       setAddTab: (addTab) => set({ addTab }),
       setMetaTab: (metaTab) => set({ metaTab }),
       setCurrentEdit: (currentEdit) => set({ currentEdit }),
       setProgressInfo: (progressInfo) => set({ progressInfo }),
-      setUploaded: (uploaded) => set((state) => ({ uploaded: typeof uploaded === 'function' ? uploaded(state.uploaded) : uploaded })),
+      setUploaded: (uploaded) =>
+        set((state) => ({
+          uploaded: typeof uploaded === 'function' ? uploaded(state.uploaded) : uploaded,
+        })),
 
       searchBy: (criteria, onNavigate) => {
         const queryCleaned = fixQuery(criteria)
@@ -338,7 +354,11 @@ export const useAppStore = create<AppStore>()(
         set({ find: { year: obj.year, month: obj.month, day: obj.day } })
         await get().fetchRecords(true)
 
-        notify({ type: 'positive', message: `${obj.filename} video published`, icon: 'sym_r_check' })
+        notify({
+          type: 'positive',
+          message: `${obj.filename} video published`,
+          icon: 'sym_r_check',
+        })
         return obj
       },
 
@@ -419,10 +439,7 @@ export const useAppStore = create<AppStore>()(
 
       updateLastRecord: (obj) => {
         const lastRecord = get().lastRecord
-        if (
-          !lastRecord ||
-          (obj.date && (!lastRecord.date || obj.date > lastRecord.date))
-        ) {
+        if (!lastRecord || (obj.date && (!lastRecord.date || obj.date > lastRecord.date))) {
           set({ lastRecord: { ...obj } })
         }
       },

@@ -13,13 +13,7 @@ interface MenuLinkProps {
   onClick?: () => void
 }
 
-export const MenuLink: React.FC<MenuLinkProps> = ({
-  to,
-  icon,
-  title,
-  subtitle,
-  onClick,
-}) => {
+export const MenuLink: React.FC<MenuLinkProps> = ({ to, icon, title, subtitle, onClick }) => {
   const pathname = usePathname()
   const isActive = pathname === to
 

@@ -21,13 +21,11 @@ function initBreakpoints() {
 }
 
 export function useScreen() {
-  const [width, setWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1024,
-  )
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
   useEffect(() => {
     initBreakpoints()
-    
+
     const onResize = () => {
       setWidth(window.innerWidth)
     }

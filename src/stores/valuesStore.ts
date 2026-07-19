@@ -14,7 +14,11 @@ interface ValuesStore extends ValuesState {
   buildCounterObject: (data: PhotoType) => Record<string, number>
   updateCounters: (oldData: PhotoType | null, newData: PhotoType | null) => void
   batchUpdateCounters: (toAdd: string[], toRemove: string[]) => Promise<void>
-  addNewValue: (inputValue: string, field: keyof ValuesState['values'], done: (value: string) => void) => void
+  addNewValue: (
+    inputValue: string,
+    field: keyof ValuesState['values'],
+    done: (value: string) => void,
+  ) => void
 }
 
 const buildCounterMap = async (
@@ -53,8 +57,10 @@ const byCountReverse = (
   )
 }
 
-const sortByCountReverse = (values: ValuesState['values'], field: keyof ValuesState['values']): string[] =>
-  Object.keys(byCountReverse(values, field))
+const sortByCountReverse = (
+  values: ValuesState['values'],
+  field: keyof ValuesState['values'],
+): string[] => Object.keys(byCountReverse(values, field))
 
 const parseCounterKey = (key: string): { field: keyof ValuesState['values']; value: string } => {
   const parts = key.split(delimiter)
@@ -251,7 +257,11 @@ export const useValuesStore = create<ValuesStore>()(
         await batch.commit()
       },
 
-      addNewValue: (inputValue: string, field: keyof ValuesState['values'], done: (value: string) => void) => {
+      addNewValue: (
+        inputValue: string,
+        field: keyof ValuesState['values'],
+        done: (value: string) => void,
+      ) => {
         set((state) => {
           const updatedValues = { ...state.values }
           updatedValues[field] = { ...updatedValues[field], [inputValue]: 0 }
@@ -271,48 +281,94 @@ export const useValuesStore = create<ValuesStore>()(
   ),
 )
 
-// Selectors / Getters
-export const selectTagsValues = (state: ValuesStore) => Object.keys(state.values.tags || {}).sort()
-export const selectModelValues = (state: ValuesStore) => sortByCountReverse(state.values, 'model')
-export const selectLensValues = (state: ValuesStore) => sortByCountReverse(state.values, 'lens')
-export const selectEmailValues = (state: ValuesStore) => sortByCountReverse(state.values, 'email')
-export const selectNickValues = (state: ValuesStore) => sortByCountReverse(state.values, 'nick')
-export const selectKindValues = (state: ValuesStore) => sortByCountReverse(state.values, 'kind')
-export const selectYearValues = (state: ValuesStore) => Object.keys(state.values.year || {}).reverse()
-export const selectNickWithCount = (state: ValuesStore) => byCountReverse(state.values, 'nick')
+// Selectors / Getters Cache to avoid infinite rendering loops in React
+let lastValues: any = null
+const cache = {
+  tags: null as any,
+  model: null as any,
+  lens: null as any,
+  email: null as any,
+  nick: null as any,
+  kind: null as any,
+  year: null as any,
+  nickWithCount: null as any,
+  suggestions: null as any,
+}
+
+const checkCache = (values: any) => {
+  if (values !== lastValues) {
+    lastValues = values
+    cache.tags = Object.keys(values.tags || {}).sort()
+    cache.model = sortByCountReverse(values, 'model')
+    cache.lens = sortByCountReverse(values, 'lens')
+    cache.email = sortByCountReverse(values, 'email')
+    cache.nick = sortByCountReverse(values, 'nick')
+    cache.kind = sortByCountReverse(values, 'kind')
+    cache.year = Object.keys(values.year || {}).reverse()
+    cache.nickWithCount = byCountReverse(values, 'nick')
+
+    const suggestions: Suggestion[] = []
+    const countedFields = [
+      { field: 'kind', values: cache.kind },
+      { field: 'nick', values: cache.nick },
+      { field: 'tags', values: cache.tags },
+      { field: 'year', values: cache.year },
+      { field: 'model', values: cache.model },
+      { field: 'lens', values: cache.lens },
+    ] as const
+
+    for (const { field, values: fieldValues } of countedFields) {
+      for (const value of fieldValues) {
+        suggestions.push(makeSuggestion(field, value, values[field][value]))
+      }
+    }
+
+    months.forEach((month, index) => {
+      suggestions.push({ key: `month-${index + 1}`, field: 'month', value: month })
+    })
+
+    for (let i = 1; i <= 31; i++) {
+      suggestions.push({ key: `day-${i}`, field: 'day', value: i.toString() })
+    }
+
+    cache.suggestions = suggestions
+  }
+}
+
+export const selectTagsValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.tags
+}
+export const selectModelValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.model
+}
+export const selectLensValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.lens
+}
+export const selectEmailValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.email
+}
+export const selectNickValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.nick
+}
+export const selectKindValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.kind
+}
+export const selectYearValues = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.year
+}
+export const selectNickWithCount = (state: ValuesStore) => {
+  checkCache(state.values)
+  return cache.nickWithCount
+}
 
 export const selectAllSuggestions = (state: ValuesStore): Suggestion[] => {
-  const suggestions: Suggestion[] = []
-
-  const kindValues = selectKindValues(state)
-  const nickValues = selectNickValues(state)
-  const tagsValues = selectTagsValues(state)
-  const yearValues = selectYearValues(state)
-  const modelValues = selectModelValues(state)
-  const lensValues = selectLensValues(state)
-
-  const countedFields = [
-    { field: 'kind', values: kindValues },
-    { field: 'nick', values: nickValues },
-    { field: 'tags', values: tagsValues },
-    { field: 'year', values: yearValues },
-    { field: 'model', values: modelValues },
-    { field: 'lens', values: lensValues },
-  ] as const
-
-  for (const { field, values } of countedFields) {
-    for (const value of values) {
-      suggestions.push(makeSuggestion(field, value, state.values[field][value]))
-    }
-  }
-
-  months.forEach((month, index) => {
-    suggestions.push({ key: `month-${index + 1}`, field: 'month', value: month })
-  })
-
-  for (let i = 1; i <= 31; i++) {
-    suggestions.push({ key: `day-${i}`, field: 'day', value: i.toString() })
-  }
-
-  return suggestions
+  checkCache(state.values)
+  return cache.suggestions
 }

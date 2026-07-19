@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -24,12 +20,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "src/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "src/*": ["./src/*"]
     }
   },
   "include": [
@@ -37,14 +29,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "dist/types/**/*.ts",
+    "dist/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src-pwa",
-    "functionCron",
-    "functionNotify",
-    "functionThumb"
-  ]
+  "exclude": ["node_modules", "dist", "src-pwa", "functionCron", "functionNotify", "functionThumb"]
 }

@@ -5,7 +5,15 @@ import AppIcon from './AppIcon'
 interface AppButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string
   icon?: string
-  color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | 'default' | string
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'warning'
+    | 'negative'
+    | 'positive'
+    | 'accent'
+    | 'default'
+    | string
   flat?: boolean
   round?: boolean
   disabled?: boolean
@@ -75,17 +83,12 @@ export const AppButton: React.FC<AppButtonProps> = ({
   const shape = round ? 'rounded-full' : 'rounded-lg'
   const sizeCls = sizeMap[size]
   const variant = flat ? c.flat : c.solid
-  const dis = disabled
-    ? 'opacity-40 cursor-not-allowed pointer-events-none'
-    : 'cursor-pointer'
+  const dis = disabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'
 
   const classes = `${base} ${shape} ${sizeCls} ${variant} ${dis} ${className}`
 
   const iconElement = icon && (
-    <AppIcon
-      name={icon}
-      className={`w-5 h-5 leading-none ${label ? 'mr-1.5' : ''}`}
-    />
+    <AppIcon name={icon} className={`w-5 h-5 leading-none ${label ? 'mr-1.5' : ''}`} />
   )
 
   const content = (
@@ -97,11 +100,14 @@ export const AppButton: React.FC<AppButtonProps> = ({
   )
 
   // Polymorphic rendering
-  const linkHref = to ? (typeof to === 'string' ? to : (to.path as string || '/')) : href
+  const linkHref = to ? (typeof to === 'string' ? to : (to.path as string) || '/') : href
 
   if (linkHref) {
     // If it's an external link or anchor (starts with http, mailto, etc.)
-    if (typeof linkHref === 'string' && (linkHref.startsWith('http') || linkHref.startsWith('mailto:'))) {
+    if (
+      typeof linkHref === 'string' &&
+      (linkHref.startsWith('http') || linkHref.startsWith('mailto:'))
+    ) {
       return (
         <a href={linkHref} target="_blank" rel="noopener noreferrer" className={classes}>
           {content}
@@ -118,13 +124,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   }
 
   return (
-    <button
-      type={type}
-      disabled={disabled}
-      onClick={onClick}
-      className={classes}
-      {...props}
-    >
+    <button type={type} disabled={disabled} onClick={onClick} className={classes} {...props}>
       {content}
     </button>
   )

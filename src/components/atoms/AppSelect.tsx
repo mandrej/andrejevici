@@ -72,7 +72,9 @@ export const AppSelect: React.FC<AppSelectProps> = ({
           }`}
         >
           <span className="block truncate">{displayValue}</span>
-          <span className={`pointer-events-none absolute inset-y-0 right-0 flex items-center ${flat ? '' : 'pr-2'}`}>
+          <span
+            className={`pointer-events-none absolute inset-y-0 right-0 flex items-center ${flat ? '' : 'pr-2'}`}
+          >
             <AppIcon name="unfold_more" className="w-5 h-5 text-gray-400" />
           </span>
         </ListboxButton>
@@ -87,17 +89,16 @@ export const AppSelect: React.FC<AppSelectProps> = ({
               const val = optionValue(option)
               const lbl = optionLabel(option)
               return (
-                <ListboxOption
-                  key={`${String(val)}-${index}`}
-                  value={val}
-                >
+                <ListboxOption key={`${String(val)}-${index}`} value={val}>
                   {({ focus, selected }) => (
                     <li
                       className={`relative cursor-pointer select-none py-2 pl-10 pr-4 text-sm ${
                         focus ? 'bg-primary/10 text-primary' : 'text-gray-900 dark:text-gray-100'
                       }`}
                     >
-                      <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                      <span
+                        className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}
+                      >
                         {lbl}
                       </span>
                       {selected && (

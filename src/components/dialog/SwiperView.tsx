@@ -67,7 +67,10 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   const pauseAllVideos = () => {
     const iframes = document.querySelectorAll<HTMLIFrameElement>('.pswp .video-wrapper iframe')
     iframes.forEach((iframe) => {
-      iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*')
+      iframe.contentWindow?.postMessage(
+        JSON.stringify({ event: 'command', func: 'pauseVideo' }),
+        '*',
+      )
     })
   }
 
@@ -310,8 +313,9 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   return (
     <>
       <div style={{ display: 'none' }} />
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           .pswp__button--share-btn,
           .pswp__button--fs-btn,
           .pswp__custom-bottom-btn {
@@ -387,8 +391,9 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           .pswp__custom-bottom-btn.hidden {
             display: none !important;
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </>
   )
 }

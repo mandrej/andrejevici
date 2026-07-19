@@ -2,7 +2,16 @@ import React from 'react'
 import AppIcon from './AppIcon'
 
 interface AppBannerProps {
-  color?: 'primary' | 'secondary' | 'accent' | 'positive' | 'negative' | 'info' | 'warning' | 'grey' | string
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'positive'
+    | 'negative'
+    | 'info'
+    | 'warning'
+    | 'grey'
+    | string
   icon?: string
   children?: React.ReactNode
   actions?: React.ReactNode
@@ -39,11 +48,7 @@ export const AppBanner: React.FC<AppBannerProps> = ({
         </div>
       )}
       <div className="grow">{children}</div>
-      {children && actions && (
-        <div className="flex items-center gap-2">
-          {actions}
-        </div>
-      )}
+      {children && actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   )
 }

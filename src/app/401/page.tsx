@@ -14,7 +14,9 @@ export default function UnauthorizedPage() {
             <AppIcon name="priority_high" className="w-20 h-20" />
           </div>
           <div className="text-8xl font-thin text-gray-300 dark:text-gray-600 mb-2">401</div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Insufficient credentials...</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            Insufficient credentials...
+          </p>
         </div>
         <hr className="border-gray-200 dark:border-gray-700 mb-4" />
         <div className="flex justify-center">

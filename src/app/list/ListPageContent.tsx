@@ -225,7 +225,9 @@ export default function ListPage() {
       {/* Confirm Delete Dialog */}
       <AppDialog modelValue={showConfirm} maxWidth="max-w-sm" onChange={setShowConfirm}>
         <div className="p-6">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Confirm Delete</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+            Confirm Delete
+          </h2>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
             Would you like to delete {formatBytes(select2delete?.size || 0)} photo named '
             {select2delete?.headline}'?

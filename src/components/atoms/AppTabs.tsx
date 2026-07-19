@@ -38,7 +38,11 @@ export const AppTabs: React.FC<AppTabsProps> = ({
   }
 
   return (
-    <TabGroup selectedIndex={selectedIndex >= 0 ? selectedIndex : 0} onChange={onTabChange} vertical={vertical}>
+    <TabGroup
+      selectedIndex={selectedIndex >= 0 ? selectedIndex : 0}
+      onChange={onTabChange}
+      vertical={vertical}
+    >
       {children && children({ TabList, Tab, TabPanels, TabPanel })}
     </TabGroup>
   )

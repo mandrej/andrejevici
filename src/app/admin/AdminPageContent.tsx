@@ -56,9 +56,7 @@ export default function AdminPage() {
                     </AppBadge>
                   </div>
                 }
-                action={
-                  <AppButton flat label="Calculate" onClick={bucketBuild} color="primary" />
-                }
+                action={<AppButton flat label="Calculate" onClick={bucketBuild} color="primary" />}
               />
 
               {/* Field Values Card */}
@@ -108,9 +106,7 @@ export default function AdminPage() {
                 color="warning"
                 title="Missing Thumbs"
                 description="Scan storage for images that are missing generated thumbnails."
-                action={
-                  <AppButton flat label="Scan" color="warning" onClick={missingThumbnails} />
-                }
+                action={<AppButton flat label="Scan" color="warning" onClick={missingThumbnails} />}
               />
 
               {/* Mismatch Card */}

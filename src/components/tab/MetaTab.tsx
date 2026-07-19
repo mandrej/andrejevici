@@ -87,11 +87,7 @@ export const MetaTab: React.FC = () => {
   }, [currentValueList, currentCounts, search, sortField, sortAsc])
 
   const isValueInUse = useMemo(() => {
-    return !!(
-      newTagName &&
-      currentValueList.includes(newTagName) &&
-      newTagName !== valueToRename
-    )
+    return !!(newTagName && currentValueList.includes(newTagName) && newTagName !== valueToRename)
   }, [newTagName, currentValueList, valueToRename])
 
   const addValue = async () => {
@@ -270,7 +266,9 @@ export const MetaTab: React.FC = () => {
                 onClick={() => toggleSort('count')}
               >
                 Count{' '}
-                <span className="text-xs">{sortField === 'count' ? (sortAsc ? '↑' : '↓') : ''}</span>
+                <span className="text-xs">
+                  {sortField === 'count' ? (sortAsc ? '↑' : '↓') : ''}
+                </span>
               </th>
               <th className="px-3 py-2 w-10" />
               <th className="px-3 py-2 w-10" />
@@ -284,7 +282,9 @@ export const MetaTab: React.FC = () => {
               >
                 <td
                   className="px-3 py-2 cursor-pointer text-primary hover:underline"
-                  onClick={() => searchBy({ [metaTab]: metaTab === 'tags' ? [row.name] : row.name })}
+                  onClick={() =>
+                    searchBy({ [metaTab]: metaTab === 'tags' ? [row.name] : row.name })
+                  }
                 >
                   {row.name}
                 </td>

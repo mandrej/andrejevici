@@ -28,8 +28,7 @@ else
     #   icongenie g -i AppIcon.png --skip-trim
     #   exit ;;
     build)
-      # MacPorts, sudo port install gsed
-      gsed -i "s/^NEXT_PUBLIC_BUILD=.*/NEXT_PUBLIC_BUILD='$version'/" .env
+      node -e "const fs = require('fs'); const env = fs.readFileSync('.env', 'utf8'); fs.writeFileSync('.env', env.replace(/^NEXT_PUBLIC_BUILD=.*/m, \"NEXT_PUBLIC_BUILD='$version'\"));"
       npm run build
       exit ;;
     deploy)

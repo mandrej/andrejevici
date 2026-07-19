@@ -11,11 +11,7 @@ interface PictureCardProps {
   action?: React.ReactNode
 }
 
-export const PictureCard: React.FC<PictureCardProps> = ({
-  rec,
-  onCarouselShow,
-  action,
-}) => {
+export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, action }) => {
   const searchBy = useAppStore((state) => state.searchBy)
   const [imgError, setImgError] = useState(false)
 

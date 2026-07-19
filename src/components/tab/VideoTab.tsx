@@ -69,7 +69,10 @@ export const VideoTab: React.FC = () => {
       setTagsToApply([])
       notify({ type: 'positive', message: 'Video published successfully' })
     } catch (err) {
-      notify({ type: 'negative', message: `Failed to publish video: ${err instanceof Error ? err.message : String(err)}` })
+      notify({
+        type: 'negative',
+        message: `Failed to publish video: ${err instanceof Error ? err.message : String(err)}`,
+      })
     }
   }
 
@@ -95,7 +98,7 @@ export const VideoTab: React.FC = () => {
             hint="Select recording date and time"
           />
         </div>
-        
+
         <div className="self-end lg:self-center flex justify-end sm:col-start-2 lg:col-start-auto">
           <AppButton label="Link Video" type="submit" color="primary" />
         </div>

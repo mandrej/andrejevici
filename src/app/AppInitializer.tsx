@@ -74,6 +74,26 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       })
     }
 
+    // Register PWA service worker in production
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+      const registerSW = () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((reg) => {
+            console.log('Service worker registered successfully:', reg.scope)
+          })
+          .catch((err) => {
+            console.error('Service worker registration failed:', err)
+          })
+      }
+
+      if (document.readyState === 'complete') {
+        registerSW()
+      } else {
+        window.addEventListener('load', registerSW)
+      }
+    }
+
     return () => {
       unsubscribeAuth()
       if (unsubscribeMessaging) unsubscribeMessaging()

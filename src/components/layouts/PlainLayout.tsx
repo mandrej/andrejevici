@@ -28,16 +28,13 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
       {hasNoPhotos ? (
         <div className="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen">
           <div className="text-center max-w-xs px-6 text-sm text-gray-600 dark:text-gray-300">
-            There are no photos posted yet...<br />
+            There are no photos posted yet...
+            <br />
             To add some you need to sign-in with your Google account. Only authorized users can add,
             delete or edit photos.
             {user?.isAuthorized && user?.nick && (
               <div className="mt-4">
-                <AppButton
-                  to="/add"
-                  color="primary"
-                  label="Add photos / videos"
-                />
+                <AppButton to="/add" color="primary" label="Add photos / videos" />
               </div>
             )}
           </div>
@@ -49,9 +46,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
               style={showUrl ? { backgroundImage: `url(${showUrl})` } : {}}
             />
-            <div
-              className="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40"
-            />
+            <div className="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" />
           </Link>
 
           {/* Add photos button */}

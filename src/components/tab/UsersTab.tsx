@@ -162,7 +162,8 @@ export const UsersTab: React.FC = () => {
 
   const ageDays = (timestamp: any) => {
     if (!timestamp) return 0
-    const timeMs = typeof timestamp.toMillis === 'function' ? timestamp.toMillis() : (timestamp.seconds * 1000)
+    const timeMs =
+      typeof timestamp.toMillis === 'function' ? timestamp.toMillis() : timestamp.seconds * 1000
     const diff = Date.now() - timeMs
     return Math.floor(diff / 86400000)
   }
@@ -184,132 +185,135 @@ export const UsersTab: React.FC = () => {
 
       {/* Search */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <LocalSearch modelValue={search} onChangeValue={setSearch} label="Search users" options={nickValues} />
+        <LocalSearch
+          modelValue={search}
+          onChangeValue={setSearch}
+          label="Search users"
+          options={nickValues}
+        />
       </div>
 
       <div className="p-4 overflow-y-auto" style={{ height: '65vh' }}>
         <div className={`flex flex-col gap-2 ${screen.xs ? 'gap-1' : ''}`}>
-          {busy ? (
-            Array.from({ length: 5 }).map((_, n) => (
-              <div
-                key={n}
-                className="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
-              >
-                <div className="shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
-                <div className="grow">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
-                </div>
-                {screen.gtXs && (
-                  <div className="flex gap-1 ml-auto">
-                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
-                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
-                  </div>
-                )}
-                <div className={`flex gap-1 ml-auto ${screen.xs ? 'flex-col' : 'flex-row'}`}>
-                  <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-                  <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-                  <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-                </div>
-              </div>
-            ))
-          ) : (
-            filteredResult.map((item) => (
-              <div
-                key={item.uid}
-                className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-55 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="shrink-0 mr-3">
-                  <AppBadge color="warning" textColor="black" className="text-sm px-2 py-1">
-                    {contribution(item.nick || '')}
-                  </AppBadge>
-                </div>
-
-                <div className="grow">
-                  <div className="flex items-center gap-1 text-base font-semibold flex-wrap">
-                    <span>{item.nick || '???'}</span>
-                    {contribution(item.nick || '') === 0 && (
-                      <>
-                        <AppButton
-                          flat
-                          onClick={() => openNickDialog(item)}
-                          color="primary"
-                          className="!p-1"
-                          title="Change nickname"
-                        >
-                          <AppIcon name="edit" className="w-4 h-4" />
-                          <span className="text-xs ml-1 font-normal">Change</span>
-                        </AppButton>
-                        <AppButton
-                          flat
-                          onClick={() => confirmDeleteUser(item)}
-                          color="negative"
-                          className="!p-1"
-                          title="Delete user"
-                        >
-                          <AppIcon name="delete" className="w-4 h-4" />
-                          <span className="text-xs ml-1 font-normal">Delete</span>
-                        </AppButton>
-                      </>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500">{item.email}</div>
-                  <div className="text-xs text-gray-400">
-                    subscribed {ageDays(item.timestamp)} days ago
-                  </div>
-                </div>
-
-                {screen.gtXs && (
-                  <div className="shrink-0 ml-3 flex gap-1">
-                    {item.timestamps && item.timestamps.length > 0 ? (
-                      item.timestamps.map((timestamp, index) => (
-                        <AppBadge key={index} color="secondary">
-                          {ageDays(timestamp)}
-                        </AppBadge>
-                      ))
-                    ) : (
-                      <AppBadge color="grey">no tokens</AppBadge>
-                    )}
-                  </div>
-                )}
-
+          {busy
+            ? Array.from({ length: 5 }).map((_, n) => (
                 <div
-                  className={`shrink-0 ml-3 flex gap-x-3 ${screen.xs ? 'flex-col gap-y-1' : 'flex-row'}`}
+                  key={n}
+                  className="flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
                 >
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!item.isAdmin}
-                      disabled={user?.email === item.email || !item.nick}
-                      className="w-4 h-4 rounded border-gray-300 text-negative focus:ring-negative"
-                      onChange={(e) => handleAdminCheckboxChange(e.target.checked, item)}
-                    />
-                    <span className="text-xs">Admin</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!item.isAuthorized}
-                      disabled={!item.nick}
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      onChange={(e) => void toggleEditor(item, e.target.checked)}
-                    />
-                    <span className="text-xs">Editor</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!item.allowPush}
-                      disabled={!item.nick}
-                      className="w-4 h-4 rounded border-gray-300 text-secondary focus:ring-secondary"
-                      onChange={(e) => void togglePush(item, e.target.checked)}
-                    />
-                    <span className="text-xs">Push</span>
-                  </label>
+                  <div className="shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full mr-3"></div>
+                  <div className="grow">
+                    <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
+                  </div>
+                  {screen.gtXs && (
+                    <div className="flex gap-1 ml-auto">
+                      <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                      <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                    </div>
+                  )}
+                  <div className={`flex gap-1 ml-auto ${screen.xs ? 'flex-col' : 'flex-row'}`}>
+                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            : filteredResult.map((item) => (
+                <div
+                  key={item.uid}
+                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-55 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div className="shrink-0 mr-3">
+                    <AppBadge color="warning" textColor="black" className="text-sm px-2 py-1">
+                      {contribution(item.nick || '')}
+                    </AppBadge>
+                  </div>
+
+                  <div className="grow">
+                    <div className="flex items-center gap-1 text-base font-semibold flex-wrap">
+                      <span>{item.nick || '???'}</span>
+                      {contribution(item.nick || '') === 0 && (
+                        <>
+                          <AppButton
+                            flat
+                            onClick={() => openNickDialog(item)}
+                            color="primary"
+                            className="!p-1"
+                            title="Change nickname"
+                          >
+                            <AppIcon name="edit" className="w-4 h-4" />
+                            <span className="text-xs ml-1 font-normal">Change</span>
+                          </AppButton>
+                          <AppButton
+                            flat
+                            onClick={() => confirmDeleteUser(item)}
+                            color="negative"
+                            className="!p-1"
+                            title="Delete user"
+                          >
+                            <AppIcon name="delete" className="w-4 h-4" />
+                            <span className="text-xs ml-1 font-normal">Delete</span>
+                          </AppButton>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">{item.email}</div>
+                    <div className="text-xs text-gray-400">
+                      subscribed {ageDays(item.timestamp)} days ago
+                    </div>
+                  </div>
+
+                  {screen.gtXs && (
+                    <div className="shrink-0 ml-3 flex gap-1">
+                      {item.timestamps && item.timestamps.length > 0 ? (
+                        item.timestamps.map((timestamp, index) => (
+                          <AppBadge key={index} color="secondary">
+                            {ageDays(timestamp)}
+                          </AppBadge>
+                        ))
+                      ) : (
+                        <AppBadge color="grey">no tokens</AppBadge>
+                      )}
+                    </div>
+                  )}
+
+                  <div
+                    className={`shrink-0 ml-3 flex gap-x-3 ${screen.xs ? 'flex-col gap-y-1' : 'flex-row'}`}
+                  >
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!item.isAdmin}
+                        disabled={user?.email === item.email || !item.nick}
+                        className="w-4 h-4 rounded border-gray-300 text-negative focus:ring-negative"
+                        onChange={(e) => handleAdminCheckboxChange(e.target.checked, item)}
+                      />
+                      <span className="text-xs">Admin</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!item.isAuthorized}
+                        disabled={!item.nick}
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        onChange={(e) => void toggleEditor(item, e.target.checked)}
+                      />
+                      <span className="text-xs">Editor</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!item.allowPush}
+                        disabled={!item.nick}
+                        className="w-4 h-4 rounded border-gray-300 text-secondary focus:ring-secondary"
+                        onChange={(e) => void togglePush(item, e.target.checked)}
+                      />
+                      <span className="text-xs">Push</span>
+                    </label>
+                  </div>
+                </div>
+              ))}
         </div>
       </div>
 
@@ -318,7 +322,8 @@ export const UsersTab: React.FC = () => {
         <div className="p-6">
           <div className="text-lg font-bold mb-2">Delete user?</div>
           <p className="text-gray-600 dark:text-gray-400">
-            Remove <strong>{userToDelete?.nick}</strong> ({userToDelete?.email})? This cannot be undone.
+            Remove <strong>{userToDelete?.nick}</strong> ({userToDelete?.email})? This cannot be
+            undone.
           </p>
           <div className="flex justify-end gap-3 mt-6">
             <AppButton flat label="Cancel" onClick={() => setShowDeleteDialog(false)} />

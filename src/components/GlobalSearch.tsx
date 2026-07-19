@@ -54,7 +54,9 @@ export const GlobalSearch: React.FC = () => {
         .slice(0, 20)
     } else {
       suggestions = allSuggestions
-        .filter((s) => s.field.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower))
+        .filter(
+          (s) => s.field.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower),
+        )
         .slice(0, 20)
     }
 

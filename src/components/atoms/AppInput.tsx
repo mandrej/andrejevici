@@ -52,7 +52,9 @@ export const AppInput: React.FC<AppInputProps> = ({
     <label
       className={`relative flex flex-col gap-1 w-full ${disabled ? 'opacity-50 pointer-events-none' : ''} ${className}`}
     >
-      {label && <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>}
+      {label && (
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
+      )}
 
       <div
         className={`relative flex items-center w-full rounded-lg border transition-colors ${

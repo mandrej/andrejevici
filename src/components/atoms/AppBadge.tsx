@@ -2,7 +2,18 @@ import React from 'react'
 
 interface AppBadgeProps {
   color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | 'grey' | string
-  textColor?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'accent' | 'grey' | 'white' | 'black' | 'dark' | string
+  textColor?:
+    | 'primary'
+    | 'secondary'
+    | 'warning'
+    | 'negative'
+    | 'positive'
+    | 'accent'
+    | 'grey'
+    | 'white'
+    | 'black'
+    | 'dark'
+    | string
   size?: 'xs' | 'sm' | 'md'
   children?: React.ReactNode
   className?: string

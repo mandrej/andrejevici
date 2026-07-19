@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,tsx,css,html,md,json}\" --ignore-path .gitignore",
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/build-pwa.js",
     "start": "next start",
     "test": "tsx --test"
   },

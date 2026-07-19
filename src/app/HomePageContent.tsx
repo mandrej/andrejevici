@@ -12,17 +12,17 @@ import { useBucketStore } from '../stores/bucketStore'
 
 export default function HomePage() {
   const router = useRouter()
-  
+
   // Zustand State selectors
   const user = useUserStore((state) => state.user)
   const signIn = useUserStore((state) => state.signIn)
-  
+
   const searchBy = useAppStore((state) => state.searchBy)
   const appTheme = useAppStore((state) => state.theme)
   const setTheme = useAppStore((state) => state.setTheme)
-  
+
   const bucket = useBucketStore((state) => state.bucket)
-  
+
   const nickWithCount = useValuesStore(selectNickWithCount)
   const yearValues = useValuesStore(selectYearValues)
 
@@ -60,10 +60,8 @@ export default function HomePage() {
         />
 
         <div className="text-xs text-gray-400 mb-1">Build {buildVersion}</div>
-        <h1 className="text-4xl font-thin text-gray-900 dark:text-white mb-2">
-          ANDрејевићи
-        </h1>
-        
+        <h1 className="text-4xl font-thin text-gray-900 dark:text-white mb-2">ANDрејевићи</h1>
+
         {bucket.count > 0 && (
           <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             {bucket.count} photos since {sinceYear} and counting
@@ -78,7 +76,7 @@ export default function HomePage() {
                 key={nick}
                 label={nick}
                 color="secondary"
-                className="bg-secondary/15 hover:bg-secondary/30 text-teal-850 dark:text-secondary shadow-lg border border-gray-300 dark:border-gray-600 !px-3 !py-1"
+                className="bg-secondary/15 hover:bg-secondary/30 text-teal-850 dark:text-secondary shadow-lg border border-gray-300 dark:border-gray-600 px-3! py-1!"
                 onClick={() => handlePhotographerClick(nick)}
               />
             ))}

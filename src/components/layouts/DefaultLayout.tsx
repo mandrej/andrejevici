@@ -101,15 +101,15 @@ export const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       {/* Push notification consent dialog */}
       <AppDialog modelValue={showConsent} persistent maxWidth="max-w-sm" onChange={setShowConsent}>
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Accept notifications</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Accept notifications
+          </h2>
           {wait && <AppProgress indeterminate color="warning" className="mb-3" />}
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
             Would you like to enable push notifications?
