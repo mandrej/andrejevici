@@ -1,40 +1,48 @@
-/*
- * This file (which will be your service worker)
- * is picked up by the build system ONLY if
- * quasar.config file > pwa > workboxMode is set to "InjectManifest"
- */
-declare const self: ServiceWorkerGlobalScope & typeof globalThis & { skipWaiting: () => void }
+/// <reference lib="webworker" />
+declare const self: ServiceWorkerGlobalScope
 
-import { clientsClaim } from 'workbox-core'
-import {
-  precacheAndRoute,
-  cleanupOutdatedCaches,
-  createHandlerBoundToURL,
-} from 'workbox-precaching'
-import { registerRoute, NavigationRoute } from 'workbox-routing'
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { CacheableResponsePlugin } from 'workbox-cacheable-response'
+import { ExpirationPlugin } from 'workbox-expiration'
 
-self.skipWaiting()
-clientsClaim()
-
-// Use with precache injection
-precacheAndRoute(self.__WB_MANIFEST)
-
+// Clean up old caches from previous versions
 cleanupOutdatedCaches()
 
-// Non-SSR fallbacks to index.html
-// Production SSR fallbacks to offline.html (except for dev)
-if (import.meta.env.MODE !== 'ssr' || import.meta.env.PROD) {
-  registerRoute(
-    new NavigationRoute(
-      createHandlerBoundToURL(import.meta.env.PWA_FALLBACK_HTML || '/fallback.html'),
-      {
-        denylist: [
-          import.meta.env.PWA_SERVICE_WORKER_REGEX
-            ? new RegExp(import.meta.env.PWA_SERVICE_WORKER_REGEX)
-            : /default-regex/,
-          /workbox-(.)*\.js$/,
-        ],
-      },
-    ),
-  )
-}
+// Precache static assets — the manifest is injected by workbox-build injectManifest
+precacheAndRoute(self.__WB_MANIFEST)
+
+// Cache Google Fonts with a CacheFirst strategy (long TTL)
+registerRoute(
+  ({ url }) =>
+    url.origin === 'https://fonts.googleapis.com' ||
+    url.origin === 'https://fonts.gstatic.com',
+  new CacheFirst({
+    cacheName: 'google-fonts',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 }), // 1 year
+    ],
+  }),
+)
+
+// Cache images with StaleWhileRevalidate (30 day TTL)
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new StaleWhileRevalidate({
+    cacheName: 'images',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 30 }), // 30 days
+    ],
+  }),
+)
+
+// Skip waiting and claim clients immediately on activation
+self.addEventListener('install', () => {
+  self.skipWaiting()
+})
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
+})

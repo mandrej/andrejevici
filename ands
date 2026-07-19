@@ -21,7 +21,7 @@ else
   case $1 in
     run)
       firebase emulators:start --import ./data --export-on-exit ./data
-      # quasar dev -m pwa
+      # npm run build:pwa
       exit ;;
     # icons)
     #   inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg

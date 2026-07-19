@@ -7,58 +7,6 @@ importScripts('/firebase-messaging-sw.js');
   } catch (e) {
   }
 
-  // node_modules/workbox-core/_private/logger.js
-  var logger = false ? null : (() => {
-    if (!("__WB_DISABLE_DEV_LOGS" in globalThis)) {
-      self.__WB_DISABLE_DEV_LOGS = false;
-    }
-    let inGroup = false;
-    const methodToColorMap = {
-      debug: `#7f8c8d`,
-      log: `#2ecc71`,
-      warn: `#f39c12`,
-      error: `#c0392b`,
-      groupCollapsed: `#3498db`,
-      groupEnd: null
-      // No colored prefix on groupEnd
-    };
-    const print = function(method, args) {
-      if (self.__WB_DISABLE_DEV_LOGS) {
-        return;
-      }
-      if (method === "groupCollapsed") {
-        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
-          console[method](...args);
-          return;
-        }
-      }
-      const styles = [
-        `background: ${methodToColorMap[method]}`,
-        `border-radius: 0.5em`,
-        `color: white`,
-        `font-weight: bold`,
-        `padding: 2px 0.5em`
-      ];
-      const logPrefix = inGroup ? [] : ["%cworkbox", styles.join(";")];
-      console[method](...logPrefix, ...args);
-      if (method === "groupCollapsed") {
-        inGroup = true;
-      }
-      if (method === "groupEnd") {
-        inGroup = false;
-      }
-    };
-    const api = {};
-    const loggerMethods = Object.keys(methodToColorMap);
-    for (const key of loggerMethods) {
-      const method = key;
-      api[method] = (...args) => {
-        print(method, args);
-      };
-    }
-    return api;
-  })();
-
   // node_modules/workbox-core/models/messages/messages.js
   var messages = {
     "invalid-value": ({ paramName, validValueDescription, value }) => {
@@ -302,9 +250,6 @@ importScripts('/firebase-messaging-sw.js');
     isArrayOfClass
   };
 
-  // node_modules/workbox-core/models/quotaErrorCallbacks.js
-  var quotaErrorCallbacks = /* @__PURE__ */ new Set();
-
   // node_modules/workbox-core/_private/cacheNames.js
   var _cacheNameDetails = {
     googleAnalytics: "googleAnalytics",
@@ -346,119 +291,63 @@ importScripts('/firebase-messaging-sw.js');
     }
   };
 
-  // node_modules/workbox-core/_private/cacheMatchIgnoreParams.js
-  function stripParams(fullURL, ignoreParams) {
-    const strippedURL = new URL(fullURL);
-    for (const param of ignoreParams) {
-      strippedURL.searchParams.delete(param);
+  // node_modules/workbox-core/_private/logger.js
+  var logger = false ? null : (() => {
+    if (!("__WB_DISABLE_DEV_LOGS" in globalThis)) {
+      self.__WB_DISABLE_DEV_LOGS = false;
     }
-    return strippedURL.href;
-  }
-  async function cacheMatchIgnoreParams(cache, request, ignoreParams, matchOptions) {
-    const strippedRequestURL = stripParams(request.url, ignoreParams);
-    if (request.url === strippedRequestURL) {
-      return cache.match(request, matchOptions);
-    }
-    const keysOptions = Object.assign(Object.assign({}, matchOptions), { ignoreSearch: true });
-    const cacheKeys = await cache.keys(request, keysOptions);
-    for (const cacheKey of cacheKeys) {
-      const strippedCacheKeyURL = stripParams(cacheKey.url, ignoreParams);
-      if (strippedRequestURL === strippedCacheKeyURL) {
-        return cache.match(cacheKey, matchOptions);
+    let inGroup = false;
+    const methodToColorMap = {
+      debug: `#7f8c8d`,
+      log: `#2ecc71`,
+      warn: `#f39c12`,
+      error: `#c0392b`,
+      groupCollapsed: `#3498db`,
+      groupEnd: null
+      // No colored prefix on groupEnd
+    };
+    const print = function(method, args) {
+      if (self.__WB_DISABLE_DEV_LOGS) {
+        return;
       }
-    }
-    return;
-  }
-
-  // node_modules/workbox-core/_private/canConstructResponseFromBodyStream.js
-  var supportStatus;
-  function canConstructResponseFromBodyStream() {
-    if (supportStatus === void 0) {
-      const testResponse = new Response("");
-      if ("body" in testResponse) {
-        try {
-          new Response(testResponse.body);
-          supportStatus = true;
-        } catch (error) {
-          supportStatus = false;
+      if (method === "groupCollapsed") {
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+          console[method](...args);
+          return;
         }
       }
-      supportStatus = false;
-    }
-    return supportStatus;
-  }
-
-  // node_modules/workbox-core/_private/Deferred.js
-  var Deferred = class {
-    /**
-     * Creates a promise and exposes its resolve and reject functions as methods.
-     */
-    constructor() {
-      this.promise = new Promise((resolve, reject) => {
-        this.resolve = resolve;
-        this.reject = reject;
-      });
-    }
-  };
-
-  // node_modules/workbox-core/_private/executeQuotaErrorCallbacks.js
-  async function executeQuotaErrorCallbacks() {
-    if (true) {
-      logger.log(`About to run ${quotaErrorCallbacks.size} callbacks to clean up caches.`);
-    }
-    for (const callback of quotaErrorCallbacks) {
-      await callback();
-      if (true) {
-        logger.log(callback, "is complete.");
+      const styles = [
+        `background: ${methodToColorMap[method]}`,
+        `border-radius: 0.5em`,
+        `color: white`,
+        `font-weight: bold`,
+        `padding: 2px 0.5em`
+      ];
+      const logPrefix = inGroup ? [] : ["%cworkbox", styles.join(";")];
+      console[method](...logPrefix, ...args);
+      if (method === "groupCollapsed") {
+        inGroup = true;
       }
+      if (method === "groupEnd") {
+        inGroup = false;
+      }
+    };
+    const api = {};
+    const loggerMethods = Object.keys(methodToColorMap);
+    for (const key of loggerMethods) {
+      const method = key;
+      api[method] = (...args) => {
+        print(method, args);
+      };
     }
-    if (true) {
-      logger.log("Finished running callbacks.");
-    }
-  }
-
-  // node_modules/workbox-core/_private/getFriendlyURL.js
-  var getFriendlyURL = (url) => {
-    const urlObj = new URL(String(url), location.href);
-    return urlObj.href.replace(new RegExp(`^${location.origin}`), "");
-  };
-
-  // node_modules/workbox-core/_private/timeout.js
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+    return api;
+  })();
 
   // node_modules/workbox-core/_private/waitUntil.js
   function waitUntil(event, asyncFn) {
     const returnPromise = asyncFn();
     event.waitUntil(returnPromise);
     return returnPromise;
-  }
-
-  // node_modules/workbox-core/copyResponse.js
-  async function copyResponse(response, modifier) {
-    let origin = null;
-    if (response.url) {
-      const responseURL = new URL(response.url);
-      origin = responseURL.origin;
-    }
-    if (origin !== self.location.origin) {
-      throw new WorkboxError("cross-origin-copy-response", { origin });
-    }
-    const clonedResponse = response.clone();
-    const responseInit = {
-      headers: new Headers(clonedResponse.headers),
-      status: clonedResponse.status,
-      statusText: clonedResponse.statusText
-    };
-    const modifiedResponseInit = modifier ? modifier(responseInit) : responseInit;
-    const body = canConstructResponseFromBodyStream() ? clonedResponse.body : await clonedResponse.blob();
-    return new Response(body, modifiedResponseInit);
-  }
-
-  // node_modules/workbox-core/clientsClaim.js
-  function clientsClaim() {
-    self.addEventListener("activate", () => self.clients.claim());
   }
 
   // node_modules/workbox-precaching/_version.js
@@ -578,6 +467,112 @@ importScripts('/firebase-messaging-sw.js');
       _nestedGroup(`View previously precached URLs.`, urlsAlreadyPrecached);
       logger.groupEnd();
     }
+  }
+
+  // node_modules/workbox-core/_private/canConstructResponseFromBodyStream.js
+  var supportStatus;
+  function canConstructResponseFromBodyStream() {
+    if (supportStatus === void 0) {
+      const testResponse = new Response("");
+      if ("body" in testResponse) {
+        try {
+          new Response(testResponse.body);
+          supportStatus = true;
+        } catch (error) {
+          supportStatus = false;
+        }
+      }
+      supportStatus = false;
+    }
+    return supportStatus;
+  }
+
+  // node_modules/workbox-core/copyResponse.js
+  async function copyResponse(response, modifier) {
+    let origin = null;
+    if (response.url) {
+      const responseURL = new URL(response.url);
+      origin = responseURL.origin;
+    }
+    if (origin !== self.location.origin) {
+      throw new WorkboxError("cross-origin-copy-response", { origin });
+    }
+    const clonedResponse = response.clone();
+    const responseInit = {
+      headers: new Headers(clonedResponse.headers),
+      status: clonedResponse.status,
+      statusText: clonedResponse.statusText
+    };
+    const modifiedResponseInit = modifier ? modifier(responseInit) : responseInit;
+    const body = canConstructResponseFromBodyStream() ? clonedResponse.body : await clonedResponse.blob();
+    return new Response(body, modifiedResponseInit);
+  }
+
+  // node_modules/workbox-core/_private/getFriendlyURL.js
+  var getFriendlyURL = (url) => {
+    const urlObj = new URL(String(url), location.href);
+    return urlObj.href.replace(new RegExp(`^${location.origin}`), "");
+  };
+
+  // node_modules/workbox-core/_private/cacheMatchIgnoreParams.js
+  function stripParams(fullURL, ignoreParams) {
+    const strippedURL = new URL(fullURL);
+    for (const param of ignoreParams) {
+      strippedURL.searchParams.delete(param);
+    }
+    return strippedURL.href;
+  }
+  async function cacheMatchIgnoreParams(cache, request, ignoreParams, matchOptions) {
+    const strippedRequestURL = stripParams(request.url, ignoreParams);
+    if (request.url === strippedRequestURL) {
+      return cache.match(request, matchOptions);
+    }
+    const keysOptions = Object.assign(Object.assign({}, matchOptions), { ignoreSearch: true });
+    const cacheKeys = await cache.keys(request, keysOptions);
+    for (const cacheKey of cacheKeys) {
+      const strippedCacheKeyURL = stripParams(cacheKey.url, ignoreParams);
+      if (strippedRequestURL === strippedCacheKeyURL) {
+        return cache.match(cacheKey, matchOptions);
+      }
+    }
+    return;
+  }
+
+  // node_modules/workbox-core/_private/Deferred.js
+  var Deferred = class {
+    /**
+     * Creates a promise and exposes its resolve and reject functions as methods.
+     */
+    constructor() {
+      this.promise = new Promise((resolve, reject) => {
+        this.resolve = resolve;
+        this.reject = reject;
+      });
+    }
+  };
+
+  // node_modules/workbox-core/models/quotaErrorCallbacks.js
+  var quotaErrorCallbacks = /* @__PURE__ */ new Set();
+
+  // node_modules/workbox-core/_private/executeQuotaErrorCallbacks.js
+  async function executeQuotaErrorCallbacks() {
+    if (true) {
+      logger.log(`About to run ${quotaErrorCallbacks.size} callbacks to clean up caches.`);
+    }
+    for (const callback of quotaErrorCallbacks) {
+      await callback();
+      if (true) {
+        logger.log(callback, "is complete.");
+      }
+    }
+    if (true) {
+      logger.log("Finished running callbacks.");
+    }
+  }
+
+  // node_modules/workbox-core/_private/timeout.js
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // node_modules/workbox-strategies/_version.js
@@ -2150,8 +2145,8 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`;
   // node_modules/workbox-precaching/utils/deleteOutdatedCaches.js
   var SUBSTRING_TO_FIND = "-precache-";
   var deleteOutdatedCaches = async (currentPrecacheName, substringToFind = SUBSTRING_TO_FIND) => {
-    const cacheNames3 = await self.caches.keys();
-    const cacheNamesToDelete = cacheNames3.filter((cacheName) => {
+    const cacheNames2 = await self.caches.keys();
+    const cacheNamesToDelete = cacheNames2.filter((cacheName) => {
       return cacheName.includes(substringToFind) && cacheName.includes(self.registration.scope) && cacheName !== currentPrecacheName;
     });
     await Promise.all(cacheNamesToDelete.map((cacheName) => self.caches.delete(cacheName)));
@@ -2172,12 +2167,6 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`;
     }));
   }
 
-  // node_modules/workbox-precaching/createHandlerBoundToURL.js
-  function createHandlerBoundToURL(url) {
-    const precacheController2 = getOrCreatePrecacheController();
-    return precacheController2.createHandlerBoundToURL(url);
-  }
-
   // node_modules/workbox-precaching/precache.js
   function precache(entries) {
     const precacheController2 = getOrCreatePrecacheController();
@@ -2190,103 +2179,1026 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`;
     addRoute(options);
   }
 
-  // node_modules/workbox-routing/NavigationRoute.js
-  var NavigationRoute = class extends Route {
+  // node_modules/workbox-strategies/utils/messages.js
+  var messages2 = {
+    strategyStart: (strategyName, request) => `Using ${strategyName} to respond to '${getFriendlyURL(request.url)}'`,
+    printFinalResponse: (response) => {
+      if (response) {
+        logger.groupCollapsed(`View the final response here.`);
+        logger.log(response || "[No response returned]");
+        logger.groupEnd();
+      }
+    }
+  };
+
+  // node_modules/workbox-strategies/CacheFirst.js
+  var CacheFirst = class extends Strategy {
     /**
-     * If both `denylist` and `allowlist` are provided, the `denylist` will
-     * take precedence and the request will not match this route.
-     *
-     * The regular expressions in `allowlist` and `denylist`
-     * are matched against the concatenated
-     * [`pathname`]{@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLHyperlinkElementUtils/pathname}
-     * and [`search`]{@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLHyperlinkElementUtils/search}
-     * portions of the requested URL.
-     *
-     * *Note*: These RegExps may be evaluated against every destination URL during
-     * a navigation. Avoid using
-     * [complex RegExps](https://github.com/GoogleChrome/workbox/issues/3077),
-     * or else your users may see delays when navigating your site.
-     *
-     * @param {workbox-routing~handlerCallback} handler A callback
-     * function that returns a Promise resulting in a Response.
-     * @param {Object} options
-     * @param {Array<RegExp>} [options.denylist] If any of these patterns match,
-     * the route will not handle the request (even if a allowlist RegExp matches).
-     * @param {Array<RegExp>} [options.allowlist=[/./]] If any of these patterns
-     * match the URL's pathname and search parameter, the route will handle the
-     * request (assuming the denylist doesn't match).
+     * @private
+     * @param {Request|string} request A request to run this strategy for.
+     * @param {workbox-strategies.StrategyHandler} handler The event that
+     *     triggered the request.
+     * @return {Promise<Response>}
      */
-    constructor(handler, { allowlist = [/./], denylist = [] } = {}) {
+    async _handle(request, handler) {
+      const logs = [];
       if (true) {
-        finalAssertExports.isArrayOfClass(allowlist, RegExp, {
-          moduleName: "workbox-routing",
-          className: "NavigationRoute",
-          funcName: "constructor",
-          paramName: "options.allowlist"
-        });
-        finalAssertExports.isArrayOfClass(denylist, RegExp, {
-          moduleName: "workbox-routing",
-          className: "NavigationRoute",
-          funcName: "constructor",
-          paramName: "options.denylist"
+        finalAssertExports.isInstance(request, Request, {
+          moduleName: "workbox-strategies",
+          className: this.constructor.name,
+          funcName: "makeRequest",
+          paramName: "request"
         });
       }
-      super((options) => this._match(options), handler);
-      this._allowlist = allowlist;
-      this._denylist = denylist;
+      let response = await handler.cacheMatch(request);
+      let error = void 0;
+      if (!response) {
+        if (true) {
+          logs.push(`No response found in the '${this.cacheName}' cache. Will respond with a network request.`);
+        }
+        try {
+          response = await handler.fetchAndCachePut(request);
+        } catch (err) {
+          if (err instanceof Error) {
+            error = err;
+          }
+        }
+        if (true) {
+          if (response) {
+            logs.push(`Got response from network.`);
+          } else {
+            logs.push(`Unable to get a response from the network.`);
+          }
+        }
+      } else {
+        if (true) {
+          logs.push(`Found a cached response in the '${this.cacheName}' cache.`);
+        }
+      }
+      if (true) {
+        logger.groupCollapsed(messages2.strategyStart(this.constructor.name, request));
+        for (const log of logs) {
+          logger.log(log);
+        }
+        messages2.printFinalResponse(response);
+        logger.groupEnd();
+      }
+      if (!response) {
+        throw new WorkboxError("no-response", { url: request.url, error });
+      }
+      return response;
     }
+  };
+
+  // node_modules/workbox-strategies/plugins/cacheOkAndOpaquePlugin.js
+  var cacheOkAndOpaquePlugin = {
     /**
-     * Routes match handler.
+     * Returns a valid response (to allow caching) if the status is 200 (OK) or
+     * 0 (opaque).
      *
      * @param {Object} options
-     * @param {URL} options.url
-     * @param {Request} options.request
+     * @param {Response} options.response
+     * @return {Response|null}
+     *
+     * @private
+     */
+    cacheWillUpdate: async ({ response }) => {
+      if (response.status === 200 || response.status === 0) {
+        return response;
+      }
+      return null;
+    }
+  };
+
+  // node_modules/workbox-strategies/StaleWhileRevalidate.js
+  var StaleWhileRevalidate = class extends Strategy {
+    /**
+     * @param {Object} [options]
+     * @param {string} [options.cacheName] Cache name to store and retrieve
+     * requests. Defaults to cache names provided by
+     * {@link workbox-core.cacheNames}.
+     * @param {Array<Object>} [options.plugins] [Plugins]{@link https://developers.google.com/web/tools/workbox/guides/using-plugins}
+     * to use in conjunction with this caching strategy.
+     * @param {Object} [options.fetchOptions] Values passed along to the
+     * [`init`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters)
+     * of [non-navigation](https://github.com/GoogleChrome/workbox/issues/1796)
+     * `fetch()` requests made by this strategy.
+     * @param {Object} [options.matchOptions] [`CacheQueryOptions`](https://w3c.github.io/ServiceWorker/#dictdef-cachequeryoptions)
+     */
+    constructor(options = {}) {
+      super(options);
+      if (!this.plugins.some((p) => "cacheWillUpdate" in p)) {
+        this.plugins.unshift(cacheOkAndOpaquePlugin);
+      }
+    }
+    /**
+     * @private
+     * @param {Request|string} request A request to run this strategy for.
+     * @param {workbox-strategies.StrategyHandler} handler The event that
+     *     triggered the request.
+     * @return {Promise<Response>}
+     */
+    async _handle(request, handler) {
+      const logs = [];
+      if (true) {
+        finalAssertExports.isInstance(request, Request, {
+          moduleName: "workbox-strategies",
+          className: this.constructor.name,
+          funcName: "handle",
+          paramName: "request"
+        });
+      }
+      const fetchAndCachePromise = handler.fetchAndCachePut(request).catch(() => {
+      });
+      void handler.waitUntil(fetchAndCachePromise);
+      let response = await handler.cacheMatch(request);
+      let error;
+      if (response) {
+        if (true) {
+          logs.push(`Found a cached response in the '${this.cacheName}' cache. Will update with the network response in the background.`);
+        }
+      } else {
+        if (true) {
+          logs.push(`No response found in the '${this.cacheName}' cache. Will wait for the network response.`);
+        }
+        try {
+          response = await fetchAndCachePromise;
+        } catch (err) {
+          if (err instanceof Error) {
+            error = err;
+          }
+        }
+      }
+      if (true) {
+        logger.groupCollapsed(messages2.strategyStart(this.constructor.name, request));
+        for (const log of logs) {
+          logger.log(log);
+        }
+        messages2.printFinalResponse(response);
+        logger.groupEnd();
+      }
+      if (!response) {
+        throw new WorkboxError("no-response", { url: request.url, error });
+      }
+      return response;
+    }
+  };
+
+  // node_modules/workbox-cacheable-response/_version.js
+  try {
+    self["workbox:cacheable-response:7.4.0"] && _();
+  } catch (e) {
+  }
+
+  // node_modules/workbox-cacheable-response/CacheableResponse.js
+  var CacheableResponse = class {
+    /**
+     * To construct a new CacheableResponse instance you must provide at least
+     * one of the `config` properties.
+     *
+     * If both `statuses` and `headers` are specified, then both conditions must
+     * be met for the `Response` to be considered cacheable.
+     *
+     * @param {Object} config
+     * @param {Array<number>} [config.statuses] One or more status codes that a
+     * `Response` can have and be considered cacheable.
+     * @param {Object<string,string>} [config.headers] A mapping of header names
+     * and expected values that a `Response` can have and be considered cacheable.
+     * If multiple headers are provided, only one needs to be present.
+     */
+    constructor(config = {}) {
+      if (true) {
+        if (!(config.statuses || config.headers)) {
+          throw new WorkboxError("statuses-or-headers-required", {
+            moduleName: "workbox-cacheable-response",
+            className: "CacheableResponse",
+            funcName: "constructor"
+          });
+        }
+        if (config.statuses) {
+          finalAssertExports.isArray(config.statuses, {
+            moduleName: "workbox-cacheable-response",
+            className: "CacheableResponse",
+            funcName: "constructor",
+            paramName: "config.statuses"
+          });
+        }
+        if (config.headers) {
+          finalAssertExports.isType(config.headers, "object", {
+            moduleName: "workbox-cacheable-response",
+            className: "CacheableResponse",
+            funcName: "constructor",
+            paramName: "config.headers"
+          });
+        }
+      }
+      this._statuses = config.statuses;
+      this._headers = config.headers;
+    }
+    /**
+     * Checks a response to see whether it's cacheable or not, based on this
+     * object's configuration.
+     *
+     * @param {Response} response The response whose cacheability is being
+     * checked.
+     * @return {boolean} `true` if the `Response` is cacheable, and `false`
+     * otherwise.
+     */
+    isResponseCacheable(response) {
+      if (true) {
+        finalAssertExports.isInstance(response, Response, {
+          moduleName: "workbox-cacheable-response",
+          className: "CacheableResponse",
+          funcName: "isResponseCacheable",
+          paramName: "response"
+        });
+      }
+      let cacheable = true;
+      if (this._statuses) {
+        cacheable = this._statuses.includes(response.status);
+      }
+      if (this._headers && cacheable) {
+        cacheable = Object.keys(this._headers).some((headerName) => {
+          return response.headers.get(headerName) === this._headers[headerName];
+        });
+      }
+      if (true) {
+        if (!cacheable) {
+          logger.groupCollapsed(`The request for '${getFriendlyURL(response.url)}' returned a response that does not meet the criteria for being cached.`);
+          logger.groupCollapsed(`View cacheability criteria here.`);
+          logger.log(`Cacheable statuses: ` + JSON.stringify(this._statuses));
+          logger.log(`Cacheable headers: ` + JSON.stringify(this._headers, null, 2));
+          logger.groupEnd();
+          const logFriendlyHeaders = {};
+          response.headers.forEach((value, key) => {
+            logFriendlyHeaders[key] = value;
+          });
+          logger.groupCollapsed(`View response status and headers here.`);
+          logger.log(`Response status: ${response.status}`);
+          logger.log(`Response headers: ` + JSON.stringify(logFriendlyHeaders, null, 2));
+          logger.groupEnd();
+          logger.groupCollapsed(`View full response details here.`);
+          logger.log(response.headers);
+          logger.log(response);
+          logger.groupEnd();
+          logger.groupEnd();
+        }
+      }
+      return cacheable;
+    }
+  };
+
+  // node_modules/workbox-cacheable-response/CacheableResponsePlugin.js
+  var CacheableResponsePlugin = class {
+    /**
+     * To construct a new CacheableResponsePlugin instance you must provide at
+     * least one of the `config` properties.
+     *
+     * If both `statuses` and `headers` are specified, then both conditions must
+     * be met for the `Response` to be considered cacheable.
+     *
+     * @param {Object} config
+     * @param {Array<number>} [config.statuses] One or more status codes that a
+     * `Response` can have and be considered cacheable.
+     * @param {Object<string,string>} [config.headers] A mapping of header names
+     * and expected values that a `Response` can have and be considered cacheable.
+     * If multiple headers are provided, only one needs to be present.
+     */
+    constructor(config) {
+      this.cacheWillUpdate = async ({ response }) => {
+        if (this._cacheableResponse.isResponseCacheable(response)) {
+          return response;
+        }
+        return null;
+      };
+      this._cacheableResponse = new CacheableResponse(config);
+    }
+  };
+
+  // node_modules/workbox-core/_private/dontWaitFor.js
+  function dontWaitFor(promise) {
+    void promise.then(() => {
+    });
+  }
+
+  // node_modules/idb/build/wrap-idb-value.js
+  var instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
+  var idbProxyableTypes;
+  var cursorAdvanceMethods;
+  function getIdbProxyableTypes() {
+    return idbProxyableTypes || (idbProxyableTypes = [
+      IDBDatabase,
+      IDBObjectStore,
+      IDBIndex,
+      IDBCursor,
+      IDBTransaction
+    ]);
+  }
+  function getCursorAdvanceMethods() {
+    return cursorAdvanceMethods || (cursorAdvanceMethods = [
+      IDBCursor.prototype.advance,
+      IDBCursor.prototype.continue,
+      IDBCursor.prototype.continuePrimaryKey
+    ]);
+  }
+  var cursorRequestMap = /* @__PURE__ */ new WeakMap();
+  var transactionDoneMap = /* @__PURE__ */ new WeakMap();
+  var transactionStoreNamesMap = /* @__PURE__ */ new WeakMap();
+  var transformCache = /* @__PURE__ */ new WeakMap();
+  var reverseTransformCache = /* @__PURE__ */ new WeakMap();
+  function promisifyRequest(request) {
+    const promise = new Promise((resolve, reject) => {
+      const unlisten = () => {
+        request.removeEventListener("success", success);
+        request.removeEventListener("error", error);
+      };
+      const success = () => {
+        resolve(wrap(request.result));
+        unlisten();
+      };
+      const error = () => {
+        reject(request.error);
+        unlisten();
+      };
+      request.addEventListener("success", success);
+      request.addEventListener("error", error);
+    });
+    promise.then((value) => {
+      if (value instanceof IDBCursor) {
+        cursorRequestMap.set(value, request);
+      }
+    }).catch(() => {
+    });
+    reverseTransformCache.set(promise, request);
+    return promise;
+  }
+  function cacheDonePromiseForTransaction(tx) {
+    if (transactionDoneMap.has(tx))
+      return;
+    const done = new Promise((resolve, reject) => {
+      const unlisten = () => {
+        tx.removeEventListener("complete", complete);
+        tx.removeEventListener("error", error);
+        tx.removeEventListener("abort", error);
+      };
+      const complete = () => {
+        resolve();
+        unlisten();
+      };
+      const error = () => {
+        reject(tx.error || new DOMException("AbortError", "AbortError"));
+        unlisten();
+      };
+      tx.addEventListener("complete", complete);
+      tx.addEventListener("error", error);
+      tx.addEventListener("abort", error);
+    });
+    transactionDoneMap.set(tx, done);
+  }
+  var idbProxyTraps = {
+    get(target, prop, receiver) {
+      if (target instanceof IDBTransaction) {
+        if (prop === "done")
+          return transactionDoneMap.get(target);
+        if (prop === "objectStoreNames") {
+          return target.objectStoreNames || transactionStoreNamesMap.get(target);
+        }
+        if (prop === "store") {
+          return receiver.objectStoreNames[1] ? void 0 : receiver.objectStore(receiver.objectStoreNames[0]);
+        }
+      }
+      return wrap(target[prop]);
+    },
+    set(target, prop, value) {
+      target[prop] = value;
+      return true;
+    },
+    has(target, prop) {
+      if (target instanceof IDBTransaction && (prop === "done" || prop === "store")) {
+        return true;
+      }
+      return prop in target;
+    }
+  };
+  function replaceTraps(callback) {
+    idbProxyTraps = callback(idbProxyTraps);
+  }
+  function wrapFunction(func) {
+    if (func === IDBDatabase.prototype.transaction && !("objectStoreNames" in IDBTransaction.prototype)) {
+      return function(storeNames, ...args) {
+        const tx = func.call(unwrap(this), storeNames, ...args);
+        transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
+        return wrap(tx);
+      };
+    }
+    if (getCursorAdvanceMethods().includes(func)) {
+      return function(...args) {
+        func.apply(unwrap(this), args);
+        return wrap(cursorRequestMap.get(this));
+      };
+    }
+    return function(...args) {
+      return wrap(func.apply(unwrap(this), args));
+    };
+  }
+  function transformCachableValue(value) {
+    if (typeof value === "function")
+      return wrapFunction(value);
+    if (value instanceof IDBTransaction)
+      cacheDonePromiseForTransaction(value);
+    if (instanceOfAny(value, getIdbProxyableTypes()))
+      return new Proxy(value, idbProxyTraps);
+    return value;
+  }
+  function wrap(value) {
+    if (value instanceof IDBRequest)
+      return promisifyRequest(value);
+    if (transformCache.has(value))
+      return transformCache.get(value);
+    const newValue = transformCachableValue(value);
+    if (newValue !== value) {
+      transformCache.set(value, newValue);
+      reverseTransformCache.set(newValue, value);
+    }
+    return newValue;
+  }
+  var unwrap = (value) => reverseTransformCache.get(value);
+
+  // node_modules/idb/build/index.js
+  function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
+    const request = indexedDB.open(name, version);
+    const openPromise = wrap(request);
+    if (upgrade) {
+      request.addEventListener("upgradeneeded", (event) => {
+        upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction), event);
+      });
+    }
+    if (blocked) {
+      request.addEventListener("blocked", (event) => blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        event.oldVersion,
+        event.newVersion,
+        event
+      ));
+    }
+    openPromise.then((db) => {
+      if (terminated)
+        db.addEventListener("close", () => terminated());
+      if (blocking) {
+        db.addEventListener("versionchange", (event) => blocking(event.oldVersion, event.newVersion, event));
+      }
+    }).catch(() => {
+    });
+    return openPromise;
+  }
+  function deleteDB(name, { blocked } = {}) {
+    const request = indexedDB.deleteDatabase(name);
+    if (blocked) {
+      request.addEventListener("blocked", (event) => blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        event.oldVersion,
+        event
+      ));
+    }
+    return wrap(request).then(() => void 0);
+  }
+  var readMethods = ["get", "getKey", "getAll", "getAllKeys", "count"];
+  var writeMethods = ["put", "add", "delete", "clear"];
+  var cachedMethods = /* @__PURE__ */ new Map();
+  function getMethod(target, prop) {
+    if (!(target instanceof IDBDatabase && !(prop in target) && typeof prop === "string")) {
+      return;
+    }
+    if (cachedMethods.get(prop))
+      return cachedMethods.get(prop);
+    const targetFuncName = prop.replace(/FromIndex$/, "");
+    const useIndex = prop !== targetFuncName;
+    const isWrite = writeMethods.includes(targetFuncName);
+    if (
+      // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+      !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) || !(isWrite || readMethods.includes(targetFuncName))
+    ) {
+      return;
+    }
+    const method = async function(storeName, ...args) {
+      const tx = this.transaction(storeName, isWrite ? "readwrite" : "readonly");
+      let target2 = tx.store;
+      if (useIndex)
+        target2 = target2.index(args.shift());
+      return (await Promise.all([
+        target2[targetFuncName](...args),
+        isWrite && tx.done
+      ]))[0];
+    };
+    cachedMethods.set(prop, method);
+    return method;
+  }
+  replaceTraps((oldTraps) => ({
+    ...oldTraps,
+    get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+    has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop)
+  }));
+
+  // node_modules/workbox-expiration/_version.js
+  try {
+    self["workbox:expiration:7.4.0"] && _();
+  } catch (e) {
+  }
+
+  // node_modules/workbox-expiration/models/CacheTimestampsModel.js
+  var DB_NAME = "workbox-expiration";
+  var CACHE_OBJECT_STORE = "cache-entries";
+  var normalizeURL = (unNormalizedUrl) => {
+    const url = new URL(unNormalizedUrl, location.href);
+    url.hash = "";
+    return url.href;
+  };
+  var CacheTimestampsModel = class {
+    /**
+     *
+     * @param {string} cacheName
+     *
+     * @private
+     */
+    constructor(cacheName) {
+      this._db = null;
+      this._cacheName = cacheName;
+    }
+    /**
+     * Performs an upgrade of indexedDB.
+     *
+     * @param {IDBPDatabase<CacheDbSchema>} db
+     *
+     * @private
+     */
+    _upgradeDb(db) {
+      const objStore = db.createObjectStore(CACHE_OBJECT_STORE, { keyPath: "id" });
+      objStore.createIndex("cacheName", "cacheName", { unique: false });
+      objStore.createIndex("timestamp", "timestamp", { unique: false });
+    }
+    /**
+     * Performs an upgrade of indexedDB and deletes deprecated DBs.
+     *
+     * @param {IDBPDatabase<CacheDbSchema>} db
+     *
+     * @private
+     */
+    _upgradeDbAndDeleteOldDbs(db) {
+      this._upgradeDb(db);
+      if (this._cacheName) {
+        void deleteDB(this._cacheName);
+      }
+    }
+    /**
+     * @param {string} url
+     * @param {number} timestamp
+     *
+     * @private
+     */
+    async setTimestamp(url, timestamp) {
+      url = normalizeURL(url);
+      const entry = {
+        url,
+        timestamp,
+        cacheName: this._cacheName,
+        // Creating an ID from the URL and cache name won't be necessary once
+        // Edge switches to Chromium and all browsers we support work with
+        // array keyPaths.
+        id: this._getId(url)
+      };
+      const db = await this.getDb();
+      const tx = db.transaction(CACHE_OBJECT_STORE, "readwrite", {
+        durability: "relaxed"
+      });
+      await tx.store.put(entry);
+      await tx.done;
+    }
+    /**
+     * Returns the timestamp stored for a given URL.
+     *
+     * @param {string} url
+     * @return {number | undefined}
+     *
+     * @private
+     */
+    async getTimestamp(url) {
+      const db = await this.getDb();
+      const entry = await db.get(CACHE_OBJECT_STORE, this._getId(url));
+      return entry === null || entry === void 0 ? void 0 : entry.timestamp;
+    }
+    /**
+     * Iterates through all the entries in the object store (from newest to
+     * oldest) and removes entries once either `maxCount` is reached or the
+     * entry's timestamp is less than `minTimestamp`.
+     *
+     * @param {number} minTimestamp
+     * @param {number} maxCount
+     * @return {Array<string>}
+     *
+     * @private
+     */
+    async expireEntries(minTimestamp, maxCount) {
+      const db = await this.getDb();
+      let cursor = await db.transaction(CACHE_OBJECT_STORE).store.index("timestamp").openCursor(null, "prev");
+      const entriesToDelete = [];
+      let entriesNotDeletedCount = 0;
+      while (cursor) {
+        const result = cursor.value;
+        if (result.cacheName === this._cacheName) {
+          if (minTimestamp && result.timestamp < minTimestamp || maxCount && entriesNotDeletedCount >= maxCount) {
+            entriesToDelete.push(cursor.value);
+          } else {
+            entriesNotDeletedCount++;
+          }
+        }
+        cursor = await cursor.continue();
+      }
+      const urlsDeleted = [];
+      for (const entry of entriesToDelete) {
+        await db.delete(CACHE_OBJECT_STORE, entry.id);
+        urlsDeleted.push(entry.url);
+      }
+      return urlsDeleted;
+    }
+    /**
+     * Takes a URL and returns an ID that will be unique in the object store.
+     *
+     * @param {string} url
+     * @return {string}
+     *
+     * @private
+     */
+    _getId(url) {
+      return this._cacheName + "|" + normalizeURL(url);
+    }
+    /**
+     * Returns an open connection to the database.
+     *
+     * @private
+     */
+    async getDb() {
+      if (!this._db) {
+        this._db = await openDB(DB_NAME, 1, {
+          upgrade: this._upgradeDbAndDeleteOldDbs.bind(this)
+        });
+      }
+      return this._db;
+    }
+  };
+
+  // node_modules/workbox-expiration/CacheExpiration.js
+  var CacheExpiration = class {
+    /**
+     * To construct a new CacheExpiration instance you must provide at least
+     * one of the `config` properties.
+     *
+     * @param {string} cacheName Name of the cache to apply restrictions to.
+     * @param {Object} config
+     * @param {number} [config.maxEntries] The maximum number of entries to cache.
+     * Entries used the least will be removed as the maximum is reached.
+     * @param {number} [config.maxAgeSeconds] The maximum age of an entry before
+     * it's treated as stale and removed.
+     * @param {Object} [config.matchOptions] The [`CacheQueryOptions`](https://developer.mozilla.org/en-US/docs/Web/API/Cache/delete#Parameters)
+     * that will be used when calling `delete()` on the cache.
+     */
+    constructor(cacheName, config = {}) {
+      this._isRunning = false;
+      this._rerunRequested = false;
+      if (true) {
+        finalAssertExports.isType(cacheName, "string", {
+          moduleName: "workbox-expiration",
+          className: "CacheExpiration",
+          funcName: "constructor",
+          paramName: "cacheName"
+        });
+        if (!(config.maxEntries || config.maxAgeSeconds)) {
+          throw new WorkboxError("max-entries-or-age-required", {
+            moduleName: "workbox-expiration",
+            className: "CacheExpiration",
+            funcName: "constructor"
+          });
+        }
+        if (config.maxEntries) {
+          finalAssertExports.isType(config.maxEntries, "number", {
+            moduleName: "workbox-expiration",
+            className: "CacheExpiration",
+            funcName: "constructor",
+            paramName: "config.maxEntries"
+          });
+        }
+        if (config.maxAgeSeconds) {
+          finalAssertExports.isType(config.maxAgeSeconds, "number", {
+            moduleName: "workbox-expiration",
+            className: "CacheExpiration",
+            funcName: "constructor",
+            paramName: "config.maxAgeSeconds"
+          });
+        }
+      }
+      this._maxEntries = config.maxEntries;
+      this._maxAgeSeconds = config.maxAgeSeconds;
+      this._matchOptions = config.matchOptions;
+      this._cacheName = cacheName;
+      this._timestampModel = new CacheTimestampsModel(cacheName);
+    }
+    /**
+     * Expires entries for the given cache and given criteria.
+     */
+    async expireEntries() {
+      if (this._isRunning) {
+        this._rerunRequested = true;
+        return;
+      }
+      this._isRunning = true;
+      const minTimestamp = this._maxAgeSeconds ? Date.now() - this._maxAgeSeconds * 1e3 : 0;
+      const urlsExpired = await this._timestampModel.expireEntries(minTimestamp, this._maxEntries);
+      const cache = await self.caches.open(this._cacheName);
+      for (const url of urlsExpired) {
+        await cache.delete(url, this._matchOptions);
+      }
+      if (true) {
+        if (urlsExpired.length > 0) {
+          logger.groupCollapsed(`Expired ${urlsExpired.length} ${urlsExpired.length === 1 ? "entry" : "entries"} and removed ${urlsExpired.length === 1 ? "it" : "them"} from the '${this._cacheName}' cache.`);
+          logger.log(`Expired the following ${urlsExpired.length === 1 ? "URL" : "URLs"}:`);
+          urlsExpired.forEach((url) => logger.log(`    ${url}`));
+          logger.groupEnd();
+        } else {
+          logger.debug(`Cache expiration ran and found no entries to remove.`);
+        }
+      }
+      this._isRunning = false;
+      if (this._rerunRequested) {
+        this._rerunRequested = false;
+        dontWaitFor(this.expireEntries());
+      }
+    }
+    /**
+     * Update the timestamp for the given URL. This ensures the when
+     * removing entries based on maximum entries, most recently used
+     * is accurate or when expiring, the timestamp is up-to-date.
+     *
+     * @param {string} url
+     */
+    async updateTimestamp(url) {
+      if (true) {
+        finalAssertExports.isType(url, "string", {
+          moduleName: "workbox-expiration",
+          className: "CacheExpiration",
+          funcName: "updateTimestamp",
+          paramName: "url"
+        });
+      }
+      await this._timestampModel.setTimestamp(url, Date.now());
+    }
+    /**
+     * Can be used to check if a URL has expired or not before it's used.
+     *
+     * This requires a look up from IndexedDB, so can be slow.
+     *
+     * Note: This method will not remove the cached entry, call
+     * `expireEntries()` to remove indexedDB and Cache entries.
+     *
+     * @param {string} url
+     * @return {boolean}
+     */
+    async isURLExpired(url) {
+      if (!this._maxAgeSeconds) {
+        if (true) {
+          throw new WorkboxError(`expired-test-without-max-age`, {
+            methodName: "isURLExpired",
+            paramName: "maxAgeSeconds"
+          });
+        }
+        return false;
+      } else {
+        const timestamp = await this._timestampModel.getTimestamp(url);
+        const expireOlderThan = Date.now() - this._maxAgeSeconds * 1e3;
+        return timestamp !== void 0 ? timestamp < expireOlderThan : true;
+      }
+    }
+    /**
+     * Removes the IndexedDB object store used to keep track of cache expiration
+     * metadata.
+     */
+    async delete() {
+      this._rerunRequested = false;
+      await this._timestampModel.expireEntries(Infinity);
+    }
+  };
+
+  // node_modules/workbox-core/registerQuotaErrorCallback.js
+  function registerQuotaErrorCallback(callback) {
+    if (true) {
+      finalAssertExports.isType(callback, "function", {
+        moduleName: "workbox-core",
+        funcName: "register",
+        paramName: "callback"
+      });
+    }
+    quotaErrorCallbacks.add(callback);
+    if (true) {
+      logger.log("Registered a callback to respond to quota errors.", callback);
+    }
+  }
+
+  // node_modules/workbox-expiration/ExpirationPlugin.js
+  var ExpirationPlugin = class {
+    /**
+     * @param {ExpirationPluginOptions} config
+     * @param {number} [config.maxEntries] The maximum number of entries to cache.
+     * Entries used the least will be removed as the maximum is reached.
+     * @param {number} [config.maxAgeSeconds] The maximum age of an entry before
+     * it's treated as stale and removed.
+     * @param {Object} [config.matchOptions] The [`CacheQueryOptions`](https://developer.mozilla.org/en-US/docs/Web/API/Cache/delete#Parameters)
+     * that will be used when calling `delete()` on the cache.
+     * @param {boolean} [config.purgeOnQuotaError] Whether to opt this cache in to
+     * automatic deletion if the available storage quota has been exceeded.
+     */
+    constructor(config = {}) {
+      this.cachedResponseWillBeUsed = async ({ event, request, cacheName, cachedResponse }) => {
+        if (!cachedResponse) {
+          return null;
+        }
+        const isFresh = this._isResponseDateFresh(cachedResponse);
+        const cacheExpiration = this._getCacheExpiration(cacheName);
+        dontWaitFor(cacheExpiration.expireEntries());
+        const updateTimestampDone = cacheExpiration.updateTimestamp(request.url);
+        if (event) {
+          try {
+            event.waitUntil(updateTimestampDone);
+          } catch (error) {
+            if (true) {
+              if ("request" in event) {
+                logger.warn(`Unable to ensure service worker stays alive when updating cache entry for '${getFriendlyURL(event.request.url)}'.`);
+              }
+            }
+          }
+        }
+        return isFresh ? cachedResponse : null;
+      };
+      this.cacheDidUpdate = async ({ cacheName, request }) => {
+        if (true) {
+          finalAssertExports.isType(cacheName, "string", {
+            moduleName: "workbox-expiration",
+            className: "Plugin",
+            funcName: "cacheDidUpdate",
+            paramName: "cacheName"
+          });
+          finalAssertExports.isInstance(request, Request, {
+            moduleName: "workbox-expiration",
+            className: "Plugin",
+            funcName: "cacheDidUpdate",
+            paramName: "request"
+          });
+        }
+        const cacheExpiration = this._getCacheExpiration(cacheName);
+        await cacheExpiration.updateTimestamp(request.url);
+        await cacheExpiration.expireEntries();
+      };
+      if (true) {
+        if (!(config.maxEntries || config.maxAgeSeconds)) {
+          throw new WorkboxError("max-entries-or-age-required", {
+            moduleName: "workbox-expiration",
+            className: "Plugin",
+            funcName: "constructor"
+          });
+        }
+        if (config.maxEntries) {
+          finalAssertExports.isType(config.maxEntries, "number", {
+            moduleName: "workbox-expiration",
+            className: "Plugin",
+            funcName: "constructor",
+            paramName: "config.maxEntries"
+          });
+        }
+        if (config.maxAgeSeconds) {
+          finalAssertExports.isType(config.maxAgeSeconds, "number", {
+            moduleName: "workbox-expiration",
+            className: "Plugin",
+            funcName: "constructor",
+            paramName: "config.maxAgeSeconds"
+          });
+        }
+      }
+      this._config = config;
+      this._maxAgeSeconds = config.maxAgeSeconds;
+      this._cacheExpirations = /* @__PURE__ */ new Map();
+      if (config.purgeOnQuotaError) {
+        registerQuotaErrorCallback(() => this.deleteCacheAndMetadata());
+      }
+    }
+    /**
+     * A simple helper method to return a CacheExpiration instance for a given
+     * cache name.
+     *
+     * @param {string} cacheName
+     * @return {CacheExpiration}
+     *
+     * @private
+     */
+    _getCacheExpiration(cacheName) {
+      if (cacheName === cacheNames.getRuntimeName()) {
+        throw new WorkboxError("expire-custom-caches-only");
+      }
+      let cacheExpiration = this._cacheExpirations.get(cacheName);
+      if (!cacheExpiration) {
+        cacheExpiration = new CacheExpiration(cacheName, this._config);
+        this._cacheExpirations.set(cacheName, cacheExpiration);
+      }
+      return cacheExpiration;
+    }
+    /**
+     * @param {Response} cachedResponse
      * @return {boolean}
      *
      * @private
      */
-    _match({ url, request }) {
-      if (request && request.mode !== "navigate") {
-        return false;
-      }
-      const pathnameAndSearch = url.pathname + url.search;
-      for (const regExp of this._denylist) {
-        if (regExp.test(pathnameAndSearch)) {
-          if (true) {
-            logger.log(`The navigation route ${pathnameAndSearch} is not being used, since the URL matches this denylist pattern: ${regExp.toString()}`);
-          }
-          return false;
-        }
-      }
-      if (this._allowlist.some((regExp) => regExp.test(pathnameAndSearch))) {
-        if (true) {
-          logger.debug(`The navigation route ${pathnameAndSearch} is being used.`);
-        }
+    _isResponseDateFresh(cachedResponse) {
+      if (!this._maxAgeSeconds) {
         return true;
       }
-      if (true) {
-        logger.log(`The navigation route ${pathnameAndSearch} is not being used, since the URL being navigated to doesn't match the allowlist.`);
+      const dateHeaderTimestamp = this._getDateHeaderTimestamp(cachedResponse);
+      if (dateHeaderTimestamp === null) {
+        return true;
       }
-      return false;
+      const now = Date.now();
+      return dateHeaderTimestamp >= now - this._maxAgeSeconds * 1e3;
+    }
+    /**
+     * This method will extract the data header and parse it into a useful
+     * value.
+     *
+     * @param {Response} cachedResponse
+     * @return {number|null}
+     *
+     * @private
+     */
+    _getDateHeaderTimestamp(cachedResponse) {
+      if (!cachedResponse.headers.has("date")) {
+        return null;
+      }
+      const dateHeader = cachedResponse.headers.get("date");
+      const parsedDate = new Date(dateHeader);
+      const headerTime = parsedDate.getTime();
+      if (isNaN(headerTime)) {
+        return null;
+      }
+      return headerTime;
+    }
+    /**
+     * This is a helper method that performs two operations:
+     *
+     * - Deletes *all* the underlying Cache instances associated with this plugin
+     * instance, by calling caches.delete() on your behalf.
+     * - Deletes the metadata from IndexedDB used to keep track of expiration
+     * details for each Cache instance.
+     *
+     * When using cache expiration, calling this method is preferable to calling
+     * `caches.delete()` directly, since this will ensure that the IndexedDB
+     * metadata is also cleanly removed and open IndexedDB instances are deleted.
+     *
+     * Note that if you're *not* using cache expiration for a given cache, calling
+     * `caches.delete()` and passing in the cache's name should be sufficient.
+     * There is no Workbox-specific method needed for cleanup in that case.
+     */
+    async deleteCacheAndMetadata() {
+      for (const [cacheName, cacheExpiration] of this._cacheExpirations) {
+        await self.caches.delete(cacheName);
+        await cacheExpiration.delete();
+      }
+      this._cacheExpirations = /* @__PURE__ */ new Map();
     }
   };
 
   // src-pwa/custom-service-worker.ts
-  self.skipWaiting();
-  clientsClaim();
-  precacheAndRoute([{"revision":"5e0bd1c281a62a380d7a948085bfe2d1","url":"robots.txt"},{"revision":"1a0450ec1bbe89da2e9eb777be170064","url":"manifest.json"},{"revision":"95167e8e03927557849ce2f766a73e1c","url":"logo.svg"},{"revision":"44a82eb2b4e6c26481938bb7db5f776a","url":"logo.png"},{"revision":"da09ef8f88d3327fdfbb48929c19384a","url":"list.txt"},{"revision":"fcc47c7cffac14015a8aaa0aaea3eb64","url":"list.html"},{"revision":"d77195c28254692d93d837f6df5207ff","url":"index.txt"},{"revision":"a75ed8dab4d3d6ef263016bc3abb35a1","url":"index.html"},{"revision":"b189a8ac068b567ececf31f5bea96785","url":"favicon.ico"},{"revision":"c38701350b2bf200aba176653d5ee95a","url":"admin.txt"},{"revision":"10f2dcd9e8bd586a97f6a4179122320a","url":"admin.html"},{"revision":"015e2c9b7fb9570c6f52ef7e4b1b4425","url":"add.txt"},{"revision":"636931a50cf9b5c27456ae83b61ae480","url":"add.html"},{"revision":"cb4281681e9470365229e3db7d16aa84","url":"_not-found.txt"},{"revision":"7e42948b170c2b3893413642c8a00fe3","url":"_not-found.html"},{"revision":"97237d232d152c8b391aaef551c74dd2","url":"__next._tree.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"__next._index.txt"},{"revision":"cd61f5acca60ed26246822c6fddee486","url":"__next._head.txt"},{"revision":"d77195c28254692d93d837f6df5207ff","url":"__next._full.txt"},{"revision":"77e9d71d5fb45fef756282390af59c26","url":"__next.__PAGE__.txt"},{"revision":"7e42948b170c2b3893413642c8a00fe3","url":"404.html"},{"revision":"ecddc83af659afd47da64137bb0539b2","url":"401.txt"},{"revision":"e52571d5c736f2fd0b8c65444c34f4ab","url":"401.html"},{"revision":"e1f892c3b79bde7e423c672414884c10","url":"list/__next.list.txt"},{"revision":"e50c13cca4828d1d0f91f06aa4b95819","url":"list/__next.list.__PAGE__.txt"},{"revision":"54f25f4faa085b22d701e88596108512","url":"list/__next._tree.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"list/__next._index.txt"},{"revision":"cd61f5acca60ed26246822c6fddee486","url":"list/__next._head.txt"},{"revision":"da09ef8f88d3327fdfbb48929c19384a","url":"list/__next._full.txt"},{"revision":"bb832ae88f759d5e8ac51a085d110e15","url":"icons/icon-512x512.png"},{"revision":"1c82f3358d5846fff5a52066f6dadd19","url":"icons/icon-384x384.png"},{"revision":"9897c7d392710c1baf4c4ebc1c1b8bac","url":"icons/icon-256x256.png"},{"revision":"fa318f4e0e687c217d331ca562c20384","url":"icons/icon-192x192.png"},{"revision":"0e9b71e6bcfd5dddd527d16294ff94d1","url":"icons/icon-128x128.png"},{"revision":"8874fb275ca6b79e78b05c5ce7f67ae3","url":"icons/favicon-96x96.png"},{"revision":"14611094fc037ae96267e63f7d6f699d","url":"icons/favicon-32x32.png"},{"revision":"0f9bec44c06154063e8a0e88b4718746","url":"icons/favicon-16x16.png"},{"revision":"0e9b71e6bcfd5dddd527d16294ff94d1","url":"icons/favicon-128x128.png"},{"revision":"71fc7f65627f10ee9cf809c08709f2e1","url":"icons/apple-launch-828x1792.png"},{"revision":"07c5b0c931443c8917a8b9826df2444d","url":"icons/apple-launch-750x1334.png"},{"revision":"39c65d38598d36780242ab80c30196fb","url":"icons/apple-launch-2048x2732.png"},{"revision":"6b5c2a677ea7b143c8d1230d47115081","url":"icons/apple-launch-1668x2388.png"},{"revision":"80c36bcead53d7106bb9f7f6d84a54f2","url":"icons/apple-launch-1668x2224.png"},{"revision":"82f8ea3f8e4e81669d66ad4f72455585","url":"icons/apple-launch-1620x2160.png"},{"revision":"91e088bea6c3f7bafd010160a639ae96","url":"icons/apple-launch-1536x2048.png"},{"revision":"66bc05ad15f13ae978166a5724c36c4a","url":"icons/apple-launch-1290x2796.png"},{"revision":"496f39ab0fd505102830e2d8c3932534","url":"icons/apple-launch-1284x2778.png"},{"revision":"00991090f3afc8d73afc043671e3bb07","url":"icons/apple-launch-1242x2688.png"},{"revision":"18ea885e2c330e5ad2780795b4ce27e7","url":"icons/apple-launch-1242x2208.png"},{"revision":"805b7fb862ce0a7f78c42bd2a10a2b37","url":"icons/apple-launch-1179x2556.png"},{"revision":"abc2eb54c11e324fd2ea95cb8ac64d87","url":"icons/apple-launch-1170x2532.png"},{"revision":"9444c78e35a464b830bd1b9d2c42e734","url":"icons/apple-launch-1125x2436.png"},{"revision":"047da9d9d786dc2545ea69da56fdde19","url":"icons/apple-launch-1080x2340.png"},{"revision":"6de3a8ed4ed8b3096194dd4b99364f07","url":"dev/routes-manifest.json"},{"revision":"93c3a72812a0dedcd9abf2f17835cb06","url":"dev/prerender-manifest.json"},{"revision":"cb0754649e00d2a7f186765afc1eca2e","url":"dev/package.json"},{"revision":"a2a72c2cc423e525a3ce0368d758a6e8","url":"dev/fallback-build-manifest.json"},{"revision":"e594ac656172cdf49c27bc6f42b306c2","url":"dev/build-manifest.json"},{"revision":"abee47769bf307639ace4945f9cfd4ff","url":"dev/static/development/_ssgManifest.js"},{"revision":"013eb57bab04ab886e7d6f5105a343c8","url":"dev/static/development/_clientMiddlewareManifest.js"},{"revision":"3f290ecb505664f59e6ec20e14f7fccd","url":"dev/static/development/_buildManifest.js"},{"revision":"39a229f68acb5be88e2ce771197712e8","url":"dev/static/chunks/turbopack-_1e1uh56._.js"},{"revision":"c1518dd364f23426ce688399de666be6","url":"dev/static/chunks/src_styles_app_1z54j98.css"},{"revision":"ad9692fa92508469d1017b37b5e707bb","url":"dev/static/chunks/src_stores_valuesStore_ts_1qejp1v._.js"},{"revision":"11fb5eea9cd123191b9ec66ee7abc38a","url":"dev/static/chunks/src_stores_userStore_ts_1qejp1v._.js"},{"revision":"293c94523e1a256d66fc3ade2a6bd517","url":"dev/static/chunks/src_stores_appStore_ts_1qejp1v._.js"},{"revision":"882bf3e49c8dc0d140c840bcd0056ad5","url":"dev/static/chunks/src_stores_0j1n5pr._.js"},{"revision":"b4eac2090445b846cf03257aee504bb7","url":"dev/static/chunks/src_helpers_collections_ts_0nv6g9a._.js"},{"revision":"b4eac2090445b846cf03257aee504bb7","url":"dev/static/chunks/src_helpers_collections_ts_0k59k43._.js"},{"revision":"ddf98116d28572ecc9dfcc3cdc64095c","url":"dev/static/chunks/src_components_atoms_AppToast_tsx_0n3xtoh._.js"},{"revision":"563ff05c9e9d3711224c04451e3a936c","url":"dev/static/chunks/src_app_page_tsx_1pmuprg._.js"},{"revision":"75066ea5717be7f2d665073143938f4e","url":"dev/static/chunks/src_app_page_tsx_1gecvfk._.js"},{"revision":"14c70b90e38ffdb7dda755da0d253779","url":"dev/static/chunks/src_app_not-found_tsx_1pmuprg._.js"},{"revision":"47df46e5bb67b80e5e8ba426255cd0e8","url":"dev/static/chunks/src_app_list_page_tsx_1pmuprg._.js"},{"revision":"151f01348deb7e8f7e67a1aabf335e28","url":"dev/static/chunks/src_app_list_page_tsx_0lj384x._.js"},{"revision":"52fbb6af1e834b1edba068e97ffa8c50","url":"dev/static/chunks/src_app_list_ListPageContent_tsx_14l0lzf._.js"},{"revision":"cf3fbb294d009804ac08a4f353c34d9d","url":"dev/static/chunks/src_app_list_ListPageContent_tsx_0w1v2u2._.js"},{"revision":"27afafbfa9d3bde857bab6b12e1c3f39","url":"dev/static/chunks/src_app_layout_tsx_1g4q4bt._.js"},{"revision":"84617962eaf4bd1d479bf9332e967c09","url":"dev/static/chunks/src_app_admin_page_tsx_1po4qpu._.js"},{"revision":"c226b5dc68a05bab9990f4785bfeab25","url":"dev/static/chunks/src_app_admin_page_tsx_1pmuprg._.js"},{"revision":"6b8dca64a372713aeb5a02525d485542","url":"dev/static/chunks/src_app_admin_AdminPageContent_tsx_1fa3gm2._.js"},{"revision":"128c4f6cf0e48d3778513590e462061c","url":"dev/static/chunks/src_app_admin_AdminPageContent_tsx_17f_tb2._.js"},{"revision":"bf12291baa324486d11f318fb893362c","url":"dev/static/chunks/src_app_add_page_tsx_1pmuprg._.js"},{"revision":"7713e8d73bc1f940f9683036918bad54","url":"dev/static/chunks/src_app_add_page_tsx_0x9h9rp._.js"},{"revision":"37dbaba50c471376b51019a9c3498660","url":"dev/static/chunks/src_app_add_AddPageContent_tsx_1vs2o2c._.js"},{"revision":"143b8a9740175b524e068bfb975f44a8","url":"dev/static/chunks/src_app_add_AddPageContent_tsx_0tg2hgr._.js"},{"revision":"fcceaa9e97ae56eeab010efba4efcfb9","url":"dev/static/chunks/src_app_HomePageContent_tsx_1yndqfz._.js"},{"revision":"38363ce5d58791b47393ec34b2cd4b4a","url":"dev/static/chunks/src_app_HomePageContent_tsx_175zr29._.js"},{"revision":"5d6271da291df9bdda842f14069514f4","url":"dev/static/chunks/src_app_ClientProviders_tsx_1x1a9fg._.js"},{"revision":"5ae5c1c6de6c9941f0e6e4c396a0b980","url":"dev/static/chunks/src_app_AppInitializer_tsx_0n3xtoh._.js"},{"revision":"836f33add0fb0c4e81e83b00c62b4c60","url":"dev/static/chunks/src_1tutnfl._.js"},{"revision":"70ea1e9895d79456e046b2bf65539328","url":"dev/static/chunks/src_1aquq8u._.js"},{"revision":"8eb75486157c80c56e343df0d538decc","url":"dev/static/chunks/src_1_o0xji._.js"},{"revision":"a669484e903bb966f8dac6604b43088a","url":"dev/static/chunks/src_1_7im4x._.js"},{"revision":"95106986d757a46c0f9e285af01833c3","url":"dev/static/chunks/src_17ykqdp._.js"},{"revision":"69796ef773981d00a1fcfa6855facb6b","url":"dev/static/chunks/src_17k_zh5._.js"},{"revision":"204d37267d467cb10f5b6f7bb7956dc8","url":"dev/static/chunks/src_10g19l6._.js"},{"revision":"d0b582182e2071da842825caa5b08fec","url":"dev/static/chunks/src_0oab2h-._.js"},{"revision":"e661db353a3e7990e337619f950d3757","url":"dev/static/chunks/src_0e7tpxd._.js"},{"revision":"3abe7a9b79419753bf84a07a79b79f56","url":"dev/static/chunks/src_0c2f10p._.js"},{"revision":"279a59b176a2fa1dee687d7a3d00f3c5","url":"dev/static/chunks/src_09d8i8q._.js"},{"revision":"c68533c7d2fdfa612bbee14881784f3f","url":"dev/static/chunks/src_00rqazp._.js"},{"revision":"2e7c2f6f91e8590c072ae5486e1ba911","url":"dev/static/chunks/node_modules_transliteration_dist_18in63n._.js"},{"revision":"d6de66c85248398aa3d9743f986f4abc","url":"dev/static/chunks/node_modules_photoswipe_dist_photoswipe_esm_1jaikr4.js"},{"revision":"ead4866827cc64208528600983b85328","url":"dev/static/chunks/node_modules_photoswipe_dist_photoswipe_esm_0k59k43.js"},{"revision":"cb754ed8400fc0c486db4c2af000343c","url":"dev/static/chunks/node_modules_photoswipe_dist_photoswipe_1xv-rlz.css"},{"revision":"eb9030c89a1d84855a2b9a9e8f4bc790","url":"dev/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_164kp-6._.js"},{"revision":"b503a128179575d76d73dd38785963cd","url":"dev/static/chunks/node_modules_next_dist_compiled_react-dom_096_9a-._.js"},{"revision":"28529ef34420e5b58bf4352ec0135eb4","url":"dev/static/chunks/node_modules_next_dist_compiled_next-devtools_index_090k2jm.js"},{"revision":"f5b907a740d6a35deb050a971c6f7677","url":"dev/static/chunks/node_modules_next_dist_compiled_1amofcm._.js"},{"revision":"746d4609f01a4630ef15d223349a0556","url":"dev/static/chunks/node_modules_next_dist_client_components_builtin_global-error_1pmuprg.js"},{"revision":"0dc89eb8c64148372d4d832fce0638e2","url":"dev/static/chunks/node_modules_next_dist_client_0r5nbpw._.js"},{"revision":"846118c33b2c0e922d7b3a7676f81f6f","url":"dev/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js"},{"revision":"5ee4dfa3e209124288b84d1231870a0b","url":"dev/static/chunks/node_modules_next_dist_1ybzpk2._.js"},{"revision":"a5e7df538f169ac0077b3af204ab000d","url":"dev/static/chunks/node_modules_next_dist_1tlu237._.js"},{"revision":"b474b4118de5decfd1cb9a5a65a70094","url":"dev/static/chunks/node_modules_firebase_firestore_dist_esm_index_esm_147y39w.js"},{"revision":"b474b4118de5decfd1cb9a5a65a70094","url":"dev/static/chunks/node_modules_firebase_firestore_dist_esm_index_esm_0rnwmgl.js"},{"revision":"1f66c279ec68492c4c59fd910cdb1dec","url":"dev/static/chunks/node_modules_exifreader_src_11uxgd4._.js"},{"revision":"87f68ed5d0547063bb75266414822dc8","url":"dev/static/chunks/node_modules_@heroicons_react_24_07e6auz._.js"},{"revision":"e966ef44d29e7890e972053d71d41e09","url":"dev/static/chunks/node_modules_@headlessui_react_dist_1td29hx._.js"},{"revision":"4b47faba975e33307440acb707c57f8c","url":"dev/static/chunks/node_modules_@headlessui_react_dist_1-dn3yg._.js"},{"revision":"36a403fb62d8f723901078c70ba0058e","url":"dev/static/chunks/node_modules_@floating-ui_react_dist_0acszqm._.js"},{"revision":"c2784f2ae81c2aee7daba555440924d3","url":"dev/static/chunks/node_modules_@firebase_storage_dist_index_esm2017_0levta9.js"},{"revision":"65c8de8e0c22c8b81ad1de1ba63de354","url":"dev/static/chunks/node_modules_@firebase_firestore_dist_index_esm2017_1rtdnxp.js"},{"revision":"dde7715a8b9707d77a3b4cec24cc3ff8","url":"dev/static/chunks/node_modules_@firebase_auth_dist_esm2017_1lpeziv._.js"},{"revision":"a0a9b51c9d95a9e6e91fb166ff46770b","url":"dev/static/chunks/node_modules_@firebase_auth_dist_esm2017_1b6vss7._.js"},{"revision":"08fb18f4030d07bfd6b7a291eb768504","url":"dev/static/chunks/node_modules_@firebase_auth_dist_esm2017_05kif1g._.js"},{"revision":"0d339888ed2e67e90c982ce989636ff4","url":"dev/static/chunks/node_modules_1x0hltz._.js"},{"revision":"e8754165502fc65c64c15eef34c98b73","url":"dev/static/chunks/node_modules_1d6fefd._.js"},{"revision":"2ba88a122dae81f6b5ad25b76909d31b","url":"dev/static/chunks/node_modules_17lck5a._.js"},{"revision":"086a9d6205dc3e43718fe6c80bec860d","url":"dev/static/chunks/node_modules_16i2eb4._.js"},{"revision":"3bee09dd2122b56775e2237ba8b3bd94","url":"dev/static/chunks/node_modules_0znbwy0._.js"},{"revision":"6d6c8545d577b42f9c83e2b0f213411e","url":"dev/static/chunks/node_modules_0dhlg4b._.js"},{"revision":"455944cedf74bb4213f49ba5f986d091","url":"dev/static/chunks/node_modules_0aaehd6._.js"},{"revision":"7c42f2ef5575fa3d15a87b54b1aa729e","url":"dev/static/chunks/node_modules_0_slozr._.js"},{"revision":"45e3a69ad4d8baf83d7b702c23ea4544","url":"dev/static/chunks/node_modules_08toek9._.js"},{"revision":"4b4f47c50da8275494c736acf0734f43","url":"dev/static/chunks/node_modules_08ph4h9._.js"},{"revision":"7525d5494afcbd316a395d3e305bb347","url":"dev/static/chunks/_1anvha4._.js"},{"revision":"13f719352f30d758777141f3fba6a91e","url":"dev/static/chunks/_0niie5o._.js"},{"revision":"d8b2211ee1e42b3ed3db00110f9b4f22","url":"dev/static/chunks/_0_qjayb._.js"},{"revision":"f15fdfc297d3c7c6effae772519eceec","url":"dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_1ofq5vg._.js"},{"revision":"d2babb1461dc36ae89b84ca2659bd25e","url":"dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_1mojsay._.js"},{"revision":"38df6f7ad0e1310c1401ba70938b6996","url":"dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_0dhxdav._.js"},{"revision":"6b7f9fcc9245de419e774d318ed20458","url":"dev/static/chunks/0nn8_@swc_helpers_cjs_03rh8y8._.js"},{"revision":"18a6d34c212e70efa7723fa965cb5c19","url":"dev/server/server-reference-manifest.json"},{"revision":"51fd8301fcccea0551cd39309b21afe3","url":"dev/server/server-reference-manifest.js"},{"revision":"99914b932bd37a50b983c5e7c90ae93b","url":"dev/server/pages-manifest.json"},{"revision":"c1baf267115ab8f45f0d217a37e9c53c","url":"dev/server/next-font-manifest.json"},{"revision":"9ad80c87dc5e1d4238e69c638442ed7c","url":"dev/server/next-font-manifest.js"},{"revision":"7aeb4154b5636f625bf330f161688b4e","url":"dev/server/middleware-manifest.json"},{"revision":"e4be7489c3f00ef8c49aba51a8671563","url":"dev/server/middleware-build-manifest.js"},{"revision":"d7aa1834e4b5ee75408143d266ce2f1c","url":"dev/server/interception-route-rewrite-manifest.js"},{"revision":"2866f8448d8dd7fe036e3866733a7df2","url":"dev/server/app-paths-manifest.json"},{"revision":"fe0f7fdc6eeea7e5e12fa93797f24141","url":"dev/server/chunks/ssr/src_app_page_tsx_1chiuah._.js"},{"revision":"39a2dc6ed5800d2ad4c80936871965d6","url":"dev/server/chunks/ssr/src_app_not-found_tsx_0xltofl._.js"},{"revision":"53af81b6a5ef43845182faea626e596f","url":"dev/server/chunks/ssr/src_app_list_page_tsx_1zosuso._.js"},{"revision":"47cc42ad82bdb858c2e923bfc43fd52d","url":"dev/server/chunks/ssr/src_app_admin_page_tsx_0ublbd0._.js"},{"revision":"4d29549a7e507bb3b3af744b0ea2823b","url":"dev/server/chunks/ssr/src_app_add_page_tsx_0zd6rsa._.js"},{"revision":"152112fb8ce7f3bc496f1beb2b45f2b9","url":"dev/server/chunks/ssr/node_modules_transliteration_dist_node_src_node_index_0wf6hqq.js"},{"revision":"4bd45d33b830be55f205e9eb8d1b8c8c","url":"dev/server/chunks/ssr/node_modules_protobufjs_1c-cik3._.js"},{"revision":"51fbe392c7d6cf5739cd3932ed454b58","url":"dev/server/chunks/ssr/node_modules_next_dist_server_route-modules_app-page_0qo_rmc._.js"},{"revision":"0b7408d131aa68c7af2dce8b558cc2bc","url":"dev/server/chunks/ssr/node_modules_next_dist_esm_1z98dhu._.js"},{"revision":"170ac42bc96a5d26a3287e58f470ef8a","url":"dev/server/chunks/ssr/node_modules_next_dist_esm_1kqkrlx._.js"},{"revision":"0d4e88d88ce0aa5fa0830eb0c628f3a2","url":"dev/server/chunks/ssr/node_modules_next_dist_esm_1g0kpbu._.js"},{"revision":"6ea4aeb897867fba41b413b940ed4fd4","url":"dev/server/chunks/ssr/node_modules_next_dist_esm_1_kobm0._.js"},{"revision":"b298573feca8e3954561f3755bb8b8f2","url":"dev/server/chunks/ssr/node_modules_next_dist_esm_14n__y4._.js"},{"revision":"0cabc6ff1ec075e02bf9aba2d1139caf","url":"dev/server/chunks/ssr/node_modules_next_dist_compiled_0d323sd._.js"},{"revision":"c6324f9421204524b34aa0498c89887a","url":"dev/server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js"},{"revision":"3ce3356e9b0480a4857939cae4d13a85","url":"dev/server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0-o-goa.js"},{"revision":"d847f17f7255c5df4f0d776b896eb2ba","url":"dev/server/chunks/ssr/node_modules_next_dist_client_components_0p8s4lh._.js"},{"revision":"83c4d3ba3d336cfc254e6ee353401df9","url":"dev/server/chunks/ssr/node_modules_next_dist_client_components_0bew68i._.js"},{"revision":"7099e6a5824bc8f523f1bcc862556a6f","url":"dev/server/chunks/ssr/node_modules_next_dist_1tyigpy._.js"},{"revision":"e772265e891acc1d6dfa26a8d3849e1e","url":"dev/server/chunks/ssr/node_modules_next_dist_07291d1._.js"},{"revision":"92f5ae5f2d32451678ddca526f43f6c9","url":"dev/server/chunks/ssr/node_modules_next_1qqlaq-._.js"},{"revision":"bd1883e71030900f7c721ee8b09298af","url":"dev/server/chunks/ssr/node_modules_exifreader_src_01q34zx._.js"},{"revision":"bd15ed365a057fad1b739d03faabda4d","url":"dev/server/chunks/ssr/node_modules_@heroicons_react_24_0q4wz8t._.js"},{"revision":"384ee85b03b8c4ef1db16d07c7af0149","url":"dev/server/chunks/ssr/node_modules_@grpc_grpc-js_1r8srfa._.js"},{"revision":"bc4c91c05a07176f7c73f994fccbd2ec","url":"dev/server/chunks/ssr/node_modules_@firebase_storage_dist_node-esm_index_node_esm_10cpnxo.js"},{"revision":"4a0c3b594660c0057beecce6beae9c99","url":"dev/server/chunks/ssr/node_modules_@firebase_firestore_dist_index_node_mjs_149_rdq._.js"},{"revision":"f47bc701d54b9862fba7ab3087b1699d","url":"dev/server/chunks/ssr/node_modules_@firebase_auth_dist_node-esm_1ptzkcw._.js"},{"revision":"dccb3f7b077dd6cd35dcdcecc3c3f5d4","url":"dev/server/chunks/ssr/node_modules_18kxkdt._.js"},{"revision":"8466085e2afe268519acfaabf38f0264","url":"dev/server/chunks/ssr/_next-internal_server_app_page_actions_0hhsz1j.js"},{"revision":"8a5d2ac71def807e12ccac9e7345d7e1","url":"dev/server/chunks/ssr/_next-internal_server_app_list_page_actions_04cxd7p.js"},{"revision":"e034591253f87eefcafeec8180996b5d","url":"dev/server/chunks/ssr/_next-internal_server_app_admin_page_actions_1mcickz.js"},{"revision":"0d81db4bc54c32d7d615e20a90ed4eaf","url":"dev/server/chunks/ssr/_next-internal_server_app_add_page_actions_0aj-j4-.js"},{"revision":"a0da1ef2f58128ad0841b3207c7fe373","url":"dev/server/chunks/ssr/_next-internal_server_app__not-found_page_actions_0pt47yr.js"},{"revision":"3011f740a0e6a162397b2e74299cb478","url":"dev/server/chunks/ssr/_1px39sa._.js"},{"revision":"fe66b2604b91be507cc62184e41cb0cf","url":"dev/server/chunks/ssr/[turbopack]_runtime.js"},{"revision":"77f0c85b03205c63bbff9301344dcdd4","url":"dev/server/chunks/ssr/[root-of-the-server]__1vliu7x._.js"},{"revision":"e01ee52065d80e2edd93b64fee7f810e","url":"dev/server/chunks/ssr/[root-of-the-server]__1tq6042._.js"},{"revision":"7f6106599b3a6106af03608f9ec45a4a","url":"dev/server/chunks/ssr/[root-of-the-server]__1352960._.js"},{"revision":"810422312481f12968e0b1abedfa36dd","url":"dev/server/chunks/ssr/[root-of-the-server]__0uziigb._.js"},{"revision":"43eb4eb26997ddcc2efcb59e3813ac89","url":"dev/server/chunks/ssr/[root-of-the-server]__0il83ul._.js"},{"revision":"de5e854d7dfb4fafea8e2e0d2e5ddbce","url":"dev/server/chunks/ssr/[root-of-the-server]__09lunx7._.js"},{"revision":"7f58b20eb8402faf4a04d7ffa729ab81","url":"dev/server/chunks/ssr/[externals]_next_dist_shared_lib_no-fallback-error_external_0r3u29k.js"},{"revision":"a406456990145773be2c0ff48bcfda93","url":"dev/server/chunks/ssr/[externals]__12if52y._.js"},{"revision":"d656b4ed946ab1d990207b06c42e1440","url":"dev/server/app/page_client-reference-manifest.js"},{"revision":"1c9af42e3a2e9807585cf111b37e44f2","url":"dev/server/app/page.js"},{"revision":"79de46890cb32a2400db0fe0ed3f04ad","url":"dev/server/app/page/server-reference-manifest.json"},{"revision":"3a0c2b1a5b161cb41467ab01a8106459","url":"dev/server/app/page/react-loadable-manifest.json"},{"revision":"c8573aa004774d292ee30bcd590d4337","url":"dev/server/app/page/next-font-manifest.json"},{"revision":"eee6686d9087ba7f8f2327b2fd41ab12","url":"dev/server/app/page/build-manifest.json"},{"revision":"7a564a7c25076ab1141e0fc4bf9535d1","url":"dev/server/app/page/app-paths-manifest.json"},{"revision":"a4a170944a5ef2bf6013ad213c59fce7","url":"dev/server/app/list/page_client-reference-manifest.js"},{"revision":"3d489184accbc81e343ccab85cd25388","url":"dev/server/app/list/page.js"},{"revision":"79de46890cb32a2400db0fe0ed3f04ad","url":"dev/server/app/list/page/server-reference-manifest.json"},{"revision":"bf91045e67283c1ccb3dddc545c75a5f","url":"dev/server/app/list/page/react-loadable-manifest.json"},{"revision":"c8573aa004774d292ee30bcd590d4337","url":"dev/server/app/list/page/next-font-manifest.json"},{"revision":"eee6686d9087ba7f8f2327b2fd41ab12","url":"dev/server/app/list/page/build-manifest.json"},{"revision":"86a1091e359a0f8fe4ce95a7e39f6a25","url":"dev/server/app/list/page/app-paths-manifest.json"},{"revision":"b810666169df82e830f21efbe431f041","url":"dev/server/app/admin/page_client-reference-manifest.js"},{"revision":"7116a78d8fc49e8d2a74447cbb71f602","url":"dev/server/app/admin/page.js"},{"revision":"79de46890cb32a2400db0fe0ed3f04ad","url":"dev/server/app/admin/page/server-reference-manifest.json"},{"revision":"8fa5580c593c49fdd474c13227589b4d","url":"dev/server/app/admin/page/react-loadable-manifest.json"},{"revision":"c8573aa004774d292ee30bcd590d4337","url":"dev/server/app/admin/page/next-font-manifest.json"},{"revision":"eee6686d9087ba7f8f2327b2fd41ab12","url":"dev/server/app/admin/page/build-manifest.json"},{"revision":"8e6f392eb307391e41e0eb1b00f118bf","url":"dev/server/app/admin/page/app-paths-manifest.json"},{"revision":"87ca5fe065f28c4b85086eccfda0252a","url":"dev/server/app/add/page_client-reference-manifest.js"},{"revision":"ca424c80079df953de662304edf4730e","url":"dev/server/app/add/page.js"},{"revision":"79de46890cb32a2400db0fe0ed3f04ad","url":"dev/server/app/add/page/server-reference-manifest.json"},{"revision":"cc9d75039d9e5b2deadd46f8f8259b7b","url":"dev/server/app/add/page/react-loadable-manifest.json"},{"revision":"c8573aa004774d292ee30bcd590d4337","url":"dev/server/app/add/page/next-font-manifest.json"},{"revision":"eee6686d9087ba7f8f2327b2fd41ab12","url":"dev/server/app/add/page/build-manifest.json"},{"revision":"f097e28b687c76057d252b515c6abde6","url":"dev/server/app/add/page/app-paths-manifest.json"},{"revision":"1af996b0d20629d7856779fd3151e040","url":"dev/server/app/_not-found/page_client-reference-manifest.js"},{"revision":"bc13083b61235f8e40aa2e34952dbeca","url":"dev/server/app/_not-found/page.js"},{"revision":"79de46890cb32a2400db0fe0ed3f04ad","url":"dev/server/app/_not-found/page/server-reference-manifest.json"},{"revision":"1c42d74cdd221764b31d510e81478b69","url":"dev/server/app/_not-found/page/react-loadable-manifest.json"},{"revision":"c8573aa004774d292ee30bcd590d4337","url":"dev/server/app/_not-found/page/next-font-manifest.json"},{"revision":"eee6686d9087ba7f8f2327b2fd41ab12","url":"dev/server/app/_not-found/page/build-manifest.json"},{"revision":"f96417966c95ed5691f6627aa78b211b","url":"dev/server/app/_not-found/page/app-paths-manifest.json"},{"revision":"99914b932bd37a50b983c5e7c90ae93b","url":"dev/cache/next-devtools-config.json"},{"revision":"a6b7eb31b5dcf3835a90ea0d201f21e3","url":"dev/build/package.json"},{"revision":"24f6b3e5efd1213314e34adb0a15fe78","url":"dev/build/425d580d18f26225.js"},{"revision":"fee707eea8fbb39de1c2e99e2019fb6f","url":"dev/build/chunks/node_modules_20v-8wl._.js"},{"revision":"2ecae4b3e1faa81a7ab373d5c2c09247","url":"dev/build/chunks/[turbopack]_runtime.js"},{"revision":"6d6264d420053d7c070c9f25feb228e0","url":"dev/build/chunks/[turbopack-node]_transforms_postcss_ts_13hmb-_._.js"},{"revision":"5cdfd025943f8bc962941689bd299275","url":"dev/build/chunks/[root-of-the-server]__1audplt._.js"},{"revision":"9255ee4fab0163ef1fda0be227e3dfe8","url":"dev/build/chunks/[root-of-the-server]__0x0qtct._.js"},{"revision":"e1f892c3b79bde7e423c672414884c10","url":"admin/__next.admin.txt"},{"revision":"2e6d19662dcf90669c48bdcff81f146e","url":"admin/__next.admin.__PAGE__.txt"},{"revision":"7c2b59477cd32695b7897d415e2dbc2d","url":"admin/__next._tree.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"admin/__next._index.txt"},{"revision":"cd61f5acca60ed26246822c6fddee486","url":"admin/__next._head.txt"},{"revision":"c38701350b2bf200aba176653d5ee95a","url":"admin/__next._full.txt"},{"revision":"e1f892c3b79bde7e423c672414884c10","url":"add/__next.add.txt"},{"revision":"6598668a2a8a11f697a3c0acd4cfe90f","url":"add/__next.add.__PAGE__.txt"},{"revision":"22e6191bda6ed486e0b5c5b8dbd438d7","url":"add/__next._tree.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"add/__next._index.txt"},{"revision":"cd61f5acca60ed26246822c6fddee486","url":"add/__next._head.txt"},{"revision":"015e2c9b7fb9570c6f52ef7e4b1b4425","url":"add/__next._full.txt"},{"revision":"ac6b96c96cb229c3963bc035a5745288","url":"_not-found/__next._tree.txt"},{"revision":"e1f892c3b79bde7e423c672414884c10","url":"_not-found/__next._not-found.txt"},{"revision":"af5d1ea677b9fb1901191a2ff1ed526d","url":"_not-found/__next._not-found.__PAGE__.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"_not-found/__next._index.txt"},{"revision":"5d4fe49b056a4245a814f8c6f8e66435","url":"_not-found/__next._head.txt"},{"revision":"cb4281681e9470365229e3db7d16aa84","url":"_not-found/__next._full.txt"},{"revision":"4f281e49674628c2c25ad072629e7ea5","url":"_next/static/css/adb36c88f133c302.css"},{"revision":"46f7a0b73c7ad8e36f18b4169cf4acd2","url":"_next/static/css/8757ea28e9e2f5d6.css"},{"revision":"e4a7bd1883fef177060e754a94da0b5b","url":"_next/static/chunks/webpack-c5bd74ec2c0c1a8c.js"},{"revision":"846118c33b2c0e922d7b3a7676f81f6f","url":"_next/static/chunks/polyfills-42372ed130431b0a.js"},{"revision":"aa8906bb62357ae0d5d62e67703dc5c6","url":"_next/static/chunks/main-app-4ad89a30a21dcf37.js"},{"revision":"48d836bb88ee59785a9641eeb8207a18","url":"_next/static/chunks/main-0685e79a01e306b5.js"},{"revision":"df192de88a9e31f33651417c3f08d81e","url":"_next/static/chunks/framework-228d67440a9d5288.js"},{"revision":"efc7e6102cbfe44a017d05b6258b7bd3","url":"_next/static/chunks/c16f53c3.d1dc27298ca4c9c2.js"},{"revision":"de6393339653a9cc1a3f57874c5b1a43","url":"_next/static/chunks/bc9e92e6-b5a431e9a8c1be07.js"},{"revision":"829b1b19ca0a135aa436ff426b4fde6f","url":"_next/static/chunks/bc6e6b98-7e38afd8198c02b5.js"},{"revision":"b13fd37909ecb6f564b67b09d1343f7c","url":"_next/static/chunks/ae6eea6a-5cb10529dea2bd01.js"},{"revision":"24cb6b657ada2a073ddc4aceed575fb5","url":"_next/static/chunks/9dadc25a.53285435c9663824.js"},{"revision":"6a894ace984ec900823bf01208d2ff29","url":"_next/static/chunks/867.c33fd84157ce2644.js"},{"revision":"861789d517e8b466d05bb030493918e2","url":"_next/static/chunks/855.62b364d0a387c979.js"},{"revision":"7a36131073ccbfeb6e7db5244f295cf8","url":"_next/static/chunks/794-ded3d6070a406ea0.js"},{"revision":"f798ae9daa423c59f8881485ec85e736","url":"_next/static/chunks/765.c350f32e51d2b3f5.js"},{"revision":"d781f56d4a6073b5a8db82464e7253f6","url":"_next/static/chunks/758.fbf1247264b5c0d0.js"},{"revision":"94bfda39f4557645aee0baf2f66e75c9","url":"_next/static/chunks/708.1418246d7dd26095.js"},{"revision":"afe28ceda2a9041b4babf208ee00aab9","url":"_next/static/chunks/677.37b54807def72468.js"},{"revision":"be01fc195dd668f26772ac691d11a871","url":"_next/static/chunks/594-86bab9f61981f148.js"},{"revision":"e7429c0a19b5214aec3de4f6a4f7dc16","url":"_next/static/chunks/500-6a8cbb636335852a.js"},{"revision":"71d2183a4447d1c3ce70ae81151d6a68","url":"_next/static/chunks/4bd1b696-215e5051988c3dde.js"},{"revision":"3269f64677050b91fbfc420c3aee6d21","url":"_next/static/chunks/436.0e070355d8928b6e.js"},{"revision":"764811e090407cd131fd96551bde6848","url":"_next/static/chunks/434.af33ea849ee4d3b7.js"},{"revision":"eea129233d608c546a314f8a26612585","url":"_next/static/chunks/426.d5873eacaa0003ce.js"},{"revision":"04153adbfa112d4de737941205109ef2","url":"_next/static/chunks/390-1b599f193f8eb26a.js"},{"revision":"e7b17fa600f1ccffb1fd97b9ee2d72e0","url":"_next/static/chunks/253.7644975b2cf63924.js"},{"revision":"6edd227107eb52819595a5073e8f5119","url":"_next/static/chunks/210.78431a3139272d70.js"},{"revision":"b68ce853bbc35a186a58a99abd84b209","url":"_next/static/chunks/193-14356c9e2c2edc69.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/unauthorized-7b4c6c53912cc774.js"},{"revision":"0aab9576a3cd4d52beb0995bed22b18a","url":"_next/static/chunks/next/dist/client/components/builtin/global-error-8d49fa5e7809a727.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/forbidden-7b4c6c53912cc774.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/app-error-7b4c6c53912cc774.js"},{"revision":"e2e3a88c79452f2cb662e7039d4ddc49","url":"_next/static/chunks/app/page-d840b9ff425b3d29.js"},{"revision":"5ff97dcef9cc69a71cb4af7e436ea0eb","url":"_next/static/chunks/app/not-found-f9df87ea823d2447.js"},{"revision":"ccc5fcad11658c5b582ca012f152b989","url":"_next/static/chunks/app/layout-43520d7a9c8e3ed9.js"},{"revision":"e3f0f3d504d70bbb45ad85e465a113a9","url":"_next/static/chunks/app/list/page-07783a640ac778c4.js"},{"revision":"d15907462590edc5c0099c285723be3f","url":"_next/static/chunks/app/admin/page-b6ce1ebeeb67e117.js"},{"revision":"f51e3f36fb9414914ea6033c4c0c1596","url":"_next/static/chunks/app/add/page-5275cf4e8bc0d6bc.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/app/_not-found/page-7b4c6c53912cc774.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/app/_global-error/page-7b4c6c53912cc774.js"},{"revision":"76a2cb5f0575769398ccf3c8c5e62036","url":"_next/static/chunks/app/401/page-1135bcfdd2165fb7.js"},{"revision":"b404e23d62d95bafd03ad7747cc0e88b","url":"_next/static/WvX6UrmmiANw8Z7VPlpsr/_ssgManifest.js"},{"revision":"ad7a33d58b7393bd3474c43ecef0f3f7","url":"_next/static/WvX6UrmmiANw8Z7VPlpsr/_buildManifest.js"},{"revision":"8f820ec5632117c828b59582689931e8","url":"401/__next._tree.txt"},{"revision":"0d0b26db69823abce15519b07a73313f","url":"401/__next._index.txt"},{"revision":"cd61f5acca60ed26246822c6fddee486","url":"401/__next._head.txt"},{"revision":"ecddc83af659afd47da64137bb0539b2","url":"401/__next._full.txt"},{"revision":"e1f892c3b79bde7e423c672414884c10","url":"401/__next.401.txt"},{"revision":"66efdab8392292902764e3037571700b","url":"401/__next.401.__PAGE__.txt"}]);
   cleanupOutdatedCaches();
-  if (true) {
-    registerRoute(
-      new NavigationRoute(
-        createHandlerBoundToURL("/index.html"),
-        {
-          denylist: [
-            "/sw\\.js" ? new RegExp("/sw\\.js") : /default-regex/,
-            /workbox-(.)*\.js$/
-          ]
-        }
-      )
-    );
-  }
+  precacheAndRoute([{"revision":"5e0bd1c281a62a380d7a948085bfe2d1","url":"robots.txt"},{"revision":"1a0450ec1bbe89da2e9eb777be170064","url":"manifest.json"},{"revision":"95167e8e03927557849ce2f766a73e1c","url":"logo.svg"},{"revision":"44a82eb2b4e6c26481938bb7db5f776a","url":"logo.png"},{"revision":"630b844ca39a6e844e0d0a29730327e3","url":"list.txt"},{"revision":"436cf32eb663a24e55c4b112632e446c","url":"list.html"},{"revision":"16700e3250386d8b044c1aa641b66f62","url":"index.txt"},{"revision":"21ef006a66e3e57d0b860c94e617fe78","url":"index.html"},{"revision":"b189a8ac068b567ececf31f5bea96785","url":"favicon.ico"},{"revision":"bf7a115b83d47d0801c7103f1b299d5a","url":"admin.txt"},{"revision":"b54ce6fe9e8b566390b01240a906c4e7","url":"admin.html"},{"revision":"8e00d6cd52713dacff0e7ed5b52d2efd","url":"add.txt"},{"revision":"832a10a5089a7e9c71917bfc7e0a04ec","url":"add.html"},{"revision":"6082d2bf12bc14982ab12d17c1d51f1d","url":"_not-found.txt"},{"revision":"f482f709497e1b7c6f3230d17b8e2a21","url":"_not-found.html"},{"revision":"f84c1007b4db4e12fecde448b861d1b9","url":"__next._tree.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"__next._index.txt"},{"revision":"3d34ec6f80625edb5e70c4662fb70108","url":"__next._head.txt"},{"revision":"16700e3250386d8b044c1aa641b66f62","url":"__next._full.txt"},{"revision":"2da4f9097378a0442ceb8a42b8f6fd2b","url":"__next.__PAGE__.txt"},{"revision":"f482f709497e1b7c6f3230d17b8e2a21","url":"404.html"},{"revision":"bac2e6af26eed75aeee14f210d85d9c5","url":"401.txt"},{"revision":"cb1f8689afa453ec29be117cb1769094","url":"401.html"},{"revision":"7aaa9f2993a9fdc64eb2e232c250179e","url":"list/__next.list.txt"},{"revision":"64f6d31f1ddb7d1e829ad063c47a528e","url":"list/__next.list.__PAGE__.txt"},{"revision":"9a60e4b5128600651b0da72481801d09","url":"list/__next._tree.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"list/__next._index.txt"},{"revision":"3d34ec6f80625edb5e70c4662fb70108","url":"list/__next._head.txt"},{"revision":"630b844ca39a6e844e0d0a29730327e3","url":"list/__next._full.txt"},{"revision":"bb832ae88f759d5e8ac51a085d110e15","url":"icons/icon-512x512.png"},{"revision":"1c82f3358d5846fff5a52066f6dadd19","url":"icons/icon-384x384.png"},{"revision":"9897c7d392710c1baf4c4ebc1c1b8bac","url":"icons/icon-256x256.png"},{"revision":"fa318f4e0e687c217d331ca562c20384","url":"icons/icon-192x192.png"},{"revision":"0e9b71e6bcfd5dddd527d16294ff94d1","url":"icons/icon-128x128.png"},{"revision":"8874fb275ca6b79e78b05c5ce7f67ae3","url":"icons/favicon-96x96.png"},{"revision":"14611094fc037ae96267e63f7d6f699d","url":"icons/favicon-32x32.png"},{"revision":"0f9bec44c06154063e8a0e88b4718746","url":"icons/favicon-16x16.png"},{"revision":"0e9b71e6bcfd5dddd527d16294ff94d1","url":"icons/favicon-128x128.png"},{"revision":"71fc7f65627f10ee9cf809c08709f2e1","url":"icons/apple-launch-828x1792.png"},{"revision":"07c5b0c931443c8917a8b9826df2444d","url":"icons/apple-launch-750x1334.png"},{"revision":"39c65d38598d36780242ab80c30196fb","url":"icons/apple-launch-2048x2732.png"},{"revision":"6b5c2a677ea7b143c8d1230d47115081","url":"icons/apple-launch-1668x2388.png"},{"revision":"80c36bcead53d7106bb9f7f6d84a54f2","url":"icons/apple-launch-1668x2224.png"},{"revision":"82f8ea3f8e4e81669d66ad4f72455585","url":"icons/apple-launch-1620x2160.png"},{"revision":"91e088bea6c3f7bafd010160a639ae96","url":"icons/apple-launch-1536x2048.png"},{"revision":"66bc05ad15f13ae978166a5724c36c4a","url":"icons/apple-launch-1290x2796.png"},{"revision":"496f39ab0fd505102830e2d8c3932534","url":"icons/apple-launch-1284x2778.png"},{"revision":"00991090f3afc8d73afc043671e3bb07","url":"icons/apple-launch-1242x2688.png"},{"revision":"18ea885e2c330e5ad2780795b4ce27e7","url":"icons/apple-launch-1242x2208.png"},{"revision":"805b7fb862ce0a7f78c42bd2a10a2b37","url":"icons/apple-launch-1179x2556.png"},{"revision":"abc2eb54c11e324fd2ea95cb8ac64d87","url":"icons/apple-launch-1170x2532.png"},{"revision":"9444c78e35a464b830bd1b9d2c42e734","url":"icons/apple-launch-1125x2436.png"},{"revision":"047da9d9d786dc2545ea69da56fdde19","url":"icons/apple-launch-1080x2340.png"},{"revision":"7aaa9f2993a9fdc64eb2e232c250179e","url":"admin/__next.admin.txt"},{"revision":"8b552301e896c8c2db13a11f388c3d70","url":"admin/__next.admin.__PAGE__.txt"},{"revision":"30b60efd5466777c5bc0a3113e66d31f","url":"admin/__next._tree.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"admin/__next._index.txt"},{"revision":"3d34ec6f80625edb5e70c4662fb70108","url":"admin/__next._head.txt"},{"revision":"bf7a115b83d47d0801c7103f1b299d5a","url":"admin/__next._full.txt"},{"revision":"7aaa9f2993a9fdc64eb2e232c250179e","url":"add/__next.add.txt"},{"revision":"34b0b8b03d4c12350081d97bfcd8f9f1","url":"add/__next.add.__PAGE__.txt"},{"revision":"98c6f0dbe2a1ff9e524ae5fd0e5cbd2f","url":"add/__next._tree.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"add/__next._index.txt"},{"revision":"3d34ec6f80625edb5e70c4662fb70108","url":"add/__next._head.txt"},{"revision":"8e00d6cd52713dacff0e7ed5b52d2efd","url":"add/__next._full.txt"},{"revision":"9647974ea7d28f4a51f354c9638cdf28","url":"_not-found/__next._tree.txt"},{"revision":"7aaa9f2993a9fdc64eb2e232c250179e","url":"_not-found/__next._not-found.txt"},{"revision":"40f78b13452542701dc5bf07e9942987","url":"_not-found/__next._not-found.__PAGE__.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"_not-found/__next._index.txt"},{"revision":"b529463def85608d1c873172da3261dc","url":"_not-found/__next._head.txt"},{"revision":"6082d2bf12bc14982ab12d17c1d51f1d","url":"_not-found/__next._full.txt"},{"revision":"b404e23d62d95bafd03ad7747cc0e88b","url":"_next/static/jREzunRS2uis0XaWbpYrQ/_ssgManifest.js"},{"revision":"ad7a33d58b7393bd3474c43ecef0f3f7","url":"_next/static/jREzunRS2uis0XaWbpYrQ/_buildManifest.js"},{"revision":"10007ba113474d5e51590a200e818d88","url":"_next/static/css/5a48734a5d69ed33.css"},{"revision":"e374d15cffedb23e7ba1dbaca38e3a68","url":"_next/static/css/1cfbc400eec43d44.css"},{"revision":"1e66bdc96034dcb2482be9f9bbe60522","url":"_next/static/chunks/webpack-03769392149b71f0.js"},{"revision":"846118c33b2c0e922d7b3a7676f81f6f","url":"_next/static/chunks/polyfills-42372ed130431b0a.js"},{"revision":"aa8906bb62357ae0d5d62e67703dc5c6","url":"_next/static/chunks/main-app-4ad89a30a21dcf37.js"},{"revision":"48d836bb88ee59785a9641eeb8207a18","url":"_next/static/chunks/main-0685e79a01e306b5.js"},{"revision":"df192de88a9e31f33651417c3f08d81e","url":"_next/static/chunks/framework-228d67440a9d5288.js"},{"revision":"efc7e6102cbfe44a017d05b6258b7bd3","url":"_next/static/chunks/c16f53c3.d1dc27298ca4c9c2.js"},{"revision":"de6393339653a9cc1a3f57874c5b1a43","url":"_next/static/chunks/bc9e92e6-b5a431e9a8c1be07.js"},{"revision":"829b1b19ca0a135aa436ff426b4fde6f","url":"_next/static/chunks/bc6e6b98-7e38afd8198c02b5.js"},{"revision":"b13fd37909ecb6f564b67b09d1343f7c","url":"_next/static/chunks/ae6eea6a-5cb10529dea2bd01.js"},{"revision":"6a894ace984ec900823bf01208d2ff29","url":"_next/static/chunks/867.c33fd84157ce2644.js"},{"revision":"861789d517e8b466d05bb030493918e2","url":"_next/static/chunks/855.62b364d0a387c979.js"},{"revision":"7a36131073ccbfeb6e7db5244f295cf8","url":"_next/static/chunks/794-ded3d6070a406ea0.js"},{"revision":"f798ae9daa423c59f8881485ec85e736","url":"_next/static/chunks/765.c350f32e51d2b3f5.js"},{"revision":"94bfda39f4557645aee0baf2f66e75c9","url":"_next/static/chunks/708.1418246d7dd26095.js"},{"revision":"a5df1dcd86b8ae1c1e3f7cf756e12cd2","url":"_next/static/chunks/677.98fe1fd2651f18a9.js"},{"revision":"be01fc195dd668f26772ac691d11a871","url":"_next/static/chunks/594-86bab9f61981f148.js"},{"revision":"77b3c6fc20042247adf08fd8239caf54","url":"_next/static/chunks/588.80eb2bf2d4bdb7c4.js"},{"revision":"e7429c0a19b5214aec3de4f6a4f7dc16","url":"_next/static/chunks/500-6a8cbb636335852a.js"},{"revision":"71d2183a4447d1c3ce70ae81151d6a68","url":"_next/static/chunks/4bd1b696-215e5051988c3dde.js"},{"revision":"16032a9d0e41e74f52532b28522e945b","url":"_next/static/chunks/439-50467c396c242024.js"},{"revision":"3269f64677050b91fbfc420c3aee6d21","url":"_next/static/chunks/436.0e070355d8928b6e.js"},{"revision":"1a10f000b4c28d43dd9a57f63d0f7fe4","url":"_next/static/chunks/434.3b7fc9685b05ee9e.js"},{"revision":"ac46325fa8d8a1e0a8a58a945ad32b99","url":"_next/static/chunks/426.7bd6d88cb36a27ee.js"},{"revision":"e7b17fa600f1ccffb1fd97b9ee2d72e0","url":"_next/static/chunks/253.7644975b2cf63924.js"},{"revision":"731ad74006443b4356add81b42c9968f","url":"_next/static/chunks/210.573b1be773e2517b.js"},{"revision":"b68ce853bbc35a186a58a99abd84b209","url":"_next/static/chunks/193-14356c9e2c2edc69.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/unauthorized-7b4c6c53912cc774.js"},{"revision":"0aab9576a3cd4d52beb0995bed22b18a","url":"_next/static/chunks/next/dist/client/components/builtin/global-error-8d49fa5e7809a727.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/forbidden-7b4c6c53912cc774.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/next/dist/client/components/builtin/app-error-7b4c6c53912cc774.js"},{"revision":"59d2f2223a7b22cadda24792bbe2bd75","url":"_next/static/chunks/app/page-e4d4aec70ffdd5de.js"},{"revision":"88ae5cea6435f0237cb61c9894b44ef0","url":"_next/static/chunks/app/not-found-73b2aab7ad4ea081.js"},{"revision":"29b29e5c7d5cce43cc0aebc0023e1a79","url":"_next/static/chunks/app/layout-4f967580ad41cdaa.js"},{"revision":"fa2034353d41f1eb074ea49637ca324c","url":"_next/static/chunks/app/list/page-76ea501f91a88dc5.js"},{"revision":"da5ce1929d4d2e45bd5fdbd5c5239b0c","url":"_next/static/chunks/app/admin/page-8e622c454dfef3f7.js"},{"revision":"72f15040c3df32c3d5b6f5b109d2150e","url":"_next/static/chunks/app/add/page-2cbc3ddf23a73157.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/app/_not-found/page-7b4c6c53912cc774.js"},{"revision":"cdba48fa2db1859b97452ab5f69f576c","url":"_next/static/chunks/app/_global-error/page-7b4c6c53912cc774.js"},{"revision":"ccb3ba605d340dd20f870720a4cbee56","url":"_next/static/chunks/app/401/page-84fea78e41eba90f.js"},{"revision":"c0b76fd29c3ca224e4f34cdd6b5a400b","url":"401/__next._tree.txt"},{"revision":"999ca9d380a24327abd65faf7ace6f98","url":"401/__next._index.txt"},{"revision":"3d34ec6f80625edb5e70c4662fb70108","url":"401/__next._head.txt"},{"revision":"bac2e6af26eed75aeee14f210d85d9c5","url":"401/__next._full.txt"},{"revision":"7aaa9f2993a9fdc64eb2e232c250179e","url":"401/__next.401.txt"},{"revision":"aaf65a8ccc8f55d169f7f5e96f63f913","url":"401/__next.401.__PAGE__.txt"}]);
+  registerRoute(
+    ({ url }) => url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com",
+    new CacheFirst({
+      cacheName: "google-fonts",
+      plugins: [
+        new CacheableResponsePlugin({ statuses: [0, 200] }),
+        new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 })
+        // 1 year
+      ]
+    })
+  );
+  registerRoute(
+    ({ request }) => request.destination === "image",
+    new StaleWhileRevalidate({
+      cacheName: "images",
+      plugins: [
+        new CacheableResponsePlugin({ statuses: [0, 200] }),
+        new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 30 })
+        // 30 days
+      ]
+    })
+  );
+  self.addEventListener("install", () => {
+    self.skipWaiting();
+  });
+  self.addEventListener("activate", (event) => {
+    event.waitUntil(self.clients.claim());
+  });
 })();
