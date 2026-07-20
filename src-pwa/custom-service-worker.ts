@@ -6,6 +6,7 @@ import { registerRoute } from 'workbox-routing'
 import { CacheFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 import { ExpirationPlugin } from 'workbox-expiration'
+import type { WorkboxPlugin } from 'workbox-core'
 
 // Clean up old caches from previous versions
 cleanupOutdatedCaches()
@@ -21,8 +22,8 @@ registerRoute(
   new CacheFirst({
     cacheName: 'google-fonts',
     plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 }), // 1 year
+      new CacheableResponsePlugin({ statuses: [0, 200] }) as WorkboxPlugin,
+      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 365 }) as WorkboxPlugin, // 1 year
     ],
   }),
 )
@@ -33,8 +34,8 @@ registerRoute(
   new StaleWhileRevalidate({
     cacheName: 'images',
     plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 30 }), // 30 days
+      new CacheableResponsePlugin({ statuses: [0, 200] }) as WorkboxPlugin,
+      new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24 * 30 }) as WorkboxPlugin, // 30 days
     ],
   }),
 )
