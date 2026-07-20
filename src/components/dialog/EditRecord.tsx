@@ -215,7 +215,11 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
         >
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {/* Thumbnail preview (desktop only) */}
-            <div className="hidden sm:block sm:col-span-1 sm:row-span-2">
+            <div
+              className={`hidden sm:block sm:col-span-1 ${
+                tmp.kind === 'video' ? 'sm:row-span-5' : 'sm:row-span-4'
+              }`}
+            >
               <div
                 className="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
                 style={{ paddingTop: '100%' }}
@@ -243,7 +247,7 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
             </div>
 
             {/* 2. Tags (separate row on small screen) */}
-            <div className="col-span-2 flex items-start gap-2">
+            <div className="col-span-2 sm:col-span-1 flex items-start gap-2">
               <div className="flex-1">
                 <AutoComplete
                   label="Tags"
@@ -298,7 +302,8 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
               </div>
             )}
 
-            <div className="col-span-2">
+            {/* 4. Author (separate row on small screen) */}
+            <div className="col-span-2 sm:col-span-1">
               <AutoComplete
                 label="Author"
                 modelValue={tmp.email}
