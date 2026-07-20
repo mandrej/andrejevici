@@ -33,7 +33,20 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   const user = useUserStore((state) => state.user)
 
   const [currentIndex, setCurrentIndex] = useState(index)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const zoomRef = useRef<any>(null)
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`)
+      })
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.error(`Error attempting to exit fullscreen: ${err.message}`)
+      })
+    }
+  }
 
   const getCaption = (rec: PhotoType, showExtra: boolean): string => {
     if (rec.kind === 'video') return rec.headline || ''
@@ -132,6 +145,9 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   }
 
   const handleClose = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
+    }
     zoomRef.current?.changeZoom(1)
     const curr = objects[currentIndex]
     const hash = curr ? U + curr.filename : null
@@ -149,15 +165,32 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
     }
     window.addEventListener('popstate', handlePopState)
 
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+
     return () => {
       document.body.classList.remove('swiper-view-active')
       window.removeEventListener('contextmenu', preventDefault)
       window.removeEventListener('popstate', handlePopState)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
   }, [onCarouselCancel])
 
   const currentSlide = slides[currentIndex]
   const isImage = currentSlide?.type === 'image'
+
+  const FullscreenIcon: React.FC<any> = useMemo(
+    () => (props: any) => (
+      <AppIcon
+        name={isFullscreen ? 'fullscreen_exit' : 'fullscreen'}
+        className="w-6 h-6"
+        {...props}
+      />
+    ),
+    [isFullscreen],
+  )
 
   const toolbarButtons = useMemo(() => {
     const buttons: React.ReactNode[] = []
@@ -176,8 +209,17 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
       )
     }
 
+    buttons.push(
+      <IconButton
+        key="fullscreen"
+        label={(isFullscreen ? 'Exit Fullscreen' : 'Fullscreen') as any}
+        icon={FullscreenIcon}
+        onClick={toggleFullscreen}
+      />,
+    )
+
     return buttons
-  }, [isImage, currentIndex, handleShare, handleDownload])
+  }, [isImage, isFullscreen, FullscreenIcon, handleShare, handleDownload])
 
   return (
     <>
@@ -205,25 +247,33 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             const obj = slide.obj as PhotoType
             if (!obj) return null
             return (
-              <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-4 z-2000 flex items-center min-h-[44px]">
-                <div className="flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap px-10">
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: getCaption(
-                        obj,
-                        typeof window !== 'undefined' ? window.innerWidth > 600 : true,
-                      ),
-                    }}
-                  />
-                </div>
+              <>
+                {!isFullscreen && (
+                  <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-4 z-2000 flex items-center min-h-[44px]">
+                    <div className="flex-1 text-center overflow-hidden text-ellipsis whitespace-nowrap px-10">
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: getCaption(
+                            obj,
+                            typeof window !== 'undefined' ? window.innerWidth > 600 : true,
+                          ),
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <button
-                  className="absolute right-4 text-white/80 hover:text-white transition-colors flex items-center justify-center p-1"
+                  className={
+                    isFullscreen
+                      ? 'absolute top-4 right-4 z-2000 text-white/80 hover:text-white transition-colors flex items-center justify-center p-2 rounded-full bg-black/45 backdrop-blur-md border border-white/15'
+                      : 'absolute top-2 right-4 z-2000 text-white/80 hover:text-white transition-colors flex items-center justify-center p-1'
+                  }
                   onClick={handleClose}
                   aria-label="Close"
                 >
                   <AppIcon name="close" className="w-6 h-6" />
                 </button>
-              </div>
+              </>
             )
           },
           slide: ({ slide }: { slide: any }) => {
@@ -291,6 +341,40 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           .yarl__toolbar .yarl__button {
             filter: none !important;
             padding: 8px !important;
+          }
+          .yarl__navigation_prev,
+          .yarl__navigation_next {
+            background-color: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 9999px !important;
+            filter: none !important;
+            box-shadow: none !important;
+            padding: 8px !important;
+            transition: background-color 0.2s ease, border-color 0.2s ease !important;
+          }
+          .yarl__navigation_prev:hover,
+          .yarl__navigation_next:hover {
+            background-color: rgba(0, 0, 0, 0.65) !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+          }
+          .yarl__navigation_prev {
+            left: 16px !important;
+          }
+          .yarl__navigation_next {
+            right: 16px !important;
+          }
+          ${
+            isFullscreen
+              ? `
+          .yarl__toolbar,
+          .yarl__navigation_prev,
+          .yarl__navigation_next {
+            display: none !important;
+          }
+          `
+              : ''
           }
         `,
         }}

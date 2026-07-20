@@ -4,6 +4,7 @@ import {
   ArrowPathIcon,
   ArrowUpIcon,
   ArrowUpTrayIcon,
+  ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
   Bars3Icon,
   BellAlertIcon,
@@ -103,6 +104,7 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   // Share & fullscreen
   share: ShareIcon,
   fullscreen: ArrowsPointingOutIcon,
+  fullscreen_exit: ArrowsPointingInIcon,
 
   // Admin / settings
   construction: WrenchScrewdriverIcon,
