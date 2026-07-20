@@ -213,9 +213,9 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
           spellCheck="false"
           onSubmit={onSubmit}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Thumbnail preview */}
-            <div className="hidden sm:block sm:col-span-1">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {/* Thumbnail preview (desktop only) */}
+            <div className="hidden sm:block sm:col-span-1 sm:row-span-2">
               <div
                 className="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
                 style={{ paddingTop: '100%' }}
@@ -230,8 +230,8 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
               </div>
             </div>
 
-            {/* Fields */}
-            <div className="flex flex-col gap-3 sm:col-span-1">
+            {/* 1. Headline (separate row on small screen) */}
+            <div className="col-span-2 sm:col-span-1">
               <AppInput
                 modelValue={tmp.headline}
                 onChangeValue={(val) => setTmp((prev) => ({ ...prev, headline: val }))}
@@ -240,33 +240,10 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
                 clearable
                 autoFocus
               />
-              <AppInput modelValue={tmp.filename} label="Filename" readonly />
-              {tmp.kind === 'video' && (
-                <AppInput
-                  modelValue={tmp.url}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, url: val }))}
-                  label="Video URL"
-                  hint="YouTube link"
-                  required
-                />
-              )}
-              <AutoComplete
-                label="Author"
-                modelValue={tmp.email}
-                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
-                options={emailValues}
-                hint="Admin can add friend's photo and email"
-              />
-              <AppInput
-                modelValue={tmp.date}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
-                label="Date taken"
-                type="datetime-local"
-              />
             </div>
 
-            {/* Tags row (full width) */}
-            <div className="sm:col-span-2 flex items-start gap-2">
+            {/* 2. Tags (separate row on small screen) */}
+            <div className="col-span-2 flex items-start gap-2">
               <div className="flex-1">
                 <AutoComplete
                   label="Tags"
@@ -303,57 +280,108 @@ export const EditRecord: React.FC<EditRecordProps> = ({ rec, onEditOk }) => {
               </div>
             </div>
 
+            {/* 3. Filename (separate row on small screen) */}
+            <div className="col-span-2 sm:col-span-1">
+              <AppInput modelValue={tmp.filename} label="Filename" readonly />
+            </div>
+
+            {/* All after in two columns */}
+            {tmp.kind === 'video' && (
+              <div className="col-span-2 sm:col-span-1">
+                <AppInput
+                  modelValue={tmp.url}
+                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, url: val }))}
+                  label="Video URL"
+                  hint="YouTube link"
+                  required
+                />
+              </div>
+            )}
+
+            <div className="col-span-2">
+              <AutoComplete
+                label="Author"
+                modelValue={tmp.email}
+                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
+                options={emailValues}
+                hint="Admin can add friend's photo and email"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <AppInput
+                modelValue={tmp.date}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
+                label="Date taken"
+                type="datetime-local"
+              />
+            </div>
+
             {/* Photo-only EXIF fields */}
             {tmp.kind !== 'video' && (
               <>
-                <AutoComplete
-                  label="Camera Model"
-                  modelValue={tmp.model}
-                  onChange={(val) => setTmp((prev) => ({ ...prev, model: val as string }))}
-                  options={modelValues}
-                  canadd
-                  onNewValue={(value, done) => addNewValue(value, 'model', done)}
-                />
-                <AutoComplete
-                  label="Camera Lens"
-                  modelValue={tmp.lens}
-                  onChange={(val) => setTmp((prev) => ({ ...prev, lens: val as string }))}
-                  options={lensValues}
-                  canadd
-                  onNewValue={(value, done) => addNewValue(value, 'lens', done)}
-                />
-                <AppInput
-                  modelValue={tmp.focal_length}
-                  onChangeValue={(val) =>
-                    setTmp((prev) => ({ ...prev, focal_length: Number(val) }))
-                  }
-                  type="number"
-                  label="Focal length [mm]"
-                />
-                <AppInput
-                  modelValue={tmp.iso}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, iso: Number(val) }))}
-                  type="number"
-                  label="ISO [ASA]"
-                />
-                <AppInput
-                  modelValue={tmp.aperture}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, aperture: Number(val) }))}
-                  type="number"
-                  step="0.1"
-                  label="Aperture"
-                />
-                <AppInput
-                  modelValue={tmp.shutter}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, shutter: val }))}
-                  label="Shutter [s]"
-                />
-                <AppInput
-                  modelValue={tmp.loc}
-                  onChangeValue={(val) => setTmp((prev) => ({ ...prev, loc: val }))}
-                  label="Location [lat, lon]"
-                  clearable
-                />
+                <div className="col-span-2">
+                  <AutoComplete
+                    label="Camera Model"
+                    modelValue={tmp.model}
+                    onChange={(val) => setTmp((prev) => ({ ...prev, model: val as string }))}
+                    options={modelValues}
+                    canadd
+                    onNewValue={(value, done) => addNewValue(value, 'model', done)}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <AutoComplete
+                    label="Camera Lens"
+                    modelValue={tmp.lens}
+                    onChange={(val) => setTmp((prev) => ({ ...prev, lens: val as string }))}
+                    options={lensValues}
+                    canadd
+                    onNewValue={(value, done) => addNewValue(value, 'lens', done)}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <AppInput
+                    modelValue={tmp.focal_length}
+                    onChangeValue={(val) =>
+                      setTmp((prev) => ({ ...prev, focal_length: Number(val) }))
+                    }
+                    type="number"
+                    label="Focal length [mm]"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <AppInput
+                    modelValue={tmp.iso}
+                    onChangeValue={(val) => setTmp((prev) => ({ ...prev, iso: Number(val) }))}
+                    type="number"
+                    label="ISO [ASA]"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <AppInput
+                    modelValue={tmp.aperture}
+                    onChangeValue={(val) => setTmp((prev) => ({ ...prev, aperture: Number(val) }))}
+                    type="number"
+                    step="0.1"
+                    label="Aperture"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <AppInput
+                    modelValue={tmp.shutter}
+                    onChangeValue={(val) => setTmp((prev) => ({ ...prev, shutter: val }))}
+                    label="Shutter [s]"
+                  />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <AppInput
+                    modelValue={tmp.loc}
+                    onChangeValue={(val) => setTmp((prev) => ({ ...prev, loc: val }))}
+                    label="Location [lat, lon]"
+                    clearable
+                  />
+                </div>
                 <div className="flex items-center gap-2 mt-2 col-span-2">
                   <AppCheckbox
                     modelValue={tmp.flash}
