@@ -3,8 +3,8 @@
 // extendGenerateSWOptions > importScripts in quasar.config.ts.
 // It must use importScripts (compat SDK) since ES module syntax is not
 // supported in importScripts context.
-importScripts('https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js')
-importScripts('https://www.gstatic.com/firebasejs/11.3.1/firebase-messaging-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js')
+importScripts('https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging-compat.js')
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBHV3J3GAEPiTU2MCrhuRI4F9mWzdjw6B0',
