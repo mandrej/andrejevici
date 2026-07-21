@@ -72,7 +72,7 @@ export const AppInput: React.FC<AppInputProps> = ({
           required={required}
           autoFocus={autofocus}
           step={step}
-          className={`flex-1 min-w-0 px-3 py-2 bg-transparent text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none rounded-lg ${
+          className={`flex-1 min-w-0 px-3 py-2 bg-transparent text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none rounded-lg dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-90 [&::-webkit-calendar-picker-indicator]:transition-opacity ${
             readonly ? 'cursor-default text-gray-500 dark:text-gray-400' : ''
           }`}
           onChange={onInput}

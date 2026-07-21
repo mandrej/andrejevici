@@ -57,7 +57,7 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
           <span>
             <a
               href="#"
-              className="link text-secondary hover:text-secondary/80 transition-colors"
+              className="link hover:text-secondary/80 transition-colors"
               onClick={(e) => {
                 e.preventDefault()
                 searchBy({ nick: rec.nick })

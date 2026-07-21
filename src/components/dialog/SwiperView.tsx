@@ -241,6 +241,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
         }}
         close={handleClose}
         render={{
+          buttonZoom: () => null,
           iconPrev: () => <PrevIcon />,
           iconNext: () => <NextIcon />,
           slideHeader: ({ slide }: { slide: any }) => {
@@ -344,20 +345,20 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           }
           .yarl__navigation_prev,
           .yarl__navigation_next {
-            background-color: rgba(0, 0, 0, 0.45) !important;
-            backdrop-filter: blur(10px) !important;
-            -webkit-backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 9999px !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
             filter: none !important;
             box-shadow: none !important;
             padding: 8px !important;
-            transition: background-color 0.2s ease, border-color 0.2s ease !important;
           }
           .yarl__navigation_prev:hover,
           .yarl__navigation_next:hover {
-            background-color: rgba(0, 0, 0, 0.65) !important;
-            border-color: rgba(255, 255, 255, 0.3) !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            border-color: transparent !important;
           }
           .yarl__navigation_prev {
             left: 16px !important;

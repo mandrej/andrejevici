@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Workflow
 
-- **Dev server**: `npm run dev` (Quasar PWA mode)
-- **Build client**: `npm run build` or `./ands build` (includes version update in `.env`)
+- **Dev server**: `npm run dev` (Next.js)
+- **Build client**: `npm run build` (Next.js build, includes PWA scripts)
 - **Lint**: `npm run lint`
 - **Format**: `npm run format`
 - **Run Tests**: `npm run test` (runs all `tsx` tests) or `./ands test` for specific tests
@@ -26,14 +26,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Big Picture
 
-The project is a photo album application built with a Quasar (Vue 3) frontend and a Firebase backend. It is deployed as a PWA.
+The project is a photo album application built with a Next.js (React) frontend and a Firebase backend. It is deployed as a PWA.
 
 ### Project Layout
 
 - `src/`: Frontend source code.
-  - `pages/`: Application views and routing.
-  - `stores/`: State management using Pinia.
-  - `components/`: Reusable Vue components.
+  - `app/`: Application views and routing (App Router).
+  - `stores/`: State management using Zustand.
+  - `components/`: Reusable React components.
   - `helpers/`: Utility functions and business logic.
   - `firebase.ts`: Firebase SDK initialization.
 - `functionCron/`, `functionNotify/`, `functionThumb/`: Separate directories for Firebase Cloud Functions, each with its own build process.
@@ -44,7 +44,7 @@ The project is a photo album application built with a Quasar (Vue 3) frontend an
 ## Coding Standards
 
 - **Language**: TypeScript for both frontend and backend.
-- **Framework**: Vue 3 with Quasar components.
-- **State Management**: Pinia.
-- **Styling**: SCSS / Quasar CSS framework.
+- **Framework**: Next.js with React.
+- **State Management**: Zustand.
+- **Styling**: Tailwind CSS / SCSS.
 - **Formatting**: Prettier and ESLint are used for consistency.

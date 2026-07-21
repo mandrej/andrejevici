@@ -17,10 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#212121" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        {/* Load Material Symbols Rounded for icons */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        <meta
+          name="google-site-verification"
+          content="eIABZ7IBZHxZ5X8wm1isGkbGzW9BSyq7nPTS-2w9dr0"
         />
       </head>
       <body className="antialiased">
