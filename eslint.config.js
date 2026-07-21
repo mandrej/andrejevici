@@ -1,90 +1,71 @@
 import js from '@eslint/js'
+import nextPlugin from '@next/eslint-plugin-next'
+import reactPlugin from 'eslint-plugin-react'
+import hooksPlugin from 'eslint-plugin-react-hooks'
+import tsParser from '@typescript-eslint/parser'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
 import globals from 'globals'
-import pluginVue from 'eslint-plugin-vue'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import prettierSkipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
-export default defineConfigWithVueTs(
-  {
-    /**
-     * Ignore the following files.
-     *
-     * ESLint requires "ignores" key to be the only one in this object
-     */
-    ignores: ['function*/lib/**'],
-  },
-
+export default [
   js.configs.recommended,
-
-  /**
-   * https://eslint.vuejs.org
-   *
-   * pluginVue.configs.base
-   *   -> Settings and rules to enable correct ESLint parsing.
-   * pluginVue.configs[ 'flat/essential']
-   *   -> base, plus rules to prevent errors or unintended behavior.
-   * pluginVue.configs["flat/strongly-recommended"]
-   *   -> Above, plus rules to considerably improve code readability and/or dev experience.
-   * pluginVue.configs["flat/recommended"]
-   *   -> Above, plus rules to enforce subjective community defaults to ensure consistency.
-   */
-  pluginVue.configs['flat/essential'],
-
   {
-    files: ['**/*.ts', '**/*.vue'],
-    rules: {
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-    },
+    ignores: [
+      '.next/**',
+      'dist/**',
+      'node_modules/**',
+      'tmp/**',
+      'data/**',
+      '.gemini/**',
+      '.quasar/**',
+      'function*/**',
+      'public/firebase-messaging-sw.js',
+      'public/sw.js',
+    ],
   },
-  // https://github.com/vuejs/eslint-config-typescript
-  vueTsConfigs.recommendedTypeChecked,
-
   {
+    files: ['src/**/*.{ts,tsx}', 'src-pwa/**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      // Enable type-aware linting for @typescript-eslint rules
+      parser: tsParser,
       parserOptions: {
-        extraFileExtensions: ['.vue'],
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
-
       globals: {
         ...globals.browser,
-        ...globals.node, // SSR, Electron, config files
-        process: 'readonly', // process.env.*
-        ga: 'readonly', // Google Analytics
-        gtag: 'readonly',
-        cordova: 'readonly',
-        Capacitor: 'readonly',
-        chrome: 'readonly', // BEX related
-        browser: 'readonly', // BEX related
+        ...globals.node,
+        ...globals.serviceworker,
+        process: 'readonly',
       },
     },
-
-    // add your custom rules here
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      react: reactPlugin,
+      'react-hooks': hooksPlugin,
+      '@next/next': nextPlugin,
+    },
     rules: {
-      'prefer-promise-reject-errors': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-
-      // allow debugger during development only
-      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-      'vue/multi-word-component-names': [
-        'error',
+      'no-undef': 'off', // TypeScript compiles and checks this better than ESLint
+      'no-unused-vars': 'off', // Handled by @typescript-eslint/no-unused-vars
+      'react/react-in-jsx-scope': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
         {
-          ignores: ['App', 'Default', 'Plain', 'Menu', 'Sidebar'],
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
         },
       ],
+      '@typescript-eslint/no-explicit-any': 'off',
+      'react/no-unescaped-entities': 'off',
     },
   },
-
   {
-    files: ['src-pwa/custom-service-worker.ts'],
+    files: ['scripts/**/*.js'],
     languageOptions: {
       globals: {
-        ...globals.serviceworker,
+        ...globals.node,
       },
     },
   },
-
-  prettierSkipFormatting,
-)
+]

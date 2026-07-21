@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useState, useEffect } from 'react'
 
 let breakpointXs = 600
 let breakpointSm = 768
@@ -20,43 +20,27 @@ function initBreakpoints() {
   initialized = true
 }
 
-/**
- * Reactive screen-size composable to replace Quasar's $q.screen.
- */
 export function useScreen() {
-  initBreakpoints()
-  const width = ref(window.innerWidth)
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
-  const onResize = () => {
-    width.value = window.innerWidth
-  }
-
-  onMounted(() => {
-    // Re-run on mount to ensure Stylesheets are fully loaded and applied
-    initialized = false
+  useEffect(() => {
     initBreakpoints()
-    window.addEventListener('resize', onResize)
-  })
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', onResize)
-  })
+    const onResize = () => {
+      setWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+    }
+  }, [])
 
   return {
-    get gtXs() {
-      return width.value > breakpointXs
-    },
-    get gtSm() {
-      return width.value > breakpointSm
-    },
-    get gtMd() {
-      return width.value > breakpointMd
-    },
-    get ltSm() {
-      return width.value <= breakpointXs
-    },
-    get xs() {
-      return width.value <= breakpointXs
-    },
+    gtXs: width > breakpointXs,
+    gtSm: width > breakpointSm,
+    gtMd: width > breakpointMd,
+    ltSm: width <= breakpointXs,
+    xs: width <= breakpointXs,
   }
 }

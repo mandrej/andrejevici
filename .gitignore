@@ -2,13 +2,14 @@
 .thumbs.db
 node_modules
 
-# Quasar core related directories
 /.quasar
 /.next
 /dist
+/out
 /data
 /firebase-export-*
 /quasar.config.*.temporary.compiled*
+/public/sw.js
 
 # Cordova related directories and files
 /src-cordova/node_modules

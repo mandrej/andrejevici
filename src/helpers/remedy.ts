@@ -12,8 +12,7 @@ import {
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '../config'
-import { reFilename, counterId, getYouTubeId } from '.'
-import router from '../router'
+import { counterId, getYouTubeId, reFilename } from '.'
 import { counterCollection, photoCollection, renameCollection } from './collections'
 
 import notify from './notify'
@@ -113,8 +112,8 @@ const getStorageData = async (filename: string) => {
     // Parallelize the two independent storage calls
     const [downloadURL, metadata] = await Promise.all([getDownloadURL(_ref), getMetadata(_ref)])
     if (downloadURL) {
-      const { useUserStore } = await import('../stores/user')
-      const auth = useUserStore()
+      const { useUserStore } = await import('../stores/userStore')
+      const auth = useUserStore.getState()
       return {
         url: downloadURL,
         filename: filename,
@@ -233,10 +232,8 @@ export const missingThumbnails = async () => {
  * @return {Promise<void>} A promise that resolves when the mismatched files are found.
  */
 export const mismatch = async () => {
-  const { storeToRefs } = await import('pinia')
-  const { useAppStore } = await import('../stores/app')
-  const app = useAppStore()
-  const { uploaded } = storeToRefs(app)
+  const { useAppStore } = await import('../stores/appStore')
+  const uploaded = useAppStore.getState().uploaded
 
   notify({
     group: 'mismatch',
@@ -255,7 +252,7 @@ export const mismatch = async () => {
   const storageNames = new Set(
     firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.filename),
   )
-  const uploadedFilenames = new Set(uploaded.value.map((it) => it.filename))
+  const uploadedFilenames = new Set(uploaded.map((it) => it.filename))
 
   // Files in storage but not in firestore (orphaned files)
   const missingRecords = Array.from(bucketNames).filter(
@@ -276,9 +273,7 @@ export const mismatch = async () => {
 
   if (missingRecords.length > 0) {
     const results = await Promise.all(missingRecords.map((name) => getStorageData(name)))
-    for (const it of results) {
-      uploaded.value.push(it as PhotoType)
-    }
+    useAppStore.setState({ uploaded: [...uploaded, ...results] as PhotoType[] })
 
     notify({
       group: 'mismatch',
@@ -292,7 +287,7 @@ export const mismatch = async () => {
            * Handles handler.
            */
           handler: () => {
-            void router.push({ path: '/add' })
+            window.location.assign('/add')
           },
         },
       ],
@@ -354,17 +349,21 @@ export const addValue = async (
   field: keyof ValuesState['values'],
   value: string,
 ): Promise<void> => {
-  const { useValuesStore } = await import('../stores/values')
-  const meta = useValuesStore()
+  const { useValuesStore } = await import('../stores/valuesStore')
 
   const id = counterId(field, value)
   const counterRef = doc(counterCollection, id)
   await setDoc(counterRef, { count: 0, field, value })
 
-  if (!meta.values[field]) {
-    meta.values[field] = {}
+  const nextValues = { ...useValuesStore.getState().values }
+  if (!nextValues[field]) {
+    nextValues[field] = {}
   }
-  meta.values[field][value] = 0
+  nextValues[field] = {
+    ...nextValues[field],
+    [value]: 0,
+  }
+  useValuesStore.setState({ values: nextValues })
 }
 
 /**

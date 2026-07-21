@@ -19,7 +19,7 @@ const resolveRename = async (value: string): Promise<string> => {
     const snap = await getDoc(doc(renameCollection, safeId))
     return snap.exists() ? snap.data().newValue : value
   } catch (e) {
-    if (import.meta.env.DEV) console.warn('Failed to query Rename collection', e)
+    if (process.env.NODE_ENV === 'development') console.warn('Failed to query Rename collection', e)
     return value
   }
 }
@@ -112,7 +112,7 @@ const readExif = async (url: string): Promise<ExifType | null> => {
         }
       }
     } catch (e) {
-      if (import.meta.env.DEV) console.warn('Failed to get image dimensions', e)
+      if (process.env.NODE_ENV === 'development') console.warn('Failed to get image dimensions', e)
     }
   }
 

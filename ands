@@ -21,15 +21,14 @@ else
   case $1 in
     run)
       firebase emulators:start --import ./data --export-on-exit ./data
-      # quasar dev -m pwa
+      # npm run build:pwa
       exit ;;
     # icons)
     #   inkscape --export-filename=AppIcon.png -w 2048 -h 2048 AppIcon.svg
     #   icongenie g -i AppIcon.png --skip-trim
     #   exit ;;
     build)
-      # MacPorts, sudo port install gsed
-      gsed -i "s/^VITE_BUILD=.*/VITE_BUILD='$version'/" .env
+      node -e "const fs = require('fs'); const env = fs.readFileSync('.env', 'utf8'); fs.writeFileSync('.env', env.replace(/^NEXT_PUBLIC_BUILD=.*/m, \"NEXT_PUBLIC_BUILD='$version'\"));"
       npm run build
       exit ;;
     deploy)
