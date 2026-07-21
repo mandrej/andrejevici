@@ -1,6 +1,6 @@
 # Andrejevici - Professional Photo Album PWA
 
-Andrejevici is a modern photo album application built with **Vue 3 (Quasar Framework)** and **Firebase**. It is deployed as a Progressive Web App (PWA) to provide a seamless experience across desktop and mobile devices.
+Andrejevici is a modern photo album application built with **Next.js (React Framework)**, **TypeScript**, **Tailwind CSS**, and **Firebase**. It is deployed as a Progressive Web App (PWA) to provide a seamless experience across desktop and mobile devices.
 
 ## 🚀 Getting Started
 
@@ -8,10 +8,8 @@ Andrejevici is a modern photo album application built with **Vue 3 (Quasar Frame
 
 Ensure you have the following tools installed on your system:
 
-- **Node.js** (Latest LTS recommended)
-- **Firebase Tools**: `npm install -g firebase-tools`
-- **Inkscape**: Required for generating PWA icons.
-- **Quasar IconGenie**: `npm install -g @quasar/icongenie`
+- **Node.js** (`^24 || ^22 || ^20 || ^18`)
+- **Firebase Tools**: `npm install -g firebase-tools` (or run via `npx firebase`)
 
 ### Installation
 
@@ -23,7 +21,7 @@ Ensure you have the following tools installed on your system:
 
 ### Local Development
 
-To run the application locally, you need both the Firebase emulators and the Quasar development server running.
+To run the application locally, you need both the Firebase emulators and the Next.js development server running.
 
 1. **Start Backend Emulators**:
 
@@ -31,13 +29,13 @@ To run the application locally, you need both the Firebase emulators and the Qua
    ./ands run
    ```
 
-   _This starts the Firebase emulators and imports local data from the `./data` directory._
+   _This starts the Firebase emulators and imports/exports local data in `./data`._
 
 2. **Start Frontend Dev Server**:
    ```bash
    npm run dev
    ```
-   _Alternatively: `quasar dev -m pwa`_
+   _Alternatively, run `npm run dev:pwa` to build the PWA service worker before starting the dev server._
 
 ---
 
@@ -48,11 +46,10 @@ The project uses a helper script, [`./ands`](./ands), to simplify common develop
 | Command            | Action  | Description                                                                       |
 | :----------------- | :------ | :-------------------------------------------------------------------------------- |
 | `./ands run`       | Backend | Starts Firebase emulators with local data import/export.                          |
-| `./ands build`     | Build   | Updates the build version in `.env` and builds the Quasar PWA.                    |
+| `./ands build`     | Build   | Updates `NEXT_PUBLIC_BUILD` timestamp in `.env` and builds the Next.js PWA.       |
 | `./ands deploy`    | Deploy  | Deploys the client-side application to Firebase (excluding functions/extensions). |
 | `./ands functions` | Backend | Builds and deploys `functionNotify`, `functionCron`, and `functionThumb`.         |
-| `./ands icons`     | Assets  | Generates PWA icons from `AppIcon.svg` using Inkscape and IconGenie.              |
-| `./ands test`      | Quality | Runs TypeScript utility tests (e.g., slug generation, EXIF parsing).              |
+| `./ands test`      | Quality | Runs TypeScript unit test suite.                                                  |
 
 ---
 
@@ -87,10 +84,16 @@ docker run -dit \
 
 ## 📂 Project Structure
 
-- `src/`: Frontend source code (Vue 3 / Quasar).
+- `src/`: Frontend source code.
+  - `app/`: Next.js App Router views, routes, and layouts.
+  - `components/`: React components (UI controls, search, toolbars, dialogs, cards).
+  - `stores/`: State management with Zustand (`app`, `user`, `values`, `bucket`).
+  - `helpers/`: Utility modules (EXIF extraction, slug generation, Firestore collections, notifications).
+  - `styles/`: Tailwind CSS global styles.
+- `src-pwa/`: Custom service worker source and manifest configuration.
 - `functionCron/`, `functionNotify/`, `functionThumb/`: Firebase Cloud Functions.
-- `test/`: TypeScript tests for utility functions.
+- `test/`: TypeScript tests run with `tsx`.
 - `data/`: Local Firebase emulator data.
 - `ands`: Bash utility script for development tasks.
 
-For detailed architectural guidance, coding standards, and a deeper dive into the project layout, please refer to [CLAUDE.md](CLAUDE.md).
+For detailed guidelines and developer instructions, please refer to [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md).

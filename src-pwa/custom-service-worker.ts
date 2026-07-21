@@ -17,8 +17,7 @@ precacheAndRoute(self.__WB_MANIFEST)
 // Cache Google Fonts with a CacheFirst strategy (long TTL)
 registerRoute(
   ({ url }) =>
-    url.origin === 'https://fonts.googleapis.com' ||
-    url.origin === 'https://fonts.gstatic.com',
+    url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
   new CacheFirst({
     cacheName: 'google-fonts',
     plugins: [
