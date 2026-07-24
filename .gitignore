@@ -2,41 +2,35 @@
 .thumbs.db
 node_modules
 
-/.quasar
 /.next
 /dist
 /out
 /data
-/firebase-export-*
-/quasar.config.*.temporary.compiled*
 /public/sw.js
-
-# Cordova related directories and files
-/src-cordova/node_modules
-/src-cordova/platforms
-/src-cordova/plugins
-/src-cordova/www
-
-# Capacitor related directories and files
-/src-capacitor/www
-/src-capacitor/node_modules
 
 # Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*-debug.log
+
+# TypeScript
+*.tsbuildinfo
 
 # Editor directories and files
 .idea
+.vscode
+.kilo
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.log
 
-# docker
+# docker & local tool configs
 .npm
 .config
 
-# secret
+# secret & environment
 config.ts
+.env*.local
