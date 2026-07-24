@@ -9,7 +9,8 @@ import AppDialog from '../../components/atoms/AppDialog'
 import AppButton from '../../components/atoms/AppButton'
 import AppCheckbox from '../../components/atoms/AppCheckbox'
 import AppIcon from '../../components/atoms/AppIcon'
-import EditRecord from '../../components/dialog/EditRecord'
+import EditPhotoRecord from '../../components/dialog/EditPhotoRecord'
+import EditVideoRecord from '../../components/dialog/EditVideoRecord'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
 import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '../../helpers'
@@ -220,7 +221,13 @@ export default function ListPage() {
 
   return (
     <DefaultLayout>
-      {showEdit && currentEdit && <EditRecord rec={currentEdit} onEditOk={editOk} />}
+      {showEdit && currentEdit && (
+        currentEdit.kind === 'video' ? (
+          <EditVideoRecord rec={currentEdit} onEditOk={editOk} />
+        ) : (
+          <EditPhotoRecord rec={currentEdit} onEditOk={editOk} />
+        )
+      )}
 
       {/* Confirm Delete Dialog */}
       <AppDialog modelValue={showConfirm} maxWidth="max-w-sm" onChange={setShowConfirm}>

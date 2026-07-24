@@ -20,7 +20,8 @@ import { UploadTracker } from '../../helpers/uploadTracker'
 import AppButton from '../atoms/AppButton'
 import AppCheckbox from '../atoms/AppCheckbox'
 import AppIcon from '../atoms/AppIcon'
-import EditRecord from '../dialog/EditRecord'
+import EditPhotoRecord from '../dialog/EditPhotoRecord'
+import EditVideoRecord from '../dialog/EditVideoRecord'
 import type { PhotoType } from '../../helpers/models'
 
 interface ValidationErrors {
@@ -284,7 +285,13 @@ export const PhotoTab: React.FC = () => {
 
   return (
     <>
-      {showEdit && currentEdit && <EditRecord rec={currentEdit} />}
+      {showEdit && currentEdit && (
+        currentEdit.kind === 'video' ? (
+          <EditVideoRecord rec={currentEdit} />
+        ) : (
+          <EditPhotoRecord rec={currentEdit} />
+        )
+      )}
 
       {/* File upload form */}
       <form onSubmit={onSubmit}>
