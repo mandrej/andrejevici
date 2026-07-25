@@ -14,8 +14,9 @@ yarn-debug.log*
 yarn-error.log*
 *-debug.log
 
-# TypeScript
+# Build cache
 *.tsbuildinfo
+next-env.d.ts
 
 # Editor directories and files
 .idea
