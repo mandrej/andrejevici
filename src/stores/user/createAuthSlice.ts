@@ -1,15 +1,7 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '../../config'
 import { auth, logAnalyticsEvent } from '../../firebase'
-import {
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  query,
-  Timestamp,
-  limit,
-} from 'firebase/firestore'
+import { doc, setDoc, getDoc, getDocs, query, Timestamp, limit } from 'firebase/firestore'
 import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth'
 import type { MyUserType } from '../../helpers/models'
 import notify from '../../helpers/notify'
@@ -26,12 +18,10 @@ export const authReady = new Promise<void>((resolve) => {
   resolveAuthReady = resolve
 })
 
-export const createAuthSlice: StateCreator<
-  UserStore,
-  [],
-  [],
-  AuthSliceState & AuthSliceActions
-> = (set, get) => ({
+export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & AuthSliceActions> = (
+  set,
+  get,
+) => ({
   user: null,
   isFreshLogin: false,
   initialized: false,

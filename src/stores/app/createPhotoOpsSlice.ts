@@ -228,9 +228,7 @@ export const createPhotoOpsSlice: StateCreator<
 
   fetchLastRec: async () => {
     try {
-      const querySnapshot = await getDocs(
-        query(photoCollection, orderBy('date', 'desc'), limit(1)),
-      )
+      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc'), limit(1)))
       const rec = getRec(querySnapshot) as PhotoType
       set({ lastRecord: rec })
       return rec

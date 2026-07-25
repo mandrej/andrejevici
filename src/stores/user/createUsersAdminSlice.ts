@@ -1,16 +1,24 @@
 import type { StateCreator } from 'zustand'
-import { doc, getDocs, updateDoc, deleteDoc, query, where, orderBy, limit, Timestamp } from 'firebase/firestore'
+import {
+  doc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  Timestamp,
+} from 'firebase/firestore'
 import type { DeviceType, MyUserType, UsersAndDevices } from '../../helpers/models'
 import notify from '../../helpers/notify'
 import { deviceCollection, userCollection } from '../../helpers/collections'
 import type { UserStore, UsersAdminSliceActions } from './types'
 
-export const createUsersAdminSlice: StateCreator<
-  UserStore,
-  [],
-  [],
-  UsersAdminSliceActions
-> = (_set, get) => ({
+export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSliceActions> = (
+  _set,
+  get,
+) => ({
   fetchUsers: async () => {
     const snapshot = await getDocs(query(userCollection, orderBy('email', 'asc')))
     return snapshot.docs.map((d) => d.data() as MyUserType)

@@ -221,13 +221,13 @@ export default function ListPage() {
 
   return (
     <DefaultLayout>
-      {showEdit && currentEdit && (
-        currentEdit.kind === 'video' ? (
+      {showEdit &&
+        currentEdit &&
+        (currentEdit.kind === 'video' ? (
           <EditVideoRecord rec={currentEdit} onEditOk={editOk} />
         ) : (
           <EditPhotoRecord rec={currentEdit} onEditOk={editOk} />
-        )
-      )}
+        ))}
 
       {/* Confirm Delete Dialog */}
       <AppDialog modelValue={showConfirm} maxWidth="max-w-sm" onChange={setShowConfirm}>

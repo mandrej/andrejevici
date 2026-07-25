@@ -285,13 +285,13 @@ export const PhotoTab: React.FC = () => {
 
   return (
     <>
-      {showEdit && currentEdit && (
-        currentEdit.kind === 'video' ? (
+      {showEdit &&
+        currentEdit &&
+        (currentEdit.kind === 'video' ? (
           <EditVideoRecord rec={currentEdit} />
         ) : (
           <EditPhotoRecord rec={currentEdit} />
-        )
-      )}
+        ))}
 
       {/* File upload form */}
       <form onSubmit={onSubmit}>

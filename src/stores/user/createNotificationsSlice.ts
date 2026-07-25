@@ -1,7 +1,16 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '../../config'
 import { messaging, db } from '../../firebase'
-import { doc, setDoc, getDocs, updateDoc, query, where, writeBatch, Timestamp } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+  writeBatch,
+  Timestamp,
+} from 'firebase/firestore'
 import { getToken } from 'firebase/messaging'
 import notify from '../../helpers/notify'
 import { deviceCollection, userCollection } from '../../helpers/collections'

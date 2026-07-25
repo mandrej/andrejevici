@@ -14,12 +14,10 @@ const applyTheme = (theme: 'light' | 'dark' | 'auto') => {
   }
 }
 
-export const createUiSlice: StateCreator<
-  AppStore,
-  [],
-  [],
-  UiSliceState & UiSliceActions
-> = (set, get) => ({
+export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSliceActions> = (
+  set,
+  get,
+) => ({
   busy: false,
   error: '',
   showEdit: false,

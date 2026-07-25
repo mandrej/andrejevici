@@ -1,14 +1,5 @@
 import type { StateCreator } from 'zustand'
-import {
-  doc,
-  query,
-  where,
-  limit,
-  orderBy,
-  getDoc,
-  getDocs,
-  startAfter,
-} from 'firebase/firestore'
+import { doc, query, where, limit, orderBy, getDoc, getDocs, startAfter } from 'firebase/firestore'
 import type {
   QuerySnapshot,
   DocumentSnapshot,

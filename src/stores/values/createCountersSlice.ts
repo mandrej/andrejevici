@@ -59,12 +59,10 @@ const commitInBatches = async <T>(
   if (count > 0) await batch.commit()
 }
 
-export const createCountersSlice: StateCreator<
-  ValuesStore,
-  [],
-  [],
-  CountersSliceActions
-> = (set, get) => ({
+export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSliceActions> = (
+  set,
+  get,
+) => ({
   countersBuild: async (targetField?: string) => {
     const fieldsToBuild = targetField ? [targetField] : CONFIG.photo_filter
 

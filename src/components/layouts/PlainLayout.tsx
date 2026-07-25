@@ -46,7 +46,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
               style={showUrl ? { backgroundImage: `url(${showUrl})` } : {}}
             />
-            <div className="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" />
+            {/* <div className="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" /> */}
           </Link>
 
           {/* Add photos button */}
@@ -56,7 +56,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
               icon="add"
               color="warning"
               round
-              className="absolute bottom-4 right-4 md:bottom-4 md:left-4 md:right-auto !p-3"
+              className="absolute bottom-4 right-4 md:bottom-4 md:left-4 md:right-auto p-3!"
             />
           )}
         </div>

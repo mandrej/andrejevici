@@ -233,9 +233,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
             <div className="col-span-1">
               <AppInput
                 modelValue={tmp.focal_length}
-                onChangeValue={(val) =>
-                  setTmp((prev) => ({ ...prev, focal_length: Number(val) }))
-                }
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, focal_length: Number(val) }))}
                 type="number"
                 label="Focal length [mm]"
               />

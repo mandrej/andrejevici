@@ -352,9 +352,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
                         <span className="text-white/50 block text-[10px] uppercase tracking-wider">
                           Uploaded By
                         </span>
-                        <span className="font-medium text-white/95">
-                          @{currentSlide.obj.nick}
-                        </span>
+                        <span className="font-medium text-white/95">@{currentSlide.obj.nick}</span>
                       </div>
                     )}
                     {currentSlide.obj.tags && currentSlide.obj.tags.length > 0 && (
