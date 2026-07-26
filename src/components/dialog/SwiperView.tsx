@@ -226,7 +226,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
         zoom={{ ref: zoomRef }}
         carousel={{ padding: 0 }}
         toolbar={{
-          buttons: toolbarButtons,
+          buttons: isFullscreen ? [] : toolbarButtons,
         }}
         on={{
           view: ({ index: newIndex }: { index: number }) => {
@@ -239,6 +239,12 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           buttonZoom: () => null,
           iconPrev: () => <PrevIcon />,
           iconNext: () => <NextIcon />,
+          ...(isFullscreen
+            ? {
+                buttonPrev: () => null,
+                buttonNext: () => null,
+              }
+            : {}),
           controls: () => (
             <>
               {showInfo && !isFullscreen && isImage && currentSlide?.obj && (
@@ -378,11 +384,12 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             </>
           ),
           slideHeader: ({ slide }: { slide: any }) => {
+            if (isFullscreen) return null
             const obj = slide.obj as PhotoType
             if (!obj) return null
             return (
               <>
-                {!isFullscreen && obj.headline && (
+                {obj.headline && (
                   <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-14 z-2000 flex items-center justify-center min-h-[44px]">
                     <div className="text-center overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm sm:text-base">
                       {obj.headline}
@@ -390,11 +397,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
                   </div>
                 )}
                 <button
-                  className={
-                    isFullscreen
-                      ? 'absolute top-4 right-4 z-2000 text-white/80 hover:text-white transition-colors flex items-center justify-center p-2 rounded-full bg-black/45 backdrop-blur-md border border-white/15'
-                      : 'absolute top-2 right-4 z-2000 text-white/80 hover:text-white transition-colors flex items-center justify-center p-1'
-                  }
+                  className="absolute top-2 right-4 z-2000 text-white/80 hover:text-white transition-colors flex items-center justify-center p-1"
                   onClick={handleClose}
                   aria-label="Close"
                 >
@@ -471,6 +474,8 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           }
           .yarl__navigation_prev,
           .yarl__navigation_next {
+            display: flex !important;
+            color: rgba(255, 255, 255, 0.85) !important;
             background: transparent !important;
             background-color: transparent !important;
             backdrop-filter: none !important;
@@ -479,9 +484,11 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             filter: none !important;
             box-shadow: none !important;
             padding: 8px !important;
+            z-index: 2000 !important;
           }
           .yarl__navigation_prev:hover,
           .yarl__navigation_next:hover {
+            color: rgba(255, 255, 255, 1) !important;
             background: transparent !important;
             background-color: transparent !important;
             border-color: transparent !important;
@@ -497,7 +504,9 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
               ? `
           .yarl__toolbar,
           .yarl__navigation_prev,
-          .yarl__navigation_next {
+          .yarl__navigation_next,
+          .yarl__button,
+          .yarl__controls {
             display: none !important;
           }
           `
