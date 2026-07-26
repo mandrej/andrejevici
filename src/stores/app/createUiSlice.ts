@@ -1,14 +1,28 @@
 import type { StateCreator } from 'zustand'
 import type { AppStore, UiSliceState, UiSliceActions } from './types'
+import {
+  isNightTime,
+  getNextSunTransitionDelay,
+  requestUserLocation,
+} from '../../helpers/sun'
+
+let themeTimer: ReturnType<typeof setTimeout> | null = null
 
 const applyTheme = (theme: 'light' | 'dark' | 'auto') => {
   if (typeof window === 'undefined') return
+  if (themeTimer) {
+    clearTimeout(themeTimer)
+    themeTimer = null
+  }
   const root = document.documentElement
   root.classList.remove('light', 'dark')
   if (theme === 'auto') {
-    const hour = new Date().getHours()
-    const isNight = hour < 7 || hour >= 19
+    const isNight = isNightTime()
     root.classList.add(isNight ? 'dark' : 'light')
+    const delay = getNextSunTransitionDelay()
+    themeTimer = setTimeout(() => {
+      applyTheme('auto')
+    }, delay)
   } else {
     root.classList.add(theme)
   }
@@ -55,6 +69,13 @@ export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSlic
         set({ theme: activeTheme })
       }
       applyTheme(activeTheme)
+      requestUserLocation(() => {
+        const currentTheme = (localStorage.getItem('theme') as 'light' | 'dark' | 'auto' | null) || 'auto'
+        if (currentTheme === 'auto') {
+          applyTheme('auto')
+        }
+      })
     }
   },
 })
+

@@ -46,7 +46,6 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
               style={showUrl ? { backgroundImage: `url(${showUrl})` } : {}}
             />
-            {/* <div className="absolute inset-0 bg-[url('/logo.svg')] bg-center bg-contain bg-no-repeat opacity-40" /> */}
           </Link>
 
           {/* Add photos button */}
