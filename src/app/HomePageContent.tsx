@@ -10,6 +10,7 @@ import { useAppStore } from '../stores/appStore'
 import { useUserStore } from '../stores/userStore'
 import { useValuesStore, selectNickWithCount, selectYearValues } from '../stores/valuesStore'
 import { useBucketStore } from '../stores/bucketStore'
+import ThemeToggle from '@/components/atoms/ThemeToggle'
 
 export default function HomePage() {
   const router = useRouter()
@@ -20,8 +21,6 @@ export default function HomePage() {
   const signIn = useUserStore((state) => state.signIn)
 
   const searchBy = useAppStore((state) => state.searchBy)
-  const appTheme = useAppStore((state) => state.theme)
-  const setTheme = useAppStore((state) => state.setTheme)
 
   const bucket = useBucketStore((state) => state.bucket)
 
@@ -35,12 +34,6 @@ export default function HomePage() {
   const sinceYear = useMemo(() => {
     return yearValues[yearValues.length - 1] || ''
   }, [yearValues])
-
-  const themeOptions = [
-    { value: 'light', icon: 'light_mode', label: 'Light' },
-    { value: 'dark', icon: 'dark_mode', label: 'Dark' },
-    { value: 'auto', icon: 'brightness_6', label: 'Auto' },
-  ] as const
 
   const buildVersion = process.env.NEXT_PUBLIC_BUILD || '15.07.2026 18:42'
 
@@ -93,22 +86,7 @@ export default function HomePage() {
         )}
 
         {/* Theme toggle */}
-        <div className="fixed bottom-4 right-4 z-50 flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-          {themeOptions.map((opt) => (
-            <button
-              key={opt.value}
-              className={`flex items-center justify-center w-9 h-9 transition-colors text-sm ${
-                appTheme === opt.value
-                  ? 'bg-primary text-white'
-                  : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-              title={opt.label}
-              onClick={() => setTheme(opt.value)}
-            >
-              <AppIcon name={opt.icon} className="w-5 h-5" />
-            </button>
-          ))}
-        </div>
+        <ThemeToggle className="fixed bottom-4 right-4 z-50" showLabels={true} />
 
         {/* Agents Tech Stack Dialog */}
         <AppDialog modelValue={showTechStack} onChange={setShowTechStack} maxWidth="max-w-md">
