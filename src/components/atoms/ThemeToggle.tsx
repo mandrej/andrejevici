@@ -9,10 +9,7 @@ interface ThemeToggleProps {
   showLabels?: boolean | 'always'
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
-  className = '',
-  showLabels = true,
-}) => {
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLabels = true }) => {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
 
@@ -37,7 +34,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       className={`inline-flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm ${className}`}
     >
       {themeOptions.map((opt) => {
-        const isActive = mounted && (theme === opt.value || (opt.value === 'system' && theme === 'auto'))
+        const isActive =
+          mounted && (theme === opt.value || (opt.value === 'system' && theme === 'auto'))
         return (
           <button
             key={opt.value}

@@ -28,4 +28,3 @@ export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSlic
   setTheme: (theme) => set({ theme }),
   initTheme: () => {},
 })
-
