@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { useAppStore } from '../../stores/appStore'
+import React, { useEffect, useState } from 'react'
+import { useTheme } from 'next-themes'
 import AppIcon from './AppIcon'
 
 interface ThemeToggleProps {
@@ -13,13 +13,17 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className = '',
   showLabels = true,
 }) => {
-  const appTheme = useAppStore((state) => state.theme)
-  const setTheme = useAppStore((state) => state.setTheme)
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const themeOptions = [
     { value: 'light', icon: 'light_mode', label: 'Light' },
     { value: 'dark', icon: 'dark_mode', label: 'Dark' },
-    { value: 'auto', icon: 'brightness_6', label: 'Auto' },
+    { value: 'system', icon: 'brightness_6', label: 'Auto' },
   ] as const
 
   const getLabelClass = () => {
@@ -33,7 +37,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       className={`inline-flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm ${className}`}
     >
       {themeOptions.map((opt) => {
-        const isActive = appTheme === opt.value
+        const isActive = mounted && (theme === opt.value || (opt.value === 'system' && theme === 'auto'))
         return (
           <button
             key={opt.value}

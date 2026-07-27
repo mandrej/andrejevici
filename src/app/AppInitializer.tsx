@@ -26,7 +26,6 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const bucketStore = useBucketStore.getState()
     const valuesStore = useValuesStore.getState()
 
-    appStore.initTheme()
     appStore.setBusy(false)
     appStore.setError('')
     appStore.setShowEdit(false)
