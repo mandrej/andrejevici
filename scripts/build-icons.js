@@ -20,9 +20,7 @@ async function generateIcons() {
   console.log('Generating icons & screenshots from logo.svg...')
 
   // 1. Generate public/logo.png
-  await sharp(svgPath)
-    .resize(512, 512)
-    .toFile(path.join(publicDir, 'logo.png'))
+  await sharp(svgPath).resize(512, 512).toFile(path.join(publicDir, 'logo.png'))
   console.log('Generated public/logo.png')
 
   // 2. Favicons & Standard App Icons (padded logo at 85% to preserve white circular border)
@@ -63,7 +61,7 @@ async function generateIcons() {
   ]
 
   for (const { name, size } of maskableIconSizes) {
-    const innerSize = Math.round(size * 0.7)
+    const innerSize = Math.round(size * 0.85)
     const logoBuffer = await sharp(svgPath).resize(innerSize, innerSize).toBuffer()
 
     await sharp({
@@ -71,7 +69,7 @@ async function generateIcons() {
         width: size,
         height: size,
         channels: 4,
-        background: { r: 33, g: 33, b: 33, alpha: 1 }, // #212121
+        background: { r: 255, g: 255, b: 255, alpha: 1 },
       },
     })
       .composite([{ input: logoBuffer, gravity: 'center' }])
@@ -81,9 +79,7 @@ async function generateIcons() {
   }
 
   // 3. Favicon.ico
-  await sharp(svgPath)
-    .resize(32, 32)
-    .toFile(path.join(publicDir, 'favicon.ico'))
+  await sharp(svgPath).resize(32, 32).toFile(path.join(publicDir, 'favicon.ico'))
   console.log('Generated public/favicon.ico')
 
   // 4. Apple Launch Screens (centered logo with white border on #212121 dark background)
