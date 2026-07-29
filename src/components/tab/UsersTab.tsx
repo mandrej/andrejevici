@@ -207,7 +207,7 @@ export const UsersTab: React.FC = () => {
                     <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-2/3"></div>
                   </div>
                   {screen.gtXs && (
-                    <div className="flex gap-1 ml-auto">
+                    <div className="flex flex-wrap gap-1 ml-auto max-w-xs">
                       <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
                       <div className="w-4 h-4 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
                     </div>
@@ -239,7 +239,7 @@ export const UsersTab: React.FC = () => {
                             flat
                             onClick={() => openNickDialog(item)}
                             color="primary"
-                            className="!p-1"
+                            className="p-1!"
                             title="Change nickname"
                           >
                             <AppIcon name="edit" className="w-4 h-4" />
@@ -249,7 +249,7 @@ export const UsersTab: React.FC = () => {
                             flat
                             onClick={() => confirmDeleteUser(item)}
                             color="negative"
-                            className="!p-1"
+                            className="p-1!"
                             title="Delete user"
                           >
                             <AppIcon name="delete" className="w-4 h-4" />
@@ -265,16 +265,20 @@ export const UsersTab: React.FC = () => {
                   </div>
 
                   {screen.gtXs && (
-                    <div className="shrink-0 ml-3 flex gap-1">
-                      {item.timestamps && item.timestamps.length > 0 ? (
-                        item.timestamps.map((timestamp, index) => (
-                          <AppBadge key={index} color="secondary">
-                            {ageDays(timestamp)}
+                    <div className="shrink-0 ml-3 max-w-50">
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {item.timestamps && item.timestamps.length > 0 ? (
+                          item.timestamps.map((timestamp, index) => (
+                            <AppBadge key={index} color="secondary" textColor="dark">
+                              {ageDays(timestamp)}
+                            </AppBadge>
+                          ))
+                        ) : (
+                          <AppBadge color="secondary" textColor="dark">
+                            no tokens
                           </AppBadge>
-                        ))
-                      ) : (
-                        <AppBadge color="grey">no tokens</AppBadge>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )}
 
