@@ -112,7 +112,25 @@ export const GlobalSearch: React.FC = () => {
     submit(nextTmp)
   }
 
-  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIdx((prev) =>
+        prev < filteredSuggestions.length - 1 ? prev + 1 : prev,
+      )
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIdx((prev) => (prev > 0 ? prev - 1 : -1))
+      return
+    }
+    if (e.key === 'Escape') {
+      setShowDropdown(false)
+      return
+    }
+    if (e.key !== 'Enter') return
+
     if (activeIdx >= 0 && filteredSuggestions[activeIdx]) {
       e.preventDefault()
       onSelect(filteredSuggestions[activeIdx])
@@ -245,7 +263,7 @@ export const GlobalSearch: React.FC = () => {
           className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
           value={searchInput}
           placeholder={hasActiveFilters ? '' : 'by tag: beograd year: 2022 etc…'}
-          onKeyDown={handleEnter}
+          onKeyDown={handleKeyDown}
           onChange={(e) => onInput(e.target.value)}
           onFocus={() => setShowDropdown(true)}
           onBlur={onBlur}
