@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
-import { U, dummy, formatDatum, formatBytes, getYouTubeId } from '../../helpers'
+import { U, dummy, formatDatum, getYouTubeId } from '../../helpers'
 import { logAnalyticsEvent } from '../../firebase'
 import notify from '../../helpers/notify'
 import type { PhotoType } from '../../helpers/models'
@@ -11,6 +11,7 @@ import Lightbox, { IconButton } from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import AppIcon from '../atoms/AppIcon'
+import PhotoInfo from './PhotoInfo'
 
 interface SwiperViewProps {
   index: number
@@ -248,138 +249,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           controls: () => (
             <>
               {showInfo && !isFullscreen && isImage && currentSlide?.obj && (
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-2001 w-[90%] max-w-sm sm:max-w-md bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-xs sm:text-sm shadow-2xl transition-all pointer-events-auto">
-                  <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/15">
-                    <div className="font-semibold text-white/90 flex items-center gap-1.5">
-                      <AppIcon name="info" className="w-4 h-4 text-blue-400" />
-                      <span>Photo Info</span>
-                    </div>
-                    <button
-                      onClick={() => setShowInfo(false)}
-                      className="text-white/60 hover:text-white transition-colors p-1"
-                    >
-                      <AppIcon name="close" className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-y-2.5 gap-x-4">
-                    {currentSlide.obj.size > 0 && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          File Size
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {formatBytes(currentSlide.obj.size)}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.dim && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Dimensions
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {currentSlide.obj.dim[0]} × {currentSlide.obj.dim[1]}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.aperture && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Aperture
-                        </span>
-                        <span className="font-medium text-white/95">
-                          f/{currentSlide.obj.aperture}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.shutter && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Shutter Speed
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {currentSlide.obj.shutter}s
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.iso && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          ISO
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {currentSlide.obj.iso} ASA
-                        </span>
-                      </div>
-                    )}
-                    {(currentSlide.obj.focal_length || (currentSlide.obj as any).focalLength) && (
-                      <div>
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Focal Length
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {currentSlide.obj.focal_length || (currentSlide.obj as any).focalLength}mm
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.model && (
-                      <div className="col-span-2">
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Camera
-                        </span>
-                        <span className="font-medium text-white/95 font-sans">
-                          {currentSlide.obj.model}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.lens && (
-                      <div className="col-span-2">
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Lens
-                        </span>
-                        <span className="font-medium text-white/95 font-sans">
-                          {currentSlide.obj.lens}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.date && (
-                      <div className="col-span-2">
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Date
-                        </span>
-                        <span className="font-medium text-white/95">
-                          {formatDatum(currentSlide.obj.date)}
-                        </span>
-                      </div>
-                    )}
-                    {currentSlide.obj.nick && (
-                      <div className="col-span-2">
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Uploaded By
-                        </span>
-                        <span className="font-medium text-white/95">@{currentSlide.obj.nick}</span>
-                      </div>
-                    )}
-                    {currentSlide.obj.tags && currentSlide.obj.tags.length > 0 && (
-                      <div className="col-span-2">
-                        <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                          Tags
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {currentSlide.obj.tags.map((tag: string) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] text-white/80"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <PhotoInfo photo={currentSlide.obj} onClose={() => setShowInfo(false)} />
               )}
             </>
           ),

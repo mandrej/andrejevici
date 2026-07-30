@@ -105,7 +105,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
           )}
         </div>
         <span className="text-xs text-gray-500 dark:text-gray-400">
-          {formatBytes(tmp.size)} {tmp.dim}
+          {formatBytes(tmp.size)} {tmp.dim?.join(' × ')}
         </span>
         <button
           className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
