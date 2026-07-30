@@ -8,6 +8,7 @@ interface AutoCompleteProps {
   canadd?: boolean
   label: string
   hint?: string
+  placement?: 'top' | 'bottom'
   onChange?: (val: string | string[] | null) => void
   onNewValue?: (value: string, done: (val: string) => void) => void
 }
@@ -19,6 +20,7 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
   canadd = false,
   label,
   hint = '',
+  placement = 'bottom',
   onChange,
   onNewValue,
 }) => {
@@ -38,6 +40,7 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
       multiple={multiple}
       clearable
       canadd={canadd}
+      placement={placement}
       onNewValue={onNewValue}
     />
   )

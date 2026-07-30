@@ -6,9 +6,15 @@ interface TagsMergeProps {
   label?: string
   hint?: string
   className?: string
+  placement?: 'top' | 'bottom'
 }
 
-export const TagsMerge: React.FC<TagsMergeProps> = ({ label = '', hint = '', className = '' }) => {
+export const TagsMerge: React.FC<TagsMergeProps> = ({
+  label = '',
+  hint = '',
+  className = '',
+  placement = 'bottom',
+}) => {
   const meta = useValuesStore()
   const tagsValues = useValuesStore(selectTagsValues)
   const tagsToApply = useValuesStore((state) => state.tagsToApply)
@@ -31,6 +37,7 @@ export const TagsMerge: React.FC<TagsMergeProps> = ({ label = '', hint = '', cla
         canadd
         multiple
         hint={hint}
+        placement={placement}
         onNewValue={handleNewValue}
       />
     </div>

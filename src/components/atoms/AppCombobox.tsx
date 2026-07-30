@@ -18,6 +18,7 @@ interface AppComboboxProps {
   multiple?: boolean
   clearable?: boolean
   canadd?: boolean
+  placement?: 'top' | 'bottom'
   onChange?: (val: string | string[] | null) => void
   onNewValue?: (value: string, done: (val: string) => void) => void
 }
@@ -31,6 +32,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
   multiple = false,
   clearable = true,
   canadd = false,
+  placement = 'bottom',
   onChange,
   onNewValue,
 }) => {
@@ -72,7 +74,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && canadd && query.length > 0) {
+    if (e.key === 'Enter' && canadd && query.length > 0 && filteredOptions.length === 0) {
       e.preventDefault()
       const done = (value: string) => {
         if (!onChange) return
@@ -173,7 +175,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
           {/* Dropdown */}
           <Transition
             enter="transition ease-out duration-100"
-            enterFrom="opacity-0 translate-y-1"
+            enterFrom={placement === 'top' ? 'opacity-0 -translate-y-1' : 'opacity-0 translate-y-1'}
             enterTo="opacity-100 translate-y-0"
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
@@ -181,7 +183,11 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
             afterLeave={() => setQuery('')}
           >
             {(filteredOptions.length > 0 || (canadd && query.length > 0)) && (
-              <ComboboxOptions className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl py-1 focus:outline-none">
+              <ComboboxOptions
+                className={`absolute z-50 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl py-1 focus:outline-none ${
+                  placement === 'top' ? 'bottom-full mb-1' : 'mt-1'
+                }`}
+              >
                 {/* Add new option */}
                 {canadd && query.length > 1 && !filteredOptions.includes(query) && (
                   <ComboboxOption value={query}>
