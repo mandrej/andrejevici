@@ -35,7 +35,7 @@ export const AppToast: React.FC = () => {
   }
 
   return (
-    <div className="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-[10000000] pointer-events-none w-80 max-w-[calc(100vw-2rem)]">
+    <div className="notifications-layer fixed bottom-4 right-4 flex flex-col gap-2 z-10000000 pointer-events-none w-80 max-w-[calc(100vw-2rem)]">
       <div className="flex flex-col gap-2">
         {toasts.map((toast) => (
           <div

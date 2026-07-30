@@ -115,9 +115,7 @@ export const GlobalSearch: React.FC = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setActiveIdx((prev) =>
-        prev < filteredSuggestions.length - 1 ? prev + 1 : prev,
-      )
+      setActiveIdx((prev) => (prev < filteredSuggestions.length - 1 ? prev + 1 : prev))
       return
     }
     if (e.key === 'ArrowUp') {
@@ -177,7 +175,7 @@ export const GlobalSearch: React.FC = () => {
   return (
     <div className="relative flex-1 flex items-center min-w-0">
       {/* Active filter chips row + input */}
-      <div className="search-container flex flex-1 items-center gap-1 min-h-[36px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="search-container flex flex-1 items-center gap-1 min-h-9 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all overflow-x-auto scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Active filter chips */}
         {tmp.text && (
           <span
@@ -260,7 +258,7 @@ export const GlobalSearch: React.FC = () => {
         {/* Text input */}
         <input
           type="text"
-          className="flex-1 min-w-[120px] bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
+          className="flex-1 min-w-30 bg-transparent outline-none text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
           value={searchInput}
           placeholder={hasActiveFilters ? '' : 'by tag: beograd year: 2022 etc…'}
           onKeyDown={handleKeyDown}

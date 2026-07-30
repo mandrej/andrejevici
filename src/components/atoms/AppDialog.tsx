@@ -23,7 +23,7 @@ export const AppDialog: React.FC<AppDialogProps> = ({
 
   return (
     <Transition show={modelValue} as={Fragment}>
-      <Dialog as="div" className="relative z-[99999]" onClose={onClose}>
+      <Dialog as="div" className="relative z-99999" onClose={onClose}>
         {/* Backdrop */}
         <TransitionChild
           as={Fragment}

@@ -248,7 +248,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           controls: () => (
             <>
               {showInfo && !isFullscreen && isImage && currentSlide?.obj && (
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[2001] w-[90%] max-w-sm sm:max-w-md bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-xs sm:text-sm shadow-2xl transition-all pointer-events-auto">
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-2001 w-[90%] max-w-sm sm:max-w-md bg-black/75 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-xs sm:text-sm shadow-2xl transition-all pointer-events-auto">
                   <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/15">
                     <div className="font-semibold text-white/90 flex items-center gap-1.5">
                       <AppIcon name="info" className="w-4 h-4 text-blue-400" />
@@ -390,7 +390,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             return (
               <>
                 {obj.headline && (
-                  <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-14 z-2000 flex items-center justify-center min-h-[44px]">
+                  <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-14 z-2000 flex items-center justify-center min-h-11">
                     <div className="text-center overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm sm:text-base">
                       {obj.headline}
                     </div>

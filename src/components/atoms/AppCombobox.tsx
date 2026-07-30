@@ -112,7 +112,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
       <Combobox value={modelValue} onChange={onUpdate} multiple={multiple as any}>
         <div className="relative">
           {/* Multi-value chips + input row */}
-          <div className="flex flex-wrap gap-1 min-h-[38px] w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
+          <div className="flex flex-wrap gap-1 min-h-9.5 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
             {/* Selected chips (multiple mode) */}
             {multiple && Array.isArray(modelValue) && (
               <>
@@ -142,7 +142,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
             )}
 
             <ComboboxInput
-              className="flex-1 min-w-[80px] bg-transparent text-sm outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
+              className="flex-1 min-w-20 bg-transparent text-sm outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
               placeholder={placeholder}
               value={displayVal}
               onChange={(event) => setQuery(event.target.value)}

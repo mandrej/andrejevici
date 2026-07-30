@@ -298,7 +298,7 @@ export const PhotoTab: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Drop zone + file input */}
           <label
-            className={`w-full sm:w-auto flex-1 flex flex-col items-center justify-center min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+            className={`w-full sm:w-auto flex-1 flex flex-col items-center justify-center min-h-35 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
               isDragging
                 ? 'border-primary bg-primary/5'
                 : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-55 dark:hover:bg-gray-800'
@@ -340,7 +340,7 @@ export const PhotoTab: React.FC = () => {
           </label>
 
           {/* Action buttons */}
-          <div className="flex flex-col gap-2 min-w-[120px] w-full sm:w-auto">
+          <div className="flex flex-col gap-2 min-w-30 w-full sm:w-auto">
             {activeTrackerNames.length > 0 && (
               <AppButton label="Cancel all" type="button" color="negative" onClick={cancelAll} />
             )}
