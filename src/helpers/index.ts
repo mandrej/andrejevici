@@ -272,3 +272,16 @@ export const getYouTubeMaxResUrl = (url: string): string | null => {
   const id = getYouTubeId(url)
   return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : null
 }
+
+/**
+ * Validates an email address against a standard format pattern.
+ *
+ * @param val - The email address string to validate.
+ * @returns `true` if valid, or `'Invalid email'` error message string if invalid.
+ */
+export const isValidEmail = (val: string): true | string => {
+  const emailPattern =
+    /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
+  return emailPattern.test(val) || 'Invalid email'
+}
+
