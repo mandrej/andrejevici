@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 export function useInfiniteScroll(
   onLoad: (done: (stop?: boolean) => void) => Promise<void>,
-  options: IntersectionObserverInit = { rootMargin: '400px' },
+  options: IntersectionObserverInit = { rootMargin: '800px' },
 ) {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [loading, setLoading] = useState(false)
