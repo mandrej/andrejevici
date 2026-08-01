@@ -101,7 +101,8 @@ export default function ListPage() {
     try {
       const isInitial = objects.length === 0
       await fetchRecords(isInitial)
-      done(!next)
+      // Read `next` from the store after the fetch — the closure value is stale.
+      done(!useAppStore.getState().next)
     } catch (err) {
       console.error('Infinite scroll error:', err)
       done(true)

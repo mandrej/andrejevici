@@ -21,6 +21,9 @@ export function useInfiniteScroll(
   const optionsRef = useRef(options)
   optionsRef.current = options
 
+  // Keep a stable ref to the observer so reset() can re-arm it.
+  const observerRef = useRef<IntersectionObserver | null>(null)
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -36,18 +39,33 @@ export function useInfiniteScroll(
       }
     }, optionsRef.current)
 
+    observerRef.current = observer
+
     const el = sentinelRef.current
     if (el) observer.observe(el)
 
     return () => {
       if (el) observer.unobserve(el)
       observer.disconnect()
+      observerRef.current = null
     }
   }, []) // mount/unmount only — state is read via refs
 
+  // Re-arm the observer after a filter reset so an already-intersecting
+  // sentinel triggers a new intersection event.
   const reset = () => {
     setStopped(false)
     setLoading(false)
+    stoppedRef.current = false
+    loadingRef.current = false
+
+    const el = sentinelRef.current
+    const observer = observerRef.current
+    if (el && observer) {
+      observer.unobserve(el)
+      // One microtask gap is enough for the browser to clear the entry.
+      setTimeout(() => observer.observe(el), 0)
+    }
   }
 
   return { sentinelRef, loading, stopped, reset }
