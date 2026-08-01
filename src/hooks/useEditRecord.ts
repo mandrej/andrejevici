@@ -10,7 +10,7 @@ import {
   selectLensValues,
   selectEmailValues,
 } from '../stores/valuesStore'
-import { sliceSlug } from '../helpers'
+import { sliceSlug, isValidEmail } from '../helpers'
 import CONFIG from '../config'
 import type { PhotoType } from '../helpers/models'
 
@@ -38,11 +38,6 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     setTmp({ ...rec })
   }, [rec])
 
-  const isValidEmail = (val: string) => {
-    const emailPattern =
-      /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
-    return emailPattern.test(val) || 'Invalid email'
-  }
 
   const copyTags = (source: string[]) => {
     useValuesStore.setState({ tagsToApply: source })
