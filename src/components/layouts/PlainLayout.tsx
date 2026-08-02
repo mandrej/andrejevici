@@ -4,7 +4,7 @@ import AppButton from '../atoms/AppButton'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
 import { useValuesStore, selectNickValues } from '../../stores/valuesStore'
-import { isEmpty, getYouTubeMaxResUrl } from '../../helpers'
+import { isEmpty, getYouTubeMaxResUrl, thumbUrl } from '../../helpers'
 
 interface PlainLayoutProps {
   children: React.ReactNode
@@ -15,10 +15,27 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
   const user = useUserStore((state) => state.user)
   const nickValues = useValuesStore(selectNickValues)
 
-  const showUrl = useMemo(() => {
+  const bgFullUrl = useMemo(() => {
     if (!lastRecord) return ''
     return lastRecord.kind === 'video' ? getYouTubeMaxResUrl(lastRecord.url) : lastRecord.url
   }, [lastRecord])
+
+  const bgThumbUrl = useMemo(() => {
+    if (!lastRecord) return ''
+    if (lastRecord.thumb) return lastRecord.thumb
+    if (lastRecord.kind === 'photo' && lastRecord.filename) {
+      return thumbUrl(lastRecord.filename)
+    }
+    return bgFullUrl
+  }, [lastRecord, bgFullUrl])
+
+  const bgStyle = useMemo(() => {
+    if (!bgFullUrl) return {}
+    if (bgThumbUrl && bgThumbUrl !== bgFullUrl) {
+      return { backgroundImage: `url(${bgFullUrl}), url(${bgThumbUrl})` }
+    }
+    return { backgroundImage: `url(${bgFullUrl})` }
+  }, [bgFullUrl, bgThumbUrl])
 
   const hasNoPhotos = isEmpty(nickValues)
 
@@ -44,7 +61,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
           <Link href="/list" className="block absolute inset-0">
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
-              style={showUrl ? { backgroundImage: `url(${showUrl})` } : {}}
+              style={bgStyle}
             />
           </Link>
 
