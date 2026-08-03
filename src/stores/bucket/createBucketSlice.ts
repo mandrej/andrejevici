@@ -19,9 +19,8 @@ export const createBucketSlice: StateCreator<
     const docSnap = await getDoc(bucketRef)
     if (docSnap.exists()) {
       set({ bucket: docSnap.data() as BucketType })
-    } else {
-      console.error('Failed to read bucket data')
     }
+    // No document yet means no photos have been added — keep the default { size: 0, count: 0 }
   },
 
   bucketDiff: (num: number) => {

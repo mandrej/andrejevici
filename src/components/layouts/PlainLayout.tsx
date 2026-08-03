@@ -4,7 +4,7 @@ import AppButton from '../atoms/AppButton'
 import { useAppStore } from '../../stores/appStore'
 import { useUserStore } from '../../stores/userStore'
 import { useValuesStore, selectNickValues } from '../../stores/valuesStore'
-import { isEmpty, getYouTubeMaxResUrl, thumbUrl } from '../../helpers'
+import { isEmpty, getYouTubeMaxResUrl } from '../../helpers'
 
 interface PlainLayoutProps {
   children: React.ReactNode
@@ -15,36 +15,38 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
   const user = useUserStore((state) => state.user)
   const nickValues = useValuesStore(selectNickValues)
 
+  const hasNoPhotos = isEmpty(nickValues)
+
   const bgFullUrl = useMemo(() => {
     if (!lastRecord) return ''
     return lastRecord.kind === 'video' ? getYouTubeMaxResUrl(lastRecord.url) : lastRecord.url
   }, [lastRecord])
 
-  const bgThumbUrl = useMemo(() => {
-    if (!lastRecord) return ''
-    if (lastRecord.thumb) return lastRecord.thumb
-    if (lastRecord.kind === 'photo' && lastRecord.filename) {
-      return thumbUrl(lastRecord.filename)
-    }
-    return bgFullUrl
-  }, [lastRecord, bgFullUrl])
-
   const bgStyle = useMemo(() => {
-    if (!bgFullUrl) return {}
-    if (bgThumbUrl && bgThumbUrl !== bgFullUrl) {
-      return { backgroundImage: `url(${bgFullUrl}), url(${bgThumbUrl})` }
+    if (!bgFullUrl || hasNoPhotos) {
+      return {
+        backgroundImage: `url(/logo30.svg)`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }
     }
-    return { backgroundImage: `url(${bgFullUrl})` }
-  }, [bgFullUrl, bgThumbUrl])
-
-  const hasNoPhotos = isEmpty(nickValues)
+    return {
+      backgroundImage: `url(${bgFullUrl}), url(/logo30.svg)`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+    }
+  }, [bgFullUrl, hasNoPhotos])
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-light-page dark:bg-dark-page">
       {/* Left half: hero image or empty state */}
       {hasNoPhotos ? (
-        <div className="flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen">
-          <div className="text-center max-w-xs px-6 text-sm text-gray-600 dark:text-gray-300">
+        <div className="relative flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden">
+          <div
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat pointer-events-none"
+            style={bgStyle}
+          />
+          <div className="relative z-10 text-center max-w-xs px-6 text-sm text-gray-600 dark:text-gray-300">
             There are no photos posted yet...
             <br />
             To add some you need to sign-in with your Google account. Only authorized users can add,
