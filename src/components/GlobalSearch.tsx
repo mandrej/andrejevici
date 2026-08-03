@@ -43,25 +43,34 @@ export const GlobalSearch: React.FC = () => {
 
     if (colonIdx > 0) {
       const fieldPart = lower.substring(0, colonIdx).trim()
-      const valuePart = lower.substring(colonIdx + 1).trim()
+      const valuePart = val.substring(colonIdx + 1).trim()
+      const valuePartLower = valuePart.toLowerCase()
       suggestions = allSuggestions
         .filter(
           (s) =>
             (s.field.toLowerCase().startsWith(fieldPart) ||
               (s.field === 'author' && 'nick'.startsWith(fieldPart))) &&
-            (valuePart === '' || s.value.toLowerCase().includes(valuePart)),
+            (valuePartLower === '' || s.value.toLowerCase().includes(valuePartLower)),
         )
         .slice(0, 20)
+
+      if ('title'.startsWith(fieldPart)) {
+        const titleVal = valuePart || val
+        if (titleVal && !suggestions.some((s) => s.field === 'title' && s.value === titleVal)) {
+          suggestions.push({ key: 'text-search', field: 'title', value: titleVal })
+        }
+      }
     } else {
+      const trimmedVal = val.trim()
       suggestions = allSuggestions
         .filter(
           (s) => s.field.toLowerCase().includes(lower) || s.value.toLowerCase().includes(lower),
         )
         .slice(0, 20)
-    }
 
-    if (suggestions.length === 0 && lower.length >= 3) {
-      suggestions = [{ key: 'text-search', field: 'title', value: val }]
+      if (trimmedVal && !suggestions.some((s) => s.field === 'title' && s.value === trimmedVal)) {
+        suggestions.push({ key: 'text-search', field: 'title', value: trimmedVal })
+      }
     }
 
     setFilteredSuggestions(suggestions)
@@ -134,13 +143,23 @@ export const GlobalSearch: React.FC = () => {
       onSelect(filteredSuggestions[activeIdx])
       return
     }
-    if (searchInput.length >= 3) {
-      const nextTmp = { ...tmp, text: searchInput }
-      setTmp(nextTmp)
-      setSearchInput('')
-      setFilteredSuggestions([])
-      setShowDropdown(false)
-      submit(nextTmp)
+    if (searchInput.trim().length >= 1) {
+      let textVal = searchInput.trim()
+      const colonIdx = textVal.toLowerCase().indexOf(':')
+      if (colonIdx > 0) {
+        const fieldPart = textVal.substring(0, colonIdx).trim().toLowerCase()
+        if (fieldPart === 'title') {
+          textVal = textVal.substring(colonIdx + 1).trim()
+        }
+      }
+      if (textVal) {
+        const nextTmp = { ...tmp, text: textVal }
+        setTmp(nextTmp)
+        setSearchInput('')
+        setFilteredSuggestions([])
+        setShowDropdown(false)
+        submit(nextTmp)
+      }
     }
   }
 
