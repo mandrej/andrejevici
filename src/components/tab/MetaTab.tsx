@@ -1,20 +1,20 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { useAppStore } from '../../stores/appStore'
-import { useValuesStore } from '../../stores/valuesStore'
-import LocalSearch from '../LocalSearch'
-import CONFIG from '../../config'
-import AppInput from '../atoms/AppInput'
-import AppButton from '../atoms/AppButton'
-import AppBadge from '../atoms/AppBadge'
-import AppSelect from '../atoms/AppSelect'
-import AppDialog from '../atoms/AppDialog'
-import AppIcon from '../atoms/AppIcon'
+import { useAppStore } from '@/stores/appStore'
+import { useValuesStore } from '@/stores/valuesStore'
+import LocalSearch from '@/components/LocalSearch'
+import CONFIG from '@/config'
+import AppInput from '@/components/atoms/AppInput'
+import AppButton from '@/components/atoms/AppButton'
+import AppBadge from '@/components/atoms/AppBadge'
+import AppSelect from '@/components/atoms/AppSelect'
+import AppDialog from '@/components/atoms/AppDialog'
+import AppIcon from '@/components/atoms/AppIcon'
 
-import { renameValue, deleteValue, addValue as addCounterValue } from '../../helpers/remedy'
-import notify from '../../helpers/notify'
-import type { MetaOption } from '../../helpers/models'
+import { renameValue, deleteValue, addValue as addCounterValue } from '@/helpers/remedy'
+import notify from '@/helpers/notify'
+import type { MetaOption } from '@/helpers/models'
 
 const metaOptions: MetaOption[] = [
   { label: 'Manage Kinds', value: 'kind', icon: 'sym_r_category', short: 'Kind' },

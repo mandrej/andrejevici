@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import NotFoundPageContent from './NotFoundPageContent'
+import NotFoundPageContent from '@/app/NotFoundPageContent'
 
 export const metadata: Metadata = {
   title: '404',

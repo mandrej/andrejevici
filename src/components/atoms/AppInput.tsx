@@ -1,5 +1,5 @@
 import React from 'react'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface AppInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   modelValue?: string | number | null

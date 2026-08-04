@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useAppStore } from '../../stores/appStore'
-import { useScreen } from '../../composables/useScreen'
-import GlobalSearch from '../GlobalSearch'
-import AppProgress from '../atoms/AppProgress'
+import { useAppStore } from '@/stores/appStore'
+import { useScreen } from '@/composables/useScreen'
+import GlobalSearch from '@/components/GlobalSearch'
+import AppProgress from '@/components/atoms/AppProgress'
 
 export const ListToolbar: React.FC = () => {
   const busy = useAppStore((state) => state.busy)

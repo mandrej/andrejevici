@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import { useAppStore } from '../../stores/appStore'
-import { useUserStore } from '../../stores/userStore'
-import { useValuesStore } from '../../stores/valuesStore'
-import TagsMerge from '../TagsMerge'
-import AppButton from '../atoms/AppButton'
-import AppInput from '../atoms/AppInput'
-import { useScreen } from '../../composables/useScreen'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
+import { useValuesStore } from '@/stores/valuesStore'
+import TagsMerge from '@/components/TagsMerge'
+import AppButton from '@/components/atoms/AppButton'
+import AppInput from '@/components/atoms/AppInput'
+import { useScreen } from '@/composables/useScreen'
 
 export const ManageSelection: React.FC = () => {
   const user = useUserStore((state) => state.user)

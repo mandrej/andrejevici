@@ -7,7 +7,7 @@ import {
   ComboboxOption,
   Transition,
 } from '@headlessui/react'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface AppComboboxProps {
   modelValue?: string | string[] | null

@@ -2,27 +2,27 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { storage } from '../../firebase'
+import { storage } from '@/firebase'
 import {
   ref as storageRef,
   uploadBytesResumable,
   getDownloadURL,
   type UploadTaskSnapshot,
 } from 'firebase/storage'
-import { useAppStore } from '../../stores/appStore'
-import { useValuesStore } from '../../stores/valuesStore'
-import { useUserStore } from '../../stores/userStore'
-import { fakeHistory, formatBytes } from '../../helpers'
-import CONFIG from '../../config'
-import notify from '../../helpers/notify'
-import PictureCard from '../../components/PictureCard'
-import { UploadTracker } from '../../helpers/uploadTracker'
-import AppButton from '../atoms/AppButton'
-import AppCheckbox from '../atoms/AppCheckbox'
-import AppIcon from '../atoms/AppIcon'
-import EditPhotoRecord from '../dialog/EditPhotoRecord'
-import EditVideoRecord from '../dialog/EditVideoRecord'
-import type { PhotoType } from '../../helpers/models'
+import { useAppStore } from '@/stores/appStore'
+import { useValuesStore } from '@/stores/valuesStore'
+import { useUserStore } from '@/stores/userStore'
+import { fakeHistory, formatBytes } from '@/helpers'
+import CONFIG from '@/config'
+import notify from '@/helpers/notify'
+import PictureCard from '@/components/PictureCard'
+import { UploadTracker } from '@/helpers/uploadTracker'
+import AppButton from '@/components/atoms/AppButton'
+import AppCheckbox from '@/components/atoms/AppCheckbox'
+import AppIcon from '@/components/atoms/AppIcon'
+import EditPhotoRecord from '@/components/dialog/EditPhotoRecord'
+import EditVideoRecord from '@/components/dialog/EditVideoRecord'
+import type { PhotoType } from '@/helpers/models'
 
 interface ValidationErrors {
   file: File

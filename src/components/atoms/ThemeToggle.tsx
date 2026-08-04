@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface ThemeToggleProps {
   className?: string

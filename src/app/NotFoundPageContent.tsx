@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import AppButton from '../components/atoms/AppButton'
-import AppIcon from '../components/atoms/AppIcon'
-import PlainLayout from '../components/layouts/PlainLayout'
+import AppButton from '@/components/atoms/AppButton'
+import AppIcon from '@/components/atoms/AppIcon'
+import PlainLayout from '@/components/layouts/PlainLayout'
 
 export default function NotFoundPageContent() {
   return (

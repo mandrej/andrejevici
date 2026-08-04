@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import DefaultLayout from '../../components/layouts/DefaultLayout'
-import { useValuesStore } from '../../stores/valuesStore'
-import CONFIG from '../../config'
-import TagsMerge from '../../components/TagsMerge'
-import VideoTab from '../../components/tab/VideoTab'
-import AppInput from '../../components/atoms/AppInput'
-import AppIcon from '../../components/atoms/AppIcon'
+import DefaultLayout from '@/components/layouts/DefaultLayout'
+import { useValuesStore } from '@/stores/valuesStore'
+import CONFIG from '@/config'
+import TagsMerge from '@/components/TagsMerge'
+import VideoTab from '@/components/tab/VideoTab'
+import AppInput from '@/components/atoms/AppInput'
+import AppIcon from '@/components/atoms/AppIcon'
 
 export default function AddVideoPageContent() {
   const headlineToApply = useValuesStore((state) => state.headlineToApply)

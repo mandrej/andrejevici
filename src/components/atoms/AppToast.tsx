@@ -1,6 +1,6 @@
 import React from 'react'
-import { useToastStore, type Toast } from '../../stores/toastStore'
-import AppIcon from './AppIcon'
+import { useToastStore, type Toast } from '@/stores/toastStore'
+import AppIcon from '@/components/atoms/AppIcon'
 
 export const AppToast: React.FC = () => {
   const { toasts, dismiss } = useToastStore()

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import UnauthorizedPageContent from './UnauthorizedPageContent'
+import UnauthorizedPageContent from '@/app/401/UnauthorizedPageContent'
 
 export const metadata: Metadata = {
   title: '401',

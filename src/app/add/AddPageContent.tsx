@@ -3,11 +3,11 @@
 import React, { useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { useAppStore } from '../../stores/appStore'
-import { useUserStore } from '../../stores/userStore'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
 
-const AddPhotoPageContent = dynamic(() => import('./AddPhotoPageContent'), { ssr: false })
-const AddVideoPageContent = dynamic(() => import('./AddVideoPageContent'), { ssr: false })
+const AddPhotoPageContent = dynamic(() => import('@/app/add/AddPhotoPageContent'), { ssr: false })
+const AddVideoPageContent = dynamic(() => import('@/app/add/AddVideoPageContent'), { ssr: false })
 
 export default function AddPageContent() {
   const router = useRouter()

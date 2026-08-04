@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface AppButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string

@@ -2,14 +2,14 @@
 
 import React, { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import AppButton from '../components/atoms/AppButton'
-import AppIcon from '../components/atoms/AppIcon'
-import AppDialog from '../components/atoms/AppDialog'
-import PlainLayout from '../components/layouts/PlainLayout'
-import { useAppStore } from '../stores/appStore'
-import { useUserStore } from '../stores/userStore'
-import { useValuesStore, selectNickWithCount, selectYearValues } from '../stores/valuesStore'
-import { useBucketStore } from '../stores/bucketStore'
+import AppButton from '@/components/atoms/AppButton'
+import AppIcon from '@/components/atoms/AppIcon'
+import AppDialog from '@/components/atoms/AppDialog'
+import PlainLayout from '@/components/layouts/PlainLayout'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
+import { useValuesStore, selectNickWithCount, selectYearValues } from '@/stores/valuesStore'
+import { useBucketStore } from '@/stores/bucketStore'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 
 export default function HomePage() {

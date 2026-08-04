@@ -1,6 +1,6 @@
-import { months } from '../../helpers'
-import type { ValuesState, Suggestion } from '../../helpers/models'
-import type { ValuesStore } from './types'
+import { months } from '@/helpers'
+import type { ValuesState, Suggestion } from '@/helpers/models'
+import type { ValuesStore } from '@/stores/values/types'
 
 const byCountReverse = (
   values: ValuesState['values'],

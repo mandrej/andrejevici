@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import type { ToastStore, ToastSliceState, ToastSliceActions, Toast } from './types'
+import type { ToastStore, ToastSliceState, ToastSliceActions, Toast } from '@/stores/toast/types'
 
 const darkTextTypes = new Set(['info', 'warning', 'positive'])
 

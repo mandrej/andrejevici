@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useAppStore } from '../../stores/appStore'
-import AppProgress from '../atoms/AppProgress'
-import AppIcon from '../atoms/AppIcon'
+import { useAppStore } from '@/stores/appStore'
+import AppProgress from '@/components/atoms/AppProgress'
+import AppIcon from '@/components/atoms/AppIcon'
 
 export const AdminToolbar: React.FC = () => {
   const busy = useAppStore((state) => state.busy)

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { createToastSlice } from './toast/createToastSlice'
-import type { ToastStore, NotifyOptions, Toast } from './toast/types'
+import { createToastSlice } from '@/stores/toast/createToastSlice'
+import type { ToastStore, NotifyOptions, Toast } from '@/stores/toast/types'
 
 export type { NotifyOptions, Toast, ToastStore }
 

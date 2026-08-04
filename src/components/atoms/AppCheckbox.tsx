@@ -1,5 +1,5 @@
 import React from 'react'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface AppCheckboxProps {
   modelValue?: boolean | unknown[]

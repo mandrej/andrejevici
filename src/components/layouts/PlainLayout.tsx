@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
 import Link from 'next/link'
-import AppButton from '../atoms/AppButton'
-import { useAppStore } from '../../stores/appStore'
-import { useUserStore } from '../../stores/userStore'
-import { useValuesStore, selectNickValues } from '../../stores/valuesStore'
-import { isEmpty, getYouTubeMaxResUrl } from '../../helpers'
+import AppButton from '@/components/atoms/AppButton'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
+import { useValuesStore, selectNickValues } from '@/stores/valuesStore'
+import { isEmpty, getYouTubeMaxResUrl } from '@/helpers'
 
 interface PlainLayoutProps {
   children: React.ReactNode

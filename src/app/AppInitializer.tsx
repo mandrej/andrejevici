@@ -3,12 +3,12 @@
 import React, { useEffect } from 'react'
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { onMessage } from 'firebase/messaging'
-import { resolveAuthReady, useUserStore } from '../stores/userStore'
-import { useAppStore } from '../stores/appStore'
-import { useValuesStore } from '../stores/valuesStore'
-import { useBucketStore } from '../stores/bucketStore'
-import { messaging } from '../firebase'
-import notify from '../helpers/notify'
+import { resolveAuthReady, useUserStore } from '@/stores/userStore'
+import { useAppStore } from '@/stores/appStore'
+import { useValuesStore } from '@/stores/valuesStore'
+import { useBucketStore } from '@/stores/bucketStore'
+import { messaging } from '@/firebase'
+import notify from '@/helpers/notify'
 
 interface AppInitializerProps {
   children: React.ReactNode

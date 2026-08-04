@@ -1,5 +1,5 @@
 import React from 'react'
-import AppCombobox from './atoms/AppCombobox'
+import AppCombobox from '@/components/atoms/AppCombobox'
 
 interface AutoCompleteProps {
   modelValue?: string | string[] | null

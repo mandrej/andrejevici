@@ -1,18 +1,18 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useAppStore } from '../../stores/appStore'
-import { U, getYouTubeId } from '../../helpers'
-import CONFIG from '../../config'
-import notify from '../../helpers/notify'
-import type { PhotoType } from '../../helpers/models'
-import AutoComplete from '../AutoComplete'
-import FileBroken from '../FileBroken'
-import AppDialog from '../atoms/AppDialog'
-import AppButton from '../atoms/AppButton'
-import AppInput from '../atoms/AppInput'
-import AppIcon from '../atoms/AppIcon'
-import { useEditRecord } from '../../hooks/useEditRecord'
+import { useAppStore } from '@/stores/appStore'
+import { U, getYouTubeId } from '@/helpers'
+import CONFIG from '@/config'
+import notify from '@/helpers/notify'
+import type { PhotoType } from '@/helpers/models'
+import AutoComplete from '@/components/AutoComplete'
+import FileBroken from '@/components/FileBroken'
+import AppDialog from '@/components/atoms/AppDialog'
+import AppButton from '@/components/atoms/AppButton'
+import AppInput from '@/components/atoms/AppInput'
+import AppIcon from '@/components/atoms/AppIcon'
+import { useEditRecord } from '@/hooks/useEditRecord'
 
 interface EditVideoRecordProps {
   rec: PhotoType
@@ -77,7 +77,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
 
       if (recordToSave.filename !== rec.filename) {
         try {
-          const { photoCollection } = await import('../../helpers/collections')
+          const { photoCollection } = await import('@/helpers/collections')
           const { doc, deleteDoc } = await import('firebase/firestore')
           await deleteDoc(doc(photoCollection, rec.filename))
           useAppStore.setState((state) => ({

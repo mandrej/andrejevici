@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { createValuesSlice } from './values/createValuesSlice'
-import { createCountersSlice } from './values/createCountersSlice'
-import type { ValuesStore } from './values/types'
+import { createValuesSlice } from '@/stores/values/createValuesSlice'
+import { createCountersSlice } from '@/stores/values/createCountersSlice'
+import type { ValuesStore } from '@/stores/values/types'
 
 export type { ValuesStore }
 
@@ -33,4 +33,4 @@ export {
   selectYearValues,
   selectNickWithCount,
   selectAllSuggestions,
-} from './values/selectors'
+} from '@/stores/values/selectors'

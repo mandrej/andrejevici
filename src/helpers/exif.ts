@@ -1,9 +1,9 @@
 import exifReader from 'exifreader'
-import { formatDatum } from './index'
-import type { ExifType } from './models'
+import { formatDatum } from '@/helpers/index'
+import type { ExifType } from '@/helpers/models'
 import CONFIG from 'src/config'
 import { getDoc, doc } from 'firebase/firestore'
-import { renameCollection } from './collections'
+import { renameCollection } from '@/helpers/collections'
 
 /** Regex to convert EXIF date format (YYYY:MM:DD) to ISO (YYYY-MM-DD) */
 const rexDate = /(\d{4}):(\d{2}):(\d{2})/i

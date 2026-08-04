@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import type { PhotoType } from '../../helpers/models'
-import { formatBytes, formatDatum } from '../../helpers'
-import AppIcon from '../atoms/AppIcon'
+import type { PhotoType } from '@/helpers/models'
+import { formatBytes, formatDatum } from '@/helpers'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface PhotoInfoProps {
   photo: PhotoType

@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { createUiSlice } from './app/createUiSlice'
-import { createRecordsSlice } from './app/createRecordsSlice'
-import { createPhotoOpsSlice } from './app/createPhotoOpsSlice'
-import type { AppStore } from './app/types'
+import { createUiSlice } from '@/stores/app/createUiSlice'
+import { createRecordsSlice } from '@/stores/app/createRecordsSlice'
+import { createPhotoOpsSlice } from '@/stores/app/createPhotoOpsSlice'
+import type { AppStore } from '@/stores/app/types'
 
 export type { AppStore }
 

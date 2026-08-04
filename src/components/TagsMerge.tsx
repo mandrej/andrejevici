@@ -1,6 +1,6 @@
 import React from 'react'
-import { useValuesStore, selectTagsValues } from '../stores/valuesStore'
-import AutoComplete from './AutoComplete'
+import { useValuesStore, selectTagsValues } from '@/stores/valuesStore'
+import AutoComplete from '@/components/AutoComplete'
 
 interface TagsMergeProps {
   label?: string

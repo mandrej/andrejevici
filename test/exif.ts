@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import exifReader from 'exifreader'
-import readExif from '../src/helpers/exif'
+import readExif from '@/helpers/exif'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

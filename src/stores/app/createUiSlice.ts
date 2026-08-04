@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import type { AppStore, UiSliceState, UiSliceActions } from './types'
+import type { AppStore, UiSliceState, UiSliceActions } from '@/stores/app/types'
 
 export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSliceActions> = (
   set,

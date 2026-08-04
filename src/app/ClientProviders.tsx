@@ -4,8 +4,8 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { ThemeProvider } from 'next-themes'
 
-const AppInitializer = dynamic(() => import('./AppInitializer'), { ssr: false })
-const AppToast = dynamic(() => import('../components/atoms/AppToast'), { ssr: false })
+const AppInitializer = dynamic(() => import('@/app/AppInitializer'), { ssr: false })
+const AppToast = dynamic(() => import('@/components/atoms/AppToast'), { ssr: false })
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (

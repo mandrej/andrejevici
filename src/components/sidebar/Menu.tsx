@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { useUserStore } from '../../stores/userStore'
-import MenuLink from './MenuLink'
+import { useUserStore } from '@/stores/userStore'
+import MenuLink from '@/components/sidebar/MenuLink'
 
 interface MenuProps {
   onLinkClick?: () => void

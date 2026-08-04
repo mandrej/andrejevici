@@ -1,5 +1,5 @@
 import React from 'react'
-import AppIcon from './atoms/AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface AdminCardProps {
   icon: string

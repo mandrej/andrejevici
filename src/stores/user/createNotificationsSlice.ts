@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand'
-import CONFIG from '../../config'
-import { messaging, db } from '../../firebase'
+import CONFIG from '@/config'
+import { messaging, db } from '@/firebase'
 import {
   doc,
   setDoc,
@@ -12,9 +12,9 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { getToken } from 'firebase/messaging'
-import notify from '../../helpers/notify'
-import { deviceCollection, userCollection } from '../../helpers/collections'
-import type { UserStore, NotificationsSliceState, NotificationsSliceActions } from './types'
+import notify from '@/helpers/notify'
+import { deviceCollection, userCollection } from '@/helpers/collections'
+import type { UserStore, NotificationsSliceState, NotificationsSliceActions } from '@/stores/user/types'
 
 export const createNotificationsSlice: StateCreator<
   UserStore,

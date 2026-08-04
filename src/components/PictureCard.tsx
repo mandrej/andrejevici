@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react'
-import { U, formatDatum, openMaps } from '../helpers'
-import type { PhotoType } from '../helpers/models'
-import { useAppStore } from '../stores/appStore'
-import FileBroken from './FileBroken'
-import AppIcon from './atoms/AppIcon'
+import { U, formatDatum, openMaps } from '@/helpers'
+import type { PhotoType } from '@/helpers/models'
+import { useAppStore } from '@/stores/appStore'
+import FileBroken from '@/components/FileBroken'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface PictureCardProps {
   rec: PhotoType

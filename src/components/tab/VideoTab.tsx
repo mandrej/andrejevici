@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { useAppStore } from '../../stores/appStore'
-import { useValuesStore } from '../../stores/valuesStore'
-import { useUserStore } from '../../stores/userStore'
-import { sliceSlug, formatDatum, getYouTubeId } from '../../helpers'
-import CONFIG from '../../config'
-import notify from '../../helpers/notify'
-import AppInput from '../atoms/AppInput'
-import AppButton from '../atoms/AppButton'
-import type { VideoType } from '../../helpers/models'
+import { useAppStore } from '@/stores/appStore'
+import { useValuesStore } from '@/stores/valuesStore'
+import { useUserStore } from '@/stores/userStore'
+import { sliceSlug, formatDatum, getYouTubeId } from '@/helpers'
+import CONFIG from '@/config'
+import notify from '@/helpers/notify'
+import AppInput from '@/components/atoms/AppInput'
+import AppButton from '@/components/atoms/AppButton'
+import type { VideoType } from '@/helpers/models'
 
 export const VideoTab: React.FC = () => {
   const saveVideo = useAppStore((state) => state.saveVideo)

@@ -1,18 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAppStore } from '../stores/appStore'
-import { useUserStore } from '../stores/userStore'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
 import {
   useValuesStore,
   selectTagsValues,
   selectModelValues,
   selectLensValues,
   selectEmailValues,
-} from '../stores/valuesStore'
-import { sliceSlug, isValidEmail } from '../helpers'
-import CONFIG from '../config'
-import type { PhotoType } from '../helpers/models'
+} from '@/stores/valuesStore'
+import { sliceSlug, isValidEmail } from '@/helpers'
+import CONFIG from '@/config'
+import type { PhotoType } from '@/helpers/models'
 
 interface UseEditRecordProps {
   rec: PhotoType

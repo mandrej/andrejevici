@@ -1,12 +1,12 @@
 import type { StateCreator } from 'zustand'
-import { db } from '../../firebase'
+import { db } from '@/firebase'
 import { doc, query, orderBy, getDocs, writeBatch, increment, where } from 'firebase/firestore'
-import { isEmpty, delimiter, counterId } from '../../helpers'
-import CONFIG from '../../config'
-import { counterCollection, photoCollection } from '../../helpers/collections'
-import notify from '../../helpers/notify'
-import type { PhotoType, ValuesState } from '../../helpers/models'
-import type { ValuesStore, CountersSliceActions } from './types'
+import { isEmpty, delimiter, counterId } from '@/helpers'
+import CONFIG from '@/config'
+import { counterCollection, photoCollection } from '@/helpers/collections'
+import notify from '@/helpers/notify'
+import type { PhotoType, ValuesState } from '@/helpers/models'
+import type { ValuesStore, CountersSliceActions } from '@/stores/values/types'
 
 const buildCounterMap = async (
   field: keyof ValuesState['values'],

@@ -1,6 +1,6 @@
 import React from 'react'
-import AppBanner from './atoms/AppBanner'
-import AppIcon from './atoms/AppIcon'
+import AppBanner from '@/components/atoms/AppBanner'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface ErrorBannerProps {
   inquiry: boolean

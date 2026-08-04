@@ -7,11 +7,11 @@ import type {
   QueryFieldFilterConstraint,
   QueryDocumentSnapshot,
 } from 'firebase/firestore'
-import { sliceSlug, fixQuery } from '../../helpers'
-import CONFIG from '../../config'
-import type { PhotoType } from '../../helpers/models'
-import { photoCollection } from '../../helpers/collections'
-import type { AppStore, RecordsSliceState, RecordsSliceActions } from './types'
+import { sliceSlug, fixQuery } from '@/helpers'
+import CONFIG from '@/config'
+import type { PhotoType } from '@/helpers/models'
+import { photoCollection } from '@/helpers/collections'
+import type { AppStore, RecordsSliceState, RecordsSliceActions } from '@/stores/app/types'
 
 const includeSub = <T>(arr: T[], target: T[]): boolean => target.every((v) => arr.includes(v))
 

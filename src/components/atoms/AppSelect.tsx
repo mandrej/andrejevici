@@ -7,7 +7,7 @@ import {
   ListboxOptions,
   Transition,
 } from '@headlessui/react'
-import AppIcon from './AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 type ModelValue = string | number | boolean | object | null | undefined
 

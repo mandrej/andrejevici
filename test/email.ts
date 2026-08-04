@@ -1,6 +1,6 @@
 import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { isValidEmail } from '../src/helpers'
+import { isValidEmail } from '@/helpers'
 
 describe('isValidEmail', () => {
   test('should return true for a valid email address', () => {

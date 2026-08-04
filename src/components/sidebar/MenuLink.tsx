@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import AppIcon from '../atoms/AppIcon'
+import AppIcon from '@/components/atoms/AppIcon'
 
 interface MenuLinkProps {
   to: string

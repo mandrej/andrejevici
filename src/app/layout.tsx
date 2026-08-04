@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import ClientProviders from './ClientProviders'
-import CONFIG from '../config'
-import '../styles/app.css'
+import ClientProviders from '@/app/ClientProviders'
+import CONFIG from '@/config'
+import '@/styles/app.css'
 
 export const metadata: Metadata = {
   title: {

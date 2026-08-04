@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { useAppStore } from '../stores/appStore'
-import { useValuesStore, selectAllSuggestions } from '../stores/valuesStore'
-import { months } from '../helpers'
-import type { FindType, Suggestion } from '../helpers/models'
-import AppIcon from './atoms/AppIcon'
+import { useAppStore } from '@/stores/appStore'
+import { useValuesStore, selectAllSuggestions } from '@/stores/valuesStore'
+import { months } from '@/helpers'
+import type { FindType, Suggestion } from '@/helpers/models'
+import AppIcon from '@/components/atoms/AppIcon'
 
 export const GlobalSearch: React.FC = () => {
   const find = useAppStore((state) => state.find)

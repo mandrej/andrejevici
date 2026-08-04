@@ -1,9 +1,9 @@
 import type { StateCreator } from 'zustand'
 import { query, getDocs } from 'firebase/firestore'
-import CONFIG from '../../config'
-import { counterCollection } from '../../helpers/collections'
-import type { ValuesState } from '../../helpers/models'
-import type { ValuesStore, ValuesSliceState, ValuesSliceActions } from './types'
+import CONFIG from '@/config'
+import { counterCollection } from '@/helpers/collections'
+import type { ValuesState } from '@/helpers/models'
+import type { ValuesStore, ValuesSliceState, ValuesSliceActions } from '@/stores/values/types'
 
 export const createValuesSlice: StateCreator<
   ValuesStore,

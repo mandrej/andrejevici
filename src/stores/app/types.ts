@@ -5,7 +5,7 @@ import type {
   AssetKind,
   ValuesState,
   FileProgress,
-} from '../../helpers/models'
+} from '@/helpers/models'
 
 export interface UiSliceState {
   busy: boolean

@@ -1,17 +1,17 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { useAppStore } from '../../stores/appStore'
-import { useUserStore } from '../../stores/userStore'
-import { U, dummy, formatDatum, getYouTubeId } from '../../helpers'
-import { logAnalyticsEvent } from '../../firebase'
-import notify from '../../helpers/notify'
-import type { PhotoType } from '../../helpers/models'
+import { useAppStore } from '@/stores/appStore'
+import { useUserStore } from '@/stores/userStore'
+import { U, dummy, formatDatum, getYouTubeId } from '@/helpers'
+import { logAnalyticsEvent } from '@/firebase'
+import notify from '@/helpers/notify'
+import type { PhotoType } from '@/helpers/models'
 import Lightbox, { IconButton } from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
-import AppIcon from '../atoms/AppIcon'
-import PhotoInfo from './PhotoInfo'
+import AppIcon from '@/components/atoms/AppIcon'
+import PhotoInfo from '@/components/dialog/PhotoInfo'
 
 interface SwiperViewProps {
   index: number

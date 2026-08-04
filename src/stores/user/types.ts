@@ -1,5 +1,5 @@
 import type { User } from 'firebase/auth'
-import type { DeviceType, MyUserType, UsersAndDevices } from '../../helpers/models'
+import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
 
 export interface AuthSliceState {
   user: MyUserType | null

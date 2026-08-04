@@ -1,4 +1,4 @@
-import type { BucketType } from '../../helpers/models'
+import type { BucketType } from '@/helpers/models'
 
 export interface BucketSliceState {
   bucket: BucketType

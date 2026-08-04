@@ -1,13 +1,13 @@
 import type { StateCreator } from 'zustand'
-import CONFIG from '../../config'
-import { auth, logAnalyticsEvent } from '../../firebase'
+import CONFIG from '@/config'
+import { auth, logAnalyticsEvent } from '@/firebase'
 import { doc, setDoc, getDoc, getDocs, query, Timestamp, limit } from 'firebase/firestore'
 import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth'
-import type { MyUserType } from '../../helpers/models'
-import notify from '../../helpers/notify'
-import { userCollection } from '../../helpers/collections'
-import { dummy, formatDatum } from '../../helpers'
-import type { UserStore, AuthSliceState, AuthSliceActions } from './types'
+import type { MyUserType } from '@/helpers/models'
+import notify from '@/helpers/notify'
+import { userCollection } from '@/helpers/collections'
+import { dummy, formatDatum } from '@/helpers'
+import type { UserStore, AuthSliceState, AuthSliceActions } from '@/stores/user/types'
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')

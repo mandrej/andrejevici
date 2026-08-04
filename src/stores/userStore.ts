@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { createAuthSlice, authReady, resolveAuthReady } from './user/createAuthSlice'
-import { createNotificationsSlice } from './user/createNotificationsSlice'
-import { createUsersAdminSlice } from './user/createUsersAdminSlice'
-import type { UserStore } from './user/types'
+import { createAuthSlice, authReady, resolveAuthReady } from '@/stores/user/createAuthSlice'
+import { createNotificationsSlice } from '@/stores/user/createNotificationsSlice'
+import { createUsersAdminSlice } from '@/stores/user/createUsersAdminSlice'
+import type { UserStore } from '@/stores/user/types'
 
 export { authReady, resolveAuthReady }
 export type { UserStore }

@@ -1,4 +1,4 @@
-import { db, storage } from '../firebase'
+import { db, storage } from '@/firebase'
 import type { DocumentSnapshot } from 'firebase/firestore'
 import {
   doc,
@@ -11,12 +11,12 @@ import {
   setDoc,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
-import CONFIG from '../config'
-import { counterId, getYouTubeId, reFilename } from '.'
-import { counterCollection, photoCollection, renameCollection } from './collections'
+import CONFIG from '@/config'
+import { counterId, getYouTubeId, reFilename } from '@/helpers'
+import { counterCollection, photoCollection, renameCollection } from '@/helpers/collections'
 
-import notify from './notify'
-import type { PhotoType, ValuesState } from './models'
+import notify from '@/helpers/notify'
+import type { PhotoType, ValuesState } from '@/helpers/models'
 
 const BATCH_LIMIT = 498
 
@@ -112,7 +112,7 @@ const getStorageData = async (filename: string) => {
     // Parallelize the two independent storage calls
     const [downloadURL, metadata] = await Promise.all([getDownloadURL(_ref), getMetadata(_ref)])
     if (downloadURL) {
-      const { useUserStore } = await import('../stores/userStore')
+      const { useUserStore } = await import('@/stores/userStore')
       const auth = useUserStore.getState()
       return {
         url: downloadURL,
@@ -232,7 +232,7 @@ export const missingThumbnails = async () => {
  * @return {Promise<void>} A promise that resolves when the mismatched files are found.
  */
 export const mismatch = async () => {
-  const { useAppStore } = await import('../stores/appStore')
+  const { useAppStore } = await import('@/stores/appStore')
   const uploaded = useAppStore.getState().uploaded
 
   notify({
@@ -349,7 +349,7 @@ export const addValue = async (
   field: keyof ValuesState['values'],
   value: string,
 ): Promise<void> => {
-  const { useValuesStore } = await import('../stores/valuesStore')
+  const { useValuesStore } = await import('@/stores/valuesStore')
 
   const id = counterId(field, value)
   const counterRef = doc(counterCollection, id)

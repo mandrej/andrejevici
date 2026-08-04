@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import { storage, logAnalyticsEvent } from '../../firebase'
+import { storage, logAnalyticsEvent } from '@/firebase'
 import { doc, setDoc, deleteDoc, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
@@ -11,16 +11,16 @@ import {
   getYouTubeId,
   formatDatum,
   dummy,
-} from '../../helpers'
-import CONFIG from '../../config'
-import notify from '../../helpers/notify'
-import { useValuesStore } from '../valuesStore'
-import { useBucketStore } from '../bucketStore'
-import { useUserStore } from '../userStore'
-import type { PhotoType } from '../../helpers/models'
-import { photoCollection } from '../../helpers/collections'
-import readExif from '../../helpers/exif'
-import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from './types'
+} from '@/helpers'
+import CONFIG from '@/config'
+import notify from '@/helpers/notify'
+import { useValuesStore } from '@/stores/valuesStore'
+import { useBucketStore } from '@/stores/bucketStore'
+import { useUserStore } from '@/stores/userStore'
+import type { PhotoType } from '@/helpers/models'
+import { photoCollection } from '@/helpers/collections'
+import readExif from '@/helpers/exif'
+import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
 
 const getRec = (snapshot: { docs: Array<{ data: () => unknown }> }) =>
   snapshot.docs.length ? snapshot.docs[0]?.data() : null

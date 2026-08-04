@@ -1,9 +1,9 @@
 import type { StateCreator } from 'zustand'
 import { doc, getDoc, getDocs, setDoc, query, orderBy } from 'firebase/firestore'
-import { bucketCollection, photoCollection } from '../../helpers/collections'
-import notify from '../../helpers/notify'
-import type { BucketType } from '../../helpers/models'
-import type { BucketStore, BucketSliceState, BucketSliceActions } from './types'
+import { bucketCollection, photoCollection } from '@/helpers/collections'
+import notify from '@/helpers/notify'
+import type { BucketType } from '@/helpers/models'
+import type { BucketStore, BucketSliceState, BucketSliceActions } from '@/stores/bucket/types'
 
 const bucketRef = doc(bucketCollection, 'total')
 

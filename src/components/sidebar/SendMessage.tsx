@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useUserStore } from '../../stores/userStore'
-import CONFIG from '../../config'
-import notify from '../../helpers/notify'
-import AppButton from '../atoms/AppButton'
-import AppInput from '../atoms/AppInput'
-import { formatDatum, dummy } from '../../helpers'
-import { logAnalyticsEvent } from '../../firebase'
+import { useUserStore } from '@/stores/userStore'
+import CONFIG from '@/config'
+import notify from '@/helpers/notify'
+import AppButton from '@/components/atoms/AppButton'
+import AppInput from '@/components/atoms/AppInput'
+import { formatDatum, dummy } from '@/helpers'
+import { logAnalyticsEvent } from '@/firebase'
 
 export const SendMessage: React.FC = () => {
   const user = useUserStore((state) => state.user)

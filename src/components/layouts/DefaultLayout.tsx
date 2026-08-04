@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import AppIcon from '../atoms/AppIcon'
-import AppDialog from '../atoms/AppDialog'
-import AppButton from '../atoms/AppButton'
-import AppProgress from '../atoms/AppProgress'
-import { useScreen } from '../../composables/useScreen'
-import { useUserStore } from '../../stores/userStore'
-import Sidebar from '../sidebar/Sidebar'
+import AppIcon from '@/components/atoms/AppIcon'
+import AppDialog from '@/components/atoms/AppDialog'
+import AppButton from '@/components/atoms/AppButton'
+import AppProgress from '@/components/atoms/AppProgress'
+import { useScreen } from '@/composables/useScreen'
+import { useUserStore } from '@/stores/userStore'
+import Sidebar from '@/components/sidebar/Sidebar'
 
 // Dynamic Toolbar imports based on route
-import ListToolbar from '../toolbar/ListToolbar'
-import AddToolbar from '../toolbar/AddToolbar'
-import AdminToolbar from '../toolbar/AdminToolbar'
+import ListToolbar from '@/components/toolbar/ListToolbar'
+import AddToolbar from '@/components/toolbar/AddToolbar'
+import AdminToolbar from '@/components/toolbar/AdminToolbar'
 
 interface DefaultLayoutProps {
   children: React.ReactNode

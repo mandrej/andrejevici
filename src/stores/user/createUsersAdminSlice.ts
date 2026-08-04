@@ -10,10 +10,10 @@ import {
   limit,
   Timestamp,
 } from 'firebase/firestore'
-import type { DeviceType, MyUserType, UsersAndDevices } from '../../helpers/models'
-import notify from '../../helpers/notify'
-import { deviceCollection, userCollection } from '../../helpers/collections'
-import type { UserStore, UsersAdminSliceActions } from './types'
+import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
+import notify from '@/helpers/notify'
+import { deviceCollection, userCollection } from '@/helpers/collections'
+import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
 
 export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSliceActions> = (
   _set,

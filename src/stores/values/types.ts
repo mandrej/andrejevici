@@ -1,4 +1,4 @@
-import type { ValuesState, PhotoType } from '../../helpers/models'
+import type { ValuesState, PhotoType } from '@/helpers/models'
 
 export interface ValuesSliceState extends ValuesState {}
 

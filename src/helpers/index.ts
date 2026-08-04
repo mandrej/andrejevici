@@ -1,6 +1,6 @@
-import CONFIG from '../config'
+import CONFIG from '@/config'
 import { slugify } from 'transliteration'
-import type { FindType, MyUserType, PhotoType } from './models'
+import type { FindType, MyUserType, PhotoType } from '@/helpers/models'
 
 /**
  * Format bytes as human-readable size string (e.g. "1.2 MB").
