@@ -1,8 +1,9 @@
-'use client'
+import type { Metadata } from 'next'
+import ListPageContent from './ListPageContent'
 
-import dynamic from 'next/dynamic'
-
-const ListPageContent = dynamic(() => import('./ListPageContent'), { ssr: false })
+export const metadata: Metadata = {
+  title: 'Album',
+}
 
 export default function ListPage() {
   return <ListPageContent />

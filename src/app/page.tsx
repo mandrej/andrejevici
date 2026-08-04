@@ -1,8 +1,10 @@
-'use client'
+import type { Metadata } from 'next'
+import HomePageContent from './HomePageContent'
+import CONFIG from '../config'
 
-import dynamic from 'next/dynamic'
-
-const HomePageContent = dynamic(() => import('./HomePageContent'), { ssr: false })
+export const metadata: Metadata = {
+  title: CONFIG.title,
+}
 
 export default function HomePage() {
   return <HomePageContent />

@@ -1,8 +1,9 @@
-'use client'
+import type { Metadata } from 'next'
+import AdminPageContent from './AdminPageContent'
 
-import dynamic from 'next/dynamic'
-
-const AdminPageContent = dynamic(() => import('./AdminPageContent'), { ssr: false })
+export const metadata: Metadata = {
+  title: 'Admin.',
+}
 
 export default function AdminPage() {
   return <AdminPageContent />

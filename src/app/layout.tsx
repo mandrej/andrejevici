@@ -4,7 +4,10 @@ import CONFIG from '../config'
 import '../styles/app.css'
 
 export const metadata: Metadata = {
-  title: CONFIG.title,
+  title: {
+    default: CONFIG.title,
+    template: `%s | ${CONFIG.title}`,
+  },
   description: 'Andrejevici photo album PWA',
   manifest: '/manifest.json',
   appleWebApp: {
