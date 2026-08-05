@@ -28,12 +28,14 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
         backgroundImage: `url(/logo30.svg)`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        backgroundSize: 'contain',
       }
     }
     return {
       backgroundImage: `url(${bgFullUrl}), url(/logo30.svg)`,
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
+      backgroundSize: 'cover, contain',
     }
   }, [bgFullUrl, hasNoPhotos])
 
