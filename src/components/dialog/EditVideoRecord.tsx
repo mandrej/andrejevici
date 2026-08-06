@@ -57,12 +57,10 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
         fetchYouTubeTitle({ videoID: id })
           .then((result) => {
             const title = result.data.title
-            if (title) {
-              setTmp((prev) => ({ ...prev, headline: title }))
-            }
+            setTmp((prev) => ({ ...prev, headline: title || '' }))
           })
           .catch(() => {
-            // silently ignore — user can fill in manually
+            setTmp((prev) => ({ ...prev, headline: '' }))
           })
           .finally(() => setFetchingTitle(false))
       }
@@ -161,12 +159,10 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
             <div className="col-span-2 sm:col-span-1">
               <AppInput
                 modelValue={tmp.headline}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, headline: val }))}
-                label="Headline"
+                label="Headline from YouTube"
                 hint={fetchingTitle ? 'Fetching title…' : `Without title: '${CONFIG.noTitle}'`}
                 loading={fetchingTitle}
-                clearable
-                autoFocus
+                readonly
               />
             </div>
 

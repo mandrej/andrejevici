@@ -46,6 +46,11 @@ export const ManageSelection: React.FC = () => {
       const currentItem = objects.find((o) => o.filename === item.filename)
       if (!currentItem) continue
 
+      if (currentItem.kind === 'video') {
+        // headlineToApply does not apply for video files: ignore and deselect
+        continue
+      }
+
       const rec = { ...currentItem }
       rec.headline = headlineToApply
       await saveRecord(rec)
@@ -76,7 +81,7 @@ export const ManageSelection: React.FC = () => {
           <AppInput
             modelValue={headlineToApply}
             onChangeValue={handleHeadlineChange}
-            label="Headline to apply"
+            label="Headline to apply (photos only)"
             clearable
           />
         </div>

@@ -9,19 +9,19 @@ import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import AppInput from '@/components/atoms/AppInput'
 import AppButton from '@/components/atoms/AppButton'
+import TagsMerge from '@/components/TagsMerge'
 import type { VideoType } from '@/helpers/models'
 
 export const VideoTab: React.FC = () => {
   const saveVideo = useAppStore((state) => state.saveVideo)
   const user = useUserStore((state) => state.user)
 
-  const headlineToApply = useValuesStore((state) => state.headlineToApply)
-  const setHeadlineToApply = (val: string) => useValuesStore.setState({ headlineToApply: val })
   const tagsToApply = useValuesStore((state) => state.tagsToApply)
   const setTagsToApply = (val: string[]) => useValuesStore.setState({ tagsToApply: val })
 
   const videoFormRef = useRef<HTMLFormElement>(null)
   const [videoUrl, setVideoUrl] = useState('')
+  const [headline, setHeadline] = useState('')
   const [fetchingTitle, setFetchingTitle] = useState(false)
 
   const getInitialDateString = () => {
@@ -32,29 +32,26 @@ export const VideoTab: React.FC = () => {
 
   const [videoDate, setVideoDate] = useState(getInitialDateString)
 
-  /** Attempt to fetch the YouTube title and auto-fill headline if empty. */
-  const autoFillTitle = useCallback(
-    async (url: string) => {
-      const ytId = getYouTubeId(url)
-      if (!ytId) return
-      // Only auto-fill when headline is currently blank
-      const currentHeadline = useValuesStore.getState().headlineToApply
-      if (currentHeadline) return
-      try {
-        setFetchingTitle(true)
-        const result = await fetchYouTubeTitle({ videoID: ytId })
-        const title = result.data.title
-        if (title && !useValuesStore.getState().headlineToApply) {
-          setHeadlineToApply(title)
-        }
-      } catch {
-        // silently ignore — user can still fill in manually
-      } finally {
-        setFetchingTitle(false)
+  /** Attempt to fetch the YouTube title and auto-fill headline. */
+  const autoFillTitle = useCallback(async (url: string) => {
+    const ytId = getYouTubeId(url)
+    if (!ytId) {
+      setHeadline('')
+      return
+    }
+    try {
+      setFetchingTitle(true)
+      const result = await fetchYouTubeTitle({ videoID: ytId })
+      const title = result.data.title
+      if (title) {
+        setHeadline(title)
       }
-    },
-    [],
-  )
+    } catch {
+      setHeadline('')
+    } finally {
+      setFetchingTitle(false)
+    }
+  }, [])
 
   const onUrlChange = useCallback(
     (url: string) => {
@@ -84,9 +81,9 @@ export const VideoTab: React.FC = () => {
       filename: ytId,
       email: user?.email || '',
       nick: user?.nick || '',
-      headline: headlineToApply || CONFIG.noTitle,
+      headline: headline || CONFIG.noTitle,
       tags: [...tagsToApply],
-      text: sliceSlug(headlineToApply || CONFIG.noTitle),
+      text: sliceSlug(headline || CONFIG.noTitle),
       date: formatDatum(datum, CONFIG.dateFormat),
       year: datum.getFullYear(),
       month: datum.getMonth() + 1,
@@ -97,8 +94,8 @@ export const VideoTab: React.FC = () => {
     try {
       await saveVideo(video)
       setVideoUrl('')
+      setHeadline('')
       setVideoDate(getInitialDateString())
-      setHeadlineToApply('')
       setTagsToApply([])
       notify({ type: 'positive', message: 'Video published successfully' })
     } catch (err) {
@@ -110,32 +107,37 @@ export const VideoTab: React.FC = () => {
   }
 
   return (
-    <form onSubmit={onVideoSubmit} ref={videoFormRef}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <AppInput
-            modelValue={videoUrl}
-            onChangeValue={onUrlChange}
-            label="YouTube Video URL"
-            hint={fetchingTitle ? 'Fetching title…' : 'Paste the YouTube URL here'}
-            loading={fetchingTitle}
-            required
-          />
-        </div>
+    <form onSubmit={onVideoSubmit} ref={videoFormRef} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <AppInput
+          modelValue={videoUrl}
+          onChangeValue={onUrlChange}
+          label="YouTube Video URL"
+          hint={fetchingTitle ? 'Fetching title…' : 'Paste the YouTube URL here'}
+          loading={fetchingTitle}
+          required
+        />
 
-        <div>
-          <AppInput
-            modelValue={videoDate}
-            onChangeValue={setVideoDate}
-            label="Recording Date"
-            type="datetime-local"
-            hint="Select recording date and time"
-          />
-        </div>
+        <AppInput
+          modelValue={videoDate}
+          onChangeValue={setVideoDate}
+          label="Recording Date"
+          type="datetime-local"
+          hint="Select recording date and time"
+        />
 
-        <div className="self-end lg:self-center flex justify-end sm:col-start-2 lg:col-start-auto">
-          <AppButton label="Link Video" type="submit" color="primary" />
-        </div>
+        <AppInput
+          modelValue={headline}
+          label="Headline from YouTube"
+          placeholder="Fetched automatically"
+          readonly
+        />
+
+        <TagsMerge label="Tags to apply" hint="You can add / remove tag later" />
+      </div>
+
+      <div className="flex justify-end pt-2">
+        <AppButton label="Link Video" type="submit" color="primary" className="w-full sm:w-auto" />
       </div>
     </form>
   )

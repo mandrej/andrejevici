@@ -18,10 +18,7 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
           <AppIcon name="info" className="w-4 h-4 text-blue-400" />
           <span>Photo Info</span>
         </div>
-        <button
-          onClick={onClose}
-          className="text-white/60 hover:text-white transition-colors p-1"
-        >
+        <button onClick={onClose} className="text-white/60 hover:text-white transition-colors p-1">
           <AppIcon name="close" className="w-4 h-4" />
         </button>
       </div>
@@ -31,12 +28,8 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
         <div className="space-y-2.5">
           {photo.date && (
             <div>
-              <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                Date
-              </span>
-              <span className="font-medium text-white/95">
-                {formatDatum(photo.date)}
-              </span>
+              <span className="text-white/50 block text-[10px] uppercase tracking-wider">Date</span>
+              <span className="font-medium text-white/95">{formatDatum(photo.date)}</span>
             </div>
           )}
           {photo.nick && (
@@ -52,9 +45,7 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
               <span className="text-white/50 block text-[10px] uppercase tracking-wider">
                 File Size
               </span>
-              <span className="font-medium text-white/95">
-                {formatBytes(photo.size)}
-              </span>
+              <span className="font-medium text-white/95">{formatBytes(photo.size)}</span>
             </div>
           )}
           {photo.dim && (
@@ -76,9 +67,7 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
               <span className="text-white/50 block text-[10px] uppercase tracking-wider">
                 Aperture
               </span>
-              <span className="font-medium text-white/95">
-                f/{photo.aperture}
-              </span>
+              <span className="font-medium text-white/95">f/{photo.aperture}</span>
             </div>
           )}
           {photo.shutter && (
@@ -86,19 +75,13 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
               <span className="text-white/50 block text-[10px] uppercase tracking-wider">
                 Shutter Speed
               </span>
-              <span className="font-medium text-white/95">
-                {photo.shutter}s
-              </span>
+              <span className="font-medium text-white/95">{photo.shutter}s</span>
             </div>
           )}
           {photo.iso && (
             <div>
-              <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                ISO
-              </span>
-              <span className="font-medium text-white/95">
-                {photo.iso} ASA
-              </span>
+              <span className="text-white/50 block text-[10px] uppercase tracking-wider">ISO</span>
+              <span className="font-medium text-white/95">{photo.iso} ASA</span>
             </div>
           )}
           {photo.model && (
@@ -106,19 +89,13 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
               <span className="text-white/50 block text-[10px] uppercase tracking-wider">
                 Camera
               </span>
-              <span className="font-medium text-white/95 font-sans">
-                {photo.model}
-              </span>
+              <span className="font-medium text-white/95 font-sans">{photo.model}</span>
             </div>
           )}
           {photo.lens && (
             <div>
-              <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-                Lens
-              </span>
-              <span className="font-medium text-white/95 font-sans">
-                {photo.lens}
-              </span>
+              <span className="text-white/50 block text-[10px] uppercase tracking-wider">Lens</span>
+              <span className="font-medium text-white/95 font-sans">{photo.lens}</span>
             </div>
           )}
           {(photo.focal_length || (photo as any).focalLength) && (
@@ -136,9 +113,7 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
 
       {photo.tags && photo.tags.length > 0 && (
         <div className="mt-3 pt-2.5 border-t border-white/15">
-          <span className="text-white/50 block text-[10px] uppercase tracking-wider">
-            Tags
-          </span>
+          <span className="text-white/50 block text-[10px] uppercase tracking-wider">Tags</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {photo.tags.map((tag: string) => (
               <span

@@ -1,8 +1,6 @@
 import CONFIG from '@/config'
 import { slugify } from 'transliteration'
 import type { FindType, MyUserType, PhotoType } from '@/helpers/models'
-import { functions } from '@/firebase'
-import { httpsCallable } from 'firebase/functions'
 
 /**
  * Format bytes as human-readable size string (e.g. "1.2 MB").
@@ -276,12 +274,30 @@ export const getYouTubeMaxResUrl = (url: string): string | null => {
 }
 
 /**
- * Firebase callable function to fetch YouTube video title and description by video ID.
+ * Fetches YouTube video title and description by video ID using YouTube's official oEmbed API.
+ *
+ * @param params - Object containing the YouTube video ID and optional language code.
+ * @returns Promise resolving to an object with `data: { title, description }`.
  */
-export const fetchYouTubeTitle = httpsCallable<
-  { videoID: string; lang?: string },
-  { title: string; description: string }
->(functions, 'getYouTubeDetails')
+export const fetchYouTubeTitle = async ({
+  videoID,
+}: {
+  videoID: string
+  lang?: string
+}): Promise<{ data: { title: string; description: string } }> => {
+  const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(videoID)}&format=json`
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch YouTube title: ${res.statusText}`)
+  }
+  const data = (await res.json()) as { title?: string; author_name?: string }
+  return {
+    data: {
+      title: data.title || '',
+      description: data.author_name ? `By ${data.author_name}` : '',
+    },
+  }
+}
 
 /**
  * Validates an email address against a standard format pattern.
@@ -294,4 +310,3 @@ export const isValidEmail = (val: string): true | string => {
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/
   return emailPattern.test(val) || 'Invalid email'
 }
-

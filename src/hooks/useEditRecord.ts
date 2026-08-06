@@ -38,7 +38,6 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     setTmp({ ...rec })
   }, [rec])
 
-
   const copyTags = (source: string[]) => {
     useValuesStore.setState({ tagsToApply: source })
   }

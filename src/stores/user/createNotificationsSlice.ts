@@ -14,7 +14,11 @@ import {
 import { getToken } from 'firebase/messaging'
 import notify from '@/helpers/notify'
 import { deviceCollection, userCollection } from '@/helpers/collections'
-import type { UserStore, NotificationsSliceState, NotificationsSliceActions } from '@/stores/user/types'
+import type {
+  UserStore,
+  NotificationsSliceState,
+  NotificationsSliceActions,
+} from '@/stores/user/types'
 
 export const createNotificationsSlice: StateCreator<
   UserStore,
