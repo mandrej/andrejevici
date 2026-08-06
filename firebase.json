@@ -101,11 +101,6 @@
       "source": "functionThumb",
       "codebase": "function-thumb",
       "ignore": ["**/node_modules/**"]
-    },
-    {
-      "source": "functionYouTube",
-      "codebase": "function-youtube",
-      "ignore": ["**/node_modules/**"]
     }
   ]
 }
