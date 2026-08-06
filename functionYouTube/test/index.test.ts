@@ -30,9 +30,10 @@ stubModule('firebase-admin/app', {
   initializeApp: () => ({}),
 })
 
-// Stub firebase-functions/logger so log/error calls are silent
+// Stub firebase-functions/logger so log/warn/error calls are silent
 stubModule('firebase-functions/logger', {
   log: () => undefined,
+  warn: () => undefined,
   error: () => undefined,
 })
 
@@ -148,7 +149,7 @@ describe('getYouTubeDetails cloud function', () => {
     assert.equal(result.description, 'Sample Video Description')
   })
 
-  test('wraps extractor errors as HttpsError internal', async () => {
+  test('wraps extractor errors as HttpsError internal when all providers fail', async () => {
     assert.ok(capturedHandler)
 
     mockGetVideoDetails = async () => {
@@ -160,7 +161,7 @@ describe('getYouTubeDetails cloud function', () => {
       (err: { code?: string; name?: string; message?: string }) => {
         assert.equal(err.name, 'HttpsError')
         assert.equal(err.code, 'internal')
-        assert.ok(err.message?.includes('Video not playable'))
+        assert.ok(err.message?.includes('across all providers'))
         return true
       },
     )
