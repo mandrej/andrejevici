@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/stores/appStore'
-import { U, getYouTubeId } from '@/helpers'
+import { U, getYouTubeId, fetchYouTubeTitle } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
@@ -24,7 +24,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
     showEdit,
     setShowEdit,
     saveRecord,
-    user,
+    user: _user,
     tagsValues,
     emailValues,
     tagsToApply,
@@ -37,19 +37,37 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
   } = useEditRecord({ rec })
 
   const [imgError, setImgError] = useState(false)
+  const [fetchingTitle, setFetchingTitle] = useState(false)
+  const prevUrlRef = useRef(rec.url)
 
   useEffect(() => {
-    if (tmp.url) {
-      const id = getYouTubeId(tmp.url)
-      if (id) {
-        setTmp((prev) => ({
-          ...prev,
-          filename: id,
-          thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-        }))
-      } else {
-        setTmp((prev) => ({ ...prev, thumb: '' }))
+    if (!tmp.url) return
+    const id = getYouTubeId(tmp.url)
+    if (id) {
+      setTmp((prev) => ({
+        ...prev,
+        filename: id,
+        thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      }))
+
+      // Fetch headline when the URL changed to a different video
+      if (tmp.url !== prevUrlRef.current) {
+        prevUrlRef.current = tmp.url
+        setFetchingTitle(true)
+        fetchYouTubeTitle({ videoID: id })
+          .then((result) => {
+            const title = result.data.title
+            if (title) {
+              setTmp((prev) => ({ ...prev, headline: title }))
+            }
+          })
+          .catch(() => {
+            // silently ignore — user can fill in manually
+          })
+          .finally(() => setFetchingTitle(false))
       }
+    } else {
+      setTmp((prev) => ({ ...prev, thumb: '' }))
     }
   }, [tmp.url])
 
@@ -145,7 +163,8 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
                 modelValue={tmp.headline}
                 onChangeValue={(val) => setTmp((prev) => ({ ...prev, headline: val }))}
                 label="Headline"
-                hint={`Without title: '${CONFIG.noTitle}'`}
+                hint={fetchingTitle ? 'Fetching title…' : `Without title: '${CONFIG.noTitle}'`}
+                loading={fetchingTitle}
                 clearable
                 autoFocus
               />

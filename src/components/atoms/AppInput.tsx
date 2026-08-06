@@ -10,6 +10,7 @@ interface AppInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   readonly?: boolean
   disabled?: boolean
   clearable?: boolean
+  loading?: boolean
   required?: boolean
   autofocus?: boolean
   error?: string
@@ -26,6 +27,7 @@ export const AppInput: React.FC<AppInputProps> = ({
   readonly = false,
   disabled = false,
   clearable = false,
+  loading = false,
   required = false,
   autofocus = false,
   error,
@@ -79,11 +81,17 @@ export const AppInput: React.FC<AppInputProps> = ({
           {...props}
         />
 
-        {clearable && modelValue && !readonly && (
+        {loading && (
+          <span className="px-2 text-primary flex items-center justify-center shrink-0">
+            <span className="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </span>
+        )}
+
+        {clearable && modelValue && !readonly && !loading && (
           <button
             type="button"
             tabIndex={-1}
-            className="px-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="px-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors shrink-0"
             onClick={handleClear}
           >
             <AppIcon name="close" className="w-5 h-5" />

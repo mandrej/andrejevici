@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useUserStore } from '@/stores/userStore'
-import { sliceSlug, formatDatum, getYouTubeId } from '@/helpers'
+import { sliceSlug, formatDatum, getYouTubeId, fetchYouTubeTitle } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import AppInput from '@/components/atoms/AppInput'
@@ -22,6 +22,7 @@ export const VideoTab: React.FC = () => {
 
   const videoFormRef = useRef<HTMLFormElement>(null)
   const [videoUrl, setVideoUrl] = useState('')
+  const [fetchingTitle, setFetchingTitle] = useState(false)
 
   const getInitialDateString = () => {
     const now = new Date()
@@ -29,7 +30,39 @@ export const VideoTab: React.FC = () => {
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
   }
 
-  const [videoDate, setVideoDate] = useState(getInitialDateString())
+  const [videoDate, setVideoDate] = useState(getInitialDateString)
+
+  /** Attempt to fetch the YouTube title and auto-fill headline if empty. */
+  const autoFillTitle = useCallback(
+    async (url: string) => {
+      const ytId = getYouTubeId(url)
+      if (!ytId) return
+      // Only auto-fill when headline is currently blank
+      const currentHeadline = useValuesStore.getState().headlineToApply
+      if (currentHeadline) return
+      try {
+        setFetchingTitle(true)
+        const result = await fetchYouTubeTitle({ videoID: ytId })
+        const title = result.data.title
+        if (title && !useValuesStore.getState().headlineToApply) {
+          setHeadlineToApply(title)
+        }
+      } catch {
+        // silently ignore — user can still fill in manually
+      } finally {
+        setFetchingTitle(false)
+      }
+    },
+    [],
+  )
+
+  const onUrlChange = useCallback(
+    (url: string) => {
+      setVideoUrl(url)
+      autoFillTitle(url)
+    },
+    [autoFillTitle],
+  )
 
   const onVideoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,9 +115,10 @@ export const VideoTab: React.FC = () => {
         <div>
           <AppInput
             modelValue={videoUrl}
-            onChangeValue={setVideoUrl}
+            onChangeValue={onUrlChange}
             label="YouTube Video URL"
-            hint="Paste the YouTube URL here"
+            hint={fetchingTitle ? 'Fetching title…' : 'Paste the YouTube URL here'}
+            loading={fetchingTitle}
             required
           />
         </div>

@@ -1,6 +1,8 @@
 import CONFIG from '@/config'
 import { slugify } from 'transliteration'
 import type { FindType, MyUserType, PhotoType } from '@/helpers/models'
+import { functions } from '@/firebase'
+import { httpsCallable } from 'firebase/functions'
 
 /**
  * Format bytes as human-readable size string (e.g. "1.2 MB").
@@ -272,6 +274,14 @@ export const getYouTubeMaxResUrl = (url: string): string | null => {
   const id = getYouTubeId(url)
   return id ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg` : null
 }
+
+/**
+ * Firebase callable function to fetch YouTube video title and description by video ID.
+ */
+export const fetchYouTubeTitle = httpsCallable<
+  { videoID: string; lang?: string },
+  { title: string; description: string }
+>(functions, 'getYouTubeDetails')
 
 /**
  * Validates an email address against a standard format pattern.
