@@ -257,9 +257,10 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
             if (isFullscreen) return null
             const obj = slide.obj as PhotoType
             if (!obj) return null
+            const isVideo = slide.type === 'video' || obj.kind === 'video'
             return (
               <>
-                {obj.headline && (
+                {!isVideo && obj.headline && (
                   <div className="absolute top-0 left-0 w-full bg-black/50 text-white py-2 px-14 z-2000 flex items-center justify-center min-h-11">
                     <div className="text-center overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm sm:text-base">
                       {obj.headline}
