@@ -41,7 +41,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.10",
     "globals": "^16.4.0",
-    "postcss": "8.5.16",
+    "postcss": "^8.5.25",
     "prettier": "^3.3.3",
     "tailwindcss": "4.3.2",
     "tsx": "^4.21.0",
