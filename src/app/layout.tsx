@@ -43,6 +43,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#212121" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta
+          name="google-site-verification"
+          content="eIABZ7IBZHxZ5X8wm1isGkbGzW9BSyq7nPTS-2w9dr0"
+        />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, width=device-width" />
         <link
           rel="apple-touch-startup-image"
           href="/icons/apple-launch-750x1334.png"
