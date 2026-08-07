@@ -43,11 +43,9 @@ export const VideoTab: React.FC = () => {
       setFetchingTitle(true)
       const result = await fetchYouTubeTitle({ videoID: ytId })
       const title = result.data.title
-      if (title) {
-        setHeadline(title)
-      }
+      setHeadline(title || CONFIG.noTitle)
     } catch {
-      setHeadline('')
+      setHeadline(CONFIG.noTitle)
     } finally {
       setFetchingTitle(false)
     }

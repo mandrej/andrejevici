@@ -61,7 +61,7 @@ export const AppInput: React.FC<AppInputProps> = ({
       <div
         className={`relative flex items-center w-full rounded-lg border transition-colors ${
           readonly
-            ? 'bg-gray-55 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'
+            ? 'bg-gray-100/90 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700/80 cursor-default'
             : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent'
         } ${error ? 'border-negative focus-within:ring-negative' : ''}`}
       >
@@ -74,8 +74,10 @@ export const AppInput: React.FC<AppInputProps> = ({
           required={required}
           autoFocus={autofocus}
           step={step}
-          className={`flex-1 min-w-0 px-3 py-2 bg-transparent text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none rounded-lg dark:scheme-dark [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-90 [&::-webkit-calendar-picker-indicator]:transition-opacity ${
-            readonly ? 'cursor-default text-gray-500 dark:text-gray-400' : ''
+          className={`flex-1 min-w-0 px-3 py-2 bg-transparent text-sm outline-none rounded-lg dark:scheme-dark [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-90 [&::-webkit-calendar-picker-indicator]:transition-opacity ${
+            readonly
+              ? 'cursor-default text-gray-600 dark:text-gray-400 font-medium select-text'
+              : 'text-gray-900 dark:text-gray-100 placeholder-gray-400'
           }`}
           onChange={onInput}
           {...props}
@@ -84,6 +86,12 @@ export const AppInput: React.FC<AppInputProps> = ({
         {loading && (
           <span className="px-2 text-primary flex items-center justify-center shrink-0">
             <span className="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </span>
+        )}
+
+        {readonly && !loading && (
+          <span className="pr-2.5 text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0" title="Read only">
+            <AppIcon name="lock" className="w-4 h-4 opacity-75" />
           </span>
         )}
 

@@ -65,6 +65,12 @@
   input[type='time']::-webkit-calendar-picker-indicator:hover {
     opacity: 0.9;
   }
+
+  input:read-only,
+  textarea:read-only {
+    cursor: default;
+    user-select: text;
+  }
 }
 
 @layer components {

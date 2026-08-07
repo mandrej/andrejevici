@@ -57,10 +57,10 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
         fetchYouTubeTitle({ videoID: id })
           .then((result) => {
             const title = result.data.title
-            setTmp((prev) => ({ ...prev, headline: title || '' }))
+            setTmp((prev) => ({ ...prev, headline: title || CONFIG.noTitle }))
           })
           .catch(() => {
-            setTmp((prev) => ({ ...prev, headline: '' }))
+            setTmp((prev) => ({ ...prev, headline: CONFIG.noTitle }))
           })
           .finally(() => setFetchingTitle(false))
       }
@@ -141,7 +141,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
           onSubmit={onSubmit}
         >
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="hidden sm:block sm:col-span-1 sm:row-span-5">
+            <div className="hidden sm:block sm:col-span-1 sm:row-span-4">
               <div
                 className="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
                 style={{ paddingTop: '100%' }}
@@ -166,7 +166,36 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
               />
             </div>
 
-            <div className="col-span-2 sm:col-span-1 flex items-start gap-2">
+            <div className="col-span-2 sm:col-span-1">
+              <AppInput
+                modelValue={tmp.url}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, url: val }))}
+                label="Video URL"
+                hint="YouTube link"
+                required
+              />
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <AutoComplete
+                label="Author"
+                modelValue={tmp.email}
+                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
+                options={emailValues}
+                hint="Admin can add friend's photo and email"
+              />
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <AppInput
+                modelValue={tmp.date}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
+                label="Date taken"
+                type="datetime-local"
+              />
+            </div>
+
+            <div className="col-span-2 flex items-start gap-2">
               <div className="flex-1">
                 <AutoComplete
                   label="Tags"
@@ -203,38 +232,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
               </div>
             </div>
 
-            <div className="col-span-2 sm:col-span-1">
-              <AppInput modelValue={tmp.filename} label="Filename" readonly />
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <AppInput
-                modelValue={tmp.url}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, url: val }))}
-                label="Video URL"
-                hint="YouTube link"
-                required
-              />
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <AutoComplete
-                label="Author"
-                modelValue={tmp.email}
-                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
-                options={emailValues}
-                hint="Admin can add friend's photo and email"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <AppInput
-                modelValue={tmp.date}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
-                label="Date taken"
-                type="datetime-local"
-              />
-            </div>
+            <input type="hidden" name="filename" value={tmp.filename || ''} />
           </div>
         </form>
       </div>

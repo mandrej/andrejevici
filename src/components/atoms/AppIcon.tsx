@@ -28,6 +28,7 @@ import {
   FilmIcon,
   HomeIcon,
   InformationCircleIcon,
+  LockClosedIcon,
   MapPinIcon,
   MagnifyingGlassIcon,
   MoonIcon,
@@ -96,6 +97,8 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   info: InformationCircleIcon,
   hourglass_empty: ClockIcon,
   priority_high: ExclamationCircleIcon,
+  lock: LockClosedIcon,
+  lock_outline: LockClosedIcon,
 
   // Notifications
   notifications: BellIcon,

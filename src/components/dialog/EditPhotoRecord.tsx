@@ -150,7 +150,30 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
               />
             </div>
 
-            <div className="col-span-2 sm:col-span-1 flex items-start gap-2">
+            <div className="col-span-2 sm:col-span-1">
+              <AppInput modelValue={tmp.filename} label="Filename" readonly />
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <AutoComplete
+                label="Author"
+                modelValue={tmp.email}
+                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
+                options={emailValues}
+                hint="Admin can add friend's photo and email"
+              />
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <AppInput
+                modelValue={tmp.date}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
+                label="Date taken"
+                type="datetime-local"
+              />
+            </div>
+
+            <div className="col-span-2 flex items-start gap-2">
               <div className="flex-1">
                 <AutoComplete
                   label="Tags"
@@ -185,29 +208,6 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
                   <AppIcon name="content_paste" className="w-5 h-5" />
                 </button>
               </div>
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <AppInput modelValue={tmp.filename} label="Filename" readonly />
-            </div>
-
-            <div className="col-span-2 sm:col-span-1">
-              <AutoComplete
-                label="Author"
-                modelValue={tmp.email}
-                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
-                options={emailValues}
-                hint="Admin can add friend's photo and email"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <AppInput
-                modelValue={tmp.date}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
-                label="Date taken"
-                type="datetime-local"
-              />
             </div>
 
             <div className="col-span-2">
