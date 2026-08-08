@@ -377,7 +377,7 @@ export const PhotoTab: React.FC = () => {
                   <AppCheckbox
                     modelValue={selection.includes(rec.filename)}
                     onChange={(checked) => handleCheckboxChange(!!checked, rec.filename)}
-                    className="drop-shadow-md"
+                    className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                   />
                   <button
                     className="text-white hover:text-blue-400 drop-shadow-md hover:scale-110 transition-all p-1"

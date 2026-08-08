@@ -288,7 +288,7 @@ export default function ListPage() {
                         <AppCheckbox
                           modelValue={selected.some((x) => x.filename === item.filename)}
                           onChange={(checked) => handleCheckboxChange(!!checked, item)}
-                          className="drop-shadow-md"
+                          className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                         />
                       )}
                       <button

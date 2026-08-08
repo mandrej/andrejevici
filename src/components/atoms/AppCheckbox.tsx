@@ -56,10 +56,10 @@ export const AppCheckbox: React.FC<AppCheckboxProps> = ({
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-150 ${
             isChecked
               ? 'bg-primary border-primary'
-              : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500'
+              : 'bg-transparent border-gray-300 dark:border-gray-300'
           } ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary'}`}
         >
-          {isChecked && <AppIcon name="check" className="w-3.5 h-3.5 text-white" />}
+          {isChecked && <AppIcon name="check" className="w-4 h-4 text-white" />}
         </div>
       </div>
       {label && <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>}
