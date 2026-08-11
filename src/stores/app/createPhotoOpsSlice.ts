@@ -22,8 +22,12 @@ import { photoCollection } from '@/helpers/collections'
 import readExif from '@/helpers/exif'
 import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
 
-const getRec = (snapshot: { docs: Array<{ data: () => unknown }> }) =>
-  snapshot.docs.length ? snapshot.docs[0]?.data() : null
+const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
+  if (!snapshot.docs.length) return null
+  const docSnap = snapshot.docs[0]
+  const raw = docSnap.data() as object
+  return { id: docSnap.id, ...raw }
+}
 
 export const createPhotoOpsSlice: StateCreator<
   AppStore,
@@ -48,6 +52,7 @@ export const createPhotoOpsSlice: StateCreator<
 
     const tmp: PhotoType = {
       ...rec,
+      id: rec.id,
       kind: 'photo',
       date: formatDatum(datum, CONFIG.dateFormat),
       year: datum.getFullYear(),
@@ -70,7 +75,7 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   saveRecord: async (obj) => {
-    const docRef = doc(photoCollection, obj.filename)
+    const docRef = doc(photoCollection, obj.id)
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
     const userStore = useUserStore.getState()
@@ -78,7 +83,7 @@ export const createPhotoOpsSlice: StateCreator<
     if (!obj.kind) obj.kind = 'photo'
 
     if (obj.thumb) {
-      const oldDoc = get().objects.find((x) => x.filename === obj.filename)
+      const oldDoc = get().objects.find((x) => x.id === obj.id)
       await setDoc(docRef, obj, { merge: true })
 
       set((state) => {
@@ -88,18 +93,18 @@ export const createPhotoOpsSlice: StateCreator<
       })
 
       valuesStore.updateCounters(oldDoc || obj, obj)
-      notify({ type: 'positive', message: `${obj.filename} updated`, icon: 'sym_r_check' })
+      notify({ type: 'positive', message: `${obj.id} updated`, icon: 'sym_r_check' })
     } else {
       if (process.env.NODE_ENV === 'development') {
         try {
-          const thumbRef = storageRef(storage, thumbName(obj.filename))
+          const thumbRef = storageRef(storage, thumbName(obj.id))
           obj.thumb = await getDownloadURL(thumbRef)
         } catch (e) {
           console.warn('DEV: Thumbnail not yet ready, using predictive URL', e)
-          obj.thumb = thumbUrl(obj.filename)
+          obj.thumb = thumbUrl(obj.id)
         }
       } else {
-        obj.thumb = thumbUrl(obj.filename)
+        obj.thumb = thumbUrl(obj.id)
       }
 
       await setDoc(docRef, obj, { merge: true })
@@ -116,7 +121,7 @@ export const createPhotoOpsSlice: StateCreator<
       logAnalyticsEvent('published', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
-        filename: obj.filename,
+        filename: obj.id,
         headline: obj.headline,
         kind: obj.kind,
       })
@@ -124,7 +129,7 @@ export const createPhotoOpsSlice: StateCreator<
       set({ find: { year: obj.year, month: obj.month, day: obj.day } })
       await get().fetchRecords(true)
 
-      notify({ type: 'positive', message: `${obj.filename} published`, icon: 'sym_r_check' })
+      notify({ type: 'positive', message: `${obj.id} published`, icon: 'sym_r_check' })
     }
 
     set({ currentEdit: obj })
@@ -133,12 +138,12 @@ export const createPhotoOpsSlice: StateCreator<
 
   saveVideo: async (obj) => {
     obj.kind = 'video'
-    const id = getYouTubeId(obj.url)
-    if (id) {
-      obj.thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+    const ytId = getYouTubeId(obj.url)
+    if (ytId) {
+      obj.thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
     }
 
-    const docRef = doc(photoCollection, obj.filename)
+    const docRef = doc(photoCollection, obj.id)
     const valuesStore = useValuesStore.getState()
     const userStore = useUserStore.getState()
 
@@ -149,7 +154,7 @@ export const createPhotoOpsSlice: StateCreator<
     logAnalyticsEvent('published', {
       when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
       who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
-      filename: obj.filename,
+      filename: obj.id,
       headline: obj.headline,
       kind: obj.kind,
     })
@@ -159,14 +164,14 @@ export const createPhotoOpsSlice: StateCreator<
 
     notify({
       type: 'positive',
-      message: `${obj.filename} video published`,
+      message: `${obj.id} video published`,
       icon: 'sym_r_check',
     })
     return obj
   },
 
   deleteRecord: async (obj) => {
-    const docRef = doc(photoCollection, obj.filename)
+    const docRef = doc(photoCollection, obj.id)
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
     const userStore = useUserStore.getState()
@@ -174,7 +179,7 @@ export const createPhotoOpsSlice: StateCreator<
     logAnalyticsEvent('image_delete', {
       when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
       who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
-      filename: obj.filename,
+      filename: obj.id,
       headline: obj.headline || '',
       kind: obj.kind,
     })
@@ -182,8 +187,8 @@ export const createPhotoOpsSlice: StateCreator<
     try {
       const promises: Promise<void>[] = [deleteDoc(docRef)]
       if (obj.kind !== 'video') {
-        const stoRef = storageRef(storage, obj.filename)
-        const thumbRef = storageRef(storage, thumbName(obj.filename))
+        const stoRef = storageRef(storage, obj.id)
+        const thumbRef = storageRef(storage, thumbName(obj.id))
         promises.push(deleteObject(stoRef))
         promises.push(deleteObject(thumbRef))
       }
@@ -194,8 +199,8 @@ export const createPhotoOpsSlice: StateCreator<
       }
       notify({
         type: 'negative',
-        group: obj.filename,
-        message: `${obj.filename} ${String(err)}`,
+        group: obj.id,
+        message: `${obj.id} ${String(err)}`,
       })
     }
 
@@ -221,7 +226,7 @@ export const createPhotoOpsSlice: StateCreator<
 
     notify({
       type: 'positive',
-      message: `${obj.filename} deleted`,
+      message: `${obj.id} deleted`,
       icon: 'sym_r_check',
     })
   },

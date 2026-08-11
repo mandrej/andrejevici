@@ -103,12 +103,12 @@ export default function AdminPage() {
               <AdminCard
                 icon="aspect_ratio"
                 color="accent"
-                title="Add photo kind"
-                description="Populates kind 'photo' where missing in Photo collection."
+                title="Remove filename field"
+                description="Remove filename field from Photo documents. Use id instead. Idempotent"
                 details={
                   <div className="text-center mt-2">
                     <AppBadge color="accent" className="text-base px-4 py-2">
-                      Last run: {formatDatum(new Date('2026-05-05'), 'DD.MM.YYYY')}
+                      Last run: {formatDatum(new Date('2026-08-11'), 'DD.MM.YYYY')}
                     </AppBadge>
                   </div>
                 }

@@ -125,15 +125,15 @@ export default function ListPage() {
   useEffect(() => {
     const hash = window.location.hash
     if (hash) {
-      const filename = hash.substring(2) // removes "#/"
+      const id = hash.substring(2) // removes "#/"
       setTimeout(() => {
-        void findPhotoAndShow(filename)
+        void findPhotoAndShow(id)
       }, 1000)
     }
   }, [])
 
   const findPhotoAndShow = async (c: string) => {
-    let rec: PhotoType | null | undefined = objects.find((x) => x.filename === c)
+    let rec: PhotoType | null | undefined = objects.find((x) => x.id === c)
     if (!rec) {
       rec = await fetchPhoto(c)
     }
@@ -144,7 +144,7 @@ export default function ListPage() {
       await fetchRecords(true)
     }
 
-    const idx = useAppStore.getState().objects.findIndex((x) => x.filename === c)
+    const idx = useAppStore.getState().objects.findIndex((x) => x.id === c)
     if (idx !== -1) {
       window.history.replaceState(history.state, '', window.location.pathname)
       setIndex(idx)
@@ -169,15 +169,15 @@ export default function ListPage() {
     setShowEdit(true)
   }
 
-  const editOk = (filename: string) => {
-    const el = document.getElementById(filename)
+  const editOk = (id: string) => {
+    const el = document.getElementById(id)
     if (!el) return
     el.classList.add('bounce')
     setTimeout(() => el.classList.remove('bounce'), 2000)
   }
 
   const carouselShow = (c: string) => {
-    const idx = objects.findIndex((x) => x.filename === c)
+    const idx = objects.findIndex((x) => x.id === c)
     if (idx !== -1) {
       fakeHistory()
       setIndex(idx)
@@ -187,7 +187,7 @@ export default function ListPage() {
       logAnalyticsEvent('detailed_view', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: user?.email ? dummy(user.email) : 'anonymous',
-        filename: obj.filename,
+        filename: obj.id,
         headline: obj.headline || '',
         kind: obj.kind,
       })
@@ -216,7 +216,7 @@ export default function ListPage() {
     if (checked) {
       setSelected([...selected, item])
     } else {
-      setSelected(selected.filter((x) => x.filename !== item.filename))
+      setSelected(selected.filter((x) => x.id !== item.id))
     }
   }
 
@@ -273,7 +273,7 @@ export default function ListPage() {
         <div className="flex flex-wrap gap-4">
           {objects.map((item) => (
             <div
-              key={item.filename}
+              key={item.id}
               className="shrink-0"
               style={{ minWidth: '250px', maxWidth: '400px', flex: 1 }}
             >
@@ -286,7 +286,7 @@ export default function ListPage() {
                       {/* Batch select checkbox */}
                       {(user?.isAdmin || user?.email === item.email) && (
                         <AppCheckbox
-                          modelValue={selected.some((x) => x.filename === item.filename)}
+                          modelValue={selected.some((x) => x.id === item.id)}
                           onChange={(checked) => handleCheckboxChange(!!checked, item)}
                           className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                         />

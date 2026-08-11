@@ -16,7 +16,7 @@ import { useEditRecord } from '@/hooks/useEditRecord'
 
 interface EditVideoRecordProps {
   rec: PhotoType
-  onEditOk?: (filename: string) => void
+  onEditOk?: (id: string) => void
 }
 
 export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk }) => {
@@ -46,7 +46,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
     if (id) {
       setTmp((prev) => ({
         ...prev,
-        filename: id,
+        id: id,
         thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
       }))
 
@@ -91,13 +91,14 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
         recordToSave.thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : ''
       }
 
-      if (recordToSave.filename !== rec.filename) {
+      if (recordToSave.id !== rec.id) {
         try {
           const { photoCollection } = await import('@/helpers/collections')
           const { doc, deleteDoc } = await import('firebase/firestore')
-          await deleteDoc(doc(photoCollection, rec.filename))
+          const oldId = rec.id
+          await deleteDoc(doc(photoCollection, oldId))
           useAppStore.setState((state) => ({
-            objects: state.objects.filter((x) => x.filename !== rec.filename),
+            objects: state.objects.filter((x) => x.id !== oldId),
           }))
         } catch (err) {
           console.error('Failed to delete old video document:', err)
@@ -106,7 +107,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
 
       await saveRecord(recordToSave)
       if (onEditOk) {
-        onEditOk(U + recordToSave.filename)
+        onEditOk(U + recordToSave.id)
       }
       setShowEdit(false)
     } catch (err) {
@@ -232,7 +233,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
               </div>
             </div>
 
-            <input type="hidden" name="filename" value={tmp.filename || ''} />
+            <input type="hidden" name="id" value={tmp.id || ''} />
           </div>
         </form>
       </div>

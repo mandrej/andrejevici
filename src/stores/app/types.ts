@@ -43,7 +43,7 @@ export interface RecordsSliceState {
 
 export interface RecordsSliceActions {
   searchBy: (criteria: FindType, onNavigate?: () => void) => void
-  fetchPhoto: (filename: string) => Promise<PhotoType | null>
+  fetchPhoto: (id: string) => Promise<PhotoType | null>
   fetchRecords: (
     reset?: boolean,
   ) => Promise<{ objects: PhotoType[]; error: string | null; next: string | null } | void>

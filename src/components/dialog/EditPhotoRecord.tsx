@@ -17,7 +17,7 @@ import { useEditRecord } from '@/hooks/useEditRecord'
 
 interface EditPhotoRecordProps {
   rec: PhotoType
-  onEditOk?: (filename: string) => void
+  onEditOk?: (id: string) => void
 }
 
 export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk }) => {
@@ -77,7 +77,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
 
       await saveRecord(recordToSave)
       if (onEditOk) {
-        onEditOk(U + recordToSave.filename)
+        onEditOk(U + recordToSave.id)
       }
       setShowEdit(false)
     } catch (err) {
@@ -151,7 +151,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
             </div>
 
             <div className="col-span-2 sm:col-span-1">
-              <AppInput modelValue={tmp.filename} label="Filename" readonly />
+              <AppInput modelValue={tmp.id} label="Filename" readonly />
             </div>
 
             <div className="col-span-2 sm:col-span-1">

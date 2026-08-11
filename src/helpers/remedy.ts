@@ -9,6 +9,7 @@ import {
   writeBatch,
   where,
   setDoc,
+  deleteField,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '@/config'
@@ -42,16 +43,16 @@ const commitInBatches = async <T>(
 }
 
 /**
- * Fixes records in the database by populating missing 'kind' property.
+ * Fixes records in the database by removing the legacy 'filename' property.
  *
  * @return {Promise<void>} A promise that resolves when the records are fixed.
  */
 export const fix = async () => {
   notify({
-    message: 'Finding records missing kind...',
+    message: 'Finding records with filename field...',
     timeout: 0,
     spinner: true,
-    group: 'fix-kind',
+    group: 'fix-filename',
   })
 
   try {
@@ -59,16 +60,16 @@ export const fix = async () => {
     const querySnapshot = await getDocs(q)
 
     const toFix = querySnapshot.docs.filter((doc) => {
-      const data = doc.data() as PhotoType
-      return !data.kind
+      const data = doc.data()
+      return 'filename' in data
     })
 
     if (toFix.length === 0) {
       notify({
         type: 'positive',
-        message: 'No records missing kind',
+        message: 'No records with filename field found',
         icon: 'sym_r_check',
-        group: 'fix-kind',
+        group: 'fix-filename',
       })
       return
     }
@@ -77,25 +78,25 @@ export const fix = async () => {
       message: `Found ${toFix.length} records to fix. Processing...`,
       timeout: 0,
       spinner: true,
-      group: 'fix-kind',
+      group: 'fix-filename',
     })
 
     await commitInBatches(toFix, (batch, docSnap) => {
-      batch.update(docSnap.ref, { kind: 'photo' })
+      batch.update(docSnap.ref, { filename: deleteField() })
     })
 
     notify({
       type: 'positive',
-      message: `Fixed ${toFix.length} records with missing kind.`,
+      message: `Removed filename field from ${toFix.length} records.`,
       icon: 'sym_r_check',
       timeout: 5000,
-      group: 'fix-kind',
+      group: 'fix-filename',
     })
   } catch (error) {
     notify({
       type: 'negative',
       message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-kind',
+      group: 'fix-filename',
     })
   }
 }
@@ -115,8 +116,8 @@ const getStorageData = async (filename: string) => {
       const { useUserStore } = await import('@/stores/userStore')
       const auth = useUserStore.getState()
       return {
+        id: filename,
         url: downloadURL,
-        filename: filename,
         size: metadata.size || 0,
         email: auth.user?.email,
         nick: auth.user?.nick,
@@ -190,7 +191,8 @@ export const missingThumbnails = async () => {
   for (const it of results) {
     if (it.status === 'fulfilled') {
       if (it.value.exists()) {
-        const data = it.value.data() as PhotoType
+        const raw = it.value.data() as PhotoType
+        const data = { ...raw, id: it.value.id } as PhotoType
         if (data.kind === 'video') continue // Skip videos
         const filename = it.value.id.replace(/\.[^.]+$/, '')
         message += `${data?.date} ${filename}<br/>`
@@ -248,15 +250,15 @@ export const mismatch = async () => {
   ])
 
   const bucketNames = new Set(storageResult.items.map((r) => r.name))
-  const firestoreDocs = firestoreResult.docs.map((d) => d.data() as PhotoType)
-  const storageNames = new Set(
-    firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.filename),
+  const firestoreDocs = firestoreResult.docs.map(
+    (d) => ({ ...(d.data() as object), id: d.id }) as PhotoType,
   )
-  const uploadedFilenames = new Set(uploaded.map((it) => it.filename))
+  const storageNames = new Set(firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.id))
+  const uploadedIds = new Set(uploaded.map((it) => it.id))
 
   // Files in storage but not in firestore (orphaned files)
   const missingRecords = Array.from(bucketNames).filter(
-    (name) => !storageNames.has(name) && !uploadedFilenames.has(name),
+    (name) => !storageNames.has(name) && !uploadedIds.has(name),
   )
 
   // Records in firestore but not in storage (broken links)

@@ -38,14 +38,19 @@ export const createRecordsSlice: StateCreator<
     if (onNavigate) onNavigate()
   },
 
-  fetchPhoto: async (filename) => {
-    const existing = get().objects.find((x) => x.filename === filename)
+  fetchPhoto: async (id) => {
+    const existing = get().objects.find((x) => x.id === id)
     if (existing) return existing
 
     try {
-      const docRef = doc(photoCollection, filename)
+      const docRef = doc(photoCollection, id)
       const docSnap = await getDoc(docRef)
-      return docSnap.exists() ? (docSnap.data() as PhotoType) : null
+      if (!docSnap.exists()) return null
+      const raw = docSnap.data() as PhotoType
+      return {
+        ...raw,
+        id: docSnap.id,
+      } as PhotoType
     } catch (err) {
       console.error('Failed to fetch photo:', err)
       return null
@@ -90,11 +95,15 @@ export const createRecordsSlice: StateCreator<
     try {
       const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
       const currentObjects = reset ? [] : [...get().objects]
-      const existingIds = new Set(currentObjects.map((x) => x.filename))
+      const existingIds = new Set(currentObjects.map((x) => x.id))
 
       querySnapshot.forEach((d: QueryDocumentSnapshot) => {
-        const data = d.data() as PhotoType
-        if (!existingIds.has(data.filename)) {
+        const raw = d.data() as PhotoType
+        const data: PhotoType = {
+          ...raw,
+          id: d.id,
+        }
+        if (!existingIds.has(data.id)) {
           currentObjects.push(data)
         }
       })

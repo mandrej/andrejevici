@@ -106,19 +106,19 @@ export const isEmpty = (obj: object): boolean => Object.keys(obj).length === 0
  * @param obj - The photo record whose matching entry should be removed.
  */
 export const removeFromList = (arr: PhotoType[], obj: PhotoType): void => {
-  const idx = arr.findIndex((it) => it.filename === obj.filename)
+  const idx = arr.findIndex((it) => it.id === obj.id)
   if (idx > -1) arr.splice(idx, 1)
 }
 
 /**
- * Replaces the first occurrence of a record in `arr` whose `filename` matches
- * `obj.filename` with `obj`.
+ * Replaces the first occurrence of a record in `arr` whose `id` matches
+ * `obj.id` with `obj`.
  *
  * @param arr - The array to mutate.
  * @param obj - The new photo record to insert in place of the matching entry.
  */
 export const replaceInList = (arr: PhotoType[], obj: PhotoType): void => {
-  const idx = arr.findIndex((it) => it.filename === obj.filename)
+  const idx = arr.findIndex((it) => it.id === obj.id)
   if (idx > -1) arr.splice(idx, 1, obj)
 }
 /**
