@@ -42,60 +42,80 @@ const commitInBatches = async <T>(
 }
 
 /**
- * Fixes records in the database by populating missing 'kind' property.
+ * Fixes records in the photo collection by ensuring each document's ID equals its filename.
+ * If doc.id !== data.filename, saves data to a new doc where id == filename and deletes the old doc.
  *
  * @return {Promise<void>} A promise that resolves when the records are fixed.
  */
 export const fix = async () => {
   notify({
-    message: 'Finding records missing kind...',
+    message: 'Checking photo document IDs...',
     timeout: 0,
     spinner: true,
-    group: 'fix-kind',
+    group: 'fix-id',
   })
 
   try {
     const q = query(photoCollection)
     const querySnapshot = await getDocs(q)
 
-    const toFix = querySnapshot.docs.filter((doc) => {
-      const data = doc.data() as PhotoType
-      return !data.kind
+    const toFix = querySnapshot.docs.filter((docSnap) => {
+      const data = docSnap.data() as PhotoType
+      return data.filename && docSnap.id !== data.filename
     })
 
     if (toFix.length === 0) {
       notify({
         type: 'positive',
-        message: 'No records missing kind',
+        message: 'All photo document IDs match their filenames',
         icon: 'sym_r_check',
-        group: 'fix-kind',
+        group: 'fix-id',
       })
       return
     }
 
     notify({
-      message: `Found ${toFix.length} records to fix. Processing...`,
+      message: `Found ${toFix.length} documents with mismatched IDs. Migrating...`,
       timeout: 0,
       spinner: true,
-      group: 'fix-kind',
+      group: 'fix-id',
     })
 
-    await commitInBatches(toFix, (batch, docSnap) => {
-      batch.update(docSnap.ref, { kind: 'photo' })
-    })
+    // Each item performs 2 operations (set new doc + delete old doc).
+    // Limit of 240 items = 480 operations per batch, safely under Firestore 500 limit.
+    const MIGRATION_BATCH_LIMIT = 240
+    let batch = writeBatch(db)
+    let count = 0
+
+    for (const docSnap of toFix) {
+      const data = docSnap.data() as PhotoType
+      const newDocRef = doc(photoCollection, data.filename)
+      batch.set(newDocRef, data)
+      batch.delete(docSnap.ref)
+      count++
+
+      if (count >= MIGRATION_BATCH_LIMIT) {
+        await batch.commit()
+        batch = writeBatch(db)
+        count = 0
+      }
+    }
+    if (count > 0) {
+      await batch.commit()
+    }
 
     notify({
       type: 'positive',
-      message: `Fixed ${toFix.length} records with missing kind.`,
+      message: `Migrated ${toFix.length} records to match filename document IDs.`,
       icon: 'sym_r_check',
       timeout: 5000,
-      group: 'fix-kind',
+      group: 'fix-id',
     })
   } catch (error) {
     notify({
       type: 'negative',
       message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-kind',
+      group: 'fix-id',
     })
   }
 }

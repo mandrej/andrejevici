@@ -90,7 +90,10 @@ export const AppInput: React.FC<AppInputProps> = ({
         )}
 
         {readonly && !loading && (
-          <span className="pr-2.5 text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0" title="Read only">
+          <span
+            className="pr-2.5 text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0"
+            title="Read only"
+          >
             <AppIcon name="lock" className="w-4 h-4 opacity-75" />
           </span>
         )}

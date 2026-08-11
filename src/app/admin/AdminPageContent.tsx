@@ -99,16 +99,16 @@ export default function AdminPage() {
                 }
               />
 
-              {/* Dimensions Card */}
+              {/* Fix Photo IDs Card */}
               <AdminCard
                 icon="aspect_ratio"
                 color="accent"
-                title="Add photo kind"
-                description="Populates kind 'photo' where missing in Photo collection."
+                title="Migrate photo document IDs"
+                description="Ensures document IDs equal filenames. Saves data to new doc and deletes old doc if mismatched."
                 details={
                   <div className="text-center mt-2">
                     <AppBadge color="accent" className="text-base px-4 py-2">
-                      Last run: {formatDatum(new Date('2026-05-05'), 'DD.MM.YYYY')}
+                      Last run: {formatDatum(new Date('2026-08-11'), 'DD.MM.YYYY')}
                     </AppBadge>
                   </div>
                 }

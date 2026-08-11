@@ -34,5 +34,13 @@
     "dist/types/**/*.ts",
     "dist/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "dist", "src-pwa", "functionCron", "functionNotify", "functionThumb"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src-pwa",
+    "functionCron",
+    "functionNotify",
+    "functionThumb",
+    "function*/lib/index.js"
+  ]
 }
