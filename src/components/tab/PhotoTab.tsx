@@ -155,8 +155,8 @@ export const PhotoTab: React.FC = () => {
               setActiveTrackerNames(Array.from(trackersRef.current.keys()))
 
               const data: PhotoType = {
+                id: filename,
                 url: downloadURL,
-                filename: filename,
                 size: file.size,
                 email: user?.email || '',
                 nick: user?.nick || '',
@@ -232,18 +232,18 @@ export const PhotoTab: React.FC = () => {
   }
 
   const deleteRec = (rec: PhotoType) => {
-    setSelection((prev) => prev.filter((item) => item !== rec.filename))
+    setSelection((prev) => prev.filter((item) => item !== rec.id))
     deleteRecord(rec)
   }
 
   const publishSelected = async () => {
-    let targetsFilenames = selection
-    if (targetsFilenames.length === 0) {
-      targetsFilenames = uploaded.map((item) => item.filename)
+    let targetsIds = selection
+    if (targetsIds.length === 0) {
+      targetsIds = uploaded.map((item) => item.id)
     }
 
     const promises: Promise<unknown>[] = []
-    const targets = uploaded.filter((item) => targetsFilenames.includes(item.filename))
+    const targets = uploaded.filter((item) => targetsIds.includes(item.id))
 
     for (const rec of targets) {
       const newRec: PhotoType = await completePhoto(
@@ -255,7 +255,7 @@ export const PhotoTab: React.FC = () => {
     }
 
     const results = await Promise.allSettled(promises)
-    const successfulFilenames: string[] = []
+    const successfulIds: string[] = []
 
     results.forEach((it) => {
       if (it.status === 'rejected') {
@@ -267,11 +267,11 @@ export const PhotoTab: React.FC = () => {
         })
       } else {
         setCurrentEdit(it.value as PhotoType)
-        successfulFilenames.push((it.value as PhotoType).filename)
+        successfulIds.push((it.value as PhotoType).id)
       }
     })
 
-    setUploaded(uploaded.filter((item) => !successfulFilenames.includes(item.filename)))
+    setUploaded(uploaded.filter((item) => !successfulIds.includes(item.id)))
     setSelection([])
   }
 
@@ -360,7 +360,7 @@ export const PhotoTab: React.FC = () => {
       <div className="flex flex-wrap gap-4 mt-4">
         {uploaded.map((rec) => (
           <div
-            key={rec.filename}
+            key={rec.id}
             className="shrink-0"
             style={{ minWidth: '200px', maxWidth: '300px', flex: 1 }}
           >
@@ -375,8 +375,8 @@ export const PhotoTab: React.FC = () => {
                     <AppIcon name="delete" className="w-6 h-6 leading-none" />
                   </button>
                   <AppCheckbox
-                    modelValue={selection.includes(rec.filename)}
-                    onChange={(checked) => handleCheckboxChange(!!checked, rec.filename)}
+                    modelValue={selection.includes(rec.id)}
+                    onChange={(checked) => handleCheckboxChange(!!checked, rec.id)}
                     className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                   />
                   <button

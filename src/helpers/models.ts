@@ -40,7 +40,7 @@ export interface ExifType {
   loc?: string
 }
 export interface PhotoType extends ExifType {
-  filename: string
+  id: string // filename for photos, video id for videos
   url: string
   size: number
   email: string

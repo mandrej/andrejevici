@@ -78,7 +78,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   const handleShare = async () => {
     const obj = objects[currentIndex]
     if (!obj) return
-    const hash = U + obj.filename
+    const hash = U + obj.id
     const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
     try {
@@ -87,7 +87,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
       logAnalyticsEvent('share', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: user?.email ? dummy(user.email) : 'anonymous',
-        filename: obj.filename,
+        filename: obj.id,
         headline: obj.headline || '',
         kind: obj.kind || 'photo',
       })
@@ -103,7 +103,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
       logAnalyticsEvent('image_download', {
         when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
         who: user?.email ? dummy(user.email) : 'anonymous',
-        filename: curr.filename,
+        filename: curr.id,
         headline: curr.headline,
       })
 
@@ -114,7 +114,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           const blobUrl = URL.createObjectURL(blob)
           const a = document.createElement('a')
           a.href = blobUrl
-          a.download = curr.filename
+          a.download = curr.id
           document.body.appendChild(a)
           a.click()
           document.body.removeChild(a)
@@ -124,7 +124,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
           const a = document.createElement('a')
           a.href = curr.url
           a.target = '_blank'
-          a.download = curr.filename
+          a.download = curr.id
           a.click()
         }
       }
@@ -138,7 +138,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
     }
     zoomRef.current?.changeZoom(1)
     const curr = objects[currentIndex]
-    const hash = curr ? U + curr.filename : null
+    const hash = curr ? U + curr.id : null
     onCarouselCancel(hash)
     setShowCarousel(false)
   }

@@ -9,6 +9,7 @@ import {
   writeBatch,
   where,
   setDoc,
+  deleteField,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '@/config'
@@ -42,34 +43,33 @@ const commitInBatches = async <T>(
 }
 
 /**
- * Fixes records in the photo collection by ensuring each document's ID equals its filename.
- * If doc.id !== data.filename, saves data to a new doc where id == filename and deletes the old doc.
+ * Fixes records in the database by removing the legacy 'filename' property.
  *
  * @return {Promise<void>} A promise that resolves when the records are fixed.
  */
 export const fix = async () => {
   notify({
-    message: 'Checking photo document IDs...',
+    message: 'Finding records with filename field...',
     timeout: 0,
     spinner: true,
-    group: 'fix-id',
+    group: 'fix-filename',
   })
 
   try {
     const q = query(photoCollection)
     const querySnapshot = await getDocs(q)
 
-    const toFix = querySnapshot.docs.filter((docSnap) => {
-      const data = docSnap.data() as PhotoType
-      return data.filename && docSnap.id !== data.filename
+    const toFix = querySnapshot.docs.filter((doc) => {
+      const data = doc.data()
+      return 'filename' in data
     })
 
     if (toFix.length === 0) {
       notify({
         type: 'positive',
-        message: 'All photo document IDs match their filenames',
+        message: 'No records with filename field found',
         icon: 'sym_r_check',
-        group: 'fix-id',
+        group: 'fix-filename',
       })
       return
     }
@@ -78,44 +78,25 @@ export const fix = async () => {
       message: `Found ${toFix.length} documents with mismatched IDs. Migrating...`,
       timeout: 0,
       spinner: true,
-      group: 'fix-id',
+      group: 'fix-filename',
     })
 
-    // Each item performs 2 operations (set new doc + delete old doc).
-    // Limit of 240 items = 480 operations per batch, safely under Firestore 500 limit.
-    const MIGRATION_BATCH_LIMIT = 240
-    let batch = writeBatch(db)
-    let count = 0
-
-    for (const docSnap of toFix) {
-      const data = docSnap.data() as PhotoType
-      const newDocRef = doc(photoCollection, data.filename)
-      batch.set(newDocRef, data)
-      batch.delete(docSnap.ref)
-      count++
-
-      if (count >= MIGRATION_BATCH_LIMIT) {
-        await batch.commit()
-        batch = writeBatch(db)
-        count = 0
-      }
-    }
-    if (count > 0) {
-      await batch.commit()
-    }
+    await commitInBatches(toFix, (batch, docSnap) => {
+      batch.update(docSnap.ref, { filename: deleteField() })
+    })
 
     notify({
       type: 'positive',
-      message: `Migrated ${toFix.length} records to match filename document IDs.`,
+      message: `Removed filename field from ${toFix.length} records.`,
       icon: 'sym_r_check',
       timeout: 5000,
-      group: 'fix-id',
+      group: 'fix-filename',
     })
   } catch (error) {
     notify({
       type: 'negative',
       message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-id',
+      group: 'fix-filename',
     })
   }
 }
@@ -135,8 +116,8 @@ const getStorageData = async (filename: string) => {
       const { useUserStore } = await import('@/stores/userStore')
       const auth = useUserStore.getState()
       return {
+        id: filename,
         url: downloadURL,
-        filename: filename,
         size: metadata.size || 0,
         email: auth.user?.email,
         nick: auth.user?.nick,
@@ -210,7 +191,8 @@ export const missingThumbnails = async () => {
   for (const it of results) {
     if (it.status === 'fulfilled') {
       if (it.value.exists()) {
-        const data = it.value.data() as PhotoType
+        const raw = it.value.data() as PhotoType
+        const data = { ...raw, id: it.value.id } as PhotoType
         if (data.kind === 'video') continue // Skip videos
         const filename = it.value.id.replace(/\.[^.]+$/, '')
         message += `${data?.date} ${filename}<br/>`
@@ -268,15 +250,15 @@ export const mismatch = async () => {
   ])
 
   const bucketNames = new Set(storageResult.items.map((r) => r.name))
-  const firestoreDocs = firestoreResult.docs.map((d) => d.data() as PhotoType)
-  const storageNames = new Set(
-    firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.filename),
+  const firestoreDocs = firestoreResult.docs.map(
+    (d) => ({ ...(d.data() as object), id: d.id }) as PhotoType,
   )
-  const uploadedFilenames = new Set(uploaded.map((it) => it.filename))
+  const storageNames = new Set(firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.id))
+  const uploadedIds = new Set(uploaded.map((it) => it.id))
 
   // Files in storage but not in firestore (orphaned files)
   const missingRecords = Array.from(bucketNames).filter(
-    (name) => !storageNames.has(name) && !uploadedFilenames.has(name),
+    (name) => !storageNames.has(name) && !uploadedIds.has(name),
   )
 
   // Records in firestore but not in storage (broken links)

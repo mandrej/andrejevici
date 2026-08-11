@@ -41,6 +41,7 @@
     "functionCron",
     "functionNotify",
     "functionThumb",
-    "function*/lib/index.js"
+    "function*/lib/index.js",
+    "function*/lib"
   ]
 }

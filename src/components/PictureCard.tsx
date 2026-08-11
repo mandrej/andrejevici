@@ -7,7 +7,7 @@ import AppIcon from '@/components/atoms/AppIcon'
 
 interface PictureCardProps {
   rec: PhotoType
-  onCarouselShow?: (filename: string) => void
+  onCarouselShow?: (id: string) => void
   action?: React.ReactNode
 }
 
@@ -25,15 +25,15 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
 
   if (isPublished) {
     return (
-      <div id={U + rec.filename} className="card group">
+      <div id={U + rec.id} className="card group">
         {/* Thumbnail image with aspect ratio */}
         <div className="relative w-full overflow-hidden" style={{ paddingTop: '75%' }}>
           <img
             loading="lazy"
             src={thumbUrl}
-            alt={rec.headline || rec.filename}
+            alt={rec.headline || rec.id}
             className="absolute inset-0 w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
-            onClick={() => onCarouselShow && onCarouselShow(rec.filename)}
+            onClick={() => onCarouselShow && onCarouselShow(rec.id)}
             onError={() => setImgError(true)}
           />
           {/* Broken image */}
@@ -96,12 +96,12 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
 
   // Unpublished (upload queue) card
   return (
-    <div id={U + rec.filename} className="card">
+    <div id={U + rec.id} className="card">
       <div className="relative w-full overflow-hidden" style={{ paddingTop: '80%' }}>
         <img
           loading="lazy"
           src={rec.url}
-          alt={rec.filename}
+          alt={rec.id}
           className="absolute inset-0 w-full h-full object-cover"
           onError={() => setImgError(true)}
         />

@@ -29,7 +29,7 @@ export const ManageSelection: React.FC = () => {
     for (const item of selected) {
       // Fetch fresh record from the objects store
       const objects = useAppStore.getState().objects
-      const currentItem = objects.find((o) => o.filename === item.filename)
+      const currentItem = objects.find((o) => o.id === item.id)
       if (!currentItem) continue
 
       const rec = { ...currentItem }
@@ -43,7 +43,7 @@ export const ManageSelection: React.FC = () => {
     if (!headlineToApply) return
     for (const item of selected) {
       const objects = useAppStore.getState().objects
-      const currentItem = objects.find((o) => o.filename === item.filename)
+      const currentItem = objects.find((o) => o.id === item.id)
       if (!currentItem) continue
 
       if (currentItem.kind === 'video') {
@@ -62,7 +62,7 @@ export const ManageSelection: React.FC = () => {
     const toDelete = [...selected]
     for (const item of toDelete) {
       const objects = useAppStore.getState().objects
-      const currentItem = objects.find((o) => o.filename === item.filename)
+      const currentItem = objects.find((o) => o.id === item.id)
       if (!currentItem) continue
 
       await deleteRecord(currentItem)

@@ -75,8 +75,8 @@ export const VideoTab: React.FC = () => {
 
     const datum = new Date(videoDate)
     const video: VideoType = {
+      id: ytId,
       url: videoUrl,
-      filename: ytId,
       email: user?.email || '',
       nick: user?.nick || '',
       headline: headline || CONFIG.noTitle,

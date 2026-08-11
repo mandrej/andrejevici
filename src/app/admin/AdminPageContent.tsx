@@ -103,8 +103,8 @@ export default function AdminPage() {
               <AdminCard
                 icon="aspect_ratio"
                 color="accent"
-                title="Migrate photo document IDs"
-                description="Ensures document IDs equal filenames. Saves data to new doc and deletes old doc if mismatched."
+                title="Remove filename field"
+                description="Remove filename field from Photo documents. Use id instead. Idempotent"
                 details={
                   <div className="text-center mt-2">
                     <AppBadge color="accent" className="text-base px-4 py-2">
