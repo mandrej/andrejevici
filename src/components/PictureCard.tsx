@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { U, formatDatum, openMaps } from '@/helpers'
+import { formatDatum, openMaps } from '@/helpers'
 import type { PhotoType } from '@/helpers/models'
 import { useAppStore } from '@/stores/appStore'
 import FileBroken from '@/components/FileBroken'
@@ -25,7 +25,7 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
 
   if (isPublished) {
     return (
-      <div id={U + rec.id} className="card group">
+      <div id={rec.id} className="card group">
         {/* Thumbnail image with aspect ratio */}
         <div className="relative w-full overflow-hidden" style={{ paddingTop: '75%' }}>
           <img
@@ -96,7 +96,7 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
 
   // Unpublished (upload queue) card
   return (
-    <div id={U + rec.id} className="card">
+    <div id={rec.id} className="card">
       <div className="relative w-full overflow-hidden" style={{ paddingTop: '80%' }}>
         <img
           loading="lazy"

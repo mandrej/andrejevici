@@ -75,7 +75,7 @@ export const fix = async () => {
     }
 
     notify({
-      message: `Found ${toFix.length} documents with mismatched IDs. Migrating...`,
+      message: `Found ${toFix.length} documents with filename field`,
       timeout: 0,
       spinner: true,
       group: 'fix-filename',

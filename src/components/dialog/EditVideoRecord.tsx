@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/stores/appStore'
-import { U, getYouTubeId, fetchYouTubeTitle } from '@/helpers'
+import { getYouTubeId, fetchYouTubeTitle } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
@@ -107,7 +107,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
 
       await saveRecord(recordToSave)
       if (onEditOk) {
-        onEditOk(U + recordToSave.id)
+        onEditOk(recordToSave.id)
       }
       setShowEdit(false)
     } catch (err) {

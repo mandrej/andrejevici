@@ -125,7 +125,7 @@ export default function ListPage() {
   useEffect(() => {
     const hash = window.location.hash
     if (hash) {
-      const id = hash.substring(2) // removes "#/"
+      const id = hash.replace(/^#_?/, '')
       setTimeout(() => {
         void findPhotoAndShow(id)
       }, 1000)

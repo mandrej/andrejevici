@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { U, formatBytes } from '@/helpers'
+import { formatBytes } from '@/helpers'
 import CONFIG from '@/config'
 import readExif from '@/helpers/exif'
 import notify from '@/helpers/notify'
@@ -77,7 +77,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
 
       await saveRecord(recordToSave)
       if (onEditOk) {
-        onEditOk(U + recordToSave.id)
+        onEditOk(recordToSave.id)
       }
       setShowEdit(false)
     } catch (err) {

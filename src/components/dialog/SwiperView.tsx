@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
-import { U, dummy, formatDatum, getYouTubeId } from '@/helpers'
+import { dummy, formatDatum, getYouTubeId } from '@/helpers'
 import { logAnalyticsEvent } from '@/firebase'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
@@ -78,7 +78,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   const handleShare = async () => {
     const obj = objects[currentIndex]
     if (!obj) return
-    const hash = U + obj.id
+    const hash = obj.id
     const url = window.location.origin + window.location.pathname + (hash ? '#' + hash : '')
 
     try {
@@ -138,7 +138,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
     }
     zoomRef.current?.changeZoom(1)
     const curr = objects[currentIndex]
-    const hash = curr ? U + curr.id : null
+    const hash = curr ? curr.id : null
     onCarouselCancel(hash)
     setShowCarousel(false)
   }

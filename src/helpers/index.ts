@@ -140,7 +140,6 @@ export const sliceSlug = (text: string): string[] => {
   return result
 }
 
-export const U = '_'
 export const delimiter = '||' // for counter id
 export const reFilename = /^(.*?)(\.[^.]*)?$/
 
