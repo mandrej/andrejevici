@@ -85,6 +85,7 @@ export const createPhotoOpsSlice: StateCreator<
     if (obj.thumb) {
       const oldDoc = get().objects.find((x) => x.id === obj.id)
       await setDoc(docRef, obj, { merge: true })
+      get().updateLastRecord(obj)
 
       set((state) => {
         const list = [...state.objects]
@@ -245,7 +246,18 @@ export const createPhotoOpsSlice: StateCreator<
 
   updateLastRecord: (obj) => {
     const lastRecord = get().lastRecord
-    if (!lastRecord || (obj.date && (!lastRecord.date || obj.date > lastRecord.date))) {
+    if (!lastRecord) {
+      set({ lastRecord: { ...obj } })
+      return
+    }
+
+    if (lastRecord.id === obj.id) {
+      if (obj.date && lastRecord.date && obj.date < lastRecord.date) {
+        get().fetchLastRec()
+      } else {
+        set({ lastRecord: { ...obj } })
+      }
+    } else if (obj.date && (!lastRecord.date || obj.date >= lastRecord.date)) {
       set({ lastRecord: { ...obj } })
     }
   },
