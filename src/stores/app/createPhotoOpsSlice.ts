@@ -244,21 +244,7 @@ export const createPhotoOpsSlice: StateCreator<
     }
   },
 
-  updateLastRecord: (obj) => {
-    const lastRecord = get().lastRecord
-    if (!lastRecord) {
-      set({ lastRecord: { ...obj } })
-      return
-    }
-
-    if (lastRecord.id === obj.id) {
-      if (obj.date && lastRecord.date && obj.date < lastRecord.date) {
-        get().fetchLastRec()
-      } else {
-        set({ lastRecord: { ...obj } })
-      }
-    } else if (obj.date && (!lastRecord.date || obj.date >= lastRecord.date)) {
-      set({ lastRecord: { ...obj } })
-    }
+  updateLastRecord: async (_obj) => {
+    return await get().fetchLastRec()
   },
 })
