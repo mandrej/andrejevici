@@ -96,10 +96,13 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
     }
   }
 
-  const displayVal = useMemo(() => {
-    if (multiple) return query
-    return String(modelValue ?? '')
-  }, [multiple, query, modelValue])
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const val = event.target.value
+    setQuery(val)
+    if (!multiple && onChange) {
+      onChange(val)
+    }
+  }
 
   const hasValue = multiple ? Array.isArray(modelValue) && modelValue.length > 0 : !!modelValue
 
@@ -144,8 +147,8 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
             <ComboboxInput
               className="flex-1 min-w-20 bg-transparent text-sm outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
               placeholder={placeholder}
-              value={displayVal}
-              onChange={(event) => setQuery(event.target.value)}
+              displayValue={(val: any) => (multiple ? query : (val ?? ''))}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
             />
 
