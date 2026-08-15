@@ -62,7 +62,6 @@ export interface PhotoOpsSliceActions {
   saveVideo: (obj: VideoType) => Promise<VideoType>
   deleteRecord: (obj: PhotoType) => Promise<void>
   fetchLastRec: () => Promise<PhotoType | null>
-  updateLastRecord: (obj?: PhotoType) => Promise<PhotoType | null>
   setCurrentEdit: (edit: PhotoType) => void
   setUploaded: (uploaded: PhotoType[] | ((prev: PhotoType[]) => PhotoType[])) => void
 }

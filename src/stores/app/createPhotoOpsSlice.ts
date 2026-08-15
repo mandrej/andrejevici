@@ -1,6 +1,14 @@
 import type { StateCreator } from 'zustand'
 import { storage, logAnalyticsEvent } from '@/firebase'
-import { doc, setDoc, deleteDoc, getDocsFromServer, query, orderBy, limit } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  deleteDoc,
+  getDocsFromServer,
+  query,
+  orderBy,
+  limit,
+} from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
   thumbName,
@@ -85,7 +93,6 @@ export const createPhotoOpsSlice: StateCreator<
     if (obj.thumb) {
       const oldDoc = get().objects.find((x) => x.id === obj.id)
       await setDoc(docRef, obj, { merge: true })
-      get().updateLastRecord(obj)
 
       set((state) => {
         const list = [...state.objects]
@@ -109,7 +116,6 @@ export const createPhotoOpsSlice: StateCreator<
       }
 
       await setDoc(docRef, obj, { merge: true })
-      get().updateLastRecord(obj)
       bucketStore.bucketDiff(obj.size)
       valuesStore.updateCounters(null, obj)
 
@@ -149,7 +155,6 @@ export const createPhotoOpsSlice: StateCreator<
     const userStore = useUserStore.getState()
 
     await setDoc(docRef, obj, { merge: true })
-    get().updateLastRecord(obj)
     valuesStore.updateCounters(null, obj)
 
     logAnalyticsEvent('published', {
@@ -214,9 +219,6 @@ export const createPhotoOpsSlice: StateCreator<
 
       bucketStore.bucketDiff(-obj.size)
       valuesStore.updateCounters(obj, null)
-      if (obj.date === get().lastRecord?.date) {
-        get().fetchLastRec()
-      }
     } else {
       set((state) => {
         const list = [...state.uploaded]
@@ -234,17 +236,16 @@ export const createPhotoOpsSlice: StateCreator<
 
   fetchLastRec: async () => {
     try {
-      const querySnapshot = await getDocsFromServer(query(photoCollection, orderBy('date', 'desc'), limit(1)))
+      const querySnapshot = await getDocsFromServer(
+        query(photoCollection, orderBy('date', 'desc'), limit(1)),
+      )
       const rec = getRec(querySnapshot) as PhotoType
       set({ lastRecord: rec })
+      console.log('Last record fetched:', rec?.headline, rec?.date)
       return rec
     } catch (error) {
       console.error('Failed to get last record:', error)
       return null
     }
-  },
-
-  updateLastRecord: async (_obj) => {
-    return await get().fetchLastRec()
   },
 })

@@ -33,7 +33,6 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     appStore.setShowCarousel(false)
 
     void Promise.all([
-      appStore.fetchLastRec(),
       bucketStore.fetchBucket(),
       valuesStore.fetchValues(),
     ])

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import AppButton from '@/components/atoms/AppButton'
 import { useAppStore } from '@/stores/appStore'
@@ -12,8 +12,13 @@ interface PlainLayoutProps {
 
 export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
   const lastRecord = useAppStore((state) => state.lastRecord)
+  const fetchLastRec = useAppStore((state) => state.fetchLastRec)
   const user = useUserStore((state) => state.user)
   const nickValues = useValuesStore(selectNickValues)
+
+  useEffect(() => {
+    void fetchLastRec()
+  }, [fetchLastRec])
 
   const hasNoPhotos = isEmpty(nickValues)
 
