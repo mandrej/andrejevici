@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand'
 import { storage, logAnalyticsEvent } from '@/firebase'
-import { doc, setDoc, deleteDoc, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { doc, setDoc, deleteDoc, getDocsFromServer, query, orderBy, limit } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
   thumbName,
@@ -234,7 +234,7 @@ export const createPhotoOpsSlice: StateCreator<
 
   fetchLastRec: async () => {
     try {
-      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc'), limit(1)))
+      const querySnapshot = await getDocsFromServer(query(photoCollection, orderBy('date', 'desc'), limit(1)))
       const rec = getRec(querySnapshot) as PhotoType
       set({ lastRecord: rec })
       return rec
