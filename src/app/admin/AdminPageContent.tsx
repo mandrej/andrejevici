@@ -103,12 +103,12 @@ export default function AdminPage() {
               <AdminCard
                 icon="aspect_ratio"
                 color="accent"
-                title="Remove filename field"
-                description="Remove filename field from Photo documents. Use id instead. Idempotent"
+                title="Convert date to Timestamp"
+                description="Convert date string field to Firestore Timestamp object in photo documents. Idempotent"
                 details={
                   <div className="text-center mt-2">
                     <AppBadge color="accent" className="text-base px-4 py-2">
-                      Last run: {formatDatum(new Date('2026-08-11'), 'DD.MM.YYYY')}
+                      Last run: {formatDatum(new Date('2026-08-16'), 'DD.MM.YYYY')}
                     </AppBadge>
                   </div>
                 }

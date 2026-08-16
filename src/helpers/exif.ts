@@ -1,8 +1,8 @@
 import exifReader from 'exifreader'
-import { formatDatum, getDateFields } from '@/helpers/index'
+import { getDateFields } from '@/helpers/index'
 import type { ExifType } from '@/helpers/models'
 import CONFIG from 'src/config'
-import { getDoc, doc } from 'firebase/firestore'
+import { getDoc, doc, Timestamp } from 'firebase/firestore'
 import { renameCollection } from '@/helpers/collections'
 
 /** Regex to convert EXIF date format (YYYY:MM:DD) to ISO (YYYY-MM-DD) */
@@ -31,7 +31,7 @@ const resolveRename = async (value: string): Promise<string> => {
  * @return {Promise<ExifType | null>} A promise that resolves to an object containing the EXIF data, or null if the file does not contain EXIF data.
  */
 const readExif = async (url: string): Promise<ExifType | null> => {
-  const result: ExifType = { model: CONFIG.unknownModel, date: formatDatum(new Date()) }
+  const result: ExifType = { model: CONFIG.unknownModel, date: Timestamp.fromDate(new Date()) }
   const tags = await exifReader.load(url, { expanded: true })
 
   // Strip bulky/unused tag groups

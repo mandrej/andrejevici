@@ -10,10 +10,11 @@ import {
   where,
   setDoc,
   deleteField,
+  Timestamp,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import CONFIG from '@/config'
-import { counterId, getYouTubeId, reFilename } from '@/helpers'
+import { counterId, formatDatum, getYouTubeId, parseDate, reFilename } from '@/helpers'
 import { counterCollection, photoCollection, renameCollection } from '@/helpers/collections'
 
 import notify from '@/helpers/notify'
@@ -43,60 +44,70 @@ const commitInBatches = async <T>(
 }
 
 /**
- * Fixes records in the database by removing the legacy 'filename' property.
+ * Fixes records in the database by converting string date fields to Firestore Timestamps
+ * and removing the legacy 'filename' property.
  *
  * @return {Promise<void>} A promise that resolves when the records are fixed.
  */
 export const fix = async () => {
   notify({
-    message: 'Finding records with filename field...',
+    message: 'Finding records with string date field...',
     timeout: 0,
     spinner: true,
-    group: 'fix-filename',
+    group: 'fix-date-timestamp',
   })
 
   try {
     const q = query(photoCollection)
     const querySnapshot = await getDocs(q)
 
-    const toFix = querySnapshot.docs.filter((doc) => {
-      const data = doc.data()
-      return 'filename' in data
+    const toFix = querySnapshot.docs.filter((docSnap) => {
+      const data = docSnap.data()
+      return typeof data.date === 'string' || 'filename' in data
     })
 
     if (toFix.length === 0) {
       notify({
         type: 'positive',
-        message: 'No records with filename field found',
+        message: 'All records have date as Timestamp',
         icon: 'sym_r_check',
-        group: 'fix-filename',
+        group: 'fix-date-timestamp',
       })
       return
     }
 
     notify({
-      message: `Found ${toFix.length} documents with filename field`,
+      message: `Found ${toFix.length} documents to update to Timestamp`,
       timeout: 0,
       spinner: true,
-      group: 'fix-filename',
+      group: 'fix-date-timestamp',
     })
 
     await commitInBatches(toFix, (batch, docSnap) => {
-      batch.update(docSnap.ref, { filename: deleteField() })
+      const data = docSnap.data()
+      const updateData: Record<string, unknown> = {}
+      if (typeof data.date === 'string') {
+        const d = parseDate(data.date)
+        updateData.date = Timestamp.fromDate(d)
+      }
+      if ('filename' in data) {
+        updateData.filename = deleteField()
+      }
+      batch.update(docSnap.ref, updateData)
     })
 
     notify({
       type: 'positive',
-      message: `Removed filename field from ${toFix.length} records.`,
+      message: `Updated date field to Timestamp in ${toFix.length} records.`,
       icon: 'sym_r_check',
       timeout: 5000,
-      group: 'fix-filename',
+      group: 'fix-date-timestamp',
     })
   } catch (error) {
     notify({
       type: 'negative',
       message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-filename',
+      group: 'fix-date-timestamp',
     })
   }
 }
@@ -195,7 +206,7 @@ export const missingThumbnails = async () => {
         const data = { ...raw, id: it.value.id } as PhotoType
         if (data.kind === 'video') continue // Skip videos
         const filename = it.value.id.replace(/\.[^.]+$/, '')
-        message += `${data?.date} ${filename}<br/>`
+        message += `${formatDatum(data?.date)} ${filename}<br/>`
         hit++
       }
     } else {

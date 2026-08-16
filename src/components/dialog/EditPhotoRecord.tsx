@@ -6,6 +6,7 @@ import CONFIG from '@/config'
 import readExif from '@/helpers/exif'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
+import type { Timestamp } from 'firebase/firestore'
 import AutoComplete from '@/components/AutoComplete'
 import FileBroken from '@/components/FileBroken'
 import AppDialog from '@/components/atoms/AppDialog'
@@ -52,7 +53,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
       setTmp((prev) => ({
         ...prev,
         ...exif,
-        date: toDateTimeLocalString(exif.date || prev.date),
+        date: toDateTimeLocalString(exif.date || prev.date) as unknown as Timestamp,
         tags,
       }))
     }
@@ -167,8 +168,8 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
 
             <div className="col-span-2 sm:col-span-1">
               <AppInput
-                modelValue={tmp.date}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
+                modelValue={toDateTimeLocalString(tmp.date)}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))}
                 label="Date taken"
                 type="datetime-local"
               />

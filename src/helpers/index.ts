@@ -1,6 +1,7 @@
 import CONFIG from '@/config'
 import { slugify } from 'transliteration'
 import type { FindType, MyUserType, PhotoType } from '@/helpers/models'
+import { Timestamp } from 'firebase/firestore'
 
 /**
  * Format bytes as human-readable size string (e.g. "1.2 MB").
@@ -21,7 +22,7 @@ export type DateInput =
   | undefined
 
 export interface DateFields {
-  date: string
+  date: Timestamp
   year: number
   month: number
   day: number
@@ -146,10 +147,10 @@ export const formatDatum = (str?: DateInput, format: string = CONFIG.dateFormat)
  * @param format - Format string for the date property. Defaults to `CONFIG.dateFormat`.
  * @returns Object containing `date`, `year`, `month`, and `day`.
  */
-export const getDateFields = (str?: DateInput, format: string = CONFIG.dateFormat): DateFields => {
+export const getDateFields = (str?: DateInput): DateFields => {
   const d = parseDate(str)
   return {
-    date: formatDateNative(d, format),
+    date: Timestamp.fromDate(d),
     year: d.getFullYear(),
     month: d.getMonth() + 1,
     day: d.getDate(),

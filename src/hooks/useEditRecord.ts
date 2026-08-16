@@ -13,6 +13,7 @@ import {
 import { sliceSlug, isValidEmail, getDateFields, toDateTimeLocalString } from '@/helpers'
 import CONFIG from '@/config'
 import type { PhotoType } from '@/helpers/models'
+import type { Timestamp } from 'firebase/firestore'
 
 interface UseEditRecordProps {
   rec: PhotoType
@@ -34,13 +35,13 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
 
   const [tmp, setTmp] = useState<PhotoType>(() => ({
     ...rec,
-    date: toDateTimeLocalString(rec.date),
+    date: toDateTimeLocalString(rec.date) as unknown as Timestamp,
   }))
 
   useEffect(() => {
     setTmp({
       ...rec,
-      date: toDateTimeLocalString(rec.date),
+      date: toDateTimeLocalString(rec.date) as unknown as Timestamp,
     })
   }, [rec])
 

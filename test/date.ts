@@ -61,9 +61,9 @@ describe('Date Helpers', () => {
   })
 
   describe('getDateFields', () => {
-    test('should return formatted date string and component numbers', () => {
-      const fields = getDateFields('2026-08-16', 'DD.MM.YYYY')
-      assert.equal(fields.date, '16.08.2026')
+    test('should return Timestamp and component numbers', () => {
+      const fields = getDateFields('2026-08-16')
+      assert.equal(fields.date.toDate().getFullYear(), 2026)
       assert.equal(fields.year, 2026)
       assert.equal(fields.month, 8)
       assert.equal(fields.day, 16)

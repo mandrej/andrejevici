@@ -24,7 +24,7 @@ export interface BucketType {
   count: number
 }
 export interface ExifType {
-  date?: string
+  date?: Timestamp
   day?: number
   month?: number
   year?: number

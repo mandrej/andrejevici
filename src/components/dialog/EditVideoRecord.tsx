@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/stores/appStore'
-import { getYouTubeId, fetchYouTubeTitle } from '@/helpers'
+import { getYouTubeId, fetchYouTubeTitle, toDateTimeLocalString } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
+import type { Timestamp } from 'firebase/firestore'
 import AutoComplete from '@/components/AutoComplete'
 import FileBroken from '@/components/FileBroken'
 import AppDialog from '@/components/atoms/AppDialog'
@@ -189,8 +190,8 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
 
             <div className="col-span-2 sm:col-span-1">
               <AppInput
-                modelValue={tmp.date}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val }))}
+                modelValue={toDateTimeLocalString(tmp.date)}
+                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))}
                 label="Date taken"
                 type="datetime-local"
               />
