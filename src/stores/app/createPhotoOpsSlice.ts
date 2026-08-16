@@ -18,9 +18,9 @@ import {
   sliceSlug,
   getYouTubeId,
   formatDatum,
+  getDateFields,
   dummy,
 } from '@/helpers'
-import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
@@ -55,17 +55,14 @@ export const createPhotoOpsSlice: StateCreator<
     })),
 
   completePhoto: async (rec, tags, headline) => {
-    const datum = new Date()
+    const dateFields = getDateFields(new Date())
     const exif = await readExif(rec.url)
 
     const tmp: PhotoType = {
       ...rec,
       id: rec.id,
       kind: 'photo',
-      date: formatDatum(datum, CONFIG.dateFormat),
-      year: datum.getFullYear(),
-      month: datum.getMonth() + 1,
-      day: datum.getDate(),
+      ...dateFields,
       headline,
       text: sliceSlug(headline),
       tags,

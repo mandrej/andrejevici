@@ -1,5 +1,5 @@
 import exifReader from 'exifreader'
-import { formatDatum } from '@/helpers/index'
+import { formatDatum, getDateFields } from '@/helpers/index'
 import type { ExifType } from '@/helpers/models'
 import CONFIG from 'src/config'
 import { getDoc, doc } from 'firebase/firestore'
@@ -67,11 +67,11 @@ const readExif = async (url: string): Promise<ExifType | null> => {
     // Date
     if ('DateTimeOriginal' in exif) {
       const isoDate = exif.DateTimeOriginal!.description.replace(rexDate, '$1-$2-$3')
-      const datum = new Date(isoDate)
-      result.date = formatDatum(datum)
-      result.year = datum.getFullYear()
-      result.month = datum.getMonth() + 1
-      result.day = datum.getDate()
+      const fields = getDateFields(isoDate)
+      result.date = fields.date
+      result.year = fields.year
+      result.month = fields.month
+      result.day = fields.day
     }
 
     // Numeric EXIF fields

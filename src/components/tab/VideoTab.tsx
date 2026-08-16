@@ -4,7 +4,13 @@ import React, { useState, useRef, useCallback } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useUserStore } from '@/stores/userStore'
-import { sliceSlug, formatDatum, getYouTubeId, fetchYouTubeTitle } from '@/helpers'
+import {
+  sliceSlug,
+  getYouTubeId,
+  fetchYouTubeTitle,
+  toDateTimeLocalString,
+  getDateFields,
+} from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import AppInput from '@/components/atoms/AppInput'
@@ -24,13 +30,7 @@ export const VideoTab: React.FC = () => {
   const [headline, setHeadline] = useState('')
   const [fetchingTitle, setFetchingTitle] = useState(false)
 
-  const getInitialDateString = () => {
-    const now = new Date()
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
-  }
-
-  const [videoDate, setVideoDate] = useState(getInitialDateString)
+  const [videoDate, setVideoDate] = useState(() => toDateTimeLocalString())
 
   /** Attempt to fetch the YouTube title and auto-fill headline. */
   const autoFillTitle = useCallback(async (url: string) => {
@@ -73,7 +73,6 @@ export const VideoTab: React.FC = () => {
       return
     }
 
-    const datum = new Date(videoDate)
     const video: VideoType = {
       id: ytId,
       url: videoUrl,
@@ -82,10 +81,7 @@ export const VideoTab: React.FC = () => {
       headline: headline || CONFIG.noTitle,
       tags: [...tagsToApply],
       text: sliceSlug(headline || CONFIG.noTitle),
-      date: formatDatum(datum, CONFIG.dateFormat),
-      year: datum.getFullYear(),
-      month: datum.getMonth() + 1,
-      day: datum.getDate(),
+      ...getDateFields(videoDate),
       size: 0,
     }
 
@@ -93,7 +89,7 @@ export const VideoTab: React.FC = () => {
       await saveVideo(video)
       setVideoUrl('')
       setHeadline('')
-      setVideoDate(getInitialDateString())
+      setVideoDate(toDateTimeLocalString())
       setTagsToApply([])
       notify({ type: 'positive', message: 'Video published successfully' })
     } catch (err) {

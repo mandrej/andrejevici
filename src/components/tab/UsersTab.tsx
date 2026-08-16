@@ -12,6 +12,7 @@ import AppButton from '@/components/atoms/AppButton'
 import AppInput from '@/components/atoms/AppInput'
 import AppIcon from '@/components/atoms/AppIcon'
 import AppDialog from '@/components/atoms/AppDialog'
+import { getAgeDays, type DateInput } from '@/helpers'
 import type { UsersAndDevices } from '@/helpers/models'
 
 export const UsersTab: React.FC = () => {
@@ -160,13 +161,7 @@ export const UsersTab: React.FC = () => {
     }
   }
 
-  const ageDays = (timestamp: any) => {
-    if (!timestamp) return 0
-    const timeMs =
-      typeof timestamp.toMillis === 'function' ? timestamp.toMillis() : timestamp.seconds * 1000
-    const diff = Date.now() - timeMs
-    return Math.floor(diff / 86400000)
-  }
+  const ageDays = (timestamp: unknown) => getAgeDays(timestamp as DateInput)
 
   const contribution = (nick: string) => {
     const entry = nickWithCount[nick]

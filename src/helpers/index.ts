@@ -12,11 +12,71 @@ const formatBytesNative = (bytes: number): string => {
   return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i]
 }
 
+export type DateInput =
+  | Date
+  | number
+  | string
+  | { toDate?: () => Date; seconds?: number; toMillis?: () => number }
+  | null
+  | undefined
+
+export interface DateFields {
+  date: string
+  year: number
+  month: number
+  day: number
+}
+
+/**
+ * Safely parses any date input (Date object, timestamp number, ISO string, or Firestore Timestamp) into a Date.
+ * Returns a fallback Date (defaults to current date) if input is invalid or missing.
+ */
+export const parseDate = (val?: DateInput, fallback: Date = new Date()): Date => {
+  if (val === null || val === undefined || val === '') return fallback
+  if (val instanceof Date) return isNaN(val.getTime()) ? fallback : val
+
+  if (typeof val === 'object') {
+    if (typeof val.toDate === 'function') {
+      const d = val.toDate()
+      return isNaN(d.getTime()) ? fallback : d
+    }
+    if (typeof val.toMillis === 'function') {
+      const d = new Date(val.toMillis())
+      return isNaN(d.getTime()) ? fallback : d
+    }
+    if (typeof val.seconds === 'number') {
+      const d = new Date(val.seconds * 1000)
+      return isNaN(d.getTime()) ? fallback : d
+    }
+  }
+
+  if (typeof val === 'number') {
+    const d = new Date(val)
+    return isNaN(d.getTime()) ? fallback : d
+  }
+
+  if (typeof val === 'string') {
+    const trimmed = val.trim()
+    if (!trimmed) return fallback
+    if (/^\d+$/.test(trimmed)) {
+      const d = new Date(Number(trimmed))
+      if (!isNaN(d.getTime())) return d
+    }
+    const sanitized = trimmed.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')
+    const d = new Date(sanitized)
+    if (!isNaN(d.getTime())) return d
+    const parsed = Date.parse(sanitized)
+    if (!isNaN(parsed)) return new Date(parsed)
+  }
+
+  return fallback
+}
+
 /**
  * Format a date using the given token-based format string.
  * Supports: YYYY MM DD HH mm ss
  */
-const formatDateNative = (d: Date, fmt: string): string => {
+export const formatDateNative = (d: Date, fmt: string): string => {
   const pad = (n: number, len = 2) => String(n).padStart(len, '0')
   return fmt
     .replace('YYYY', String(d.getFullYear()))
@@ -70,16 +130,53 @@ export const formatBytes = (bytes: number): string => formatBytesNative(bytes)
 /**
  * Formats a date value using the application's configured date format.
  *
- * @param str - The date to format; accepts a `Date` object, a Unix timestamp, or an ISO string.
- * @param format - Optional Quasar date format string. Defaults to `CONFIG.dateFormat`.
+ * @param str - The date to format; accepts a `Date` object, Unix timestamp, ISO string, or Firestore Timestamp.
+ * @param format - Format string. Defaults to `CONFIG.dateFormat`.
  * @returns The formatted date string.
  */
-export const formatDatum = (
-  str: Date | number | string,
-  format: string = CONFIG.dateFormat,
-): string => {
-  const d = new Date(typeof str === 'string' || typeof str === 'number' ? str : str)
+export const formatDatum = (str?: DateInput, format: string = CONFIG.dateFormat): string => {
+  const d = parseDate(str)
   return formatDateNative(d, format)
+}
+
+/**
+ * Extracts formatted date string and component numbers (year, month 1-12, day 1-31).
+ *
+ * @param str - Date input value.
+ * @param format - Format string for the date property. Defaults to `CONFIG.dateFormat`.
+ * @returns Object containing `date`, `year`, `month`, and `day`.
+ */
+export const getDateFields = (str?: DateInput, format: string = CONFIG.dateFormat): DateFields => {
+  const d = parseDate(str)
+  return {
+    date: formatDateNative(d, format),
+    year: d.getFullYear(),
+    month: d.getMonth() + 1,
+    day: d.getDate(),
+  }
+}
+
+/**
+ * Formats a date input into an HTML5 `<input type="datetime-local">` compatible string (`YYYY-MM-DDTHH:mm`).
+ *
+ * @param str - Date input value.
+ * @returns ISO-like local datetime string (`YYYY-MM-DDTHH:mm`).
+ */
+export const toDateTimeLocalString = (str?: DateInput): string => {
+  return formatDatum(str, 'YYYY-MM-DDTHH:mm')
+}
+
+/**
+ * Calculates the elapsed age in days from a date/timestamp to current time.
+ *
+ * @param timestamp - Date or Firestore Timestamp input.
+ * @returns Elapsed age in integer days.
+ */
+export const getAgeDays = (timestamp?: DateInput): number => {
+  if (!timestamp) return 0
+  const d = parseDate(timestamp)
+  const diff = Date.now() - d.getTime()
+  return Math.max(0, Math.floor(diff / 86400000))
 }
 /**
  * Creates a fake history entry.

@@ -10,7 +10,7 @@ import {
   selectLensValues,
   selectEmailValues,
 } from '@/stores/valuesStore'
-import { sliceSlug, isValidEmail, formatDatum } from '@/helpers'
+import { sliceSlug, isValidEmail, getDateFields, toDateTimeLocalString } from '@/helpers'
 import CONFIG from '@/config'
 import type { PhotoType } from '@/helpers/models'
 
@@ -32,10 +32,16 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
   const tagsToApply = useValuesStore((state) => state.tagsToApply)
   const addNewValue = useValuesStore((state) => state.addNewValue)
 
-  const [tmp, setTmp] = useState<PhotoType>({ ...rec })
+  const [tmp, setTmp] = useState<PhotoType>(() => ({
+    ...rec,
+    date: toDateTimeLocalString(rec.date),
+  }))
 
   useEffect(() => {
-    setTmp({ ...rec })
+    setTmp({
+      ...rec,
+      date: toDateTimeLocalString(rec.date),
+    })
   }, [rec])
 
   const copyTags = (source: string[]) => {
@@ -49,12 +55,7 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
   }
 
   const prepareRecord = async (record: PhotoType) => {
-    const recordToSave = { ...record }
-    const datum = new Date(Date.parse(recordToSave.date || ''))
-    recordToSave.date = formatDatum(datum, CONFIG.dateFormat)
-    recordToSave.year = datum.getFullYear()
-    recordToSave.month = datum.getMonth() + 1
-    recordToSave.day = datum.getDate()
+    const recordToSave = { ...record, ...getDateFields(record.date) }
     recordToSave.headline = recordToSave.headline?.trim() || CONFIG.noTitle
     recordToSave.text = sliceSlug(recordToSave.headline)
 

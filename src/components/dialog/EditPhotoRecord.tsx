@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { formatBytes } from '@/helpers'
+import { formatBytes, toDateTimeLocalString } from '@/helpers'
 import CONFIG from '@/config'
 import readExif from '@/helpers/exif'
 import notify from '@/helpers/notify'
@@ -52,6 +52,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
       setTmp((prev) => ({
         ...prev,
         ...exif,
+        date: toDateTimeLocalString(exif.date || prev.date),
         tags,
       }))
     }
