@@ -12,13 +12,16 @@ interface PlainLayoutProps {
 
 export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
   const lastRecord = useAppStore((state) => state.lastRecord)
-  const fetchLastRec = useAppStore((state) => state.fetchLastRec)
+  const subscribeLastRec = useAppStore((state) => state.subscribeLastRec)
   const user = useUserStore((state) => state.user)
   const nickValues = useValuesStore(selectNickValues)
 
   useEffect(() => {
-    void fetchLastRec()
-  }, [fetchLastRec])
+    const unsubscribe = subscribeLastRec()
+    return () => {
+      unsubscribe()
+    }
+  }, [subscribeLastRec])
 
   const hasNoPhotos = isEmpty(nickValues)
 

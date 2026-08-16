@@ -4,10 +4,10 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  getDocsFromServer,
   query,
   orderBy,
   limit,
+  onSnapshot,
 } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
@@ -231,18 +231,20 @@ export const createPhotoOpsSlice: StateCreator<
     })
   },
 
-  fetchLastRec: async () => {
-    try {
-      const querySnapshot = await getDocsFromServer(
-        query(photoCollection, orderBy('date', 'desc'), limit(1)),
-      )
-      const rec = getRec(querySnapshot) as PhotoType
-      set({ lastRecord: rec })
-      console.log('Last record fetched:', rec?.headline, rec?.date)
-      return rec
-    } catch (error) {
-      console.error('Failed to get last record:', error)
-      return null
-    }
+  subscribeLastRec: () => {
+    const q = query(photoCollection, orderBy('date', 'desc'), limit(1))
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const rec = getRec(snapshot) as PhotoType | null
+        set({ lastRecord: rec })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Last record snapshot:', rec?.headline, rec?.date)
+        }
+      },
+      (error) => {
+        console.error('Failed to listen to last record snapshot:', error)
+      },
+    )
   },
 })
