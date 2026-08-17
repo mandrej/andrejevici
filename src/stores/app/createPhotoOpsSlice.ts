@@ -1,14 +1,6 @@
 import type { StateCreator } from 'zustand'
 import { storage, logAnalyticsEvent } from '@/firebase'
-import {
-  doc,
-  setDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  limit,
-  onSnapshot,
-} from 'firebase/firestore'
+import { doc, setDoc, deleteDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
   thumbName,

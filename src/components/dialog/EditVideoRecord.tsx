@@ -191,7 +191,9 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
             <div className="col-span-2 sm:col-span-1">
               <AppInput
                 modelValue={toDateTimeLocalString(tmp.date)}
-                onChangeValue={(val) => setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))}
+                onChangeValue={(val) =>
+                  setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))
+                }
                 label="Date taken"
                 type="datetime-local"
               />

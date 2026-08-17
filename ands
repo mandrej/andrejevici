@@ -8,6 +8,7 @@ function syntax {
   echo $"$0 icons  - Build icons"
   echo $"$0 build  - Build client"
   echo $"$0 deploy - Deploy"
+  echo $"$0 indexes - Deploy indexes only"
   echo $"$0 functions - Deploy functions only"
   # echo $"$0 extensions - Deploy extensions only"
   exit 1
@@ -31,7 +32,10 @@ else
       npm run build
       exit ;;
     deploy)
-      firebase deploy --except functions,extensions
+      firebase deploy --only hosting
+      exit ;;
+    indexes)
+      firebase deploy --only firestore:indexes
       exit ;;
     functions)
       npm --prefix functionNotify run build

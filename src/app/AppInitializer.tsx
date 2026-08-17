@@ -32,10 +32,7 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     appStore.setShowConfirm(false)
     appStore.setShowCarousel(false)
 
-    void Promise.all([
-      bucketStore.fetchBucket(),
-      valuesStore.fetchValues(),
-    ])
+    void Promise.all([bucketStore.fetchBucket(), valuesStore.fetchValues()])
 
     // Auth state listener
     const unsubscribeAuth = onAuthStateChanged(getAuth(), (usr) => {
