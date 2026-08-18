@@ -37,7 +37,7 @@ This file provides quick guidance and technical context for Claude Code (`claude
 - **Backend**: Firebase 11 (Firestore, Cloud Storage, Authentication, Cloud Functions, Cloud Messaging)
 - **State Management**: Zustand 5 (Modular Slices)
 - **Media & EXIF**: `exifreader` (client-side EXIF metadata parser) + `transliteration` (Serbian Cyrillic/Latin slugifier)
-- **PWA Integration**: Workbox Build 7 + Custom Service Worker (`public/sw.js`)
+- **PWA Integration**: Workbox Build 7 + Custom Service Worker (`src-pwa/custom-service-worker.ts` → `public/sw.js` via `scripts/build-pwa.js`)
 
 ### Project Layout
 
@@ -51,6 +51,7 @@ src/
 ├── config.ts                        # Central project credentials, limits, & EXIF tag definitions
 └── styles/                          # Tailwind CSS 4 global styles (app.css)
 
+src-pwa/                             # PWA source (custom-service-worker.ts, manifest.json)
 functionCron/                        # Cloud Function: Scheduled background maintenance
 functionNotify/                      # Cloud Function: Push notification delivery
 functionThumb/                       # Cloud Function: Image thumbnail creation (_400x400.jpeg)
