@@ -251,17 +251,11 @@ export default function ListPage() {
         </div>
       </AppDialog>
 
-      {/* Error Banners */}
+      {/* Error Banner */}
       <ErrorBanner
-        inquiry={!busy && error === 'empty'}
-        title="No data found"
-        detail="for current filter / search"
-      />
-
-      <ErrorBanner
-        inquiry={!busy && error !== '' && error !== 'empty'}
-        title="Something went wrong ..."
-        detail={error}
+        inquiry={!busy && Boolean(error)}
+        title={error === 'empty' ? 'No data found' : 'Something went wrong ...'}
+        detail={error === 'empty' ? 'for current filter / search' : error}
       />
 
       {showCarousel && index !== -1 && (
