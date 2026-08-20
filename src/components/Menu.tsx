@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useUserStore } from '@/stores/userStore'
-import MenuLink from '@/components/sidebar/MenuLink'
+import MenuLink from '@/components/MenuLink'
 
 interface MenuProps {
   onLinkClick?: () => void

@@ -6,12 +6,12 @@ import AppButton from '@/components/atoms/AppButton'
 import AppProgress from '@/components/atoms/AppProgress'
 import { useScreen } from '@/composables/useScreen'
 import { useUserStore } from '@/stores/userStore'
-import Sidebar from '@/components/sidebar/Sidebar'
+import Sidebar from '@/components/layouts/Sidebar'
 
 // Dynamic Toolbar imports based on route
-import ListToolbar from '@/components/toolbar/ListToolbar'
-import AddToolbar from '@/components/toolbar/AddToolbar'
-import AdminToolbar from '@/components/toolbar/AdminToolbar'
+import ListToolbar from '@/app/list/ListToolbar'
+import AddToolbar from '@/app/add/AddToolbar'
+import AdminToolbar from '@/app/admin/AdminToolbar'
 
 interface DefaultLayoutProps {
   children: React.ReactNode

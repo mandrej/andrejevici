@@ -20,8 +20,8 @@ import { UploadTracker } from '@/helpers/uploadTracker'
 import AppButton from '@/components/atoms/AppButton'
 import AppCheckbox from '@/components/atoms/AppCheckbox'
 import AppIcon from '@/components/atoms/AppIcon'
-import EditPhotoRecord from '@/components/dialog/EditPhotoRecord'
-import EditVideoRecord from '@/components/dialog/EditVideoRecord'
+import EditPhotoRecord from '@/components/EditPhotoRecord'
+import EditVideoRecord from '@/components/EditVideoRecord'
 import type { PhotoType } from '@/helpers/models'
 
 interface ValidationErrors {

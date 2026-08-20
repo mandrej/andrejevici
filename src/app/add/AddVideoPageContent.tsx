@@ -2,7 +2,7 @@
 
 import React from 'react'
 import DefaultLayout from '@/components/layouts/DefaultLayout'
-import VideoTab from '@/components/tab/VideoTab'
+import VideoTab from '@/app/add/VideoTab'
 
 export default function AddVideoPageContent() {
   return (

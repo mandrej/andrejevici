@@ -2,9 +2,9 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
-import Menu from '@/components/sidebar/Menu'
-import ManageSelection from '@/components/sidebar/ManageSelection'
-import SendMessage from '@/components/sidebar/SendMessage'
+import Menu from '@/components/Menu'
+import ManageSelection from '@/components/ManageSelection'
+import SendMessage from '@/components/SendMessage'
 
 interface SidebarProps {
   onCloseMobile?: () => void

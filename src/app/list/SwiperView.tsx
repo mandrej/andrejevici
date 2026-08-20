@@ -11,7 +11,7 @@ import Lightbox, { IconButton } from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import AppIcon from '@/components/atoms/AppIcon'
-import PhotoInfo from '@/components/dialog/PhotoInfo'
+import PhotoInfo from '@/app/list/PhotoInfo'
 
 interface SwiperViewProps {
   index: number
