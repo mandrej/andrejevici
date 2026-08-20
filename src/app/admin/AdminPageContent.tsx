@@ -49,7 +49,7 @@ export default function AdminPage() {
         {/* Repair panel */}
         {adminTab === 'repair' && (
           <>
-            <div className="flex items-center gap-3 px-4 py-3 bg-gray-55 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <AppIcon name="construction" className="w-6 h-6 text-primary" />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
                 Rebuild / Repair

@@ -217,7 +217,7 @@ export const UsersTab: React.FC = () => {
             : filteredResult.map((item) => (
                 <div
                   key={item.uid}
-                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-55 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="shrink-0 mr-3">
                     <AppBadge color="warning" textColor="black" className="text-sm px-2 py-1">

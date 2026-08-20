@@ -69,7 +69,7 @@ export const SendMessage: React.FC = () => {
   }
 
   return (
-    <div className="flex items-end gap-2 p-2 pb-6 rounded-lg bg-gray-55 dark:bg-gray-800 transition-colors">
+    <div className="flex items-end gap-2 p-2 pb-6 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
       <div className="grow">
         <AppInput
           modelValue={message}

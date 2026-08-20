@@ -278,7 +278,7 @@ export const MetaTab: React.FC = () => {
             {sortedRows.map((row) => (
               <tr
                 key={row.name}
-                className="hover:bg-gray-55 dark:hover:bg-gray-800/50 transition-colors"
+                className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
                 <td
                   className="px-3 py-2 cursor-pointer text-primary hover:underline"

@@ -75,7 +75,7 @@ export const ManageSelection: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-55 dark:bg-gray-800 transition-colors p-2">
+    <div className="bg-gray-50 dark:bg-gray-800 transition-colors p-2">
       {user?.isAuthorized && (
         <div className="mb-4">
           <AppInput

@@ -301,7 +301,7 @@ export const PhotoTab: React.FC = () => {
             className={`w-full sm:w-auto flex-1 flex flex-col items-center justify-center min-h-35 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
               isDragging
                 ? 'border-primary bg-primary/5'
-                : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-55 dark:hover:bg-gray-800'
+                : 'border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
             onDragOver={(e) => {
               e.preventDefault()
