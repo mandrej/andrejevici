@@ -4,7 +4,6 @@ import React from 'react'
 import Link from 'next/link'
 import { useAppStore } from '@/stores/appStore'
 import AppProgress from '@/components/atoms/AppProgress'
-import AppIcon from '@/components/atoms/AppIcon'
 
 export const AddToolbar: React.FC = () => {
   const progressInfo = useAppStore((state) => state.progressInfo)
@@ -12,21 +11,23 @@ export const AddToolbar: React.FC = () => {
   const setAddTab = useAppStore((state) => state.setAddTab)
 
   const tabs = [
-    { name: 'photo', icon: 'image', label: 'Images' },
-    { name: 'video', icon: 'video_library', label: 'Videos' },
+    { name: 'photo', label: 'Images' },
+    { name: 'video', label: 'Videos' },
   ] as const
+
+  const headline = addTab === 'photo' ? 'Upload / publish' : 'Link videos'
 
   const progressKeys = Object.keys(progressInfo || {})
 
   return (
     <>
-      {/* Title */}
+      {/* Inner Headline */}
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <Link
           href="/"
-          className="text-base font-semibold whitespace-nowrap link hover:opacity-80 transition-opacity"
+          className="text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap hover:opacity-80 transition-opacity"
         >
-          Add
+          {headline}
         </Link>
       </div>
 
@@ -48,20 +49,19 @@ export const AddToolbar: React.FC = () => {
         </div>
       )}
 
-      {/* Tab switcher */}
+      {/* Tab switcher without icons */}
       <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 ml-2">
         {tabs.map((tab) => (
           <button
             key={tab.name}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+            className={`flex items-center px-3 py-1.5 text-sm transition-colors ${
               addTab === tab.name
                 ? 'bg-primary text-white'
                 : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
             onClick={() => setAddTab(tab.name)}
           >
-            <AppIcon name={tab.icon} className="w-4 h-4" />
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>

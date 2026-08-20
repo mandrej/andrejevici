@@ -17,9 +17,9 @@ export const ListToolbar: React.FC = () => {
         {screen.gtXs && (
           <Link
             href="/"
-            className="text-base font-semibold whitespace-nowrap link hover:opacity-80 transition-opacity"
+            className="text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap hover:opacity-80 transition-opacity"
           >
-            Album
+            Browse
           </Link>
         )}
         <GlobalSearch />

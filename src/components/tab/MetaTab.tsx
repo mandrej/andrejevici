@@ -47,10 +47,6 @@ export const MetaTab: React.FC = () => {
     return metaOptions.find((o) => o.value === metaTab)?.short || 'Value'
   }, [metaTab])
 
-  const activeTabIcon = useMemo(() => {
-    return metaOptions.find((o) => o.value === metaTab)?.icon || 'settings'
-  }, [metaTab])
-
   const currentCounts = useMemo(() => {
     return values[metaTab as keyof typeof values] || {}
   }, [values, metaTab])
@@ -201,7 +197,6 @@ export const MetaTab: React.FC = () => {
     <>
       {/* Header: tab selector */}
       <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <AppIcon name={activeTabIcon} className="w-6 h-6 text-primary" />
         <AppSelect
           modelValue={metaTab}
           options={metaOptions.map((o) => ({ label: o.label, value: o.value }))}

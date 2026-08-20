@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import ListPageContent from '@/app/list/ListPageContent'
 
 export const metadata: Metadata = {
-  title: 'Album',
+  title: 'Browse',
 }
 
 export default function ListPage() {
