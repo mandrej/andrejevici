@@ -1,7 +1,7 @@
 {
   "name": "andrejevici",
-  "version": "7.0.0",
-  "description": "Andrejevici photo album",
+  "version": "7.0.1",
+  "description": "The Andrejevic photography collection",
   "productName": "Andrejevici",
   "author": "mandrej <milan.andrejevic@gmail.com>",
   "type": "module",

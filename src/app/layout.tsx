@@ -8,7 +8,10 @@ export const metadata: Metadata = {
     default: CONFIG.title,
     template: `%s | ${CONFIG.title}`,
   },
-  description: 'Andrejevici photo album PWA',
+  description: 'Andrejevici album for hobby photographers',
+  keywords: CONFIG.keywords,
+  authors: CONFIG.authors,
+  creator: CONFIG.author,
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
