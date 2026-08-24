@@ -110,9 +110,9 @@ export default function AdminPage() {
             <AdminCard
               icon="image_not_supported"
               color="warning"
-              title="Missing Thumbs"
-              description="Scan storage for images that are missing generated thumbnails."
-              action={<AppButton flat label="Scan" color="warning" onClick={missingThumbnails} />}
+              title="Missing Thumbnails"
+              description="Scan storage for images missing thumbnails and generated them."
+              action={<AppButton flat label="Create" color="warning" onClick={missingThumbnails} />}
             />
 
             {/* Mismatch Card */}

@@ -1,5 +1,4 @@
 import { db, storage } from '@/firebase'
-import type { DocumentSnapshot } from 'firebase/firestore'
 import {
   doc,
   query,
@@ -11,10 +10,17 @@ import {
   setDoc,
   deleteField,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore'
-import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
+import {
+  ref as storageRef,
+  listAll,
+  getMetadata,
+  getDownloadURL,
+  uploadBytes,
+} from 'firebase/storage'
 import CONFIG from '@/config'
-import { counterId, formatDatum, getYouTubeId, parseDate, reFilename } from '@/helpers'
+import { counterId, getYouTubeId, parseDate, reFilename, thumbName, thumbSuffix } from '@/helpers'
 import { counterCollection, photoCollection, renameCollection } from '@/helpers/collections'
 
 import notify from '@/helpers/notify'
@@ -142,99 +148,200 @@ const getStorageData = async (filename: string) => {
 }
 
 /**
- * Gets the missing thumbnails.
- *
- * @return {Promise<void>} A promise that resolves when the missing thumbnails are found.
+ * Creates a 400×400 JPEG thumbnail blob from the given image URL using a
+ * canvas element. The image is centre-cropped (cover fit) and exported as
+ * a progressive-style JPEG at 85 % quality.
+ */
+const createThumbnailBlob = (imageUrl: string): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = CONFIG.thumbSize
+      canvas.height = CONFIG.thumbSize
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        reject(new Error('Failed to get canvas 2d context'))
+        return
+      }
+
+      // Centre-crop (cover fit)
+      const scale = Math.max(CONFIG.thumbSize / img.width, CONFIG.thumbSize / img.height)
+      const sw = CONFIG.thumbSize / scale
+      const sh = CONFIG.thumbSize / scale
+      const sx = (img.width - sw) / 2
+      const sy = (img.height - sh) / 2
+
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CONFIG.thumbSize, CONFIG.thumbSize)
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob)
+          else reject(new Error('Canvas toBlob returned null'))
+        },
+        'image/jpeg',
+        0.85,
+      )
+    }
+    img.onerror = () => reject(new Error(`Failed to load image: ${imageUrl}`))
+    img.src = imageUrl
+  })
+}
+
+/**
+ * Finds photos with missing thumbnails, generates them client-side,
+ * uploads to /thumbnails in Cloud Storage, and updates each Firestore
+ * record's `thumb` field with the download URL.
  */
 export const missingThumbnails = async () => {
   notify({
     group: 'thumbnails',
-    message: `Please wait`,
+    message: 'Scanning for missing thumbnails…',
     spinner: true,
     timeout: 0,
   })
 
-  const photoMap = new Map<string, string[]>()
-  const thumbSet = new Set<string>()
-  const allowedExts = ['.jpg', '.jpeg', '.png']
+  try {
+    const photoMap = new Map<string, string[]>()
+    const thumbSet = new Set<string>()
+    const allowedExts = ['.jpg', '.jpeg', '.png']
 
-  // Parallelize the two independent listAll calls
-  const [photoRefs, thumbRefs] = await Promise.all([
-    listAll(storageRef(storage, '')),
-    listAll(storageRef(storage, CONFIG.thumbnails)),
-  ])
+    // Parallelize the two independent listAll calls
+    const [photoRefs, thumbRefs] = await Promise.all([
+      listAll(storageRef(storage, '')),
+      listAll(storageRef(storage, CONFIG.thumbnails)),
+    ])
 
-  for (const r of photoRefs.items) {
-    const match = r.name.match(reFilename)
-    if (!match) continue
-    const [, name, ext] = match
-    if (name && ext && allowedExts.includes(ext.toLowerCase())) {
-      const list = photoMap.get(name)
-      if (list) {
-        list.push(r.name)
-      } else {
-        photoMap.set(name, [r.name])
+    for (const r of photoRefs.items) {
+      const match = r.name.match(reFilename)
+      if (!match) continue
+      const [, name, ext] = match
+      if (name && ext && allowedExts.includes(ext.toLowerCase())) {
+        const list = photoMap.get(name)
+        if (list) {
+          list.push(r.name)
+        } else {
+          photoMap.set(name, [r.name])
+        }
       }
     }
-  }
 
-  for (const r of thumbRefs.items) {
-    thumbSet.add(r.name.replace(CONFIG.thumbSuffix, ''))
-  }
+    for (const r of thumbRefs.items) {
+      thumbSet.add(r.name.replace(thumbSuffix(), ''))
+    }
 
-  const missing = Array.from(photoMap.keys())
-    .filter((x) => !thumbSet.has(x))
-    .sort()
+    const missing = Array.from(photoMap.keys())
+      .filter((x) => !thumbSet.has(x))
+      .sort()
 
-  const promises: Array<Promise<DocumentSnapshot>> = []
-  for (const name of missing) {
-    const filenames = photoMap.get(name)
-    if (filenames) {
-      for (const filename of filenames) {
-        promises.push(getDoc(doc(photoCollection, filename)))
+    if (missing.length === 0) {
+      notify({
+        group: 'thumbnails',
+        type: 'positive',
+        message: 'No missing thumbnails',
+        icon: 'sym_r_check',
+      })
+      return
+    }
+
+    notify({
+      group: 'thumbnails',
+      message: `Found ${missing.length} missing. Generating…`,
+      spinner: true,
+      timeout: 0,
+    })
+
+    let created = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (const name of missing) {
+      const filenames = photoMap.get(name)
+      if (!filenames) continue
+
+      // Pick the first filename to fetch the Firestore record & source image
+      const filename = filenames[0]
+
+      try {
+        // Skip videos – they use YouTube thumbnails
+        const snap = await getDoc(doc(photoCollection, filename))
+        if (snap.exists()) {
+          const data = snap.data() as PhotoType
+          if (data.kind === 'video') {
+            skipped++
+            continue
+          }
+        }
+
+        // Download the original image URL
+        const originalRef = storageRef(storage, filename)
+        const originalUrl = await getDownloadURL(originalRef)
+
+        // Generate thumbnail client-side
+        const blob = await createThumbnailBlob(originalUrl)
+
+        // Upload to thumbnails/<name>_400x400.jpeg
+        const thumbPath = thumbName(filename)
+        const thumbRef = storageRef(storage, thumbPath)
+        await uploadBytes(thumbRef, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: CONFIG.cache_control,
+        })
+
+        // Get the download URL for the newly uploaded thumbnail
+        const thumbDownloadUrl = await getDownloadURL(thumbRef)
+
+        // Update all Firestore records that share the same base name
+        for (const fn of filenames) {
+          const docSnap = await getDoc(doc(photoCollection, fn))
+          if (docSnap.exists()) {
+            await updateDoc(docSnap.ref, { thumb: thumbDownloadUrl })
+          }
+        }
+
+        created++
+
+        notify({
+          group: 'thumbnails',
+          message: `Progress: ${created}/${missing.length - skipped} created…`,
+          spinner: true,
+          timeout: 0,
+        })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error(`Thumbnail error for ${filename}:`, err)
+        errors.push(`${filename}: ${msg}`)
       }
     }
-  }
 
-  let hit = 0
-  const results = await Promise.allSettled(promises)
-  let message: string = ''
-  for (const it of results) {
-    if (it.status === 'fulfilled') {
-      if (it.value.exists()) {
-        const raw = it.value.data() as PhotoType
-        const data = { ...raw, id: it.value.id } as PhotoType
-        if (data.kind === 'video') continue // Skip videos
-        const filename = it.value.id.replace(/\.[^.]+$/, '')
-        message += `${formatDatum(data?.date)} ${filename}<br/>`
-        hit++
-      }
-    } else {
+    // Final report
+    if (errors.length > 0) {
       notify({
         group: 'thumbnails',
         type: 'negative',
-        message: `Rejected ${it.reason}.`,
+        message: `Created ${created} thumbnails. ${errors.length} failed:<br/>${errors.join('<br/>')}`,
         actions: [{ icon: 'sym_r_close' }],
         timeout: 0,
+        html: true,
+        multiLine: true,
+      })
+    } else {
+      notify({
+        group: 'thumbnails',
+        type: 'positive',
+        message: `Created ${created} thumbnails successfully`,
+        icon: 'sym_r_check',
       })
     }
-  }
-
-  if (hit > 0) {
+  } catch (error) {
+    console.error('missingThumbnails failed:', error)
     notify({
       group: 'thumbnails',
-      message: message,
-      timeout: 0,
+      type: 'negative',
+      message: 'Error: ' + (error instanceof Error ? error.message : String(error)),
       actions: [{ icon: 'sym_r_close' }],
-      html: true,
-      multiLine: true,
-    })
-  } else {
-    notify({
-      group: 'thumbnails',
-      type: 'positive',
-      message: 'No missing thumbnails',
-      icon: 'sym_r_check',
+      timeout: 0,
     })
   }
 }
@@ -300,6 +407,7 @@ export const mismatch = async () => {
            * Handles handler.
            */
           handler: () => {
+            useAppStore.getState().setAddTab('photo')
             window.location.assign('/add')
           },
         },

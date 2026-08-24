@@ -251,6 +251,8 @@ export const dummy = (email: string | undefined | null): string => {
   return (email || '').split('@')[0] || ''
 }
 
+export const thumbSuffix = () => `_${CONFIG.thumbSize}x${CONFIG.thumbSize}.jpeg`
+
 /**
  * Returns the Storage path for the thumbnail of a given original filename.
  * The thumbnail lives under `CONFIG.thumbnails/<name>_400x400.jpeg`.
@@ -262,7 +264,7 @@ export const thumbName = (filename: string) => {
   const match = filename.match(reFilename)
   if (!match) return ''
   const [, name] = match
-  return [CONFIG.thumbnails, name + CONFIG.thumbSuffix].join('/')
+  return [CONFIG.thumbnails, name + thumbSuffix()].join('/')
 }
 
 /**
