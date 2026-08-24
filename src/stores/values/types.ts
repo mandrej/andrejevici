@@ -9,6 +9,13 @@ export interface ValuesSliceActions {
     field: keyof ValuesState['values'],
     done: (value: string) => void,
   ) => void
+  addValue: (field: keyof ValuesState['values'], value: string) => Promise<void>
+  deleteValue: (field: keyof ValuesState['values'], value: string) => Promise<void>
+  renameValue: (
+    field: keyof ValuesState['values'],
+    oldValue: string,
+    newValue: string,
+  ) => Promise<void>
 }
 
 export interface CountersSliceActions {

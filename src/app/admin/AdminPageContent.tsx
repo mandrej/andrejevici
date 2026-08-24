@@ -111,7 +111,7 @@ export default function AdminPage() {
               icon="image_not_supported"
               color="warning"
               title="Missing Thumbnails"
-              description="Scan storage for images missing thumbnails and generated them."
+              description="Scan storage for photos missing thumbnails and generate them."
               action={<AppButton flat label="Create" color="warning" onClick={missingThumbnails} />}
             />
 

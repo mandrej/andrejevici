@@ -12,7 +12,6 @@ import AppSelect from '@/components/atoms/AppSelect'
 import AppDialog from '@/components/atoms/AppDialog'
 import AppIcon from '@/components/atoms/AppIcon'
 
-import { renameValue, deleteValue, addValue as addCounterValue } from '@/helpers/remedy'
 import notify from '@/helpers/notify'
 import type { MetaOption } from '@/helpers/models'
 
@@ -30,6 +29,9 @@ export const MetaTab: React.FC = () => {
 
   const values = useValuesStore((state) => state.values)
   const countersBuild = useValuesStore((state) => state.countersBuild)
+  const storeAddValue = useValuesStore((state) => state.addValue)
+  const deleteValue = useValuesStore((state) => state.deleteValue)
+  const renameValue = useValuesStore((state) => state.renameValue)
 
   const [newValue, setNewValue] = useState('')
   const [search, setSearch] = useState('')
@@ -89,7 +91,7 @@ export const MetaTab: React.FC = () => {
   const addValue = async () => {
     if (newValue !== '' && !currentValueList.includes(newValue)) {
       try {
-        await addCounterValue(metaTab, newValue)
+        await storeAddValue(metaTab, newValue)
         notify({
           type: 'positive',
           message: `${activeTabShort} "${newValue}" added`,

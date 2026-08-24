@@ -6,8 +6,6 @@ import {
   deleteDoc,
   getDoc,
   writeBatch,
-  where,
-  setDoc,
   deleteField,
   Timestamp,
   updateDoc,
@@ -20,11 +18,11 @@ import {
   uploadBytes,
 } from 'firebase/storage'
 import CONFIG from '@/config'
-import { counterId, getYouTubeId, parseDate, reFilename, thumbName, thumbSuffix } from '@/helpers'
-import { counterCollection, photoCollection, renameCollection } from '@/helpers/collections'
+import { parseDate, reFilename, thumbName, thumbSuffix } from '@/helpers'
+import { photoCollection } from '@/helpers/collections'
 
 import notify from '@/helpers/notify'
-import type { PhotoType, ValuesState } from '@/helpers/models'
+import type { PhotoType } from '@/helpers/models'
 
 const BATCH_LIMIT = 498
 
@@ -424,197 +422,6 @@ export const mismatch = async () => {
       type: 'positive',
       message: `All good. Nothing to resolve`,
       icon: 'sym_r_check',
-    })
-  }
-}
-
-/**
- * Deletes a value from all photo documents, its counter, and the local store.
- *
- * @param {keyof ValuesState['values']} field - The field to delete the value from.
- * @param {string} value - The value to delete.
- * @return {Promise<void>} A promise that resolves when the value is fully removed.
- */
-export const deleteValue = async (
-  field: keyof ValuesState['values'],
-  value: string,
-): Promise<void> => {
-  const filter =
-    field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
-  const querySnapshot = await getDocs(query(photoCollection, filter))
-
-  // Build the list of photo updates
-  const updates: Array<{ id: string; data: Record<string, unknown> }> = []
-  querySnapshot.forEach((d) => {
-    const obj = d.data()
-    if (field === 'tags' && Array.isArray(obj.tags)) {
-      updates.push({ id: d.id, data: { tags: obj.tags.filter((t: string) => t !== value) } })
-    } else if (field !== 'tags') {
-      updates.push({ id: d.id, data: { [field]: '' } })
-    }
-  })
-
-  await commitInBatches(updates, (batch, { id, data }) => {
-    batch.update(doc(photoCollection, id), data)
-  })
-}
-
-/**
- * Adds a value in the database.
- *
- * @param {keyof ValuesState['values']} field - The field to add the value for.
- * @param {string} value - The value to add.
- * @return {Promise<void>} A promise that resolves when the value is added.
- */
-export const addValue = async (
-  field: keyof ValuesState['values'],
-  value: string,
-): Promise<void> => {
-  const { useValuesStore } = await import('@/stores/valuesStore')
-
-  const id = counterId(field, value)
-  const counterRef = doc(counterCollection, id)
-  await setDoc(counterRef, { count: 0, field, value })
-
-  const nextValues = { ...useValuesStore.getState().values }
-  if (!nextValues[field]) {
-    nextValues[field] = {}
-  }
-  nextValues[field] = {
-    ...nextValues[field],
-    [value]: 0,
-  }
-  useValuesStore.setState({ values: nextValues })
-}
-
-/**
- * Renames a value in the database.
- *
- * @param {keyof ValuesState['values']} field - The field to be renamed.
- * @param {string} oldValue - The old value to be renamed.
- * @param {string} newValue - The new value to be renamed.
- * @return {Promise<void>} A promise that resolves when the value is renamed.
- */
-export const renameValue = async (
-  field: keyof ValuesState['values'],
-  oldValue: string,
-  newValue: string,
-): Promise<void> => {
-  // Parallelize reads
-  const filter =
-    field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
-  const querySnapshot = await getDocs(query(photoCollection, filter))
-
-  // Build the list of operations to commit
-  type BatchOp =
-    | { type: 'set'; id: string; data: Record<string, unknown>; merge?: boolean }
-    | { type: 'update'; id: string; data: Record<string, unknown> }
-
-  const ops: BatchOp[] = []
-
-  // Record rename for exif resolution
-  if (field === 'lens' || field === 'model') {
-    ops.push({
-      type: 'set',
-      id: oldValue,
-      data: { newValue, field },
-      merge: true,
-    })
-  }
-
-  // Photo collection updates
-  querySnapshot.forEach((d) => {
-    if (field === 'tags') {
-      const obj = d.data()
-      if (Array.isArray(obj.tags)) {
-        const idx = obj.tags.indexOf(oldValue)
-        if (idx > -1) {
-          const updatedTags = [...obj.tags]
-          // If the new tag already exists, just remove the old one. Otherwise, replace it.
-          if (updatedTags.includes(newValue)) {
-            updatedTags.splice(idx, 1)
-          } else {
-            updatedTags.splice(idx, 1, newValue)
-          }
-          ops.push({ type: 'update', id: d.id, data: { [field]: updatedTags } })
-        }
-      }
-    } else {
-      ops.push({ type: 'update', id: d.id, data: { [field]: newValue } })
-    }
-  })
-
-  await commitInBatches(ops, (batch, op) => {
-    if (op.type === 'set') {
-      batch.set(doc(renameCollection, op.id), op.data, { merge: op.merge ?? false })
-    } else {
-      batch.update(doc(photoCollection, op.id), op.data)
-    }
-  })
-}
-
-/**
- * Finds all videos missing the 'thumb' property and populates it using the YouTube ID.
- */
-export const fixVideoThumbnails = async (): Promise<void> => {
-  notify({
-    message: 'Finding videos missing thumbnails...',
-    timeout: 0,
-    spinner: true,
-    group: 'fix-video-thumb',
-  })
-
-  try {
-    const q = query(photoCollection, where('kind', '==', 'video'))
-    const querySnapshot = await getDocs(q)
-
-    const toFix = querySnapshot.docs.filter((doc) => {
-      const data = doc.data() as PhotoType
-      return !data.thumb
-    })
-
-    if (toFix.length === 0) {
-      notify({
-        type: 'positive',
-        message: 'No videos missing thumbnails',
-        icon: 'sym_r_check',
-        group: 'fix-video-thumb',
-      })
-      return
-    }
-
-    notify({
-      message: `Found ${toFix.length} videos to fix. Processing...`,
-      timeout: 0,
-      spinner: true,
-      group: 'fix-video-thumb',
-    })
-
-    const batch = writeBatch(db)
-    toFix.forEach((doc) => {
-      const data = doc.data() as PhotoType
-      const id = getYouTubeId(data.url)
-      if (id) {
-        batch.update(doc.ref, {
-          thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-        })
-      }
-    })
-
-    await batch.commit()
-
-    notify({
-      type: 'positive',
-      message: `Successfully fixed ${toFix.length} video thumbnails`,
-      icon: 'sym_r_check',
-      group: 'fix-video-thumb',
-    })
-  } catch (error) {
-    console.error('Failed to fix video thumbnails:', error)
-    notify({
-      type: 'negative',
-      message: 'Error fixing video thumbnails',
-      group: 'fix-video-thumb',
     })
   }
 }
