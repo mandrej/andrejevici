@@ -1,4 +1,4 @@
-import { db, storage } from '@/firebase'
+import { db, functions, storage } from '@/firebase'
 import {
   doc,
   query,
@@ -10,15 +10,10 @@ import {
   Timestamp,
   updateDoc,
 } from 'firebase/firestore'
-import {
-  ref as storageRef,
-  listAll,
-  getMetadata,
-  getDownloadURL,
-  uploadBytes,
-} from 'firebase/storage'
+import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
+import { httpsCallable } from 'firebase/functions'
 import CONFIG from '@/config'
-import { parseDate, reFilename, thumbName, thumbSuffix } from '@/helpers'
+import { parseDate, reFilename, thumbSuffix } from '@/helpers'
 import { photoCollection } from '@/helpers/collections'
 
 import notify from '@/helpers/notify'
@@ -145,50 +140,13 @@ const getStorageData = async (filename: string) => {
   }
 }
 
-/**
- * Creates a 400×400 JPEG thumbnail blob from the given image URL using a
- * canvas element. The image is centre-cropped (cover fit) and exported as
- * a progressive-style JPEG at 85 % quality.
- */
-const createThumbnailBlob = (imageUrl: string): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = CONFIG.thumbSize
-      canvas.height = CONFIG.thumbSize
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        reject(new Error('Failed to get canvas 2d context'))
-        return
-      }
-
-      // Centre-crop (cover fit)
-      const scale = Math.max(CONFIG.thumbSize / img.width, CONFIG.thumbSize / img.height)
-      const sw = CONFIG.thumbSize / scale
-      const sh = CONFIG.thumbSize / scale
-      const sx = (img.width - sw) / 2
-      const sy = (img.height - sh) / 2
-
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CONFIG.thumbSize, CONFIG.thumbSize)
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) resolve(blob)
-          else reject(new Error('Canvas toBlob returned null'))
-        },
-        'image/jpeg',
-        0.85,
-      )
-    }
-    img.onerror = () => reject(new Error(`Failed to load image: ${imageUrl}`))
-    img.src = imageUrl
-  })
-}
+const generateThumbnail = httpsCallable<{ filePath: string }, { filePath: string }>(
+  functions,
+  'generateThumbnail',
+)
 
 /**
- * Finds photos with missing thumbnails, generates them client-side,
+ * Finds photos with missing thumbnails, generates them in Cloud Functions,
  * uploads to /thumbnails in Cloud Storage, and updates each Firestore
  * record's `thumb` field with the download URL.
  */
@@ -272,20 +230,9 @@ export const missingThumbnails = async () => {
           }
         }
 
-        // Download the original image URL
-        const originalRef = storageRef(storage, filename)
-        const originalUrl = await getDownloadURL(originalRef)
-
-        // Generate thumbnail client-side
-        const blob = await createThumbnailBlob(originalUrl)
-
-        // Upload to thumbnails/<name>_400x400.jpeg
-        const thumbPath = thumbName(filename)
-        const thumbRef = storageRef(storage, thumbPath)
-        await uploadBytes(thumbRef, blob, {
-          contentType: 'image/jpeg',
-          cacheControl: CONFIG.cache_control,
-        })
+        // Generate the thumbnail with sharp in the Cloud Function
+        const result = await generateThumbnail({ filePath: filename })
+        const thumbRef = storageRef(storage, result.data.filePath)
 
         // Get the download URL for the newly uploaded thumbnail
         const thumbDownloadUrl = await getDownloadURL(thumbRef)
