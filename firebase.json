@@ -100,7 +100,8 @@
     {
       "source": "functionThumb",
       "codebase": "function-thumb",
-      "ignore": ["**/node_modules/**"]
+      "ignore": ["**/node_modules/**"],
+      "functions": ["generateThumbnail", "generateThumbnailOnUpload"]
     }
   ]
 }

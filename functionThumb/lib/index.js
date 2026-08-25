@@ -36,11 +36,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateThumbnail = void 0;
+exports.generateThumbnail = exports.generateThumbnailOnUpload = void 0;
 const app_1 = require("firebase-admin/app");
 const firestore_1 = require("firebase-admin/firestore");
 const storage_1 = require("firebase-admin/storage");
 const storage_2 = require("firebase-functions/v2/storage");
+const https_1 = require("firebase-functions/v2/https");
 const logger = __importStar(require("firebase-functions/logger"));
 const path = __importStar(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
@@ -94,38 +95,31 @@ const releaseLock = async (filePath) => {
     const lockId = filePath.replace(/\//g, '_').replace(/\./g, '-');
     await db().collection(LOCKS_COLLECTION).doc(lockId).delete();
 };
-exports.generateThumbnail = (0, storage_2.onObjectFinalized)({
-    region: 'us-central1',
-    timeoutSeconds: 120,
-    memory: '512MiB',
-}, async (event) => {
-    const filePath = event.data.name ?? '';
-    const contentType = event.data.contentType ?? '';
-    const bucketName = event.data.bucket;
+const generateThumbnailForPath = async (filePath, bucketName, contentType = '') => {
     // Skip if not an image, unless contentType is vaguely defined or empty. We also check the extension below safely.
     if (contentType &&
         !contentType.startsWith('image/') &&
         contentType !== 'application/octet-stream') {
         logger.info(`Skipping non-image file based on content type: ${filePath} (${contentType})`);
-        return;
+        return null;
     }
     const ext = path.extname(filePath).toLowerCase();
     // Skip unsupported extensions
     if (!SUPPORTED_EXTENSIONS.includes(ext)) {
         logger.info(`Skipping unsupported extension: ${ext}`);
-        return;
+        return null;
     }
     // Skip files already inside the thumbnails folder to avoid infinite loops
     if (filePath.startsWith(THUMB_PREFIX)) {
         logger.info(`Skipping already-thumbnail file: ${filePath}`);
-        return;
+        return null;
     }
     // Acquire distributed lock — guards against duplicate trigger executions
     // that can occur when multiple images are uploaded simultaneously
     const locked = await acquireLock(filePath);
     if (!locked) {
         logger.info(`Skipping duplicate trigger for: ${filePath} — already being processed`);
-        return;
+        return null;
     }
     const fileName = path.basename(filePath, ext);
     const dir = path.dirname(filePath);
@@ -166,6 +160,7 @@ exports.generateThumbnail = (0, storage_2.onObjectFinalized)({
             sourceStream.pipe(transformer).pipe(destStream);
         });
         logger.info(`Thumbnail uploaded to ${thumbFilePath}`);
+        return thumbFilePath;
     }
     catch (error) {
         logger.error(`Error generating thumbnail for ${filePath}:`, error);
@@ -175,4 +170,27 @@ exports.generateThumbnail = (0, storage_2.onObjectFinalized)({
         // Release the lock so failed files can be retried
         await releaseLock(filePath).catch((e) => logger.warn(`Failed to release lock for ${filePath}:`, e));
     }
+};
+exports.generateThumbnailOnUpload = (0, storage_2.onObjectFinalized)({
+    region: 'us-central1',
+    timeoutSeconds: 120,
+    memory: '512MiB',
+}, async (event) => generateThumbnailForPath(event.data.name ?? '', event.data.bucket, event.data.contentType ?? ''));
+exports.generateThumbnail = (0, https_1.onCall)({
+    region: 'us-central1',
+    timeoutSeconds: 120,
+    memory: '512MiB',
+}, async (request) => {
+    if (!request.auth) {
+        throw new https_1.HttpsError('unauthenticated', 'Authentication is required');
+    }
+    const filePath = request.data?.filePath;
+    if (typeof filePath !== 'string' || !filePath || filePath.startsWith(THUMB_PREFIX)) {
+        throw new https_1.HttpsError('invalid-argument', 'A valid original file path is required');
+    }
+    const thumbFilePath = await generateThumbnailForPath(filePath, (0, storage_1.getStorage)().bucket().name);
+    if (!thumbFilePath) {
+        throw new https_1.HttpsError('failed-precondition', 'The file is not a supported image');
+    }
+    return { filePath: thumbFilePath };
 });

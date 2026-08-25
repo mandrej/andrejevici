@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase-admin/app'
 import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { getStorage, type Storage } from 'firebase-admin/storage'
 import { onObjectFinalized } from 'firebase-functions/v2/storage'
+import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as logger from 'firebase-functions/logger'
 import * as path from 'path'
 import sharp from 'sharp'
@@ -61,105 +62,138 @@ const releaseLock = async (filePath: string): Promise<void> => {
   await db().collection(LOCKS_COLLECTION).doc(lockId).delete()
 }
 
-export const generateThumbnail = onObjectFinalized(
+const generateThumbnailForPath = async (
+  filePath: string,
+  bucketName: string,
+  contentType = '',
+): Promise<string | null> => {
+  // Skip if not an image, unless contentType is vaguely defined or empty. We also check the extension below safely.
+  if (
+    contentType &&
+    !contentType.startsWith('image/') &&
+    contentType !== 'application/octet-stream'
+  ) {
+    logger.info(`Skipping non-image file based on content type: ${filePath} (${contentType})`)
+    return null
+  }
+
+  const ext = path.extname(filePath).toLowerCase()
+
+  // Skip unsupported extensions
+  if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+    logger.info(`Skipping unsupported extension: ${ext}`)
+    return null
+  }
+
+  // Skip files already inside the thumbnails folder to avoid infinite loops
+  if (filePath.startsWith(THUMB_PREFIX)) {
+    logger.info(`Skipping already-thumbnail file: ${filePath}`)
+    return null
+  }
+
+  // Acquire distributed lock — guards against duplicate trigger executions
+  // that can occur when multiple images are uploaded simultaneously
+  const locked = await acquireLock(filePath)
+  if (!locked) {
+    logger.info(`Skipping duplicate trigger for: ${filePath} — already being processed`)
+    return null
+  }
+
+  const fileName = path.basename(filePath, ext)
+  const dir = path.dirname(filePath)
+
+  // Build the destination path: thumbnails/<original-dir>/<filename>_400x400.jpeg
+  const thumbSubDir = dir === '.' ? THUMB_PREFIX : `${THUMB_PREFIX}${dir}/`
+  const thumbFileName = `${fileName}${THUMB_SUFFIX}`
+  const thumbFilePath = `${thumbSubDir}${thumbFileName}`
+
+  logger.info(`Generating thumbnail for ${filePath} -> ${thumbFilePath}`)
+
+  const bucket = storage().bucket(bucketName)
+
+  try {
+    // Stream-based pipeline: Storage read → sharp → Storage write
+    // Eliminates two temp-file disk round-trips for maximum speed
+    const sourceStream = bucket.file(filePath).createReadStream()
+
+    const transformer = sharp({ failOn: 'none' })
+      .resize(THUMB_SIZE, THUMB_SIZE, {
+        fit: 'cover',
+        position: 'centre',
+      })
+      .jpeg({ quality: 85, progressive: true })
+
+    const destFile = bucket.file(thumbFilePath)
+    const destStream = destFile.createWriteStream({
+      resumable: false, // small file — skip resumable overhead
+      public: true,
+      metadata: {
+        contentType: 'image/jpeg',
+        cacheControl: THUMB_CACHE_CONTROL,
+        metadata: {
+          originalFile: filePath,
+          generatedBy: 'generateThumbnail',
+        },
+      },
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      sourceStream.on('error', reject)
+      transformer.on('error', reject)
+      destStream.on('error', reject)
+      destStream.on('finish', resolve)
+
+      sourceStream.pipe(transformer).pipe(destStream)
+    })
+
+    logger.info(`Thumbnail uploaded to ${thumbFilePath}`)
+    return thumbFilePath
+  } catch (error) {
+    logger.error(`Error generating thumbnail for ${filePath}:`, error)
+    throw error
+  } finally {
+    // Release the lock so failed files can be retried
+    await releaseLock(filePath).catch((e) =>
+      logger.warn(`Failed to release lock for ${filePath}:`, e),
+    )
+  }
+}
+
+export const generateThumbnailOnUpload = onObjectFinalized(
   {
     region: 'us-central1',
     timeoutSeconds: 120,
     memory: '512MiB',
   },
-  async (event) => {
-    const filePath: string = event.data.name ?? ''
-    const contentType: string = event.data.contentType ?? ''
-    const bucketName: string = event.data.bucket
+  async (event) =>
+    generateThumbnailForPath(
+      event.data.name ?? '',
+      event.data.bucket,
+      event.data.contentType ?? '',
+    ),
+)
 
-    // Skip if not an image, unless contentType is vaguely defined or empty. We also check the extension below safely.
-    if (
-      contentType &&
-      !contentType.startsWith('image/') &&
-      contentType !== 'application/octet-stream'
-    ) {
-      logger.info(`Skipping non-image file based on content type: ${filePath} (${contentType})`)
-      return
+export const generateThumbnail = onCall(
+  {
+    region: 'us-central1',
+    timeoutSeconds: 120,
+    memory: '512MiB',
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication is required')
     }
 
-    const ext = path.extname(filePath).toLowerCase()
-
-    // Skip unsupported extensions
-    if (!SUPPORTED_EXTENSIONS.includes(ext)) {
-      logger.info(`Skipping unsupported extension: ${ext}`)
-      return
+    const filePath = request.data?.filePath
+    if (typeof filePath !== 'string' || !filePath || filePath.startsWith(THUMB_PREFIX)) {
+      throw new HttpsError('invalid-argument', 'A valid original file path is required')
     }
 
-    // Skip files already inside the thumbnails folder to avoid infinite loops
-    if (filePath.startsWith(THUMB_PREFIX)) {
-      logger.info(`Skipping already-thumbnail file: ${filePath}`)
-      return
+    const thumbFilePath = await generateThumbnailForPath(filePath, getStorage().bucket().name)
+    if (!thumbFilePath) {
+      throw new HttpsError('failed-precondition', 'The file is not a supported image')
     }
 
-    // Acquire distributed lock — guards against duplicate trigger executions
-    // that can occur when multiple images are uploaded simultaneously
-    const locked = await acquireLock(filePath)
-    if (!locked) {
-      logger.info(`Skipping duplicate trigger for: ${filePath} — already being processed`)
-      return
-    }
-
-    const fileName = path.basename(filePath, ext)
-    const dir = path.dirname(filePath)
-
-    // Build the destination path: thumbnails/<original-dir>/<filename>_400x400.jpeg
-    const thumbSubDir = dir === '.' ? THUMB_PREFIX : `${THUMB_PREFIX}${dir}/`
-    const thumbFileName = `${fileName}${THUMB_SUFFIX}`
-    const thumbFilePath = `${thumbSubDir}${thumbFileName}`
-
-    logger.info(`Generating thumbnail for ${filePath} -> ${thumbFilePath}`)
-
-    const bucket = storage().bucket(bucketName)
-
-    try {
-      // Stream-based pipeline: Storage read → sharp → Storage write
-      // Eliminates two temp-file disk round-trips for maximum speed
-      const sourceStream = bucket.file(filePath).createReadStream()
-
-      const transformer = sharp({ failOn: 'none' })
-        .resize(THUMB_SIZE, THUMB_SIZE, {
-          fit: 'cover',
-          position: 'centre',
-        })
-        .jpeg({ quality: 85, progressive: true })
-
-      const destFile = bucket.file(thumbFilePath)
-      const destStream = destFile.createWriteStream({
-        resumable: false, // small file — skip resumable overhead
-        public: true,
-        metadata: {
-          contentType: 'image/jpeg',
-          cacheControl: THUMB_CACHE_CONTROL,
-          metadata: {
-            originalFile: filePath,
-            generatedBy: 'generateThumbnail',
-          },
-        },
-      })
-
-      await new Promise<void>((resolve, reject) => {
-        sourceStream.on('error', reject)
-        transformer.on('error', reject)
-        destStream.on('error', reject)
-        destStream.on('finish', resolve)
-
-        sourceStream.pipe(transformer).pipe(destStream)
-      })
-
-      logger.info(`Thumbnail uploaded to ${thumbFilePath}`)
-    } catch (error) {
-      logger.error(`Error generating thumbnail for ${filePath}:`, error)
-      throw error
-    } finally {
-      // Release the lock so failed files can be retried
-      await releaseLock(filePath).catch((e) =>
-        logger.warn(`Failed to release lock for ${filePath}:`, e),
-      )
-    }
+    return { filePath: thumbFilePath }
   },
 )
