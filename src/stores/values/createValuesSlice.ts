@@ -110,7 +110,9 @@ export const createValuesSlice: StateCreator<
 
   renameValue: async (field, oldValue, newValue) => {
     const filter =
-      field === 'tags' ? where(field, 'array-contains-any', [oldValue]) : where(field, '==', oldValue)
+      field === 'tags'
+        ? where(field, 'array-contains-any', [oldValue])
+        : where(field, '==', oldValue)
     const querySnapshot = await getDocs(query(photoCollection, filter))
 
     type BatchOp =

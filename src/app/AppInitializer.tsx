@@ -92,9 +92,12 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       }
     }
 
+    const unsubscribeLastRec = appStore.subscribeLastRec()
+
     return () => {
       unsubscribeAuth()
       if (unsubscribeMessaging) unsubscribeMessaging()
+      if (unsubscribeLastRec) unsubscribeLastRec()
     }
   }, [storeUser, clearAuth, allowPush, refreshToken])
 

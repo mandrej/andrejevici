@@ -1,6 +1,16 @@
 import type { StateCreator } from 'zustand'
 import { storage, logAnalyticsEvent } from '@/firebase'
-import { doc, setDoc, deleteDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  deleteDoc,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+} from 'firebase/firestore'
 import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
 import {
   thumbName,
@@ -18,7 +28,7 @@ import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
 import { useUserStore } from '@/stores/userStore'
 import type { PhotoType } from '@/helpers/models'
-import { photoCollection } from '@/helpers/collections'
+import { photoCollection, lastRecordCollection } from '@/helpers/collections'
 import readExif from '@/helpers/exif'
 import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
 
@@ -224,12 +234,50 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   subscribeLastRec: () => {
+    const lastDocRef = doc(lastRecordCollection, 'latest')
+
+    const saveLastRecordToTable = async (rec: PhotoType | null) => {
+      try {
+        if (rec) {
+          await setDoc(lastDocRef, rec, { merge: true })
+        } else {
+          await deleteDoc(lastDocRef)
+        }
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to save lastRecord to LastRecord table:', err)
+        }
+      }
+    }
+
+    // Check on start for any saved lastRecord in LastRecord table; if not exist, query from scratch
+    getDoc(lastDocRef)
+      .then(async (snap) => {
+        if (snap.exists()) {
+          const rec = { id: snap.id, ...(snap.data() as object) } as PhotoType
+          set({ lastRecord: rec })
+        } else {
+          const q = query(photoCollection, orderBy('date', 'desc'), limit(1))
+          const querySnap = await getDocs(q)
+          const rec = getRec(querySnap) as PhotoType | null
+          set({ lastRecord: rec })
+          if (rec) {
+            void saveLastRecordToTable(rec)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error checking LastRecord table on start:', error)
+      })
+
+    // Listen to changes on photoCollection and update appStore and LastRecord table on every change
     const q = query(photoCollection, orderBy('date', 'desc'), limit(1))
     return onSnapshot(
       q,
       (snapshot) => {
         const rec = getRec(snapshot) as PhotoType | null
         set({ lastRecord: rec })
+        void saveLastRecordToTable(rec)
         if (process.env.NODE_ENV === 'development') {
           console.log('Last record snapshot:', rec?.headline, rec?.date)
         }
