@@ -44,17 +44,37 @@ export const createBucketSlice: StateCreator<
   },
 
   bucketBuild: async () => {
-    const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
-    let count = 0
-    let size = 0
-    querySnapshot.forEach((d) => {
-      count++
-      size += d.data().size
+    notify({
+      group: 'bucket',
+      message: 'Calculating bucket size...',
+      spinner: true,
+      timeout: 0,
     })
 
-    const updated = { count, size }
-    set({ bucket: updated })
-    await setDoc(bucketRef, updated, { merge: true })
-    notify({ type: 'positive', message: 'Bucket size calculated', icon: 'sym_r_check' })
+    try {
+      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+      let count = 0
+      let size = 0
+      querySnapshot.forEach((d) => {
+        count++
+        size += d.data().size
+      })
+
+      const updated = { count, size }
+      set({ bucket: updated })
+      await setDoc(bucketRef, updated, { merge: true })
+      notify({
+        group: 'bucket',
+        type: 'positive',
+        message: 'Bucket size calculated',
+        icon: 'sym_r_check',
+      })
+    } catch (err) {
+      notify({
+        group: 'bucket',
+        type: 'negative',
+        message: `Failed to calculate bucket: ${err instanceof Error ? err.message : String(err)}`,
+      })
+    }
   },
 })

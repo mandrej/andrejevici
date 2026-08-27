@@ -30,10 +30,17 @@ export const createToastSlice: StateCreator<
           }
 
           const updatedToast: Toast = {
-            ...existing,
+            id: existing.id,
             ...options,
             type,
             message,
+            group,
+            spinner: options.spinner ?? false,
+            actions: options.actions,
+            caption: options.caption,
+            icon: options.icon,
+            html: options.html ?? false,
+            multiLine: options.multiLine ?? false,
             _textColor,
           }
 
@@ -52,6 +59,7 @@ export const createToastSlice: StateCreator<
         id,
         type,
         message,
+        spinner: options.spinner ?? false,
         _textColor,
       }
 

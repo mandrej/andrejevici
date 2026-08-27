@@ -68,7 +68,12 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
 
     for (const f of fieldsToBuild) {
       const fieldKey = f as keyof ValuesState['values']
-      notify({ group: 'counters', message: `Building counters for ${fieldKey}...`, timeout: 0 })
+      notify({
+        group: 'counters',
+        message: `Building counters for ${fieldKey}...`,
+        timeout: 0,
+        spinner: true,
+      })
 
       const newCounterMap = await buildCounterMap(fieldKey)
 

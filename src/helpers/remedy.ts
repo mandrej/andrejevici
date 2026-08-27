@@ -310,68 +310,77 @@ export const mismatch = async () => {
     spinner: true,
   })
 
-  const [storageResult, firestoreResult] = await Promise.all([
-    listAll(storageRef(storage, '')),
-    getDocs(query(photoCollection)),
-  ])
+  try {
+    const [storageResult, firestoreResult] = await Promise.all([
+      listAll(storageRef(storage, '')),
+      getDocs(query(photoCollection)),
+    ])
 
-  const bucketNames = new Set(storageResult.items.map((r) => r.name))
-  const firestoreDocs = firestoreResult.docs.map(
-    (d) => ({ ...(d.data() as object), id: d.id }) as PhotoType,
-  )
-  const storageNames = new Set(firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.id))
-  const uploadedIds = new Set(uploaded.map((it) => it.id))
+    const bucketNames = new Set(storageResult.items.map((r) => r.name))
+    const firestoreDocs = firestoreResult.docs.map(
+      (d) => ({ ...(d.data() as object), id: d.id }) as PhotoType,
+    )
+    const storageNames = new Set(firestoreDocs.filter((d) => d.kind === 'photo').map((d) => d.id))
+    const uploadedIds = new Set(uploaded.map((it) => it.id))
 
-  // Files in storage but not in firestore (orphaned files)
-  const missingRecords = Array.from(bucketNames).filter(
-    (name) => !storageNames.has(name) && !uploadedIds.has(name),
-  )
+    // Files in storage but not in firestore (orphaned files)
+    const missingRecords = Array.from(bucketNames).filter(
+      (name) => !storageNames.has(name) && !uploadedIds.has(name),
+    )
 
-  // Records in firestore but not in storage (broken links)
-  const missingFiles = Array.from(storageNames).filter((name) => !bucketNames.has(name))
+    // Records in firestore but not in storage (broken links)
+    const missingFiles = Array.from(storageNames).filter((name) => !bucketNames.has(name))
 
-  if (missingFiles.length > 0) {
-    await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection, name))))
-    notify({
-      group: 'mismatch',
-      message: `${missingFiles.length} records deleted from firestore that doesn't have image reference`,
-      type: 'negative',
-    })
-  }
+    if (missingFiles.length > 0) {
+      await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection, name))))
+      notify({
+        group: 'mismatch',
+        message: `${missingFiles.length} records deleted from firestore that doesn't have image reference`,
+        type: 'negative',
+      })
+    }
 
-  if (missingRecords.length > 0) {
-    const results = await Promise.all(missingRecords.map((name) => getStorageData(name)))
-    useAppStore.setState({ uploaded: [...uploaded, ...results] as PhotoType[] })
+    if (missingRecords.length > 0) {
+      const results = await Promise.all(missingRecords.map((name) => getStorageData(name)))
+      useAppStore.setState({ uploaded: [...uploaded, ...results] as PhotoType[] })
 
-    notify({
-      group: 'mismatch',
-      type: 'negative',
-      message: `${missingRecords.length} files uploaded to bucket, but doesn't have record in firestore.<br>
+      notify({
+        group: 'mismatch',
+        type: 'negative',
+        message: `${missingRecords.length} files uploaded to bucket, but doesn't have record in firestore.<br>
       Resolve mismatched files either by publish or delete.`,
-      actions: [
-        {
-          label: 'Resolve',
-          /**
-           * Handles handler.
-           */
-          handler: () => {
-            useAppStore.getState().setAddTab('photo')
-            window.location.assign('/add')
+        actions: [
+          {
+            label: 'Resolve',
+            /**
+             * Handles handler.
+             */
+            handler: () => {
+              useAppStore.getState().setAddTab('photo')
+              window.location.assign('/add')
+            },
           },
-        },
-      ],
-      multiLine: true,
-      html: true,
-      timeout: 0,
-    })
-  }
+        ],
+        multiLine: true,
+        html: true,
+        timeout: 0,
+      })
+    }
 
-  if (missingRecords.length === 0 && missingFiles.length === 0) {
+    if (missingRecords.length === 0 && missingFiles.length === 0) {
+      notify({
+        group: 'mismatch',
+        type: 'positive',
+        message: `All good. Nothing to resolve`,
+        icon: 'sym_r_check',
+      })
+    }
+  } catch (error) {
     notify({
       group: 'mismatch',
-      type: 'positive',
-      message: `All good. Nothing to resolve`,
-      icon: 'sym_r_check',
+      type: 'negative',
+      message:
+        'Failed to resolve mismatch: ' + (error instanceof Error ? error.message : String(error)),
     })
   }
 }

@@ -21,6 +21,13 @@ export const SendMessage: React.FC = () => {
       return
     }
 
+    notify({
+      group: 'send-message',
+      message: 'Sending notification...',
+      spinner: true,
+      timeout: 0,
+    })
+
     try {
       const response = await fetch(CONFIG.notifyUrl, {
         method: 'POST',
@@ -40,6 +47,7 @@ export const SendMessage: React.FC = () => {
       if (Array.isArray(results)) {
         if (results.length === 0) {
           notify({
+            group: 'send-message',
             type: 'info',
             message: 'No subscribers found',
             icon: 'sym_r_info',
@@ -58,13 +66,19 @@ export const SendMessage: React.FC = () => {
         })
       }
       notify({
+        group: 'send-message',
         type: 'positive',
         message: 'Notification sent successfully',
         icon: 'sym_r_check',
       })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      notify({ type: 'negative', timeout: 0, message: `Failed to send message: ${errorMessage}` })
+      notify({
+        group: 'send-message',
+        type: 'negative',
+        timeout: 0,
+        message: `Failed to send message: ${errorMessage}`,
+      })
     }
   }
 
