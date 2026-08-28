@@ -126,7 +126,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
           onSubmit={onSubmit}
         >
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="hidden sm:block sm:col-span-1 sm:row-span-4">
+            <div className="col-span-2 sm:col-span-1 sm:row-span-4">
               <div
                 className="relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800"
                 style={{ paddingTop: '100%' }}
@@ -266,7 +266,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
                 label="Shutter [s]"
               />
             </div>
-            <div className="col-span-2 sm:col-span-1">
+            <div className="col-span-1">
               <AppInput
                 modelValue={tmp.loc}
                 onChangeValue={(val) => setTmp((prev) => ({ ...prev, loc: val }))}
@@ -274,7 +274,7 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
                 clearable
               />
             </div>
-            <div className="flex items-center gap-2 mt-2 col-span-2">
+            <div className="col-span-1 flex items-center pt-5">
               <AppCheckbox
                 modelValue={tmp.flash}
                 onChange={(val) => setTmp((prev) => ({ ...prev, flash: !!val }))}
