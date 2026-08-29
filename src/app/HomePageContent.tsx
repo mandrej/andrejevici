@@ -10,7 +10,6 @@ import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickWithCount, selectYearValues } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
-import ThemeToggle from '@/components/atoms/ThemeToggle'
 
 export default function HomePage() {
   const router = useRouter()
@@ -84,9 +83,6 @@ export default function HomePage() {
             ))}
           </div>
         )}
-
-        {/* Theme toggle */}
-        <ThemeToggle className="fixed bottom-4 right-4 z-50" showLabels={true} />
 
         {/* Agents Tech Stack Dialog */}
         <AppDialog modelValue={showTechStack} onChange={setShowTechStack} maxWidth="max-w-md">

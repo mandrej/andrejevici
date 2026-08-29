@@ -33,9 +33,11 @@ export const AdminCard: React.FC<AdminCardProps> = ({
       <div className="flex-1 p-3">{details}</div>
 
       {/* Action slot */}
-      <div className="flex justify-end p-3 border-t border-gray-200 dark:border-gray-700">
-        {action}
-      </div>
+      {action && (
+        <div className="flex justify-end p-3 border-t border-gray-200 dark:border-gray-700">
+          {action}
+        </div>
+      )}
     </div>
   )
 }

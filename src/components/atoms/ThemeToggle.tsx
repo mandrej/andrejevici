@@ -2,14 +2,20 @@
 
 import React, { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
+import AppButton from '@/components/atoms/AppButton'
 import AppIcon from '@/components/atoms/AppIcon'
 
 interface ThemeToggleProps {
   className?: string
   showLabels?: boolean | 'always'
+  flat?: boolean
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLabels = true }) => {
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+  className = '',
+  showLabels = true,
+  flat = false,
+}) => {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
 
@@ -22,6 +28,27 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLa
     { value: 'dark', icon: 'dark_mode', label: 'Dark' },
     { value: 'system', icon: 'brightness_6', label: 'Auto' },
   ] as const
+
+  if (flat) {
+    return (
+      <div className={`flex items-center gap-1 ${className}`}>
+        {themeOptions.map((opt) => {
+          const isActive =
+            mounted && (theme === opt.value || (opt.value === 'system' && theme === 'auto'))
+          return (
+            <AppButton
+              key={opt.value}
+              flat
+              label={showLabels ? opt.label : undefined}
+              icon={opt.icon}
+              color={isActive ? 'primary' : 'default'}
+              onClick={() => setTheme(opt.value)}
+            />
+          )
+        })}
+      </div>
+    )
+  }
 
   const getLabelClass = () => {
     if (showLabels === 'always') return 'inline'

@@ -9,8 +9,8 @@ import { useBucketStore } from '@/stores/bucketStore'
 import { useUserStore } from '@/stores/userStore'
 import { formatDatum, formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
-import AppBadge from '@/components/atoms/AppBadge'
 import AppButton from '@/components/atoms/AppButton'
+import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
 import { mismatch, missingThumbnails, fix } from '@/helpers/remedy'
@@ -48,6 +48,15 @@ export default function AdminPage() {
         {/* Repair panel */}
         {adminTab === 'repair' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+            {/* Theme Settings Card */}
+            <AdminCard
+              icon="dark_mode"
+              color="primary"
+              title="Theme Settings"
+              description="Customize application appearance (Light, Dark, or System mode)."
+              action={<ThemeToggle flat />}
+            />
+
             {/* Bucket Card */}
             <AdminCard
               icon="storage"
@@ -55,11 +64,8 @@ export default function AdminPage() {
               title="Bucket Status"
               description="Current total storage usage and file count. Updated via cron job every 3 days."
               details={
-                <div className="text-center py-2">
-                  <AppBadge color="warning" textColor="black" className="text-base px-4 py-2">
-                    {Intl.NumberFormat().format(bucket.count)} photos &nbsp;/&nbsp;{' '}
-                    {formatBytes(bucket.size)}
-                  </AppBadge>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  {Intl.NumberFormat().format(bucket.count)} photos / {formatBytes(bucket.size)}
                 </div>
               }
               action={<AppButton flat label="Calculate" onClick={bucketBuild} color="primary" />}
@@ -72,17 +78,10 @@ export default function AdminPage() {
               title="Metadata Counters"
               description="Rebuild index counters for all metadata fields. Updated via cron job every 3 days."
               details={
-                <div className="flex flex-wrap gap-1">
-                  {Object.entries(values).map(([key, val]) => (
-                    <AppBadge
-                      key={key}
-                      color="secondary"
-                      textColor="black"
-                      className="text-base px-4 py-2"
-                    >
-                      {key}: {Object.keys(val || {}).length}
-                    </AppBadge>
-                  ))}
+                <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                  {Object.entries(values)
+                    .map(([key, val]) => `${key}: ${Object.keys(val || {}).length}`)
+                    .join(' · ')}
                 </div>
               }
               action={
@@ -97,10 +96,8 @@ export default function AdminPage() {
               title="Convert date to Timestamp"
               description="Convert date string field to Firestore Timestamp object in photo documents."
               details={
-                <div className="text-center mt-2">
-                  <AppBadge color="accent" className="text-base px-4 py-2">
-                    Run on: {formatDatum(new Date('2026-08-16'), 'DD.MM.YYYY')}
-                  </AppBadge>
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  Run on: {formatDatum(new Date('2026-08-16'), 'DD.MM.YYYY')}
                 </div>
               }
               action={<AppButton flat color="accent" label="Run Fix" onClick={fix} />}
