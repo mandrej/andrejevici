@@ -60,7 +60,7 @@ export default function AdminPage() {
             {/* Bucket Card */}
             <AdminCard
               icon="storage"
-              color="primary"
+              color="secondary"
               title="Bucket Status"
               description="Current total storage usage and file count. Updated via cron job every 3 days."
               details={
@@ -68,7 +68,7 @@ export default function AdminPage() {
                   {Intl.NumberFormat().format(bucket.count)} photos / {formatBytes(bucket.size)}
                 </div>
               }
-              action={<AppButton flat label="Calculate" onClick={bucketBuild} color="primary" />}
+              action={<AppButton label="Calculate" onClick={bucketBuild} color="secondary" />}
             />
 
             {/* Field Values Card */}
@@ -84,9 +84,7 @@ export default function AdminPage() {
                     .join(' · ')}
                 </div>
               }
-              action={
-                <AppButton flat label="Build" onClick={handleCountersBuild} color="secondary" />
-              }
+              action={<AppButton label="Build" onClick={handleCountersBuild} color="secondary" />}
             />
 
             {/* Fix Photo IDs Card */}
@@ -100,7 +98,7 @@ export default function AdminPage() {
                   Run on: {formatDatum(new Date('2026-08-16'), 'DD.MM.YYYY')}
                 </div>
               }
-              action={<AppButton flat color="accent" label="Run Fix" onClick={fix} />}
+              action={<AppButton color="accent" label="Run Fix" onClick={fix} />}
             />
 
             {/* Thumbnails Card */}
@@ -109,7 +107,7 @@ export default function AdminPage() {
               color="warning"
               title="Missing Thumbnails"
               description="Scan storage for photos missing thumbnails and generate them."
-              action={<AppButton flat label="Create" color="warning" onClick={missingThumbnails} />}
+              action={<AppButton label="Create" color="warning" onClick={missingThumbnails} />}
             />
 
             {/* Mismatch Card */}
@@ -118,7 +116,7 @@ export default function AdminPage() {
               color="negative"
               title="Storage Mismatch"
               description="Resolve inconsistencies between Cloud Storage and Firestore."
-              action={<AppButton flat color="negative" label="Resolve" onClick={mismatch} />}
+              action={<AppButton color="negative" label="Resolve" onClick={mismatch} />}
             />
           </div>
         )}

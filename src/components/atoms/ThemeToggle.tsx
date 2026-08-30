@@ -38,7 +38,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           return (
             <AppButton
               key={opt.value}
-              flat
               label={showLabels ? opt.label : undefined}
               icon={opt.icon}
               color={isActive ? 'primary' : 'default'}
