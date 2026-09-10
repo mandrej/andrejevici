@@ -90,16 +90,25 @@ export const PhotoTab: React.FC = () => {
     setIsDragging(false)
     if (!e.dataTransfer?.files) return
     const newFiles = Array.from(e.dataTransfer.files)
+    const rejected: ValidationErrors[] = []
     const accepted: File[] = []
 
     newFiles.forEach((f) => {
-      if (files.length + accepted.length < CONFIG.fileMax) {
+      if (CONFIG.fileSize && f.size > CONFIG.fileSize) {
+        rejected.push({ file: f, failedPropValidation: 'max-file-size' })
+      } else if (files.length + accepted.length >= CONFIG.fileMax) {
+        rejected.push({ file: f, failedPropValidation: 'max-files' })
+      } else {
         accepted.push(f)
       }
     })
 
     if (accepted.length > 0) {
       setFiles((prev) => [...prev, ...accepted])
+    }
+
+    if (rejected.length > 0) {
+      onValidationError(rejected)
     }
   }
 
@@ -214,7 +223,6 @@ export const PhotoTab: React.FC = () => {
       notify({
         type: 'warning',
         message: `${it.file.name}: ${it.failedPropValidation} validation error`,
-        actions: [{ icon: 'sym_r_close' }],
         timeout: 0,
       })
     })
