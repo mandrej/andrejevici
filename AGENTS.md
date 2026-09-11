@@ -71,40 +71,46 @@ src/
 │   ├── ClientProviders.tsx          # Client-side context providers (Theme, Toast, etc.)
 │   ├── not-found.tsx                # 404 Error page
 │   ├── 401/                         # 401 Unauthorized page
+│   ├── actions/                     # Server actions
 │   ├── add/                         # Media upload routes (/add)
 │   │   ├── page.tsx
+│   │   ├── AddPageContent.tsx       # Upload page shell
 │   │   ├── AddPhotoPageContent.tsx  # Photo uploader with EXIF parsing
-│   │   └── AddVideoPageContent.tsx  # Video uploader
+│   │   ├── AddVideoPageContent.tsx  # Video uploader
+│   │   ├── AddToolbar.tsx           # Upload toolbar
+│   │   ├── PhotoTab.tsx             # Photo metadata tab
+│   │   └── VideoTab.tsx             # Video metadata tab
 │   ├── admin/                       # Admin management portal (/admin)
 │   │   ├── page.tsx
-│   │   └── AdminPageContent.tsx     # Photo curation, tag merging, & user management
+│   │   ├── AdminPageContent.tsx     # Photo curation, tag merging, & user management
+│   │   ├── AdminCard.tsx            # Admin action card
+│   │   ├── AdminToolbar.tsx         # Admin toolbar
+│   │   ├── MetaTab.tsx              # Metadata management tab
+│   │   └── UsersTab.tsx             # User management tab
 │   └── list/                        # Media browse gallery & search (/list)
 │       ├── page.tsx
-│       └── ListPageContent.tsx      # Main gallery listing with infinite scroll & filtering
+│       ├── ListPageContent.tsx      # Main gallery listing with infinite scroll & filtering
+│       ├── ListToolbar.tsx          # Gallery toolbar
+│       ├── SwiperView.tsx           # Fullscreen media lightbox carousel
+│       └── PhotoInfo.tsx            # Photo detail info panel
 ├── firebase.ts                      # Firebase SDK setup, emulator detection, & analytics logger
 ├── config.ts                        # Central project credentials, limits, & EXIF tag definitions
 ├── env.d.ts                         # TypeScript environment declaration definitions
 ├── components/
 │   ├── atoms/                       # Atomic UI controls (AppButton, AppInput, AppSelect, etc.)
-│   ├── sidebar/                     # Navigation & filter sidebars
-│   │   ├── Sidebar.tsx              # Primary navigation sidebar
-│   │   ├── ManageSelection.tsx       # Batch photo selection management
-│   │   ├── Menu.tsx                 # App route menu links
-│   │   └── SendMessage.tsx          # Push messaging modal interface
-│   ├── toolbar/                     # Page toolbars (ListToolbar, AddToolbar, AdminToolbar)
-│   ├── tab/                         # Record editor tabs (MetaTab, PhotoTab, UsersTab, VideoTab)
-│   ├── dialog/                      # Modals & Lightbox
-│   │   ├── SwiperView.tsx           # Fullscreen media lightbox carousel
-│   │   ├── EditPhotoRecord.tsx      # Photo metadata edit modal
-│   │   └── EditVideoRecord.tsx      # Video metadata edit modal
-│   ├── layouts/                     # Page wrapper layouts (DefaultLayout, PlainLayout)
-│   ├── LocalSearch.tsx              # Filter control inputs
-│   ├── GlobalSearch.tsx             # Global search bar
-│   ├── PictureCard.tsx              # Media grid item card
+│   ├── layouts/                     # Page wrapper layouts (DefaultLayout, PlainLayout, Sidebar)
 │   ├── AutoComplete.tsx             # Auto-suggest tag input
-│   ├── AdminCard.tsx                # Admin action card
+│   ├── EditPhotoRecord.tsx          # Photo metadata edit modal
+│   ├── EditVideoRecord.tsx          # Video metadata edit modal
 │   ├── ErrorBanner.tsx              # Error display alert
 │   ├── FileBroken.tsx               # Broken media fallback
+│   ├── GlobalSearch.tsx             # Global search bar
+│   ├── LocalSearch.tsx              # Filter control inputs
+│   ├── ManageSelection.tsx          # Batch photo selection management
+│   ├── Menu.tsx                     # App route menu links
+│   ├── MenuLink.tsx                 # Link component for menu items
+│   ├── PictureCard.tsx              # Media grid item card
+│   ├── SendMessage.tsx              # Push messaging modal interface
 │   └── TagsMerge.tsx                # Admin tag merging tool
 ├── stores/                          # Modular Zustand Store Slices
 │   ├── appStore.ts                  # UI state, active filters, search criteria

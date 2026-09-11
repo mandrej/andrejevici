@@ -131,10 +131,8 @@ andrejevici/
 │   │   ├── layout.tsx               # Root layout & client providers
 │   │   └── page.tsx                 # Home page entry
 │   ├── components/                  # React UI Components
-│   │   ├── dialog/                  # Lightbox carousel & edit dialogs
-│   │   ├── sidebar/                 # Navigation & selection sidebars
-│   │   ├── tab/                     # Metadata, users, & video management tabs
-│   │   └── toolbar/                 # Contextual action toolbars
+│   │   ├── atoms/                   # Atomic UI controls (buttons, inputs, dialogs)
+│   │   └── layouts/                 # Page wrapper layouts
 │   ├── stores/                      # Zustand State Management
 │   │   ├── appStore.ts              # UI state, active filters, search criteria
 │   │   ├── userStore.ts             # Auth state, permissions, FCM tokens
