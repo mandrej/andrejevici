@@ -5,6 +5,7 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "css.lint.unknownAtRules": "ignore"
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "css.lint.unknownAtRules": "ignore",
+  "tailwindCSS.colorDecorators": true
 }
