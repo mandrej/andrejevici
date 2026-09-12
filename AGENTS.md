@@ -11,7 +11,7 @@ This file provides comprehensive guidance for AI agents and developers working w
 ### Core Tech Stack
 
 | Layer                      | Technology                                                                                      |
-| :------------------------- | :---------------------------------------------------------------------------------------------- | --- | --- | --- | --- | --- | ----- |
+| :------------------------- | :---------------------------------------------------------------------------------------------- |
 | **Frontend Framework**     | **Next.js 16** (App Router) + **React 19**                                                      |
 | **Language**               | **TypeScript 5.9** (Strict Mode)                                                                |
 | **Styling & UI**           | **Tailwind CSS 4** + **Headless UI** (`@headlessui/react`) + **Heroicons** (`@heroicons/react`) |
@@ -19,7 +19,7 @@ This file provides comprehensive guidance for AI agents and developers working w
 | **Backend Infrastructure** | **Firebase 11** (Firestore, Cloud Storage, Authentication, Cloud Functions, Cloud Messaging)    |
 | **Media & EXIF**           | **ExifReader** (client-side metadata extraction) + `yet-another-react-lightbox`                 |
 | **Build & PWA**            | Webpack + Workbox Build 7 + Custom Service Worker (`public/sw.js`)                              |
-| **Package Manager**        | **npm** (`node` engine: `^24                                                                    |     | ^22 |     | ^20 |     | ^18`) |
+| **Package Manager**        | **npm** (**node** engine: `^24 \|\| ^22 \|\| ^20 \|\| ^18`)                                     |
 
 ---
 
@@ -44,7 +44,7 @@ The [`./ands`](./ands) helper script centralizes project operations:
 | `./ands deploy`    | **Deploy**  | Deploys client application to Firebase Hosting.                                                                                |
 | `./ands indexes`   | **Deploy**  | Deploys Firestore index configurations (`firestore.indexes.json`) to Cloud Firestore.                                          |
 | `./ands functions` | **Backend** | Compiles TypeScript source for `functionNotify`, `functionCron`, `functionThumb` and deploys Cloud Functions.                  |
-| `./ands icons`     | **Assets**  | Re-generates application icons from `AppIcon.svg` via `node scripts/build-icons.js`.                                           |
+| `./ands icons`     | **Assets**  | Re-generates application icons from `logo.svg` via `node scripts/build-icons.js`.                                              |
 | `./ands test`      | **Quality** | Executes TypeScript unit tests (`npm test test/slug.ts`).                                                                      |
 
 ### NPM Scripts Reference
@@ -71,7 +71,6 @@ src/
 │   ├── ClientProviders.tsx          # Client-side context providers (Theme, Toast, etc.)
 │   ├── not-found.tsx                # 404 Error page
 │   ├── 401/                         # 401 Unauthorized page
-│   ├── actions/                     # Server actions
 │   ├── add/                         # Media upload routes (/add)
 │   │   ├── page.tsx
 │   │   ├── AddPageContent.tsx       # Upload page shell
@@ -179,7 +178,7 @@ flowchart TD
     B --> C["Slug Generation & Transliteration (helpers/index.ts)"]
     C --> D["Cloud Storage Upload"]
     D --> E["Firestore Photo Document Creation"]
-    E --> F["Cloud Function / Extension Trigger"]
+    E --> F["functionThumb Storage Trigger"]
     F --> G["Thumbnail Generation (_400x400.jpeg)"]
 ```
 
@@ -189,7 +188,7 @@ flowchart TD
 2. **Client-Side Metadata Parsing**: `extractExif()` in `src/helpers/exif.ts` extracts camera model, lens, focal length, ISO, aperture, exposure time, date taken, and flash settings using `exifreader`.
 3. **Search Slug Creation**: `completePhoto()` in `src/helpers/index.ts` slugifies text and headlines using `transliteration` (converting Serbian Cyrillic/Latin characters) to enable bi-lingual search.
 4. **Cloud Storage & Firestore Storage**: File is stored in Firebase Cloud Storage, and a matching document is written to the `photos` collection.
-5. **Thumbnail Generation**: Storage trigger invokes `functionThumb` / `storage-resize-images` extension to create cached thumbnails with `_400x400.jpeg` suffix.
+5. **Thumbnail Generation**: The `functionThumb` Cloud Function's `onObjectFinalized` Storage trigger pipes the uploaded file through `sharp` to create cached thumbnails with the `_400x400.jpeg` suffix under `thumbnails/`.
 
 ---
 
@@ -197,15 +196,15 @@ flowchart TD
 
 Analytics events are logged using `logAnalyticsEvent()` (defined in `src/firebase.ts`). The following key events are tracked across the codebase:
 
-| Analytics Event    | Trigger Source                           | Description                                                                 |
-| :----------------- | :--------------------------------------- | :-------------------------------------------------------------------------- |
-| `'detailed_view'`  | `src/app/list/page.tsx`                  | Fired when a photo is opened in full-screen carousel mode (`carouselShow`). |
-| `'share'`          | `src/components/dialog/SwiperView.tsx`   | Fired when a user copies a share link for a photo.                          |
-| `'image_download'` | `src/components/dialog/SwiperView.tsx`   | Fired when a user downloads an image asset.                                 |
-| `'push_message'`   | `src/components/sidebar/SendMessage.tsx` | Fired when an admin dispatches a push notification.                         |
-| `'sign_in'`        | `src/stores/user/createAuthSlice.ts`     | Fired upon successful user login.                                           |
-| `'published'`      | `src/stores/app/createPhotoOpsSlice.ts`  | Fired when a photo record is created or updated.                            |
-| `'image_delete'`   | `src/stores/app/createPhotoOpsSlice.ts`  | Fired when a photo record is deleted.                                       |
+| Analytics Event    | Trigger Source                          | Description                                                                 |
+| :----------------- | :-------------------------------------- | :-------------------------------------------------------------------------- |
+| `'detailed_view'`  | `src/app/list/ListPageContent.tsx`      | Fired when a photo is opened in full-screen carousel mode (`carouselShow`). |
+| `'share'`          | `src/app/list/SwiperView.tsx`           | Fired when a user copies a share link for a photo.                          |
+| `'image_download'` | `src/app/list/SwiperView.tsx`           | Fired when a user downloads an image asset.                                 |
+| `'push_message'`   | `src/components/SendMessage.tsx`        | Fired when an admin dispatches a push notification.                         |
+| `'sign_in'`        | `src/stores/user/createAuthSlice.ts`    | Fired upon successful user login.                                           |
+| `'published'`      | `src/stores/app/createPhotoOpsSlice.ts` | Fired when a photo record is created or updated.                            |
+| `'image_delete'`   | `src/stores/app/createPhotoOpsSlice.ts` | Fired when a photo record is deleted.                                       |
 
 ---
 
@@ -214,30 +213,38 @@ Analytics events are logged using `logAnalyticsEvent()` (defined in `src/firebas
 ### Document Schemas
 
 - **`photos` Collection**:
+
   ```ts
-  interface PhotoRecord {
-    filename: string
+  interface PhotoType extends ExifType {
+    id: string // filename for photos, video id for videos
     url: string
     size: number
     email: string // Uploader email
     nick: string // Display nickname
-    date: Timestamp // Upload / Taken date
-    year: number
-    month: number
-    day: number
-    headline: string
-    text: string // Transliterated slug for full-text search
-    tags: string[] // Tag strings
+    headline?: string
+    tags?: string[]
+    text?: string[] // Transliterated slugs for full-text search
+    thumb?: string // Thumbnail path
+    kind?: AssetKind // 'photo' | 'video'
+  }
+
+  interface ExifType {
+    date?: Timestamp // Upload / Taken date
+    day?: number
+    month?: number
+    year?: number
     model?: string // Camera body
     lens?: string // Lens model
-    focalLength?: string
-    iso?: string
-    aperture?: string
-    exposureTime?: string
-    flash?: string
-    kind: 'photo' | 'video'
+    focal_length?: number
+    aperture?: number
+    shutter?: string
+    iso?: number
+    flash?: boolean
+    dim?: [number, number]
+    loc?: string
   }
   ```
+
 - **`users` Collection**: User profiles, roles (`admin`), and FCM push tokens.
 - **`tags` / `photographers` / `lenses` / `models` Collections**: Lookup values and usage counters.
 

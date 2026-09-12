@@ -18,7 +18,7 @@
 - 🔍 **Smart Search & Transliteration**: Bi-lingual full-text search across Cyrillic and Latin alphabets powered by automated slug generation and tag indexing.
 - 🏷️ **Tagging & Metadata Filtering**: Multi-dimensional filtering by custom tags, upload date ranges, photographers, camera bodies, and lens models.
 - ⚡ **PWA & Offline Capability**: Service worker caching powered by Workbox, web manifest integration, and installable app capabilities.
-- 📤 **Multi-File Upload & Cloud Processing**: Media upload flow with automatic cloud-based thumbnail generation (`400x400` thumbnails via Firebase Cloud Storage extensions & Cloud Functions).
+- 📤 **Multi-File Upload & Cloud Processing**: Media upload flow with automatic cloud-based thumbnail generation (`400x400` thumbnails via the `functionThumb` Cloud Function).
 - 🔐 **Role-Based Auth & Admin Portal**: Firebase Authentication integration with administrative tools for photo curation, user rights management, and tag merging.
 - 🔔 **Push Notifications**: Firebase Cloud Messaging (FCM) integration for real-time mobile and browser notifications.
 - 🎨 **Dark & Light Mode**: Built-in dark and light UI themes powered by `next-themes` and Tailwind CSS 4.
@@ -27,16 +27,16 @@
 
 ## 🛠️ Tech Stack
 
-| Domain               | Technology                                                                                                                             |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| **Framework**        | [Next.js 16](https://nextjs.org/) (App Router) + [React 19](https://react.dev/)                                                        |
-| **Language**         | [TypeScript 5.9](https://www.typescriptlang.org/)                                                                                      |
-| **Styling**          | [Tailwind CSS 4](https://tailwindcss.com/) + [@headlessui/react](https://headlessui.com/) + [@heroicons/react](https://heroicons.com/) |
-| **State Management** | [Zustand 5](https://github.com/pmndrs/zustand) (Modular Slices)                                                                        |
-| **Backend & Cloud**  | [Firebase 11](https://firebase.google.com/) (Firestore, Storage, Auth, Cloud Functions, Messaging)                                     |
-| **Media Processing** | [ExifReader](https://github.com/mattiasw/ExifReader) + `yet-another-react-lightbox`                                                    |
-| **PWA & Offline**    | Workbox Build 7 + Custom Service Worker                                                                                                |
-| **Build & Tooling**  | Webpack + `tsx` test runner + ESLint 9 + Prettier                                                                                      |
+| Domain               | Technology                                                                                                                                                                                         |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**        | [Next.js 16](https://nextjs.org/) (App Router) + [React 19](https://react.dev/)                                                                                                                    |
+| **Language**         | [TypeScript 5.9](https://www.typescriptlang.org/)                                                                                                                                                  |
+| **Styling**          | [Tailwind CSS 4](https://tailwindcss.com/) + [@headlessui/react](https://headlessui.com/) + [@heroicons/react](https://heroicons.com/) + [next-themes](https://github.com/pacocoursey/next-themes) |
+| **State Management** | [Zustand 5](https://github.com/pmndrs/zustand) (Modular Slices)                                                                                                                                    |
+| **Backend & Cloud**  | [Firebase 11](https://firebase.google.com/) (Firestore, Storage, Auth, Cloud Functions, Messaging)                                                                                                 |
+| **Media Processing** | [ExifReader](https://github.com/mattiasw/ExifReader) + `yet-another-react-lightbox`                                                                                                                |
+| **PWA & Offline**    | Workbox Build 7 + Custom Service Worker                                                                                                                                                            |
+| **Build & Tooling**  | Webpack + `tsx` test runner + ESLint 9 + Prettier                                                                                                                                                  |
 
 ---
 
@@ -98,10 +98,10 @@ The repository includes a custom helper CLI script [`./ands`](./ands) to streaml
 | :----------------- | :---------- | :-------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
 | `./ands run`       | **Backend** | `firebase emulators:start --import ./data --export-on-exit ./data`                            | Launches Firebase Local Emulators for Auth, Firestore, Storage, & Functions with persistent data in `./data`.           |
 | `./ands build`     | **Build**   | Timestamp update in `.env` + `npm run build`                                                  | Injects current `NEXT_PUBLIC_BUILD` timestamp into `.env`, compiles Next.js frontend with Webpack, & builds PWA bundle. |
-| `./ands deploy`    | **Deploy**  | `firebase deploy --only hosting`                                                              | Deploys compiled client application to Firebase Hosting (excludes Cloud Functions & extensions).                        |
+| `./ands deploy`    | **Deploy**  | `firebase deploy --only hosting`                                                              | Deploys compiled client application to Firebase Hosting (hosting only; excludes Cloud Functions).                       |
 | `./ands indexes`   | **Deploy**  | `firebase deploy --only firestore:indexes`                                                    | Deploys updated Firestore index configuration (`firestore.indexes.json`) to Cloud Firestore.                            |
 | `./ands functions` | **Deploy**  | Builds `functionNotify`, `functionCron`, `functionThumb` + `firebase deploy --only functions` | Compiles TypeScript source for all Cloud Functions & deploys them to Firebase.                                          |
-| `./ands icons`     | **Assets**  | `npm run icons` (`node scripts/build-icons.js`)                                               | Generates all PWA web app icons and favicons from `AppIcon.svg`.                                                        |
+| `./ands icons`     | **Assets**  | `npm run icons` (`node scripts/build-icons.js`)                                               | Generates all PWA web app icons and favicons from `logo.svg`.                                                           |
 | `./ands test`      | **Quality** | `npm test test/slug.ts`                                                                       | Executes unit test suite for slug generation, EXIF parsing, date formatting, and utilities.                             |
 
 ### NPM Scripts (`npm run <script>`)
@@ -115,7 +115,7 @@ The repository includes a custom helper CLI script [`./ands`](./ands) to streaml
 | `npm run lint`    | `eslint .`                                                       | Run ESLint across all JavaScript, TypeScript, and React source files.            |
 | `npm run format`  | `prettier --write ...`                                           | Format all source, style, markdown, and JSON files using Prettier.               |
 | `npm test`        | `tsx --test`                                                     | Execute TypeScript test suite using native Node.js test runner via `tsx`.        |
-| `npm run icons`   | `node scripts/build-icons.js`                                    | Build icons using Inkscape & Icongenie toolchain.                                |
+| `npm run icons`   | `node scripts/build-icons.js`                                    | Generate PWA icons, favicons & screenshots from `logo.svg` using `sharp`.        |
 
 ---
 
@@ -172,11 +172,12 @@ Local emulators map to the following ports during `./ands run`:
 
 ### Cloud Storage Image Resizing
 
-Automatic thumbnail generation relies on the `storage-resize-images` extension configured with:
+Automatic thumbnail generation relies on the `functionThumb` Cloud Function (`sharp` resizing via Storage trigger), configured with:
 
 - **Bucket**: `andrejevici.appspot.com`
-- **Output Dimensions**: `400x400`
+- **Output Dimensions**: `400x400` (`fit: cover`, JPEG quality 85, progressive)
 - **Suffix**: `_400x400.jpeg`
+- **Output Prefix**: `thumbnails/`
 - **Cache-Control**: `public, max-age=604800`
 
 ### Docker Environment
@@ -185,7 +186,7 @@ You can also run Firebase emulators in isolated Docker environments using the pr
 
 ```bash
 docker run -dit \
-  -p 9199:9199 -p 9099:9099 -p 9005:9005 -p 9000:9000 -p 8085:8085 -p 8080:8080 -p 5001:5001 -p 4000:4000 \
+  -p 9199:9199 -p 9099:9099 -p 9000:9000 -p 8080:8080 -p 5001:5001 -p 5000:5000 -p 4000:4000 \
   -v $(pwd):/project \
   -v $(pwd)/data:/data \
   -w /project \

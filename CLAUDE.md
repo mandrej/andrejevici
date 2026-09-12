@@ -23,7 +23,7 @@ This file provides quick guidance and technical context for Claude Code (`claude
 | `./ands deploy`    | Deploy  | Deploys client application to Firebase Hosting.                                                                                |
 | `./ands indexes`   | Deploy  | Deploys Firestore index definitions (`firestore.indexes.json`) to Cloud Firestore.                                             |
 | `./ands functions` | Backend | Builds TypeScript source for `functionNotify`, `functionCron`, `functionThumb` and deploys Cloud Functions.                    |
-| `./ands icons`     | Assets  | Re-generates application icons from `AppIcon.svg` via `node scripts/build-icons.js`.                                           |
+| `./ands icons`     | Assets  | Re-generates application icons from `logo.svg` via `node scripts/build-icons.js`.                                              |
 | `./ands test`      | Quality | Runs TypeScript unit tests (`npm test test/slug.ts`).                                                                          |
 
 ---
