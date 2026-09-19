@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useMemo, useEffect } from 'react'
-import dynamic from 'next/dynamic'
+import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
-
-const AddPhotoPageContent = dynamic(() => import('@/app/add/AddPhotoPageContent'), { ssr: false })
-const AddVideoPageContent = dynamic(() => import('@/app/add/AddVideoPageContent'), { ssr: false })
+import AddPhotoPageContent from '@/app/add/AddPhotoPageContent'
+import AddVideoPageContent from '@/app/add/AddVideoPageContent'
 
 export default function AddPageContent() {
   const router = useRouter()
@@ -15,17 +13,15 @@ export default function AddPageContent() {
   const user = useUserStore((state) => state.user)
   const initialized = useUserStore((state) => state.initialized)
 
-  const canAddPhoto = useMemo(() => {
-    return !!user?.isAuthorized && !!user?.nick
-  }, [user])
+  const canAdd = Boolean(user?.isAuthorized && user?.nick)
 
   useEffect(() => {
-    if (initialized && !canAddPhoto) {
+    if (initialized && !canAdd) {
       router.replace('/401')
     }
-  }, [initialized, canAddPhoto, router])
+  }, [initialized, canAdd, router])
 
-  if (!initialized || !canAddPhoto) {
+  if (!initialized || !canAdd) {
     return null
   }
 
