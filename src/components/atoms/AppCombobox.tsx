@@ -150,6 +150,10 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
               displayValue={(val: any) => (multiple ? query : (val ?? ''))}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
             />
 
             {/* Dropdown toggle button (only in single-select) */}

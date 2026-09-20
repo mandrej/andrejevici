@@ -302,7 +302,13 @@ export const PhotoTab: React.FC = () => {
         ))}
 
       {/* File upload form */}
-      <form onSubmit={onSubmit}>
+      <form
+        autoCorrect="off"
+        autoCapitalize="off"
+        autoComplete="off"
+        spellCheck="false"
+        onSubmit={onSubmit}
+      >
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {/* Drop zone + file input */}
           <label

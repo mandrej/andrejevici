@@ -101,7 +101,15 @@ export const VideoTab: React.FC = () => {
   }
 
   return (
-    <form onSubmit={onVideoSubmit} ref={videoFormRef} className="space-y-4">
+    <form
+      autoCorrect="off"
+      autoCapitalize="off"
+      autoComplete="off"
+      spellCheck="false"
+      onSubmit={onVideoSubmit}
+      ref={videoFormRef}
+      className="space-y-4"
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AppInput
           modelValue={videoUrl}

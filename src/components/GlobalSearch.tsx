@@ -284,6 +284,10 @@ export const GlobalSearch: React.FC = () => {
           onChange={(e) => onInput(e.target.value)}
           onFocus={() => setShowDropdown(true)}
           onBlur={onBlur}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
 
         {/* Clear all button */}

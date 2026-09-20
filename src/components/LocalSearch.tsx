@@ -39,6 +39,10 @@ export const LocalSearch: React.FC<LocalSearchProps> = ({
         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 pl-9 pr-9 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors placeholder-gray-400"
         onChange={onInput}
         list="local-search-options"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
       />
       <datalist id="local-search-options">
         {options.map((opt) => (

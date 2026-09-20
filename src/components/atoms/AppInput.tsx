@@ -15,6 +15,7 @@ interface AppInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   autofocus?: boolean
   error?: string
   step?: string | number
+  autoComplete?: string
   onChangeValue?: (val: string) => void
 }
 
@@ -32,6 +33,7 @@ export const AppInput: React.FC<AppInputProps> = ({
   autofocus = false,
   error,
   step,
+  autoComplete = 'off',
   onChangeValue,
   className = '',
   ...props
@@ -74,6 +76,10 @@ export const AppInput: React.FC<AppInputProps> = ({
           required={required}
           autoFocus={autofocus}
           step={step}
+          autoComplete={autoComplete}
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
           className={`flex-1 min-w-0 px-3 py-2 bg-transparent text-sm outline-none rounded-lg dark:scheme-dark [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-90 [&::-webkit-calendar-picker-indicator]:transition-opacity ${
             readonly
               ? 'cursor-default text-gray-600 dark:text-gray-400 font-medium select-text'
