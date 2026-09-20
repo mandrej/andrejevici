@@ -31,29 +31,31 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
     const userSnap = await getDoc(userRef)
     const email = user.email || ''
     const now = Timestamp.fromDate(new Date())
+    const isFresh = get().isFreshLogin
 
     if (userSnap.exists()) {
       const data = userSnap.data() as MyUserType
       const lastLogin = data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : 0
-      const isExpired = Date.now() - lastLogin > CONFIG.loginDays * 86400000
+      const isExpired = !lastLogin || Date.now() - lastLogin > CONFIG.loginDays * 86400000
 
-      if (isExpired && !get().isFreshLogin) {
+      if (isExpired && !isFresh) {
         await auth.signOut()
         get().clearAuth()
         resolveAuthReady()
         return
       }
 
-      const askPush = isExpired
-      if (get().isFreshLogin) {
+      if (isFresh) {
+        data.timestamp = now
         logAnalyticsEvent('sign_in', {
           text: 'existing fresh',
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: email ? dummy(email) : 'anonymous',
         })
+        await setDoc(userRef, data, { merge: true })
       }
 
-      data.timestamp = now
+      const askPush = !data.allowPush && isExpired
       set({
         user: data,
         allowPush: data.allowPush,
@@ -90,12 +92,14 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         isFreshLogin: false,
         initialized: true,
       })
+
+      await setDoc(userRef, newUser, { merge: true })
     }
 
-    const currentUser = get().user
-    if (currentUser) {
-      await setDoc(userRef, currentUser, { merge: true })
+    if (get().allowPush) {
+      await get().refreshToken()
     }
+
     resolveAuthReady()
   },
 

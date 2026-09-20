@@ -1,4 +1,5 @@
 import type { StateCreator } from 'zustand'
+import { auth, db } from '@/firebase'
 import {
   doc,
   getDocs,
@@ -9,6 +10,7 @@ import {
   orderBy,
   limit,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore'
 import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
@@ -83,6 +85,40 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
       notify({
         type: 'negative',
         message: `Failed to update ${String(field)}: ${String(err)}`,
+      })
+    }
+  },
+
+  logoutUser: async (targetUser: UsersAndDevices) => {
+    try {
+      const userRef = doc(userCollection, targetUser.uid)
+      await updateDoc(userRef, {
+        timestamp: Timestamp.fromMillis(0),
+      })
+
+      if (targetUser.email) {
+        const q = query(deviceCollection, where('email', '==', targetUser.email))
+        let snapshot = await getDocs(q)
+        while (!snapshot.empty) {
+          const batch = writeBatch(db)
+          snapshot.forEach((d) => batch.delete(d.ref))
+          await batch.commit()
+          if (snapshot.size < 500) break
+          snapshot = await getDocs(q)
+        }
+      }
+
+      const currentUser = get().user
+      if (currentUser?.uid === targetUser.uid) {
+        await auth.signOut()
+        get().clearAuth()
+      }
+
+      notify({ message: `Logged out ${targetUser.nick || targetUser.email}`, icon: 'logout' })
+    } catch (err) {
+      notify({
+        type: 'negative',
+        message: `Failed to log out user: ${String(err)}`,
       })
     }
   },

@@ -8,6 +8,7 @@ import TagsMerge from '@/components/TagsMerge'
 import AppButton from '@/components/atoms/AppButton'
 import AppInput from '@/components/atoms/AppInput'
 import { useScreen } from '@/composables/useScreen'
+import { canContribute } from '@/helpers'
 
 export const ManageSelection: React.FC = () => {
   const user = useUserStore((state) => state.user)
@@ -76,7 +77,7 @@ export const ManageSelection: React.FC = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-800 transition-colors p-2">
-      {user?.isAuthorized && (
+      {canContribute(user) && (
         <div className="mb-4">
           <AppInput
             modelValue={headlineToApply}
@@ -87,7 +88,7 @@ export const ManageSelection: React.FC = () => {
         </div>
       )}
 
-      {user?.isAuthorized && <TagsMerge label="Tags to apply" className="mb-4" placement="top" />}
+      {canContribute(user) && <TagsMerge label="Tags to apply" className="mb-4" placement="top" />}
 
       {selected.length > 0 && (
         <div className={`flex flex-col gap-2 ${screen.gtSm ? 'gap-3' : ''}`}>

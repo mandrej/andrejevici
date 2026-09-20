@@ -10,7 +10,13 @@ import {
   selectLensValues,
   selectEmailValues,
 } from '@/stores/valuesStore'
-import { sliceSlug, isValidEmail, getDateFields, toDateTimeLocalString } from '@/helpers'
+import {
+  sliceSlug,
+  isValidEmail,
+  getDateFields,
+  toDateTimeLocalString,
+  canContribute,
+} from '@/helpers'
 import CONFIG from '@/config'
 import type { PhotoType } from '@/helpers/models'
 import type { Timestamp } from 'firebase/firestore'
@@ -56,6 +62,11 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
   }
 
   const prepareRecord = async (record: PhotoType) => {
+    if (!canContribute(user)) {
+      throw new Error(
+        'Only users with a known nickname and editor or admin permissions can contribute.',
+      )
+    }
     const recordToSave = { ...record, ...getDateFields(record.date) }
     recordToSave.headline = recordToSave.headline?.trim() || CONFIG.noTitle
     recordToSave.text = sliceSlug(recordToSave.headline)

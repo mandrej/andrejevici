@@ -35,6 +35,7 @@ export interface UsersAdminSliceActions {
   fetchUsersAndDevices: () => Promise<UsersAndDevices[]>
   deleteUser: (uid: string) => Promise<void>
   updateUser: (user: UsersAndDevices, field: keyof UsersAndDevices) => Promise<void>
+  logoutUser: (user: UsersAndDevices) => Promise<void>
 }
 
 export type UserStore = AuthSliceState &

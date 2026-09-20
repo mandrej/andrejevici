@@ -2,6 +2,7 @@ import React from 'react'
 import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
+  ArrowRightStartOnRectangleIcon,
   ArrowUpIcon,
   ArrowUpTrayIcon,
   ArrowsPointingInIcon,
@@ -64,6 +65,8 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   close: XMarkIcon,
   delete: TrashIcon,
   edit: PencilSquareIcon,
+  logout: ArrowRightStartOnRectangleIcon,
+  sym_r_logout: ArrowRightStartOnRectangleIcon,
   build: WrenchIcon,
   search: MagnifyingGlassIcon,
 

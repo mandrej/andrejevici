@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { useUserStore } from '@/stores/userStore'
+import { canContribute } from '@/helpers'
 import MenuLink from '@/components/MenuLink'
 
 interface MenuProps {
@@ -23,7 +23,7 @@ export const Menu: React.FC<MenuProps> = ({ onLinkClick }) => {
         onClick={onLinkClick}
       />
 
-      {user && user.isAuthorized && user.nick && (
+      {canContribute(user) && (
         <MenuLink
           to="/add"
           icon="sym_r_add_a_photo"

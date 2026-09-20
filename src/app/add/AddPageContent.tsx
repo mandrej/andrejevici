@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
+import { canContribute } from '@/helpers'
 import AddPhotoPageContent from '@/app/add/AddPhotoPageContent'
 import AddVideoPageContent from '@/app/add/AddVideoPageContent'
 
@@ -13,7 +14,7 @@ export default function AddPageContent() {
   const user = useUserStore((state) => state.user)
   const initialized = useUserStore((state) => state.initialized)
 
-  const canAdd = Boolean(user?.isAuthorized && user?.nick)
+  const canAdd = canContribute(user)
 
   useEffect(() => {
     if (initialized && !canAdd) {

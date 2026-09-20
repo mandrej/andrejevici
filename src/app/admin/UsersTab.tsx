@@ -14,12 +14,14 @@ import AppIcon from '@/components/atoms/AppIcon'
 import AppDialog from '@/components/atoms/AppDialog'
 import { getAgeDays, type DateInput } from '@/helpers'
 import type { UsersAndDevices } from '@/helpers/models'
+import CONFIG from '@/config'
 
 export const UsersTab: React.FC = () => {
   const user = useUserStore((state) => state.user)
   const fetchUsersAndDevices = useUserStore((state) => state.fetchUsersAndDevices)
   const updateUser = useUserStore((state) => state.updateUser)
   const deleteUser = useUserStore((state) => state.deleteUser)
+  const logoutUser = useUserStore((state) => state.logoutUser)
 
   const nickValues = useValuesStore(selectNickValues)
   const nickWithCount = useValuesStore(selectNickWithCount)
@@ -36,6 +38,9 @@ export const UsersTab: React.FC = () => {
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [userToDelete, setUserToDelete] = useState<UsersAndDevices | null>(null)
+
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+  const [userToLogout, setUserToLogout] = useState<UsersAndDevices | null>(null)
 
   const filteredResult = useMemo(() => {
     if (!search) return result
@@ -90,6 +95,23 @@ export const UsersTab: React.FC = () => {
         await fetchList()
       } catch (err) {
         notify({ type: 'negative', message: `Failed to delete: ${err}` })
+      }
+    }
+  }
+
+  const confirmLogoutUser = (u: UsersAndDevices) => {
+    setUserToLogout(u)
+    setShowLogoutDialog(true)
+  }
+
+  const doLogoutUser = async () => {
+    if (userToLogout) {
+      try {
+        await logoutUser(userToLogout)
+        setShowLogoutDialog(false)
+        await fetchList()
+      } catch (err) {
+        notify({ type: 'negative', message: `Failed to log out: ${err}` })
       }
     }
   }
@@ -246,10 +268,26 @@ export const UsersTab: React.FC = () => {
                           </AppButton>
                         </>
                       )}
+                      {user?.isAdmin && (
+                        <AppButton
+                          flat
+                          onClick={() => confirmLogoutUser(item)}
+                          color="warning"
+                          className="p-1!"
+                          title="Logout user"
+                        >
+                          <AppIcon name="logout" className="w-4 h-4" />
+                          <span className="text-xs ml-1 font-normal">Logout</span>
+                        </AppButton>
+                      )}
                     </div>
                     <div className="text-xs text-gray-500">{item.email}</div>
                     <div className="text-xs text-gray-400">
-                      subscribed {ageDays(item.timestamp)} days ago
+                      {ageDays(item.timestamp) > CONFIG.loginDays ? (
+                        <span className="text-negative font-medium">Logged out / Expired</span>
+                      ) : (
+                        `subscribed ${ageDays(item.timestamp)} days ago`
+                      )}
                     </div>
                   </div>
 
@@ -321,6 +359,21 @@ export const UsersTab: React.FC = () => {
           <div className="flex justify-end gap-3 mt-6">
             <AppButton flat label="Cancel" onClick={() => setShowDeleteDialog(false)} />
             <AppButton flat label="Delete" color="negative" onClick={doDeleteUser} />
+          </div>
+        </div>
+      </AppDialog>
+
+      {/* Logout User Confirmation Dialog */}
+      <AppDialog modelValue={showLogoutDialog} maxWidth="max-w-sm" onChange={setShowLogoutDialog}>
+        <div className="p-6">
+          <div className="text-lg font-bold mb-2">Logout user?</div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Log out <strong>{userToLogout?.nick || userToLogout?.email}</strong>? Their session will
+            be expired and device tokens removed.
+          </p>
+          <div className="flex justify-end gap-3 mt-6">
+            <AppButton flat label="Cancel" onClick={() => setShowLogoutDialog(false)} />
+            <AppButton flat label="Logout" color="warning" onClick={doLogoutUser} />
           </div>
         </div>
       </AppDialog>

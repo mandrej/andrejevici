@@ -197,6 +197,119 @@ docker run -dit \
 
 ---
 
+## 🔐 User Workflow & Permissions
+
+### Role Hierarchy
+
+Every authenticated user has a document in the `users` Firestore collection (`MyUserType`). Three boolean flags govern what they can do:
+
+| Flag            | Default for new users | Meaning                                                      |
+| :-------------- | :-------------------- | :----------------------------------------------------------- |
+| `isAdmin`       | `false` (first user → `true`) | Full administrative access — user management, tag merging, any photo/video operation. |
+| `isAuthorized`  | `false` (first user → `true`) | Editor access — can upload, edit their own media, and use batch tools. |
+| `allowPush`     | `false` (first user → `true`) | User has consented to receive FCM push notifications.        |
+
+> **First-user bootstrap**: When the `users` collection is empty (fresh installation), the very first sign-in automatically receives `isAdmin: true`, `isAuthorized: true`, and `allowPush: true`.
+
+### The `canContribute` Gate
+
+A single helper function [`canContribute(user)`](./src/helpers/index.ts) is the **single source of truth** for write/upload permissions. It returns `true` only when **all** of the following conditions hold:
+
+1. The user is authenticated (non-null).
+2. The user has a **known, non-empty nickname** (`nick` is set and is not `'???'`).
+3. The user holds either `isAuthorized` or `isAdmin` flag.
+
+This gate is enforced uniformly across the application:
+
+| Location | Behavior when `canContribute` returns `false` |
+| :------- | :--------------------------------------------- |
+| [`Menu`](./src/components/Menu.tsx) | Upload nav link is hidden |
+| [`PlainLayout`](./src/components/layouts/PlainLayout.tsx) | Upload action buttons are hidden |
+| [`AddPageContent`](./src/app/add/AddPageContent.tsx) | Upload page redirects / shows access-denied message |
+| [`ManageSelection`](./src/components/ManageSelection.tsx) | Batch selection toolbar is hidden |
+| [`useEditRecord`](./src/hooks/useEditRecord.ts) | Edit/delete actions are blocked |
+
+Record-level edit/delete additionally checks `isAuthorOrAdmin(user, rec)`, which wraps `canContribute` and also verifies the user is either an admin **or** the original uploader (`email` match).
+
+### Authentication & Session Lifecycle
+
+```
+User visits site
+       │
+       ▼
+onAuthStateChanged  ──── no Firebase session ──→  [Anonymous / Read-only access]
+       │
+   Firebase session found
+       │
+       ▼
+  storeUser(user)          ← called once per page load
+       │
+  User doc exists?
+  ┌────┴──────────────────────────┐
+  │ YES                           │ NO → Create new doc (nick = dummy(email))
+  │                               │      isAdmin/isAuthorized = false
+  │  Check timestamp age          │      First user → all flags = true
+  │  vs CONFIG.loginDays (60 d)   └──────────────────────┐
+  │                                                       │
+  ├─ Expired + NOT a fresh login ──→ signOut() + clearAuth() [Session expired]
+  │
+  ├─ Fresh login (just signed in) ─→ Update timestamp to NOW
+  │
+  └─ Valid session ─────────────────→ Load user into Zustand store
+                                       Refresh FCM token if allowPush
+```
+
+**Key constants** (from [`src/config.ts`](./src/config.ts)):
+
+- `CONFIG.loginDays = 60` — Maximum session lifetime in days.
+
+### Real-Time Session Enforcement (`onSnapshot`)
+
+After a session is established, [`AppInitializer`](./src/app/AppInitializer.tsx) attaches a **Firestore `onSnapshot` listener** to the user's document. This means any change to the document is immediately reflected in the running client:
+
+- **Permission changes** (`isAdmin`, `isAuthorized`, `allowPush`) propagate instantly without a page reload.
+- **Force logout by admin**: Setting `timestamp` to `Timestamp.fromMillis(0)` triggers the `isExpired` check in the snapshot callback → automatic `signOut()` + `clearAuth()` + warning toast.
+
+### Admin Force-Logout
+
+Admins can remotely invalidate any user's session from the **Admin › Users** tab:
+
+1. Admin clicks the **Logout** button next to a user row (confirms in dialog).
+2. `logoutUser()` in [`createUsersAdminSlice.ts`](./src/stores/user/createUsersAdminSlice.ts):
+   - Sets the target user's `timestamp` to `Timestamp.fromMillis(0)` in Firestore.
+   - Batch-deletes all FCM device tokens for that user from the `devices` collection.
+3. The target user's real-time `onSnapshot` listener detects the zeroed timestamp, calls `signOut()`, and redirects them to the sign-in state.
+
+### Push Notification Token Lifecycle
+
+FCM tokens are refreshed automatically at two points:
+
+| Trigger | Condition | Action |
+| :------ | :-------- | :----- |
+| **Fresh sign-in** (`storeUser`) | `allowPush === true` | `refreshToken()` called after session is written |
+| **App entry / doc update** (`onSnapshot`) | `allowPush === true` AND token not yet in memory | `refreshToken()` called lazily |
+
+The `refreshToken()` method (in [`createNotificationsSlice`](./src/stores/user/createNotificationsSlice.ts)) requests a new FCM registration token and upserts it into the `devices` collection. Tokens are keyed by the FCM key itself to avoid duplicates across devices.
+
+### Permission Summary Table
+
+| Action                       | Anonymous | Signed-in (no flags) | `isAuthorized` | `isAdmin` |
+| :--------------------------- | :-------: | :------------------: | :------------: | :-------: |
+| Browse gallery               | ✅        | ✅                   | ✅             | ✅        |
+| Search & filter              | ✅        | ✅                   | ✅             | ✅        |
+| View EXIF details            | ✅        | ✅                   | ✅             | ✅        |
+| Upload photos / videos       | ❌        | ❌                   | ✅             | ✅        |
+| Edit / delete own media      | ❌        | ❌                   | ✅             | ✅        |
+| Edit / delete any media      | ❌        | ❌                   | ❌             | ✅        |
+| Batch select & manage        | ❌        | ❌                   | ✅             | ✅        |
+| Access Admin portal          | ❌        | ❌                   | ❌             | ✅        |
+| Manage users & permissions   | ❌        | ❌                   | ❌             | ✅        |
+| Force-logout another user    | ❌        | ❌                   | ❌             | ✅        |
+| Merge tags                   | ❌        | ❌                   | ❌             | ✅        |
+| Send push notifications      | ❌        | ❌                   | ❌             | ✅        |
+
+---
+
 ## 📖 Additional Documentation
 
 For AI agent workflows and detailed developer guidelines, see:

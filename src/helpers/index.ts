@@ -295,6 +295,21 @@ export const counterId = (field: string, value: string | number): string => {
 }
 
 /**
+ * Determines whether a user can contribute to the site.
+ * Only logged-in users with a known nickname and either editor (isAuthorized)
+ * or admin (isAdmin) privileges can contribute.
+ *
+ * @param user - The user object to check.
+ * @returns `true` when the user may contribute to the site.
+ */
+export const canContribute = (user: MyUserType | null | undefined): boolean => {
+  if (!user || !user.nick || !user.nick.trim() || user.nick === '???') {
+    return false
+  }
+  return Boolean(user.isAuthorized || user.isAdmin)
+}
+
+/**
  * Returns `true` if the given user is either an admin or the uploader of `rec`.
  *
  * @param user - The currently authenticated user, or `null`/`undefined` when not signed in.
@@ -305,7 +320,8 @@ export const isAuthorOrAdmin = (
   user: MyUserType | null | undefined, // Allow undefined for store refs that might be undefined
   rec: PhotoType,
 ): boolean => {
-  return Boolean(user && (user.isAdmin || user.email === rec.email))
+  if (!canContribute(user)) return false
+  return Boolean(user?.isAdmin || user?.email === rec.email)
 }
 
 /**

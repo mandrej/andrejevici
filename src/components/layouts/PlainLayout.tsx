@@ -4,7 +4,7 @@ import AppButton from '@/components/atoms/AppButton'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickValues } from '@/stores/valuesStore'
-import { isEmpty, getYouTubeMaxResUrl } from '@/helpers'
+import { isEmpty, getYouTubeMaxResUrl, canContribute } from '@/helpers'
 
 interface PlainLayoutProps {
   children: React.ReactNode
@@ -61,7 +61,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
             <br />
             To add some you need to sign-in with your Google account. Only authorized users can add,
             delete or edit photos.
-            {user?.isAuthorized && user?.nick && (
+            {canContribute(user) && (
               <div className="mt-4">
                 <AppButton to="/add" color="primary" label="Add photos / videos" />
               </div>
@@ -78,7 +78,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
           </Link>
 
           {/* Add photos button */}
-          {user?.isAuthorized && user?.nick && (
+          {canContribute(user) && (
             <AppButton
               to="/add"
               icon="add"
