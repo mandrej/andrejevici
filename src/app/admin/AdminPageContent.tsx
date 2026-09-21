@@ -87,18 +87,18 @@ export default function AdminPage() {
               action={<AppButton label="Build" onClick={handleCountersBuild} color="secondary" />}
             />
 
-            {/* Fix Photo IDs Card */}
+            {/* Sync Photo Contributors Card */}
             <AdminCard
-              icon="aspect_ratio"
+              icon="group"
               color="accent"
-              title="Convert date to Timestamp"
-              description="Convert date string field to Firestore Timestamp object in photo documents."
+              title="Sync Photo Contributors"
+              description="Add photo contributors to the user collection if they do not already exist."
               details={
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Run on: {formatDatum(new Date('2026-08-16'), 'DD.MM.YYYY')}
+                  Run on: {formatDatum(new Date('2026-09-21'), 'DD.MM.YYYY')}
                 </div>
               }
-              action={<AppButton color="accent" label="Run Fix" onClick={fix} />}
+              action={<AppButton color="accent" label="Sync Users" onClick={fix} />}
             />
 
             {/* Thumbnails Card */}

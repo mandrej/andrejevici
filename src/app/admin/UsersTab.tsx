@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { getDocs, query } from 'firebase/firestore'
+import { photoCollection } from '@/helpers/collections'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickValues, selectNickWithCount } from '@/stores/valuesStore'
 import { useScreen } from '@/composables/useScreen'
@@ -23,9 +25,13 @@ export const UsersTab: React.FC = () => {
   const deleteUser = useUserStore((state) => state.deleteUser)
   const logoutUser = useUserStore((state) => state.logoutUser)
 
+  const values = useValuesStore((state) => state.values)
   const nickValues = useValuesStore(selectNickValues)
   const nickWithCount = useValuesStore(selectNickWithCount)
   const screen = useScreen()
+
+  const [photoCountsByEmail, setPhotoCountsByEmail] = useState<Map<string, number>>(new Map())
+  const [photoCountsByNick, setPhotoCountsByNick] = useState<Map<string, number>>(new Map())
 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -60,7 +66,25 @@ export const UsersTab: React.FC = () => {
     setBusy(true)
     setError('')
     try {
-      const subscribersAndDevices = await fetchUsersAndDevices()
+      const [subscribersAndDevices, photoSnap] = await Promise.all([
+        fetchUsersAndDevices(),
+        getDocs(query(photoCollection)),
+      ])
+      const byEmail = new Map<string, number>()
+      const byNick = new Map<string, number>()
+      for (const d of photoSnap.docs) {
+        const p = d.data()
+        if (typeof p.email === 'string' && p.email.trim()) {
+          const em = p.email.trim().toLowerCase()
+          byEmail.set(em, (byEmail.get(em) ?? 0) + 1)
+        }
+        if (typeof p.nick === 'string' && p.nick.trim()) {
+          const nk = p.nick.trim().toLowerCase()
+          byNick.set(nk, (byNick.get(nk) ?? 0) + 1)
+        }
+      }
+      setPhotoCountsByEmail(byEmail)
+      setPhotoCountsByNick(byNick)
       setResult(subscribersAndDevices ?? [])
       if (!subscribersAndDevices || subscribersAndDevices.length === 0) {
         setError('No subscribers found')
@@ -78,12 +102,21 @@ export const UsersTab: React.FC = () => {
   }, [])
 
   const confirmDeleteUser = (u: UsersAndDevices) => {
+    if (contribution(u) > 0) {
+      notify({ type: 'negative', message: 'Cannot delete a user with contributions' })
+      return
+    }
     setUserToDelete(u)
     setShowDeleteDialog(true)
   }
 
   const doDeleteUser = async () => {
     if (userToDelete) {
+      if (contribution(userToDelete) > 0) {
+        notify({ type: 'negative', message: 'Cannot delete a user with contributions' })
+        setShowDeleteDialog(false)
+        return
+      }
       if (userToDelete.isAdmin && adminCount === 1) {
         notify({ type: 'negative', message: 'Cannot delete the only admin user' })
         setShowDeleteDialog(false)
@@ -117,6 +150,10 @@ export const UsersTab: React.FC = () => {
   }
 
   const openNickDialog = (u: UsersAndDevices) => {
+    if (contribution(u) > 0) {
+      notify({ type: 'negative', message: 'Cannot change nickname for a user with contributions' })
+      return
+    }
     setUserToEdit(u)
     setTempNick(u.nick || '')
     setShowNickDialog(true)
@@ -172,6 +209,14 @@ export const UsersTab: React.FC = () => {
 
   const saveNick = async () => {
     if (userToEdit && tempNick) {
+      if (contribution(userToEdit) > 0) {
+        notify({
+          type: 'negative',
+          message: 'Cannot change nickname for a user with contributions',
+        })
+        setShowNickDialog(false)
+        return
+      }
       const updatedItem = { ...userToEdit, nick: tempNick }
       try {
         await updateUser(updatedItem, 'nick')
@@ -185,9 +230,24 @@ export const UsersTab: React.FC = () => {
 
   const ageDays = (timestamp: unknown) => getAgeDays(timestamp as DateInput)
 
-  const contribution = (nick: string) => {
-    const entry = nickWithCount[nick]
-    return entry ? entry : 0
+  const contribution = (u: UsersAndDevices | null | undefined) => {
+    if (!u) return 0
+    let count = 0
+    if (u.email) {
+      const em = u.email.trim().toLowerCase()
+      count = Math.max(count, photoCountsByEmail.get(em) ?? 0)
+      if (values.email?.[u.email]) {
+        count = Math.max(count, values.email[u.email])
+      }
+    }
+    if (u.nick) {
+      const nk = u.nick.trim().toLowerCase()
+      count = Math.max(count, photoCountsByNick.get(nk) ?? 0)
+      if (nickWithCount[u.nick]) {
+        count = Math.max(count, nickWithCount[u.nick])
+      }
+    }
+    return count
   }
 
   return (
@@ -237,14 +297,14 @@ export const UsersTab: React.FC = () => {
                 >
                   <div className="shrink-0 mr-3">
                     <AppBadge color="warning" textColor="black" className="text-sm px-2 py-1">
-                      {contribution(item.nick || '')}
+                      {contribution(item)}
                     </AppBadge>
                   </div>
 
                   <div className="grow">
                     <div className="flex items-center gap-1 text-base font-semibold flex-wrap">
                       <span>{item.nick || '???'}</span>
-                      {contribution(item.nick || '') === 0 && (
+                      {contribution(item) === 0 && (
                         <>
                           <AppButton
                             flat

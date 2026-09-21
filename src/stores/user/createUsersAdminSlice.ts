@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand'
 import { auth, db } from '@/firebase'
 import {
   doc,
+  getDoc,
   getDocs,
   updateDoc,
   deleteDoc,
@@ -14,7 +15,7 @@ import {
 } from 'firebase/firestore'
 import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
-import { deviceCollection, userCollection } from '@/helpers/collections'
+import { deviceCollection, photoCollection, userCollection } from '@/helpers/collections'
 import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
 
 export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSliceActions> = (
@@ -65,19 +66,56 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
   deleteUser: async (uid: string) => {
     try {
-      await deleteDoc(doc(userCollection, uid))
+      const userRef = doc(userCollection, uid)
+      const userSnap = await getDoc(userRef)
+      if (userSnap.exists()) {
+        const u = userSnap.data() as MyUserType
+        const email = u.email?.trim().toLowerCase()
+        const nick = u.nick?.trim().toLowerCase()
+        if (email || nick) {
+          const photoSnap = await getDocs(query(photoCollection))
+          const hasContribution = photoSnap.docs.some((d) => {
+            const p = d.data()
+            const pEmail = typeof p.email === 'string' ? p.email.trim().toLowerCase() : ''
+            const pNick = typeof p.nick === 'string' ? p.nick.trim().toLowerCase() : ''
+            return (email && pEmail === email) || (nick && pNick === nick)
+          })
+          if (hasContribution) {
+            throw new Error('Cannot delete a user with contributions')
+          }
+        }
+      }
+      await deleteDoc(userRef)
       notify({ message: 'User deleted', icon: 'sym_r_delete' })
     } catch (err) {
       notify({
         type: 'negative',
         message: `Failed to delete user: ${String(err)}`,
       })
+      throw err
     }
   },
 
   updateUser: async (user: UsersAndDevices, field: keyof UsersAndDevices) => {
     const docRef = doc(userCollection, user.uid)
     try {
+      if (field === 'nick') {
+        const email = user.email?.trim().toLowerCase()
+        const currentSnap = await getDoc(docRef)
+        const currentNick = (currentSnap.data() as MyUserType | undefined)?.nick?.trim().toLowerCase()
+        if (email || currentNick) {
+          const photoSnap = await getDocs(query(photoCollection))
+          const hasContribution = photoSnap.docs.some((d) => {
+            const p = d.data()
+            const pEmail = typeof p.email === 'string' ? p.email.trim().toLowerCase() : ''
+            const pNick = typeof p.nick === 'string' ? p.nick.trim().toLowerCase() : ''
+            return (email && pEmail === email) || (currentNick && pNick === currentNick)
+          })
+          if (hasContribution) {
+            throw new Error('Cannot change nickname for a user with contributions')
+          }
+        }
+      }
       await updateDoc(docRef, { [field]: user[field] })
       const value = user[field] as string | boolean
       notify({ message: `Updated ${String(field)} to ${value}`, icon: 'sym_r_check' })
@@ -86,6 +124,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
         type: 'negative',
         message: `Failed to update ${String(field)}: ${String(err)}`,
       })
+      throw err
     }
   },
 

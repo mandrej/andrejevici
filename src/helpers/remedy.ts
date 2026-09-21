@@ -1,112 +1,180 @@
-import { db, functions, storage } from '@/firebase'
+import { functions, storage } from '@/firebase'
 import {
   doc,
   query,
   getDocs,
   deleteDoc,
   getDoc,
-  writeBatch,
-  deleteField,
+  setDoc,
   Timestamp,
   updateDoc,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { httpsCallable } from 'firebase/functions'
 import CONFIG from '@/config'
-import { parseDate, reFilename, thumbSuffix } from '@/helpers'
-import { photoCollection } from '@/helpers/collections'
+import { dummy, reFilename, thumbSuffix } from '@/helpers'
+import { photoCollection, userCollection } from '@/helpers/collections'
 
 import notify from '@/helpers/notify'
-import type { PhotoType } from '@/helpers/models'
-
-const BATCH_LIMIT = 498
+import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
- * Commits items in batches to stay within Firestore's 500-operation limit.
- */
-const commitInBatches = async <T>(
-  items: T[],
-  applyFn: (batch: ReturnType<typeof writeBatch>, item: T) => void,
-): Promise<void> => {
-  let batch = writeBatch(db)
-  let count = 0
-  for (const item of items) {
-    applyFn(batch, item)
-    count++
-    if (count >= BATCH_LIMIT) {
-      await batch.commit()
-      batch = writeBatch(db)
-      count = 0
-    }
-  }
-  if (count > 0) await batch.commit()
-}
-
-/**
- * Fixes records in the database by converting string date fields to Firestore Timestamps
- * and removing the legacy 'filename' property.
+ * Scans all photo records for contributors, checks if they exist in the User collection,
+ * and adds missing contributors using Firebase Auth UID retrieved via Cloud Function `functionUser`.
+ * Sets isAuthorized: true, isAdmin: false, allowPush: false, and an expired timestamp (earlier than loginDays).
  *
- * @return {Promise<void>} A promise that resolves when the records are fixed.
+ * @return {Promise<void>} A promise that resolves when the contributors are synced.
  */
 export const fix = async () => {
   notify({
-    message: 'Finding records with string date field...',
+    message: 'Scanning photo contributors...',
     timeout: 0,
     spinner: true,
-    group: 'fix-date-timestamp',
+    group: 'fix-contributors-users',
   })
 
   try {
-    const q = query(photoCollection)
-    const querySnapshot = await getDocs(q)
+    const [photoSnapshot, userSnapshot] = await Promise.all([
+      getDocs(query(photoCollection)),
+      getDocs(query(userCollection)),
+    ])
 
-    const toFix = querySnapshot.docs.filter((docSnap) => {
+    const existingEmails = new Set(
+      userSnapshot.docs
+        .map((d) => (d.data().email as string | undefined)?.trim().toLowerCase())
+        .filter(Boolean),
+    )
+
+    const contributors = new Map<string, { email: string; nick: string }>()
+    for (const docSnap of photoSnapshot.docs) {
       const data = docSnap.data()
-      return typeof data.date === 'string' || 'filename' in data
-    })
+      const rawEmail = data.email
+      if (typeof rawEmail === 'string' && rawEmail.trim()) {
+        const email = rawEmail.trim()
+        const normalized = email.toLowerCase()
+        const nick = typeof data.nick === 'string' ? data.nick.trim() : ''
+        const existing = contributors.get(normalized)
+        if (!existing) {
+          contributors.set(normalized, { email, nick })
+        } else if (!existing.nick && nick) {
+          existing.nick = nick
+        }
+      }
+    }
 
-    if (toFix.length === 0) {
+    const toAdd = Array.from(contributors.values()).filter(
+      (c) => !existingEmails.has(c.email.toLowerCase()),
+    )
+
+    if (toAdd.length === 0) {
       notify({
         type: 'positive',
-        message: 'All records have date as Timestamp',
+        message: 'All photo contributors already exist in the user collection.',
         icon: 'sym_r_check',
-        group: 'fix-date-timestamp',
+        timeout: 5000,
+        group: 'fix-contributors-users',
       })
       return
     }
 
     notify({
-      message: `Found ${toFix.length} documents to update to Timestamp`,
+      message: `Found ${toAdd.length} contributor(s) not in users. Syncing...`,
       timeout: 0,
       spinner: true,
-      group: 'fix-date-timestamp',
+      group: 'fix-contributors-users',
     })
 
-    await commitInBatches(toFix, (batch, docSnap) => {
-      const data = docSnap.data()
-      const updateData: Record<string, unknown> = {}
-      if (typeof data.date === 'string') {
-        const d = parseDate(data.date)
-        updateData.date = Timestamp.fromDate(d)
-      }
-      if ('filename' in data) {
-        updateData.filename = deleteField()
-      }
-      batch.update(docSnap.ref, updateData)
-    })
+    // Timestamp earlier than loginDays to ensure session is expired
+    const expiredDate = new Date(Date.now() - (CONFIG.loginDays + 1) * 86400000)
+    const expiredTimestamp = Timestamp.fromDate(expiredDate)
 
-    notify({
-      type: 'positive',
-      message: `Updated date field to Timestamp in ${toFix.length} records.`,
-      icon: 'sym_r_check',
-      timeout: 5000,
-      group: 'fix-date-timestamp',
-    })
+    let addedCount = 0
+    const errors: string[] = []
+
+    for (const contributor of toAdd) {
+      try {
+        let uid: string | undefined
+        let displayName: string | undefined
+
+        const httpRes = await fetch(
+          `${CONFIG.functionUserUrl}?email=${encodeURIComponent(contributor.email)}`,
+        )
+
+        if (httpRes.status === 404) {
+          // No Firebase Auth account for this email yet – use a generated uid
+          uid = undefined
+          displayName = undefined
+        } else if (!httpRes.ok) {
+          const errBody = (await httpRes.json().catch(() => ({}))) as { error?: string }
+          throw new Error(errBody.error ?? `HTTP ${httpRes.status}`)
+        } else {
+          const data = (await httpRes.json()) as { uid: string; displayName?: string }
+          uid = data.uid
+          displayName = data.displayName
+        }
+
+        if (!uid) {
+          const { v4: uuidv4 } = await import('uuid')
+          uid = uuidv4()
+        }
+
+        const userDocRef = doc(userCollection, uid)
+        const userDocSnap = await getDoc(userDocRef)
+
+        if (userDocSnap.exists()) {
+          const existingUser = userDocSnap.data() as MyUserType
+          if (!existingUser.name && displayName) {
+            await updateDoc(userDocRef, { name: displayName })
+          }
+          continue
+        }
+
+        const newUser: MyUserType = {
+          uid,
+          name: displayName || '',
+          email: contributor.email,
+          nick: contributor.nick || dummy(contributor.email),
+          isAuthorized: true,
+          isAdmin: false,
+          allowPush: false,
+          timestamp: expiredTimestamp,
+        }
+
+        await setDoc(userDocRef, newUser)
+        addedCount++
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.warn(`Could not add contributor ${contributor.email}:`, err)
+        errors.push(`${contributor.email}: ${msg}`)
+      }
+    }
+
+    if (errors.length > 0) {
+      notify({
+        type: addedCount > 0 ? 'warning' : 'negative',
+        message: `Added ${addedCount} contributor(s). ${errors.length} failed or skipped:<br/>${errors.join('<br/>')}`,
+        actions: [{ icon: 'sym_r_close' }],
+        timeout: 0,
+        html: true,
+        multiLine: true,
+        group: 'fix-contributors-users',
+      })
+    } else {
+      notify({
+        type: 'positive',
+        message: `Successfully added ${addedCount} photo contributor(s) to users collection.`,
+        icon: 'sym_r_check',
+        timeout: 5000,
+        group: 'fix-contributors-users',
+      })
+    }
   } catch (error) {
     notify({
       type: 'negative',
-      message: 'Failed to run fix: ' + (error instanceof Error ? error.message : String(error)),
-      group: 'fix-date-timestamp',
+      message:
+        'Failed to sync photo contributors: ' +
+        (error instanceof Error ? error.message : String(error)),
+      group: 'fix-contributors-users',
     })
   }
 }

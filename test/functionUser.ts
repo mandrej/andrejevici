@@ -25,16 +25,18 @@ describe('functionUser', () => {
     },
   } as unknown as AuthInstance
 
-  test('should return UID FvlXe9WUkgaaRQ2tn7nNDiKfjSu1 for milan.andrejevic@gmail.com', async () => {
+  test('should return UID and displayName for milan.andrejevic@gmail.com', async () => {
     const result = await getUserRecordByEmail('milan.andrejevic@gmail.com', authMock)
-    assert.equal(result.uid, 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
+    assert.equal(result.uid, 'e2nPxKNt1kCH64kyfORGe4bvl3Cq')
     assert.equal(result.email, 'milan.andrejevic@gmail.com')
+    assert.equal(result.displayName, 'Milan Andrejevic')
   })
 
-  test('should return UID HG9VdF9syLNxHYbdQcU7kspLZ9H2 for mihailo.genije@gmail.com', async () => {
-    const result = await getUserRecordByEmail('mihailo.genije@gmail.com', authMock)
-    assert.equal(result.uid, 'HG9VdF9syLNxHYbdQcU7kspLZ9H2')
-    assert.equal(result.email, 'mihailo.genije@gmail.com')
+  test('should return UID and displayName for svetlana.andrejevic@gmail.com', async () => {
+    const result = await getUserRecordByEmail('svetlana.andrejevic@gmail.com', authMock)
+    assert.equal(result.uid, 'OIWi3wy8EMlm9u85MABzFUMrFhAc')
+    assert.equal(result.email, 'svetlana.andrejevic@gmail.com')
+    assert.equal(result.displayName, 'Svetlana Andrejevic')
   })
 
   test('should throw error for non-existent email', async () => {
