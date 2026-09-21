@@ -126,19 +126,22 @@ export const fix = async () => {
         const userDocRef = doc(userCollection, uid)
         const userDocSnap = await getDoc(userDocRef)
 
+        const nick = contributor.nick || dummy(contributor.email)
+        const name = displayName || nick || contributor.email
+
         if (userDocSnap.exists()) {
           const existingUser = userDocSnap.data() as MyUserType
-          if (!existingUser.name && displayName) {
-            await updateDoc(userDocRef, { name: displayName })
+          if (!existingUser.name && name) {
+            await updateDoc(userDocRef, { name })
           }
           continue
         }
 
         const newUser: MyUserType = {
           uid,
-          name: displayName || '',
+          name,
           email: contributor.email,
-          nick: contributor.nick || dummy(contributor.email),
+          nick,
           isAuthorized: true,
           isAdmin: false,
           allowPush: false,
@@ -166,7 +169,7 @@ export const fix = async () => {
     } else {
       notify({
         type: 'positive',
-        message: `Successfully added ${addedCount} photo contributor(s) to users collection.`,
+        message: `Successfully added ${addedCount} contributor(s) to users collection.`,
         icon: 'sym_r_check',
         timeout: 5000,
         group: 'fix-contributors-users',

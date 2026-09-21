@@ -102,7 +102,9 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
       if (field === 'nick') {
         const email = user.email?.trim().toLowerCase()
         const currentSnap = await getDoc(docRef)
-        const currentNick = (currentSnap.data() as MyUserType | undefined)?.nick?.trim().toLowerCase()
+        const currentNick = (currentSnap.data() as MyUserType | undefined)?.nick
+          ?.trim()
+          .toLowerCase()
         if (email || currentNick) {
           const photoSnap = await getDocs(query(photoCollection))
           const hasContribution = photoSnap.docs.some((d) => {
