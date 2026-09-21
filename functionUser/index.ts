@@ -50,6 +50,7 @@ export const functionUser = onCall(
   {
     region: 'us-central1',
     timeoutSeconds: 60,
+    invoker: 'public', // Cloud Run must allow requests through; auth is enforced inside via request.auth
   },
   async (request): Promise<UserRecordResponse | null> => {
     if (!request.auth) {
