@@ -1,8 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { getDocs, query } from 'firebase/firestore'
-import { photoCollection } from '@/helpers/collections'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickValues, selectNickWithCount } from '@/stores/valuesStore'
 import { useScreen } from '@/composables/useScreen'
@@ -29,9 +27,6 @@ export const UsersTab: React.FC = () => {
   const nickValues = useValuesStore(selectNickValues)
   const nickWithCount = useValuesStore(selectNickWithCount)
   const screen = useScreen()
-
-  const [photoCountsByEmail, setPhotoCountsByEmail] = useState<Map<string, number>>(new Map())
-  const [photoCountsByNick, setPhotoCountsByNick] = useState<Map<string, number>>(new Map())
 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -62,29 +57,11 @@ export const UsersTab: React.FC = () => {
     return result.filter((u) => u.isAdmin).length
   }, [result])
 
-  const fetchList = async () => {
+  const fetchList = useCallback(async () => {
     setBusy(true)
     setError('')
     try {
-      const [subscribersAndDevices, photoSnap] = await Promise.all([
-        fetchUsersAndDevices(),
-        getDocs(query(photoCollection)),
-      ])
-      const byEmail = new Map<string, number>()
-      const byNick = new Map<string, number>()
-      for (const d of photoSnap.docs) {
-        const p = d.data()
-        if (typeof p.email === 'string' && p.email.trim()) {
-          const em = p.email.trim().toLowerCase()
-          byEmail.set(em, (byEmail.get(em) ?? 0) + 1)
-        }
-        if (typeof p.nick === 'string' && p.nick.trim()) {
-          const nk = p.nick.trim().toLowerCase()
-          byNick.set(nk, (byNick.get(nk) ?? 0) + 1)
-        }
-      }
-      setPhotoCountsByEmail(byEmail)
-      setPhotoCountsByNick(byNick)
+      const subscribersAndDevices = await fetchUsersAndDevices()
       setResult(subscribersAndDevices ?? [])
       if (!subscribersAndDevices || subscribersAndDevices.length === 0) {
         setError('No subscribers found')
@@ -95,7 +72,7 @@ export const UsersTab: React.FC = () => {
     } finally {
       setBusy(false)
     }
-  }
+  }, [fetchUsersAndDevices])
 
   useEffect(() => {
     void fetchList()
@@ -230,25 +207,20 @@ export const UsersTab: React.FC = () => {
 
   const ageDays = (timestamp: unknown) => getAgeDays(timestamp as DateInput)
 
-  const contribution = (u: UsersAndDevices | null | undefined) => {
-    if (!u) return 0
-    let count = 0
-    if (u.email) {
-      const em = u.email.trim().toLowerCase()
-      count = Math.max(count, photoCountsByEmail.get(em) ?? 0)
-      if (values.email?.[u.email]) {
+  const contribution = useCallback(
+    (u: UsersAndDevices | null | undefined) => {
+      if (!u) return 0
+      let count = 0
+      if (u.email && values.email?.[u.email]) {
         count = Math.max(count, values.email[u.email])
       }
-    }
-    if (u.nick) {
-      const nk = u.nick.trim().toLowerCase()
-      count = Math.max(count, photoCountsByNick.get(nk) ?? 0)
-      if (nickWithCount[u.nick]) {
+      if (u.nick && nickWithCount[u.nick]) {
         count = Math.max(count, nickWithCount[u.nick])
       }
-    }
-    return count
-  }
+      return count
+    },
+    [values.email, nickWithCount],
+  )
 
   return (
     <>

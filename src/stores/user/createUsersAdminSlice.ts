@@ -73,13 +73,19 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
         const email = u.email?.trim().toLowerCase()
         const nick = u.nick?.trim().toLowerCase()
         if (email || nick) {
-          const photoSnap = await getDocs(query(photoCollection))
-          const hasContribution = photoSnap.docs.some((d) => {
-            const p = d.data()
-            const pEmail = typeof p.email === 'string' ? p.email.trim().toLowerCase() : ''
-            const pNick = typeof p.nick === 'string' ? p.nick.trim().toLowerCase() : ''
-            return (email && pEmail === email) || (nick && pNick === nick)
-          })
+          let hasContribution = false
+          if (email) {
+            const emailSnap = await getDocs(
+              query(photoCollection, where('email', '==', u.email!.trim()), limit(1)),
+            )
+            if (!emailSnap.empty) hasContribution = true
+          }
+          if (!hasContribution && nick) {
+            const nickSnap = await getDocs(
+              query(photoCollection, where('nick', '==', u.nick!.trim()), limit(1)),
+            )
+            if (!nickSnap.empty) hasContribution = true
+          }
           if (hasContribution) {
             throw new Error('Cannot delete a user with contributions')
           }
@@ -106,13 +112,23 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
           ?.trim()
           .toLowerCase()
         if (email || currentNick) {
-          const photoSnap = await getDocs(query(photoCollection))
-          const hasContribution = photoSnap.docs.some((d) => {
-            const p = d.data()
-            const pEmail = typeof p.email === 'string' ? p.email.trim().toLowerCase() : ''
-            const pNick = typeof p.nick === 'string' ? p.nick.trim().toLowerCase() : ''
-            return (email && pEmail === email) || (currentNick && pNick === currentNick)
-          })
+          let hasContribution = false
+          if (email) {
+            const emailSnap = await getDocs(
+              query(photoCollection, where('email', '==', user.email!.trim()), limit(1)),
+            )
+            if (!emailSnap.empty) hasContribution = true
+          }
+          if (!hasContribution && currentNick) {
+            const currentData = currentSnap.data() as MyUserType | undefined
+            const originalNick = currentData?.nick?.trim()
+            if (originalNick) {
+              const nickSnap = await getDocs(
+                query(photoCollection, where('nick', '==', originalNick), limit(1)),
+              )
+              if (!nickSnap.empty) hasContribution = true
+            }
+          }
           if (hasContribution) {
             throw new Error('Cannot change nickname for a user with contributions')
           }
