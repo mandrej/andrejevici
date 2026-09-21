@@ -20,8 +20,8 @@ import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
  * Scans all photo records for contributors, checks if they exist in the User collection,
- * and adds missing contributors using Firebase Auth UID retrieved via Cloud Function `functionUser`.
- * Sets isAuthorized: true, isAdmin: false, allowPush: false, and an expired timestamp (earlier than loginDays).
+ * and adds missing contributors using Firebase Auth UID and displayName retrieved via getUserRecordByEmail (functionUser).
+ * Sets uid and name (from displayName), isAuthorized: true, isAdmin: false, allowPush: false, and an expired timestamp (earlier than loginDays).
  *
  * @return {Promise<void>} A promise that resolves when the contributors are synced.
  */
@@ -91,26 +91,31 @@ export const fix = async () => {
     let addedCount = 0
     const errors: string[] = []
 
+    const fetchUserRecord = httpsCallable<
+      { email: string },
+      { uid: string; displayName?: string } | null
+    >(functions, 'functionUser')
+
     for (const contributor of toAdd) {
       try {
         let uid: string | undefined
         let displayName: string | undefined
 
-        const httpRes = await fetch(
-          `${CONFIG.functionUserUrl}?email=${encodeURIComponent(contributor.email)}`,
-        )
-
-        if (httpRes.status === 404) {
-          // No Firebase Auth account for this email yet – use a generated uid
-          uid = undefined
-          displayName = undefined
-        } else if (!httpRes.ok) {
-          const errBody = (await httpRes.json().catch(() => ({}))) as { error?: string }
-          throw new Error(errBody.error ?? `HTTP ${httpRes.status}`)
-        } else {
-          const data = (await httpRes.json()) as { uid: string; displayName?: string }
-          uid = data.uid
-          displayName = data.displayName
+        try {
+          const res = await fetchUserRecord({ email: contributor.email })
+          if (res.data) {
+            uid = res.data.uid
+            displayName = res.data.displayName
+          }
+        } catch (callErr: unknown) {
+          const errCode = (callErr as { code?: string })?.code
+          if (errCode === 'functions/not-found' || errCode === 'not-found') {
+            // No Firebase Auth account for this email yet – use a generated uid
+            uid = undefined
+            displayName = undefined
+          } else {
+            throw callErr
+          }
         }
 
         if (!uid) {
@@ -153,7 +158,6 @@ export const fix = async () => {
       notify({
         type: addedCount > 0 ? 'warning' : 'negative',
         message: `Added ${addedCount} contributor(s). ${errors.length} failed or skipped:<br/>${errors.join('<br/>')}`,
-        actions: [{ icon: 'sym_r_close' }],
         timeout: 0,
         html: true,
         multiLine: true,

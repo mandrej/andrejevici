@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth, type Auth } from 'firebase-admin/auth'
-import { onCall, onRequest, HttpsError, type Request } from 'firebase-functions/v2/https'
-import type { Response } from 'express'
+import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as logger from 'firebase-functions/logger'
 
 initializeApp()
@@ -10,11 +9,7 @@ initializeApp()
 let _auth: Auth | undefined
 export const getAdminAuth = () => (_auth ??= getAuth())
 
-export interface GetUserUidRequest {
-  email: string
-}
-
-export interface UserUidResponse {
+export interface UserRecordResponse {
   uid: string
   email: string
   displayName?: string
@@ -22,7 +17,8 @@ export interface UserUidResponse {
 }
 
 /**
- * Retrieves user UID and details by email using Firebase Admin Auth.
+ * Retrieves user UID and displayName by email using Firebase Admin Auth.
+ * These properties populate `user.uid` and `name` in the Firestore User collection.
  *
  * @param email - The email address to look up.
  * @param authInstance - Optional Auth instance for testing or custom configuration.
@@ -30,7 +26,7 @@ export interface UserUidResponse {
 export const getUserRecordByEmail = async (
   email: string,
   authInstance?: Auth,
-): Promise<UserUidResponse> => {
+): Promise<UserRecordResponse> => {
   if (typeof email !== 'string' || !email.trim()) {
     throw new Error('A valid email address is required')
   }
@@ -48,14 +44,14 @@ export const getUserRecordByEmail = async (
 }
 
 /**
- * Callable Cloud Function: get user UID from email address.
+ * Callable Cloud Function: retrieve user record (uid and displayName) by email address.
  */
-export const getUserUidByEmail = onCall(
+export const functionUser = onCall(
   {
     region: 'us-central1',
     timeoutSeconds: 60,
   },
-  async (request): Promise<UserUidResponse> => {
+  async (request): Promise<UserRecordResponse | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication is required')
     }
@@ -70,47 +66,10 @@ export const getUserUidByEmail = onCall(
     } catch (error) {
       const authError = error as { code?: string; message?: string }
       if (authError.code === 'auth/user-not-found') {
-        throw new HttpsError('not-found', `No user found with email ${email}`)
+        return null
       }
-      logger.error('Failed to get user by email:', error)
+      logger.error('Error retrieving user by email:', error)
       throw new HttpsError('internal', authError.message || 'Failed to retrieve user')
     }
   },
 )
-
-/** Alias for getUserUidByEmail */
-export const functionUser = getUserUidByEmail
-
-/**
- * HTTP Cloud Function: get user UID from email address via GET/POST request.
- */
-export const functionUserHttp = onRequest(
-  {
-    region: 'us-central1',
-    timeoutSeconds: 60,
-    cors: true,
-  },
-  async (req: Request, res: Response): Promise<void> => {
-    const rawEmail = (req.method === 'GET' ? req.query.email : req.body?.email) as unknown
-    if (typeof rawEmail !== 'string' || !rawEmail.trim()) {
-      res.status(400).json({ error: 'A valid email query parameter or body property is required' })
-      return
-    }
-
-    try {
-      const result = await getUserRecordByEmail(rawEmail)
-      res.status(200).json(result)
-    } catch (error) {
-      const authError = error as { code?: string; message?: string }
-      if (authError.code === 'auth/user-not-found') {
-        res.status(404).json({ error: `No user found with email ${rawEmail}` })
-        return
-      }
-      logger.error('Error retrieving user by email:', error)
-      res.status(500).json({ error: authError.message || 'Internal server error' })
-    }
-  },
-)
-
-/** Alias for HTTP Cloud Function */
-export const getUserUidByEmailHttp = functionUserHttp
