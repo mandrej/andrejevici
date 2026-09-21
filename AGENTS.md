@@ -43,7 +43,7 @@ The [`./ands`](./ands) helper script centralizes project operations:
 | `./ands build`     | **Build**   | Injects timestamp (`NEXT_PUBLIC_BUILD`) into `.env` and compiles Next.js frontend & PWA bundle.                                |
 | `./ands deploy`    | **Deploy**  | Deploys client application to Firebase Hosting.                                                                                |
 | `./ands indexes`   | **Deploy**  | Deploys Firestore index configurations (`firestore.indexes.json`) to Cloud Firestore.                                          |
-| `./ands functions` | **Backend** | Compiles TypeScript source for `functionNotify`, `functionCron`, `functionThumb` and deploys Cloud Functions.                  |
+| `./ands functions` | **Backend** | Compiles TypeScript source for `functionNotify`, `functionCron`, `functionThumb`, `functionUser` and deploys Cloud Functions.  |
 | `./ands icons`     | **Assets**  | Re-generates application icons from `logo.svg` via `node scripts/build-icons.js`.                                              |
 | `./ands test`      | **Quality** | Executes TypeScript unit tests (`npm test test/slug.ts`).                                                                      |
 
@@ -137,6 +137,7 @@ src/
 functionCron/                        # Cloud Function: Scheduled background maintenance
 functionNotify/                      # Cloud Function: Push notification delivery
 functionThumb/                       # Cloud Function: Image resizing & thumbnail creation
+functionUser/                        # Cloud Function: User lookup & management via Admin SDK
 scripts/                             # Build tools (`build-pwa.js`, `build-icons.js`)
 test/                                # Unit test suite run with `tsx`
 public/                              # Static public assets, PWA manifest, service worker (`sw.js`)

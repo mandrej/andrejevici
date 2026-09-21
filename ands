@@ -41,6 +41,7 @@ else
       npm --prefix functionNotify run build
       npm --prefix functionCron run build
       npm --prefix functionThumb run build
+      npm --prefix functionUser run build
       firebase deploy --only functions
       exit ;;
     # extensions)

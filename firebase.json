@@ -102,6 +102,11 @@
       "codebase": "function-thumb",
       "ignore": ["**/node_modules/**"],
       "functions": ["generateThumbnail", "generateThumbnailOnUpload"]
+    },
+    {
+      "source": "functionUser",
+      "codebase": "function-user",
+      "ignore": ["**/node_modules/**"]
     }
   ]
 }

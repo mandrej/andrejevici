@@ -203,11 +203,11 @@ docker run -dit \
 
 Every authenticated user has a document in the `users` Firestore collection (`MyUserType`). Three boolean flags govern what they can do:
 
-| Flag            | Default for new users | Meaning                                                      |
-| :-------------- | :-------------------- | :----------------------------------------------------------- |
-| `isAdmin`       | `false` (first user → `true`) | Full administrative access — user management, tag merging, any photo/video operation. |
-| `isAuthorized`  | `false` (first user → `true`) | Editor access — can upload, edit their own media, and use batch tools. |
-| `allowPush`     | `false` (first user → `true`) | User has consented to receive FCM push notifications.        |
+| Flag           | Default for new users         | Meaning                                                                               |
+| :------------- | :---------------------------- | :------------------------------------------------------------------------------------ |
+| `isAdmin`      | `false` (first user → `true`) | Full administrative access — user management, tag merging, any photo/video operation. |
+| `isAuthorized` | `false` (first user → `true`) | Editor access — can upload, edit their own media, and use batch tools.                |
+| `allowPush`    | `false` (first user → `true`) | User has consented to receive FCM push notifications.                                 |
 
 > **First-user bootstrap**: When the `users` collection is empty (fresh installation), the very first sign-in automatically receives `isAdmin: true`, `isAuthorized: true`, and `allowPush: true`.
 
@@ -221,13 +221,13 @@ A single helper function [`canContribute(user)`](./src/helpers/index.ts) is the 
 
 This gate is enforced uniformly across the application:
 
-| Location | Behavior when `canContribute` returns `false` |
-| :------- | :--------------------------------------------- |
-| [`Menu`](./src/components/Menu.tsx) | Upload nav link is hidden |
-| [`PlainLayout`](./src/components/layouts/PlainLayout.tsx) | Upload action buttons are hidden |
-| [`AddPageContent`](./src/app/add/AddPageContent.tsx) | Upload page redirects / shows access-denied message |
-| [`ManageSelection`](./src/components/ManageSelection.tsx) | Batch selection toolbar is hidden |
-| [`useEditRecord`](./src/hooks/useEditRecord.ts) | Edit/delete actions are blocked |
+| Location                                                  | Behavior when `canContribute` returns `false`       |
+| :-------------------------------------------------------- | :-------------------------------------------------- |
+| [`Menu`](./src/components/Menu.tsx)                       | Upload nav link is hidden                           |
+| [`PlainLayout`](./src/components/layouts/PlainLayout.tsx) | Upload action buttons are hidden                    |
+| [`AddPageContent`](./src/app/add/AddPageContent.tsx)      | Upload page redirects / shows access-denied message |
+| [`ManageSelection`](./src/components/ManageSelection.tsx) | Batch selection toolbar is hidden                   |
+| [`useEditRecord`](./src/hooks/useEditRecord.ts)           | Edit/delete actions are blocked                     |
 
 Record-level edit/delete additionally checks `isAuthorOrAdmin(user, rec)`, which wraps `canContribute` and also verifies the user is either an admin **or** the original uploader (`email` match).
 
@@ -284,29 +284,29 @@ Admins can remotely invalidate any user's session from the **Admin › Users** t
 
 FCM tokens are refreshed automatically at two points:
 
-| Trigger | Condition | Action |
-| :------ | :-------- | :----- |
-| **Fresh sign-in** (`storeUser`) | `allowPush === true` | `refreshToken()` called after session is written |
-| **App entry / doc update** (`onSnapshot`) | `allowPush === true` AND token not yet in memory | `refreshToken()` called lazily |
+| Trigger                                   | Condition                                        | Action                                           |
+| :---------------------------------------- | :----------------------------------------------- | :----------------------------------------------- |
+| **Fresh sign-in** (`storeUser`)           | `allowPush === true`                             | `refreshToken()` called after session is written |
+| **App entry / doc update** (`onSnapshot`) | `allowPush === true` AND token not yet in memory | `refreshToken()` called lazily                   |
 
 The `refreshToken()` method (in [`createNotificationsSlice`](./src/stores/user/createNotificationsSlice.ts)) requests a new FCM registration token and upserts it into the `devices` collection. Tokens are keyed by the FCM key itself to avoid duplicates across devices.
 
 ### Permission Summary Table
 
-| Action                       | Anonymous | Signed-in (no flags) | `isAuthorized` | `isAdmin` |
-| :--------------------------- | :-------: | :------------------: | :------------: | :-------: |
-| Browse gallery               | ✅        | ✅                   | ✅             | ✅        |
-| Search & filter              | ✅        | ✅                   | ✅             | ✅        |
-| View EXIF details            | ✅        | ✅                   | ✅             | ✅        |
-| Upload photos / videos       | ❌        | ❌                   | ✅             | ✅        |
-| Edit / delete own media      | ❌        | ❌                   | ✅             | ✅        |
-| Edit / delete any media      | ❌        | ❌                   | ❌             | ✅        |
-| Batch select & manage        | ❌        | ❌                   | ✅             | ✅        |
-| Access Admin portal          | ❌        | ❌                   | ❌             | ✅        |
-| Manage users & permissions   | ❌        | ❌                   | ❌             | ✅        |
-| Force-logout another user    | ❌        | ❌                   | ❌             | ✅        |
-| Merge tags                   | ❌        | ❌                   | ❌             | ✅        |
-| Send push notifications      | ❌        | ❌                   | ❌             | ✅        |
+| Action                     | Anonymous | Signed-in (no flags) | `isAuthorized` | `isAdmin` |
+| :------------------------- | :-------: | :------------------: | :------------: | :-------: |
+| Browse gallery             |    ✅     |          ✅          |       ✅       |    ✅     |
+| Search & filter            |    ✅     |          ✅          |       ✅       |    ✅     |
+| View EXIF details          |    ✅     |          ✅          |       ✅       |    ✅     |
+| Upload photos / videos     |    ❌     |          ❌          |       ✅       |    ✅     |
+| Edit / delete own media    |    ❌     |          ❌          |       ✅       |    ✅     |
+| Edit / delete any media    |    ❌     |          ❌          |       ❌       |    ✅     |
+| Batch select & manage      |    ❌     |          ❌          |       ✅       |    ✅     |
+| Access Admin portal        |    ❌     |          ❌          |       ❌       |    ✅     |
+| Manage users & permissions |    ❌     |          ❌          |       ❌       |    ✅     |
+| Force-logout another user  |    ❌     |          ❌          |       ❌       |    ✅     |
+| Merge tags                 |    ❌     |          ❌          |       ❌       |    ✅     |
+| Send push notifications    |    ❌     |          ❌          |       ❌       |    ✅     |
 
 ---
 
