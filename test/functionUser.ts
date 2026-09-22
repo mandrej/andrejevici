@@ -27,6 +27,7 @@ describe('functionUser', () => {
 
   test('should return UID and displayName for milan.andrejevic@gmail.com', async () => {
     const result = await getUserRecordByEmail('milan.andrejevic@gmail.com', authMock)
+    assert.ok(result)
     assert.equal(result.uid, 'e2nPxKNt1kCH64kyfORGe4bvl3Cq')
     assert.equal(result.email, 'milan.andrejevic@gmail.com')
     assert.equal(result.displayName, 'Milan Andrejevic')
@@ -34,20 +35,15 @@ describe('functionUser', () => {
 
   test('should return UID and displayName for svetlana.andrejevic@gmail.com', async () => {
     const result = await getUserRecordByEmail('svetlana.andrejevic@gmail.com', authMock)
+    assert.ok(result)
     assert.equal(result.uid, 'OIWi3wy8EMlm9u85MABzFUMrFhAc')
     assert.equal(result.email, 'svetlana.andrejevic@gmail.com')
     assert.equal(result.displayName, 'Svetlana Andrejevic')
   })
 
-  test('should throw error for non-existent email', async () => {
-    await assert.rejects(
-      async () => {
-        await getUserRecordByEmail('nonexistent@example.com', authMock)
-      },
-      {
-        code: 'auth/user-not-found',
-      },
-    )
+  test('should return null for non-existent email', async () => {
+    const result = await getUserRecordByEmail('nonexistent@example.com', authMock)
+    assert.equal(result, null)
   })
 
   test('should verify against live auth instance when FIREBASE_AUTH_EMULATOR_HOST is set', async (t) => {
@@ -56,8 +52,10 @@ describe('functionUser', () => {
       return
     }
     const milan = await getUserRecordByEmail('milan.andrejevic@gmail.com')
+    assert.ok(milan)
     assert.equal(milan.uid, 'FvlXe9WUkgaaRQ2tn7nNDiKfjSu1')
     const mihailo = await getUserRecordByEmail('mihailo.genije@gmail.com')
+    assert.ok(mihailo)
     assert.equal(mihailo.uid, 'HG9VdF9syLNxHYbdQcU7kspLZ9H2')
   })
 })

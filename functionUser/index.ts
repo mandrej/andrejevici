@@ -26,20 +26,29 @@ export interface UserRecordResponse {
 export const getUserRecordByEmail = async (
   email: string,
   authInstance?: Auth,
-): Promise<UserRecordResponse> => {
+): Promise<UserRecordResponse | null> => {
   if (typeof email !== 'string' || !email.trim()) {
     throw new Error('A valid email address is required')
   }
 
   const normalizedEmail = email.trim().toLowerCase()
   const a = authInstance ?? getAdminAuth()
-  const userRecord = await a.getUserByEmail(normalizedEmail)
 
-  return {
-    uid: userRecord.uid,
-    email: userRecord.email ?? normalizedEmail,
-    displayName: userRecord.displayName,
-    disabled: userRecord.disabled,
+  try {
+    const userRecord = await a.getUserByEmail(normalizedEmail)
+
+    return {
+      uid: userRecord.uid,
+      email: userRecord.email ?? normalizedEmail,
+      displayName: userRecord.displayName,
+      disabled: userRecord.disabled,
+    }
+  } catch (error) {
+    const authError = error as { code?: string; message?: string }
+    if (authError.code === 'auth/user-not-found') {
+      return null
+    }
+    throw error
   }
 }
 
@@ -65,12 +74,8 @@ export const functionUser = onCall(
     try {
       return await getUserRecordByEmail(email)
     } catch (error) {
-      const authError = error as { code?: string; message?: string }
-      if (authError.code === 'auth/user-not-found') {
-        return null
-      }
       logger.error('Error retrieving user by email:', error)
-      throw new HttpsError('internal', authError.message || 'Failed to retrieve user')
+      throw new HttpsError('internal', (error as Error)?.message || 'Failed to retrieve user')
     }
   },
 )
