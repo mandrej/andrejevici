@@ -19,15 +19,18 @@ import notify from '@/helpers/notify'
 import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
- * Scans all photo records for contributors, checks if they exist in the User collection,
- * and adds missing contributors using Firebase Auth UID and displayName retrieved via getUserRecordByEmail (functionUser).
- * Sets uid and name (from displayName), isAuthorized: true, isAdmin: false, allowPush: false, and an expired timestamp (earlier than loginDays).
+ * Scans all media records (photo, video) in photo collection for contributors,
+ * checks if they exist in the User collection, and adds missing contributors using
+ * Firebase Auth UID and displayName retrieved via functionUser.
+ * Sets allowPush: false, email, isAdmin: false, isAuthorized: true, name (from user.displayName),
+ * nick (from photo, video entry), and timestamp earlier than loginDays.
+ * If user does not exist in Firebase Auth, sets name and uid to empty string.
  *
  * @return {Promise<void>} A promise that resolves when the contributors are synced.
  */
 export const fix = async () => {
   notify({
-    message: 'Scanning photo contributors...',
+    message: 'Scanning contributors in photos and videos...',
     timeout: 0,
     spinner: true,
     group: 'fix-contributors-users',
@@ -69,7 +72,7 @@ export const fix = async () => {
     if (toAdd.length === 0) {
       notify({
         type: 'positive',
-        message: 'All photo contributors already exist in the user collection.',
+        message: 'All contributors already exist in the user collection.',
         icon: 'sym_r_check',
         timeout: 5000,
         group: 'fix-contributors-users',
@@ -98,38 +101,33 @@ export const fix = async () => {
 
     for (const contributor of toAdd) {
       try {
-        let uid: string | undefined
-        let displayName: string | undefined
+        let uid = ''
+        let name = ''
 
         try {
           const res = await fetchUserRecord({ email: contributor.email })
           if (res.data) {
-            uid = res.data.uid
-            displayName = res.data.displayName
+            uid = res.data.uid || ''
+            name = res.data.displayName || ''
           }
         } catch (callErr: unknown) {
           const errCode = (callErr as { code?: string })?.code
           if (errCode === 'functions/not-found' || errCode === 'not-found') {
-            // No Firebase Auth account for this email yet – use a generated uid
-            uid = undefined
-            displayName = undefined
+            uid = ''
+            name = ''
           } else {
-            throw callErr
+            console.warn(`Error calling functionUser for ${contributor.email}:`, callErr)
+            uid = ''
+            name = ''
           }
         }
 
-        if (!uid) {
-          const { v4: uuidv4 } = await import('uuid')
-          uid = uuidv4()
-        }
-
-        const userDocRef = doc(userCollection, uid)
-        const userDocSnap = await getDoc(userDocRef)
+        const userDocRef = uid ? doc(userCollection, uid) : doc(userCollection)
+        const userDocSnap = uid ? await getDoc(userDocRef) : null
 
         const nick = contributor.nick || dummy(contributor.email)
-        const name = displayName || nick || contributor.email
 
-        if (userDocSnap.exists()) {
+        if (userDocSnap?.exists()) {
           const existingUser = userDocSnap.data() as MyUserType
           if (!existingUser.name && name) {
             await updateDoc(userDocRef, { name })

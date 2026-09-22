@@ -264,7 +264,7 @@ export const UsersTab: React.FC = () => {
               ))
             : filteredResult.map((item) => (
                 <div
-                  key={item.uid}
+                  key={item.uid || item.email}
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="shrink-0 mr-3">
@@ -275,7 +275,7 @@ export const UsersTab: React.FC = () => {
 
                   <div className="grow">
                     <div className="flex items-center gap-1 text-base font-semibold flex-wrap">
-                      <span>{item.nick || '???'}</span>
+                      <span className={!item.uid ? 'text-negative' : ''}>{item.nick || '???'}</span>
                       {contribution(item) === 0 && (
                         <>
                           <AppButton
