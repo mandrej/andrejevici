@@ -1,6 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickValues, selectNickWithCount } from '@/stores/valuesStore'
 import { useScreen } from '@/composables/useScreen'
@@ -17,6 +20,8 @@ import type { UsersAndDevices } from '@/helpers/models'
 import CONFIG from '@/config'
 
 export const UsersTab: React.FC = () => {
+  const router = useRouter()
+  const searchBy = useAppStore((state) => state.searchBy)
   const user = useUserStore((state) => state.user)
   const fetchUsersAndDevices = useUserStore((state) => state.fetchUsersAndDevices)
   const updateUser = useUserStore((state) => state.updateUser)
@@ -137,6 +142,7 @@ export const UsersTab: React.FC = () => {
   }
 
   const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
+    if (!item.uid) return
     const nextResult = result.map((u) => {
       if (u.uid === item.uid) {
         return { ...u, isAdmin: val }
@@ -174,7 +180,7 @@ export const UsersTab: React.FC = () => {
   }
 
   const togglePush = async (item: UsersAndDevices, val: boolean) => {
-    if (!item.nick) return
+    if (!item.nick || !item.uid) return
     try {
       const updatedItem = { ...item, allowPush: val }
       await updateUser(updatedItem, 'allowPush')
@@ -226,6 +232,13 @@ export const UsersTab: React.FC = () => {
     return result.reduce((max, u) => Math.max(max, contribution(u)), 0)
   }, [result, contribution])
 
+  const handleNickFilter = (nick?: string) => {
+    if (!nick) return
+    searchBy({ nick }, () => {
+      router.push('/list')
+    })
+  }
+
   return (
     <>
       <ErrorBanner inquiry={!busy && error !== ''} title={error} />
@@ -272,26 +285,70 @@ export const UsersTab: React.FC = () => {
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="shrink-0 mr-3">
-                    <AppBadge
-                      color="warning"
-                      textColor="black"
-                      className="text-sm px-2 py-1 justify-center"
-                    >
-                      <span className="grid grid-cols-1 place-items-center tabular-nums">
-                        <span
-                          className="col-start-1 row-start-1 invisible select-none"
-                          aria-hidden="true"
+                    {item.nick && contribution(item) > 0 ? (
+                      <Link
+                        href="/list"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleNickFilter(item.nick)
+                        }}
+                        title={`Filter photos by ${item.nick}`}
+                        className="inline-flex hover:opacity-80 transition-opacity"
+                      >
+                        <AppBadge
+                          color="warning"
+                          textColor="black"
+                          className="text-sm px-2 py-1 justify-center cursor-pointer"
                         >
-                          {maxContribution}
+                          <span className="grid grid-cols-1 place-items-center tabular-nums">
+                            <span
+                              className="col-start-1 row-start-1 invisible select-none"
+                              aria-hidden="true"
+                            >
+                              {maxContribution}
+                            </span>
+                            <span className="col-start-1 row-start-1">{contribution(item)}</span>
+                          </span>
+                        </AppBadge>
+                      </Link>
+                    ) : (
+                      <AppBadge
+                        color="warning"
+                        textColor="black"
+                        className="text-sm px-2 py-1 justify-center"
+                      >
+                        <span className="grid grid-cols-1 place-items-center tabular-nums">
+                          <span
+                            className="col-start-1 row-start-1 invisible select-none"
+                            aria-hidden="true"
+                          >
+                            {maxContribution}
+                          </span>
+                          <span className="col-start-1 row-start-1">{contribution(item)}</span>
                         </span>
-                        <span className="col-start-1 row-start-1">{contribution(item)}</span>
-                      </span>
-                    </AppBadge>
+                      </AppBadge>
+                    )}
                   </div>
 
                   <div className="grow">
                     <div className="flex items-center gap-1 text-base font-semibold flex-wrap">
-                      <span className={!item.uid ? 'text-negative' : ''}>{item.nick || '???'}</span>
+                      {item.nick && contribution(item) > 0 ? (
+                        <Link
+                          href="/list"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleNickFilter(item.nick)
+                          }}
+                          className={`hover:underline cursor-pointer ${!item.uid ? 'text-negative' : ''}`}
+                          title={`Filter photos by ${item.nick}`}
+                        >
+                          {item.nick}
+                        </Link>
+                      ) : (
+                        <span className={!item.uid ? 'text-negative' : ''}>
+                          {item.nick || '???'}
+                        </span>
+                      )}
                       {contribution(item) === 0 && (
                         <>
                           <AppButton
@@ -358,17 +415,27 @@ export const UsersTab: React.FC = () => {
                   <div
                     className={`shrink-0 ml-3 flex gap-x-3 ${screen.xs ? 'flex-col gap-y-1' : 'flex-row'}`}
                   >
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label
+                      className={`flex items-center gap-1 ${
+                        user?.email === item.email || !item.nick || !item.uid
+                          ? 'cursor-not-allowed opacity-50'
+                          : 'cursor-pointer'
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={!!item.isAdmin}
-                        disabled={user?.email === item.email || !item.nick}
+                        disabled={user?.email === item.email || !item.nick || !item.uid}
                         className="w-4 h-4 rounded border-gray-300 text-negative focus:ring-negative"
                         onChange={(e) => handleAdminCheckboxChange(e.target.checked, item)}
                       />
                       <span className="text-xs">Admin</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label
+                      className={`flex items-center gap-1 ${
+                        !item.nick ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={!!item.isAuthorized}
@@ -378,11 +445,15 @@ export const UsersTab: React.FC = () => {
                       />
                       <span className="text-xs">Editor</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label
+                      className={`flex items-center gap-1 ${
+                        !item.nick || !item.uid ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={!!item.allowPush}
-                        disabled={!item.nick}
+                        disabled={!item.nick || !item.uid}
                         className="w-4 h-4 rounded border-gray-300 text-secondary focus:ring-secondary"
                         onChange={(e) => void togglePush(item, e.target.checked)}
                       />
