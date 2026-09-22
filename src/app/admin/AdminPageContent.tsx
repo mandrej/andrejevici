@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import DefaultLayout from '@/components/layouts/DefaultLayout'
 import { useAppStore } from '@/stores/appStore'
@@ -10,10 +10,13 @@ import { useUserStore } from '@/stores/userStore'
 import { formatDatum, formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
 import AppButton from '@/components/atoms/AppButton'
+import AppInput from '@/components/atoms/AppInput'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
 import { mismatch, missingThumbnails, fix } from '@/helpers/remedy'
+import { functions } from '@/firebase'
+import { httpsCallable } from 'firebase/functions'
 import CONFIG from '@/config'
 
 export default function AdminPage() {
@@ -26,6 +29,14 @@ export default function AdminPage() {
   const user = useUserStore((state) => state.user)
   const initialized = useUserStore((state) => state.initialized)
 
+  const [userSearchEmail, setUserSearchEmail] = useState('')
+  const [userSearchLoading, setUserSearchLoading] = useState(false)
+  const [userSearchResult, setUserSearchResult] = useState<{
+    uid: string
+    displayName?: string
+  } | null>(null)
+  const [userSearchError, setUserSearchError] = useState('')
+
   useEffect(() => {
     if (initialized && !user?.isAdmin) {
       router.replace('/401')
@@ -34,6 +45,34 @@ export default function AdminPage() {
 
   if (!initialized || !user?.isAdmin) {
     return null
+  }
+
+  const handleUserSearch = async () => {
+    const trimmed = userSearchEmail.trim()
+    if (!trimmed) return
+
+    setUserSearchLoading(true)
+    setUserSearchError('')
+    setUserSearchResult(null)
+
+    try {
+      const fetchUserRecord = httpsCallable<
+        { email: string },
+        { uid: string; displayName?: string } | null
+      >(functions, 'functionUser')
+
+      const res = await fetchUserRecord({ email: trimmed })
+      if (res.data) {
+        setUserSearchResult(res.data)
+      } else {
+        setUserSearchError('User not found')
+      }
+    } catch (err: unknown) {
+      const errorMsg = (err as { message?: string })?.message || 'Failed to search user'
+      setUserSearchError(errorMsg)
+    } finally {
+      setUserSearchLoading(false)
+    }
   }
 
   const handleCountersBuild = async () => {
@@ -117,6 +156,69 @@ export default function AdminPage() {
               title="Storage Mismatch"
               description="Resolve inconsistencies between Cloud Storage and Firestore."
               action={<AppButton color="negative" label="Resolve" onClick={mismatch} />}
+            />
+
+            {/* User Search Card */}
+            <AdminCard
+              icon="search"
+              color="primary"
+              title="Search User Data"
+              description="Search user data by email using functionUser."
+              details={
+                <div className="flex flex-col gap-2 text-left">
+                  <AppInput
+                    type="email"
+                    placeholder="name@example.com"
+                    modelValue={userSearchEmail}
+                    onChangeValue={(val) => {
+                      setUserSearchEmail(val)
+                      setUserSearchResult(null)
+                      setUserSearchError('')
+                    }}
+                    clearable
+                    disabled={userSearchLoading}
+                    loading={userSearchLoading}
+                    onKeyUp={(e) => {
+                      if (e.key === 'Enter') {
+                        void handleUserSearch()
+                      }
+                    }}
+                  />
+                  {userSearchResult && (
+                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-2.5 border border-gray-200 dark:border-gray-700 space-y-1 text-xs">
+                      <div>
+                        <span className="font-semibold text-gray-500 dark:text-gray-400">
+                          UID:{' '}
+                        </span>
+                        <span className="font-mono text-gray-900 dark:text-gray-100 select-all break-all">
+                          {userSearchResult.uid}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-500 dark:text-gray-400">
+                          DisplayName:{' '}
+                        </span>
+                        <span className="text-gray-900 dark:text-gray-100 font-medium">
+                          {userSearchResult.displayName || (
+                            <span className="text-gray-400 italic">None</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {userSearchError && (
+                    <div className="text-xs text-negative">{userSearchError}</div>
+                  )}
+                </div>
+              }
+              action={
+                <AppButton
+                  label={userSearchLoading ? 'Searching...' : 'Search'}
+                  color="primary"
+                  onClick={handleUserSearch}
+                  disabled={!userSearchEmail.trim() || userSearchLoading}
+                />
+              }
             />
           </div>
         )}
