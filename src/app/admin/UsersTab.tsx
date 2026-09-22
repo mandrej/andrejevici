@@ -222,6 +222,10 @@ export const UsersTab: React.FC = () => {
     [values.email, nickWithCount],
   )
 
+  const maxContribution = useMemo(() => {
+    return result.reduce((max, u) => Math.max(max, contribution(u)), 0)
+  }, [result, contribution])
+
   return (
     <>
       <ErrorBanner inquiry={!busy && error !== ''} title={error} />
@@ -268,8 +272,20 @@ export const UsersTab: React.FC = () => {
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="shrink-0 mr-3">
-                    <AppBadge color="warning" textColor="black" className="text-sm px-2 py-1">
-                      {contribution(item)}
+                    <AppBadge
+                      color="warning"
+                      textColor="black"
+                      className="text-sm px-2 py-1 justify-center"
+                    >
+                      <span className="grid grid-cols-1 place-items-center tabular-nums">
+                        <span
+                          className="col-start-1 row-start-1 invisible select-none"
+                          aria-hidden="true"
+                        >
+                          {maxContribution}
+                        </span>
+                        <span className="col-start-1 row-start-1">{contribution(item)}</span>
+                      </span>
                     </AppBadge>
                   </div>
 
@@ -316,7 +332,7 @@ export const UsersTab: React.FC = () => {
                     <div className="text-xs text-gray-500">{item.email}</div>
                     <div className="text-xs text-gray-400">
                       {ageDays(item.timestamp) > CONFIG.loginDays ? (
-                        <span className="text-negative font-medium">Logged out / Expired</span>
+                        <span>Logged out / Expired</span>
                       ) : (
                         `subscribed ${ageDays(item.timestamp)} days ago`
                       )}
@@ -333,9 +349,7 @@ export const UsersTab: React.FC = () => {
                             </AppBadge>
                           ))
                         ) : (
-                          <AppBadge color="secondary" textColor="dark">
-                            no tokens
-                          </AppBadge>
+                          <span className="text-gray-400 text-xs">no devices</span>
                         )}
                       </div>
                     </div>
