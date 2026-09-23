@@ -95,7 +95,7 @@ export default function AdminPage() {
               description="Add photo contributors to the user collection if they do not already exist."
               details={
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Run on: {formatDatum(new Date('2026-09-21'), 'DD.MM.YYYY')}
+                  Run on: {formatDatum(new Date('2026-09-23'), 'DD.MM.YYYY')}
                 </div>
               }
               action={<AppButton color="accent" label="Sync Users" onClick={fix} />}

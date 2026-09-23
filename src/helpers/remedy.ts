@@ -19,28 +19,30 @@ import notify from '@/helpers/notify'
 import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
- * Scans all media records (photo, video) in photo collection for contributors,
- * checks if they exist in the User collection, and adds missing contributors using
- * Firebase Auth UID and displayName retrieved via functionUser.
- * Sets allowPush: false, email, isAdmin: false, isAuthorized: true, name (from user.displayName),
- * nick (from photo, video entry), and timestamp earlier than loginDays.
- * If user does not exist in Firebase Auth, sets name and uid to empty string.
+ * Scans values.email for contributors, checks if they do not exist in the User collection.
+ * If found using functionUser Auth UID, creates new user with id = uid, displayName for name,
+ * allowPush: false, email, isAdmin: false, isAuthorized: true, and timestamp earlier than loginDays.
+ * If user cannot be found in Auth, skips creation.
  *
  * @return {Promise<void>} A promise that resolves when the contributors are synced.
  */
 export const fix = async () => {
   notify({
-    message: 'Scanning contributors in photos and videos...',
+    message: 'Scanning values.email for contributors...',
     timeout: 0,
     spinner: true,
     group: 'fix-contributors-users',
   })
 
   try {
-    const [photoSnapshot, userSnapshot] = await Promise.all([
-      getDocs(query(photoCollection)),
-      getDocs(query(userCollection)),
-    ])
+    const { useValuesStore } = await import('@/stores/valuesStore')
+    let values = useValuesStore.getState().values
+    if (!values?.email || Object.keys(values.email).length === 0) {
+      await useValuesStore.getState().fetchValues()
+      values = useValuesStore.getState().values
+    }
+
+    const userSnapshot = await getDocs(query(userCollection))
 
     const existingEmails = new Set(
       userSnapshot.docs
@@ -48,25 +50,19 @@ export const fix = async () => {
         .filter(Boolean),
     )
 
-    const contributors = new Map<string, { email: string; nick: string }>()
-    for (const docSnap of photoSnapshot.docs) {
-      const data = docSnap.data()
-      const rawEmail = data.email
+    const contributorEmails = new Map<string, string>()
+    for (const rawEmail of Object.keys(values.email || {})) {
       if (typeof rawEmail === 'string' && rawEmail.trim()) {
         const email = rawEmail.trim()
         const normalized = email.toLowerCase()
-        const nick = typeof data.nick === 'string' ? data.nick.trim() : ''
-        const existing = contributors.get(normalized)
-        if (!existing) {
-          contributors.set(normalized, { email, nick })
-        } else if (!existing.nick && nick) {
-          existing.nick = nick
+        if (!contributorEmails.has(normalized)) {
+          contributorEmails.set(normalized, email)
         }
       }
     }
 
-    const toAdd = Array.from(contributors.values()).filter(
-      (c) => !existingEmails.has(c.email.toLowerCase()),
+    const toAdd = Array.from(contributorEmails.values()).filter(
+      (email) => !existingEmails.has(email.toLowerCase()),
     )
 
     if (toAdd.length === 0) {
@@ -92,42 +88,44 @@ export const fix = async () => {
     const expiredTimestamp = Timestamp.fromDate(expiredDate)
 
     let addedCount = 0
+    let skippedCount = 0
     const errors: string[] = []
 
     const fetchUserRecord = httpsCallable<
       { email: string },
-      { uid: string; displayName?: string } | null
+      { uid: string; displayName?: string; email?: string } | null
     >(functions, 'functionUser')
 
-    for (const contributor of toAdd) {
+    for (const email of toAdd) {
       try {
-        let uid = ''
-        let name = ''
+        let authUser: { uid: string; displayName?: string; email?: string } | null = null
 
         try {
-          const res = await fetchUserRecord({ email: contributor.email })
-          if (res.data) {
-            uid = res.data.uid || ''
-            name = res.data.displayName || ''
+          const res = await fetchUserRecord({ email })
+          if (res.data?.uid) {
+            authUser = res.data
           }
         } catch (callErr: unknown) {
           const errCode = (callErr as { code?: string })?.code
           if (errCode === 'functions/not-found' || errCode === 'not-found') {
-            uid = ''
-            name = ''
+            authUser = null
           } else {
-            console.warn(`Error calling functionUser for ${contributor.email}:`, callErr)
-            uid = ''
-            name = ''
+            console.warn(`Error calling functionUser for ${email}:`, callErr)
+            authUser = null
           }
         }
 
-        const userDocRef = uid ? doc(userCollection, uid) : doc(userCollection)
-        const userDocSnap = uid ? await getDoc(userDocRef) : null
+        if (!authUser?.uid) {
+          skippedCount++
+          continue
+        }
 
-        const nick = contributor.nick || dummy(contributor.email)
+        const uid = authUser.uid
+        const name = authUser.displayName || ''
+        const userDocRef = doc(userCollection, uid)
+        const userDocSnap = await getDoc(userDocRef)
 
-        if (userDocSnap?.exists()) {
+        if (userDocSnap.exists()) {
           const existingUser = userDocSnap.data() as MyUserType
           if (!existingUser.name && name) {
             await updateDoc(userDocRef, { name })
@@ -138,8 +136,8 @@ export const fix = async () => {
         const newUser: MyUserType = {
           uid,
           name,
-          email: contributor.email,
-          nick,
+          email,
+          nick: dummy(email),
           isAuthorized: true,
           isAdmin: false,
           allowPush: false,
@@ -150,25 +148,33 @@ export const fix = async () => {
         addedCount++
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
-        console.warn(`Could not add contributor ${contributor.email}:`, err)
-        errors.push(`${contributor.email}: ${msg}`)
+        console.warn(`Could not add contributor ${email}:`, err)
+        errors.push(`${email}: ${msg}`)
       }
     }
 
     if (errors.length > 0) {
       notify({
         type: addedCount > 0 ? 'warning' : 'negative',
-        message: `Added ${addedCount} contributor(s). ${errors.length} failed or skipped:<br/>${errors.join('<br/>')}`,
+        message: `Added ${addedCount} contributor(s). ${errors.length} failed:<br/>${errors.join('<br/>')}${skippedCount > 0 ? `<br/>${skippedCount} skipped (not found in Auth)` : ''}`,
         timeout: 0,
         html: true,
         multiLine: true,
         group: 'fix-contributors-users',
       })
-    } else {
+    } else if (addedCount > 0) {
       notify({
         type: 'positive',
-        message: `Successfully added ${addedCount} contributor(s) to users collection.`,
+        message: `Successfully added ${addedCount} contributor(s) to users collection.${skippedCount > 0 ? ` (${skippedCount} skipped - not found in Auth)` : ''}`,
         icon: 'sym_r_check',
+        timeout: 5000,
+        group: 'fix-contributors-users',
+      })
+    } else {
+      notify({
+        type: 'warning',
+        message: `No contributors added. ${skippedCount} contributor(s) not found in Firebase Auth.`,
+        icon: 'sym_r_warning',
         timeout: 5000,
         group: 'fix-contributors-users',
       })
@@ -177,8 +183,7 @@ export const fix = async () => {
     notify({
       type: 'negative',
       message:
-        'Failed to sync photo contributors: ' +
-        (error instanceof Error ? error.message : String(error)),
+        'Failed to sync contributors: ' + (error instanceof Error ? error.message : String(error)),
       group: 'fix-contributors-users',
     })
   }
