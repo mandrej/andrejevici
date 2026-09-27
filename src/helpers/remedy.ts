@@ -1,4 +1,4 @@
-import { functions, storage } from '@/firebase'
+import { functions, storage, db } from '@/firebase'
 import {
   doc,
   query,
@@ -8,6 +8,8 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
+  collection,
+  deleteField,
 } from 'firebase/firestore'
 import { ref as storageRef, listAll, getMetadata, getDownloadURL } from 'firebase/storage'
 import { httpsCallable } from 'firebase/functions'
@@ -20,7 +22,7 @@ import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
  * Scans values.email for contributors, checks if they do not exist in the User collection.
- * If found using functionUser Auth UID, creates new user with id = uid, displayName for name,
+ * If found using functionUser, creates new user with id = email, displayName for name,
  * allowPush: false, email, isAdmin: false, isAuthorized: true, and timestamp earlier than loginDays.
  * If user cannot be found in Auth, skips creation.
  *
@@ -43,6 +45,37 @@ export const fix = async () => {
     }
 
     const userSnapshot = await getDocs(query(userCollection))
+
+    // Recreate/migrate any legacy documents keyed by UID or containing id/uid fields
+    for (const docSnap of userSnapshot.docs) {
+      const data = docSnap.data() as MyUserType & { uid?: string; id?: string }
+      const email = data.email?.trim().toLowerCase()
+      if (!email) continue
+
+      const targetRef = doc(userCollection, email)
+      const targetSnap = await getDoc(targetRef)
+      const { uid: _oldUid, id: _oldId, ...rest } = data
+      const userPayload = {
+        ...rest,
+        email: data.email,
+      }
+      if (!targetSnap.exists()) {
+        await setDoc(targetRef, userPayload)
+      } else if (data.id !== undefined || data.uid !== undefined) {
+        await setDoc(
+          targetRef,
+          {
+            ...userPayload,
+            id: deleteField(),
+            uid: deleteField(),
+          },
+          { merge: true },
+        )
+      }
+      if (docSnap.id !== email) {
+        await deleteDoc(docSnap.ref)
+      }
+    }
 
     const existingEmails = new Set(
       userSnapshot.docs
@@ -120,10 +153,28 @@ export const fix = async () => {
           continue
         }
 
-        const uid = authUser.uid
+        const id = email
         const name = authUser.displayName || ''
-        const userDocRef = doc(userCollection, uid)
-        const userDocSnap = await getDoc(userDocRef)
+        const userDocRef = doc(userCollection, id)
+        let userDocSnap = await getDoc(userDocRef)
+
+        if (!userDocSnap.exists() && authUser.uid) {
+          const legacyRef = doc(userCollection, authUser.uid)
+          const legacySnap = await getDoc(legacyRef)
+          if (legacySnap.exists()) {
+            const legacyData = legacySnap.data() as MyUserType & { uid?: string }
+            const { uid: _oldUid, ...rest } = legacyData
+            const migrated: MyUserType = {
+              ...rest,
+              id,
+              name: legacyData.name || name,
+              email: legacyData.email || email,
+            }
+            await setDoc(userDocRef, migrated)
+            await deleteDoc(legacyRef)
+            userDocSnap = await getDoc(userDocRef)
+          }
+        }
 
         if (userDocSnap.exists()) {
           const existingUser = userDocSnap.data() as MyUserType
@@ -134,7 +185,6 @@ export const fix = async () => {
         }
 
         const newUser: MyUserType = {
-          uid,
           name,
           email,
           nick: dummy(email),
@@ -144,7 +194,8 @@ export const fix = async () => {
           timestamp: expiredTimestamp,
         }
 
-        await setDoc(userDocRef, newUser)
+        const { id: _id, ...saveData } = newUser
+        await setDoc(userDocRef, saveData)
         addedCount++
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
@@ -459,6 +510,151 @@ export const mismatch = async () => {
       type: 'negative',
       message:
         'Failed to resolve mismatch: ' + (error instanceof Error ? error.message : String(error)),
+    })
+  }
+}
+
+/**
+ * Scans the User collection and recreates/migrates any users that are keyed by UID
+ * or missing id = email, so that document ID and id property use the user's email address.
+ *
+ * @return {Promise<void>} A promise that resolves when the users are recreated.
+ */
+export const recreateUsers = async () => {
+  notify({
+    message: 'Recreating users to use email as ID...',
+    timeout: 0,
+    spinner: true,
+    group: 'recreate-users',
+  })
+
+  try {
+    const userSnapshot = await getDocs(query(userCollection))
+    let recreatedCount = 0
+    let alreadyCorrectCount = 0
+
+    for (const docSnap of userSnapshot.docs) {
+      const data = docSnap.data() as MyUserType & { uid?: string; id?: string }
+      const email = data.email?.trim().toLowerCase()
+      if (!email) continue
+
+      const targetRef = doc(userCollection, email)
+      const { uid: _oldUid, id: _oldId, ...rest } = data
+      const userPayload = {
+        ...rest,
+        email: data.email,
+      }
+
+      if (docSnap.id !== email) {
+        await setDoc(targetRef, userPayload)
+        await deleteDoc(docSnap.ref)
+        recreatedCount++
+      } else if (data.id !== undefined || data.uid !== undefined) {
+        await setDoc(
+          targetRef,
+          {
+            ...userPayload,
+            id: deleteField(),
+            uid: deleteField(),
+          },
+          { merge: true },
+        )
+        recreatedCount++
+      } else {
+        alreadyCorrectCount++
+      }
+    }
+
+    // Migrate legacy top-level Device documents to User/{email}/Device/{token}
+    const legacyDeviceSnap = await getDocs(collection(db, 'Device'))
+    let migratedDeviceCount = 0
+    for (const devDoc of legacyDeviceSnap.docs) {
+      const devData = devDoc.data()
+      const devEmail = devData.email?.trim().toLowerCase()
+      if (devEmail) {
+        await setDoc(
+          doc(db, 'User', devEmail, 'Device', devDoc.id),
+          {
+            timestamp: devData.timestamp || Timestamp.fromDate(new Date()),
+          },
+          { merge: true },
+        )
+        await deleteDoc(devDoc.ref)
+        migratedDeviceCount++
+      }
+    }
+
+    const deviceMsg = migratedDeviceCount > 0 ? ` Migrated ${migratedDeviceCount} device(s).` : ''
+    notify({
+      type: 'positive',
+      message: `Recreated ${recreatedCount} user(s).${deviceMsg} ${alreadyCorrectCount} already up to date.`,
+      icon: 'sym_r_check',
+      timeout: 5000,
+      group: 'recreate-users',
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    notify({
+      type: 'negative',
+      message: `Failed to recreate users: ${msg}`,
+      timeout: 0,
+      group: 'recreate-users',
+    })
+  }
+}
+
+/**
+ * Scans the legacy top-level Device collection and migrates each document
+ * to the subcollection User/{email}/Device/{token} with only the timestamp field,
+ * deleting the top-level Device document.
+ *
+ * @return {Promise<void>} A promise that resolves when devices are migrated.
+ */
+export const migrateDevices = async () => {
+  notify({
+    message: 'Migrating devices to user subcollections...',
+    timeout: 0,
+    spinner: true,
+    group: 'migrate-devices',
+  })
+
+  try {
+    const legacyDeviceSnap = await getDocs(collection(db, 'Device'))
+    let migratedCount = 0
+    let skippedCount = 0
+
+    for (const devDoc of legacyDeviceSnap.docs) {
+      const devData = devDoc.data()
+      const devEmail = devData.email?.trim().toLowerCase()
+      if (devEmail) {
+        await setDoc(
+          doc(db, 'User', devEmail, 'Device', devDoc.id),
+          {
+            timestamp: devData.timestamp || Timestamp.fromDate(new Date()),
+          },
+          { merge: true },
+        )
+        await deleteDoc(devDoc.ref)
+        migratedCount++
+      } else {
+        skippedCount++
+      }
+    }
+
+    notify({
+      type: 'positive',
+      message: `Migrated ${migratedCount} device(s) to User/{email}/Device.${skippedCount > 0 ? ` (${skippedCount} skipped without email)` : ''}`,
+      icon: 'sym_r_check',
+      timeout: 5000,
+      group: 'migrate-devices',
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    notify({
+      type: 'negative',
+      message: `Failed to migrate devices: ${msg}`,
+      timeout: 0,
+      group: 'migrate-devices',
     })
   }
 }

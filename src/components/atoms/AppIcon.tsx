@@ -23,6 +23,7 @@ import {
   CloudArrowUpIcon,
   Cog6ToothIcon,
   ComputerDesktopIcon,
+  DevicePhoneMobileIcon,
   DocumentDuplicateIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
@@ -119,6 +120,9 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   aspect_ratio: RectangleStackIcon,
   image_not_supported: PhotoIcon,
   sync_problem: ArrowPathIcon,
+  devices: DevicePhoneMobileIcon,
+  perm_device_information: DevicePhoneMobileIcon,
+  smartphone: DevicePhoneMobileIcon,
 
   // Navigation links (sym_r_ prefixed)
   sym_r_home: HomeIcon,
@@ -143,6 +147,8 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
 
   // People / social
   group: UsersIcon,
+  manage_accounts: UserIcon,
+  person: UserIcon,
   chat: ChatBubbleLeftRightIcon,
 }
 

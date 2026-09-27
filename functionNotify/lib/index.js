@@ -63,8 +63,8 @@ exports.notify = (0, https_1.onRequest)(
             res.status(400).send('No message text provided');
             return;
         }
-        // Fetch only the fields we need from Device docs
-        const querySnapshot = await db().collection('Device').select('email', 'timestamp').get();
+        // Fetch only the fields we need from Device docs across all users
+        const querySnapshot = await db().collectionGroup('Device').select('timestamp').get();
         if (querySnapshot.empty) {
             res.status(200).json([]);
             return;
@@ -74,7 +74,12 @@ exports.notify = (0, https_1.onRequest)(
         const deviceData = new Map();
         querySnapshot.forEach((docSnap) => {
             registrationTokens.push(docSnap.id);
-            deviceData.set(docSnap.id, docSnap.data());
+            const email = docSnap.ref.parent.parent?.id || '';
+            deviceData.set(docSnap.id, {
+                email,
+                timestamp: docSnap.data().timestamp,
+                ref: docSnap.ref,
+            });
         });
         const message = {
             tokens: registrationTokens,
@@ -111,15 +116,17 @@ exports.notify = (0, https_1.onRequest)(
             const token = registrationTokens[idx];
             if (!token)
                 return;
-            const data = deviceData.get(token);
-            const email = data?.email || '';
+            const dev = deviceData.get(token);
+            const email = dev?.email || '';
             let days;
             if (!resp.success) {
-                const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now());
+                const diff = Date.now() - (dev?.timestamp?.toMillis() ?? Date.now());
                 days = Math.floor(diff / 86400000);
                 // Queue delete of stale token
                 ops.push((batch) => {
-                    batch.delete(db().collection('Device').doc(token));
+                    if (dev?.ref) {
+                        batch.delete(dev.ref);
+                    }
                 });
             }
             results.push({

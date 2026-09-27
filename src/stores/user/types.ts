@@ -33,7 +33,7 @@ export interface UsersAdminSliceActions {
   getNickByEmail: (email: string) => Promise<string>
   fetchDevices: () => Promise<DeviceType[]>
   fetchUsersAndDevices: () => Promise<UsersAndDevices[]>
-  deleteUser: (uid: string) => Promise<void>
+  deleteUser: (id: string) => Promise<void>
   updateUser: (user: UsersAndDevices, field: keyof UsersAndDevices) => Promise<void>
   logoutUser: (user: UsersAndDevices) => Promise<void>
 }

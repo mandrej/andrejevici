@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import { storage, logAnalyticsEvent } from '@/firebase'
+import { auth, storage, logAnalyticsEvent } from '@/firebase'
 import {
   doc,
   setDoc,
@@ -237,6 +237,7 @@ export const createPhotoOpsSlice: StateCreator<
     const lastDocRef = doc(lastRecordCollection, 'latest')
 
     const saveLastRecordToTable = async (rec: PhotoType | null) => {
+      if (!auth.currentUser) return
       try {
         if (rec) {
           await setDoc(lastDocRef, rec, { merge: true })
@@ -261,7 +262,7 @@ export const createPhotoOpsSlice: StateCreator<
           const querySnap = await getDocs(q)
           const rec = getRec(querySnap) as PhotoType | null
           set({ lastRecord: rec })
-          if (rec) {
+          if (rec && auth.currentUser) {
             void saveLastRecordToTable(rec)
           }
         }
@@ -277,7 +278,9 @@ export const createPhotoOpsSlice: StateCreator<
       (snapshot) => {
         const rec = getRec(snapshot) as PhotoType | null
         set({ lastRecord: rec })
-        void saveLastRecordToTable(rec)
+        if (auth.currentUser) {
+          void saveLastRecordToTable(rec)
+        }
         if (process.env.NODE_ENV === 'development') {
           console.log('Last record snapshot:', rec?.headline, rec?.date)
         }

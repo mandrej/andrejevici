@@ -6,14 +6,13 @@ import {
   setDoc,
   getDocs,
   updateDoc,
-  query,
-  where,
+  collection,
   writeBatch,
   Timestamp,
 } from 'firebase/firestore'
 import { getToken } from 'firebase/messaging'
 import notify from '@/helpers/notify'
-import { deviceCollection, userCollection } from '@/helpers/collections'
+import { userCollection } from '@/helpers/collections'
 import type {
   UserStore,
   NotificationsSliceState,
@@ -93,8 +92,8 @@ export const createNotificationsSlice: StateCreator<
 
   updateSubscriber: async () => {
     const currentUser = get().user
-    if (!currentUser?.uid) return
-    await updateDoc(doc(userCollection, currentUser.uid), {
+    if (!currentUser?.id) return
+    await updateDoc(doc(userCollection, currentUser.id), {
       allowPush: get().allowPush,
       timestamp: Timestamp.fromDate(new Date()),
     })
@@ -102,11 +101,11 @@ export const createNotificationsSlice: StateCreator<
 
   updateDevice: async (token: string) => {
     const currentUser = get().user
-    if (!currentUser?.email) return
+    const email = currentUser?.email?.trim().toLowerCase()
+    if (!email) return
     await setDoc(
-      doc(deviceCollection, token),
+      doc(db, 'User', email, 'Device', token),
       {
-        email: currentUser.email,
         timestamp: Timestamp.fromDate(new Date()),
       },
       { merge: true },
@@ -115,15 +114,17 @@ export const createNotificationsSlice: StateCreator<
 
   removeDevice: async () => {
     const currentUser = get().user
-    const q = query(deviceCollection, where('email', '==', currentUser?.email || ''))
-    let snapshot = await getDocs(q)
+    const email = currentUser?.email?.trim().toLowerCase()
+    if (!email) return
+    const deviceSubcollection = collection(db, 'User', email, 'Device')
+    let snapshot = await getDocs(deviceSubcollection)
 
     while (!snapshot.empty) {
       const batch = writeBatch(db)
       snapshot.forEach((d) => batch.delete(d.ref))
       await batch.commit()
       if (snapshot.size < 500) break
-      snapshot = await getDocs(q)
+      snapshot = await getDocs(deviceSubcollection)
     }
   },
 })

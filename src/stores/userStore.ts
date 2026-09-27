@@ -18,7 +18,7 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        user: state.user ? { uid: state.user.uid } : null,
+        user: state.user ? { id: state.user.id, email: state.user.email } : null,
         token: state.token,
       }),
     },

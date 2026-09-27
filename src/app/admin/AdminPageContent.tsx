@@ -13,7 +13,7 @@ import AppButton from '@/components/atoms/AppButton'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
-import { mismatch, missingThumbnails, fix } from '@/helpers/remedy'
+import { mismatch, missingThumbnails, fix, recreateUsers } from '@/helpers/remedy'
 import CONFIG from '@/config'
 
 export default function AdminPage() {
@@ -99,6 +99,15 @@ export default function AdminPage() {
                 </div>
               }
               action={<AppButton color="accent" label="Sync Users" onClick={fix} />}
+            />
+
+            {/* Recreate Users Card */}
+            <AdminCard
+              icon="manage_accounts"
+              color="primary"
+              title="Recreate Users"
+              description="Migrate user documents to use email as ID (removing id field) and migrate legacy devices."
+              action={<AppButton color="primary" label="Recreate" onClick={recreateUsers} />}
             />
 
             {/* Thumbnails Card */}

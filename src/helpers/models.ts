@@ -54,7 +54,7 @@ export interface PhotoType extends ExifType {
 export type VideoType = PhotoType
 
 export interface MyUserType {
-  readonly uid: string
+  readonly id?: string
   name: string
   email: string
   nick: string
@@ -65,8 +65,8 @@ export interface MyUserType {
 }
 export interface DeviceType {
   key: string
-  email: string
   timestamp: Timestamp
+  email?: string
 }
 export interface UsersAndDevices extends MyUserType {
   timestamps: Timestamp[]

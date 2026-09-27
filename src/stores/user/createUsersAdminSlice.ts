@@ -6,6 +6,8 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  collection,
+  collectionGroup,
   query,
   where,
   orderBy,
@@ -15,7 +17,7 @@ import {
 } from 'firebase/firestore'
 import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
-import { deviceCollection, photoCollection, userCollection } from '@/helpers/collections'
+import { photoCollection, userCollection } from '@/helpers/collections'
 import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
 
 export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSliceActions> = (
@@ -24,7 +26,13 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 ) => ({
   fetchUsers: async () => {
     const snapshot = await getDocs(query(userCollection, orderBy('email', 'asc')))
-    return snapshot.docs.map((d) => d.data() as MyUserType)
+    return snapshot.docs.map((d) => {
+      const data = d.data() as MyUserType
+      return {
+        ...data,
+        id: data.id || d.id || data.email,
+      }
+    })
   },
 
   getNickByEmail: async (email: string) => {
@@ -41,8 +49,17 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   fetchDevices: async () => {
-    const snapshot = await getDocs(query(deviceCollection, orderBy('timestamp', 'desc')))
-    return snapshot.docs.map((d) => ({ ...(d.data() as DeviceType), key: d.id }))
+    const snapshot = await getDocs(collectionGroup(db, 'Device'))
+    const devices: DeviceType[] = snapshot.docs.map((d) => {
+      const data = d.data() as { timestamp: Timestamp }
+      const email = d.ref.parent.parent?.id || ''
+      return {
+        key: d.id,
+        email,
+        timestamp: data.timestamp,
+      }
+    })
+    return devices.sort((a, b) => (b.timestamp?.toMillis() ?? 0) - (a.timestamp?.toMillis() ?? 0))
   },
 
   fetchUsersAndDevices: async () => {
@@ -50,23 +67,28 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
     const deviceMap = new Map<string, Timestamp[]>()
     for (const dev of devices) {
-      const list = deviceMap.get(dev.email)
+      if (!dev.email) continue
+      const normEmail = dev.email.trim().toLowerCase()
+      const list = deviceMap.get(normEmail)
       if (list) {
         list.push(dev.timestamp)
       } else {
-        deviceMap.set(dev.email, [dev.timestamp])
+        deviceMap.set(normEmail, [dev.timestamp])
       }
     }
 
-    return users.map((user) => ({
-      ...user,
-      timestamps: deviceMap.get(user.email) ?? [],
-    }))
+    return users.map((user) => {
+      const normEmail = user.email?.trim().toLowerCase()
+      return {
+        ...user,
+        timestamps: (normEmail ? deviceMap.get(normEmail) : undefined) ?? [],
+      }
+    })
   },
 
-  deleteUser: async (uid: string) => {
+  deleteUser: async (id: string) => {
     try {
-      const userRef = doc(userCollection, uid)
+      const userRef = doc(userCollection, id)
       const userSnap = await getDoc(userRef)
       if (userSnap.exists()) {
         const u = userSnap.data() as MyUserType
@@ -103,7 +125,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   updateUser: async (user: UsersAndDevices, field: keyof UsersAndDevices) => {
-    const docRef = doc(userCollection, user.uid)
+    const docRef = doc(userCollection, user.id)
     try {
       if (field === 'nick') {
         const email = user.email?.trim().toLowerCase()
@@ -148,25 +170,26 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
   logoutUser: async (targetUser: UsersAndDevices) => {
     try {
-      const userRef = doc(userCollection, targetUser.uid)
+      const userRef = doc(userCollection, targetUser.id)
       await updateDoc(userRef, {
         timestamp: Timestamp.fromMillis(0),
       })
 
       if (targetUser.email) {
-        const q = query(deviceCollection, where('email', '==', targetUser.email))
-        let snapshot = await getDocs(q)
+        const email = targetUser.email.trim().toLowerCase()
+        const deviceSubcollection = collection(db, 'User', email, 'Device')
+        let snapshot = await getDocs(deviceSubcollection)
         while (!snapshot.empty) {
           const batch = writeBatch(db)
           snapshot.forEach((d) => batch.delete(d.ref))
           await batch.commit()
           if (snapshot.size < 500) break
-          snapshot = await getDocs(q)
+          snapshot = await getDocs(deviceSubcollection)
         }
       }
 
       const currentUser = get().user
-      if (currentUser?.uid === targetUser.uid) {
+      if (currentUser?.id === targetUser.id) {
         await auth.signOut()
         get().clearAuth()
       }

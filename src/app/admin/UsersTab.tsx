@@ -105,7 +105,7 @@ export const UsersTab: React.FC = () => {
         return
       }
       try {
-        await deleteUser(userToDelete.uid)
+        await deleteUser(userToDelete.id || userToDelete.email)
         setShowDeleteDialog(false)
         await fetchList()
       } catch (err) {
@@ -142,9 +142,9 @@ export const UsersTab: React.FC = () => {
   }
 
   const toggleAdmin = async (item: UsersAndDevices, val: boolean) => {
-    if (!item.uid) return
+    if (!item.id) return
     const nextResult = result.map((u) => {
-      if (u.uid === item.uid) {
+      if (u.id === item.id) {
         return { ...u, isAdmin: val }
       }
       return u
@@ -173,18 +173,18 @@ export const UsersTab: React.FC = () => {
     try {
       const updatedItem = { ...item, isAuthorized: val }
       await updateUser(updatedItem, 'isAuthorized')
-      setResult((prev) => prev.map((u) => (u.uid === item.uid ? updatedItem : u)))
+      setResult((prev) => prev.map((u) => (u.id === item.id ? updatedItem : u)))
     } catch (err) {
       notify({ type: 'negative', message: `Failed to update: ${err}` })
     }
   }
 
   const togglePush = async (item: UsersAndDevices, val: boolean) => {
-    if (!item.nick || !item.uid) return
+    if (!item.nick || !item.id) return
     try {
       const updatedItem = { ...item, allowPush: val }
       await updateUser(updatedItem, 'allowPush')
-      setResult((prev) => prev.map((u) => (u.uid === item.uid ? updatedItem : u)))
+      setResult((prev) => prev.map((u) => (u.id === item.id ? updatedItem : u)))
     } catch (err) {
       notify({ type: 'negative', message: `Failed to update: ${err}` })
     }
@@ -203,7 +203,7 @@ export const UsersTab: React.FC = () => {
       const updatedItem = { ...userToEdit, nick: tempNick }
       try {
         await updateUser(updatedItem, 'nick')
-        setResult((prev) => prev.map((u) => (u.uid === userToEdit.uid ? updatedItem : u)))
+        setResult((prev) => prev.map((u) => (u.id === userToEdit.id ? updatedItem : u)))
         setShowNickDialog(false)
       } catch (err) {
         notify({ type: 'negative', message: `Failed to save nickname: ${err}` })
@@ -281,7 +281,7 @@ export const UsersTab: React.FC = () => {
               ))
             : filteredResult.map((item) => (
                 <div
-                  key={item.uid || item.email}
+                  key={item.id || item.email}
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="shrink-0 mr-3">
@@ -339,13 +339,13 @@ export const UsersTab: React.FC = () => {
                             e.preventDefault()
                             handleNickFilter(item.nick)
                           }}
-                          className={`hover:underline cursor-pointer ${!item.uid ? 'text-negative' : ''}`}
+                          className={`hover:underline cursor-pointer ${!item.id ? 'text-negative' : ''}`}
                           title={`Filter photos by ${item.nick}`}
                         >
                           {item.nick}
                         </Link>
                       ) : (
-                        <span className={!item.uid ? 'text-negative' : ''}>
+                        <span className={!item.id ? 'text-negative' : ''}>
                           {item.nick || '???'}
                         </span>
                       )}
@@ -417,7 +417,7 @@ export const UsersTab: React.FC = () => {
                   >
                     <label
                       className={`flex items-center gap-1 ${
-                        user?.email === item.email || !item.nick || !item.uid
+                        user?.email === item.email || !item.nick || !item.id
                           ? 'cursor-not-allowed opacity-50'
                           : 'cursor-pointer'
                       }`}
@@ -425,7 +425,7 @@ export const UsersTab: React.FC = () => {
                       <input
                         type="checkbox"
                         checked={!!item.isAdmin}
-                        disabled={user?.email === item.email || !item.nick || !item.uid}
+                        disabled={user?.email === item.email || !item.nick || !item.id}
                         className="w-4 h-4 rounded border-gray-300 text-negative focus:ring-negative"
                         onChange={(e) => handleAdminCheckboxChange(e.target.checked, item)}
                       />
@@ -447,13 +447,13 @@ export const UsersTab: React.FC = () => {
                     </label>
                     <label
                       className={`flex items-center gap-1 ${
-                        !item.nick || !item.uid ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                        !item.nick || !item.id ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={!!item.allowPush}
-                        disabled={!item.nick || !item.uid}
+                        disabled={!item.nick || !item.id}
                         className="w-4 h-4 rounded border-gray-300 text-secondary focus:ring-secondary"
                         onChange={(e) => void togglePush(item, e.target.checked)}
                       />

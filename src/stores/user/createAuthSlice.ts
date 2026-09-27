@@ -1,7 +1,16 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '@/config'
 import { auth, logAnalyticsEvent } from '@/firebase'
-import { doc, setDoc, getDoc, getDocs, query, Timestamp, limit } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  deleteDoc,
+  query,
+  Timestamp,
+  limit,
+} from 'firebase/firestore'
 import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth'
 import type { MyUserType } from '@/helpers/models'
 import notify from '@/helpers/notify'
@@ -27,11 +36,27 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
   initialized: false,
 
   storeUser: async (user: User) => {
-    const userRef = doc(userCollection, user.uid)
-    const userSnap = await getDoc(userRef)
-    const email = user.email || ''
+    const email = (user.email || '').trim().toLowerCase()
+    const userRef = doc(userCollection, email)
+    let userSnap = await getDoc(userRef)
     const now = Timestamp.fromDate(new Date())
     const isFresh = get().isFreshLogin
+
+    if (!userSnap.exists() && user.uid) {
+      const legacyRef = doc(userCollection, user.uid)
+      const legacySnap = await getDoc(legacyRef)
+      if (legacySnap.exists()) {
+        const legacyData = legacySnap.data() as MyUserType & { uid?: string }
+        const { uid: _oldUid, id: _oldId, ...rest } = legacyData
+        const migrated = {
+          ...rest,
+          email: legacyData.email || email,
+        }
+        await setDoc(userRef, migrated)
+        await deleteDoc(legacyRef)
+        userSnap = await getDoc(userRef)
+      }
+    }
 
     if (userSnap.exists()) {
       const data = userSnap.data() as MyUserType
@@ -52,12 +77,13 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
           when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
           who: email ? dummy(email) : 'anonymous',
         })
-        await setDoc(userRef, data, { merge: true })
+        const { id: _id, ...saveData } = data
+        await setDoc(userRef, saveData, { merge: true })
       }
 
       const askPush = !data.allowPush && isExpired
       set({
-        user: data,
+        user: { ...data, id: email },
         allowPush: data.allowPush,
         askPush,
         isFreshLogin: false,
@@ -78,7 +104,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         name: user.displayName || '',
         email,
         nick: isFirstUser ? 'admin' : dummy(email),
-        uid: user.uid,
+        id: email,
         isAuthorized: isFirstUser,
         isAdmin: isFirstUser,
         allowPush: isFirstUser,
@@ -93,7 +119,8 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         initialized: true,
       })
 
-      await setDoc(userRef, newUser, { merge: true })
+      const { id: _id, ...saveUser } = newUser
+      await setDoc(userRef, saveUser, { merge: true })
     }
 
     if (get().allowPush) {
@@ -105,7 +132,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
 
   signIn: async () => {
     const currentUser = get().user
-    if (currentUser?.uid) {
+    if (currentUser?.id) {
       await auth.signOut()
       get().clearAuth()
     } else {
@@ -113,7 +140,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         set({ isFreshLogin: true })
         const result = await signInWithPopup(auth, provider)
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Auth user: ${result.user.displayName}`)
+          console.log(`Auth user: ${result.user.email}`)
         }
       } catch (err) {
         set({ isFreshLogin: false })

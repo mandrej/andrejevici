@@ -35,8 +35,8 @@ export const notify = onRequest(
         return
       }
 
-      // Fetch only the fields we need from Device docs
-      const querySnapshot = await db().collection('Device').select('email', 'timestamp').get()
+      // Fetch only the fields we need from Device docs across all users
+      const querySnapshot = await db().collectionGroup('Device').select('timestamp').get()
 
       if (querySnapshot.empty) {
         res.status(200).json([])
@@ -47,12 +47,21 @@ export const notify = onRequest(
       const registrationTokens: string[] = []
       const deviceData = new Map<
         string,
-        { email?: string; timestamp?: FirebaseFirestore.Timestamp }
+        {
+          email: string
+          timestamp?: FirebaseFirestore.Timestamp
+          ref: FirebaseFirestore.DocumentReference
+        }
       >()
 
       querySnapshot.forEach((docSnap) => {
         registrationTokens.push(docSnap.id)
-        deviceData.set(docSnap.id, docSnap.data())
+        const email = docSnap.ref.parent.parent?.id || ''
+        deviceData.set(docSnap.id, {
+          email,
+          timestamp: docSnap.data().timestamp,
+          ref: docSnap.ref,
+        })
       })
 
       const message = {
@@ -97,16 +106,18 @@ export const notify = onRequest(
         const token = registrationTokens[idx]
         if (!token) return
 
-        const data = deviceData.get(token)
-        const email = data?.email || ''
+        const dev = deviceData.get(token)
+        const email = dev?.email || ''
 
         let days: number | undefined
         if (!resp.success) {
-          const diff = Date.now() - (data?.timestamp?.toMillis() ?? Date.now())
+          const diff = Date.now() - (dev?.timestamp?.toMillis() ?? Date.now())
           days = Math.floor(diff / 86400000)
           // Queue delete of stale token
           ops.push((batch) => {
-            batch.delete(db().collection('Device').doc(token))
+            if (dev?.ref) {
+              batch.delete(dev.ref)
+            }
           })
         }
 

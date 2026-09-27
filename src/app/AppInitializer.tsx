@@ -47,7 +47,8 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       if (usr) {
         storeUser(usr)
           .then(() => {
-            const userRef = doc(userCollection, usr.uid)
+            const email = (usr.email || '').trim().toLowerCase()
+            const userRef = doc(userCollection, email)
             unsubscribeUserSnapshot = onSnapshot(userRef, async (snap) => {
               if (!snap.exists()) {
                 await auth.signOut()
@@ -69,7 +70,7 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
               }
 
               useUserStore.setState({
-                user: data,
+                user: { ...data, id: data.id || email },
                 allowPush: data.allowPush,
               })
 
