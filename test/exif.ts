@@ -1,9 +1,15 @@
-import test, { describe } from 'node:test'
+import test, { describe, after } from 'node:test'
 import assert from 'node:assert/strict'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import exifReader from 'exifreader'
 import readExif from '@/helpers/exif'
+import { terminate } from 'firebase/firestore'
+import { db } from '@/firebase'
+
+after(async () => {
+  await terminate(db)
+})
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

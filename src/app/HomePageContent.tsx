@@ -46,7 +46,7 @@ export default function HomePage() {
     <PlainLayout>
       <div className="flex flex-col items-center justify-center text-center p-6 w-full max-w-md">
         <AppButton
-          label={user ? `Hi ${user.email}` : 'Sign in'}
+          label={user ? `Hi ${user.nick || user.email}` : 'Sign in'}
           color="primary"
           onClick={signIn}
           flat={user !== null}

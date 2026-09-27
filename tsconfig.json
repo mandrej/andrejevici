@@ -40,7 +40,6 @@
     "functionCron",
     "functionNotify",
     "functionThumb",
-    "functionUser",
     "function*/lib/index.js",
     "function*/lib"
   ]

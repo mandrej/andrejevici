@@ -7,13 +7,13 @@ import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
 import { useUserStore } from '@/stores/userStore'
-import { formatDatum, formatBytes } from '@/helpers'
+import { formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
 import AppButton from '@/components/atoms/AppButton'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
-import { mismatch, missingThumbnails, fix, recreateUsers } from '@/helpers/remedy'
+import { mismatch, missingThumbnails } from '@/helpers/remedy'
 import CONFIG from '@/config'
 
 export default function AdminPage() {
@@ -85,34 +85,6 @@ export default function AdminPage() {
                 </div>
               }
               action={<AppButton label="Build" onClick={handleCountersBuild} color="secondary" />}
-            />
-
-            {/* Sync Photo Contributors Card */}
-            <AdminCard
-              icon="group"
-              color="accent"
-              title="Sync Contributors"
-              description="Add photo contributors to the user collection if they do not already exist."
-              details={
-                <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Run on: {formatDatum(new Date('2026-09-27'), 'DD.MM.YYYY')}
-                </div>
-              }
-              action={<AppButton color="accent" label="Sync Users" onClick={fix} />}
-            />
-
-            {/* Recreate Users Card */}
-            <AdminCard
-              icon="manage_accounts"
-              color="primary"
-              title="Migrate Users"
-              description="Migrate user documents to use email as ID and migrate legacy devices."
-              details={
-                <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Run on: {formatDatum(new Date('2026-09-27'), 'DD.MM.YYYY')}
-                </div>
-              }
-              action={<AppButton color="primary" label="Migrate" onClick={recreateUsers} />}
             />
 
             {/* Thumbnails Card */}
