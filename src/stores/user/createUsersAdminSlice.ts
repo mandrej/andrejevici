@@ -15,7 +15,7 @@ import {
   Timestamp,
   writeBatch,
 } from 'firebase/firestore'
-import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
+import type { MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
 import { photoCollection, userCollection } from '@/helpers/collections'
 import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
@@ -48,32 +48,29 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
     return data.nick
   },
 
-  fetchDevices: async () => {
-    const snapshot = await getDocs(collectionGroup(db, 'Device'))
-    const devices: DeviceType[] = snapshot.docs.map((d) => {
-      const data = d.data() as { timestamp: Timestamp }
-      const email = d.ref.parent.parent?.id || ''
-      return {
-        key: d.id,
-        email,
-        timestamp: data.timestamp,
-      }
-    })
-    return devices.sort((a, b) => (b.timestamp?.toMillis() ?? 0) - (a.timestamp?.toMillis() ?? 0))
-  },
-
   fetchUsersAndDevices: async () => {
-    const [devices, users] = await Promise.all([get().fetchDevices(), get().fetchUsers()])
+    const [snapshot, users] = await Promise.all([
+      getDocs(collectionGroup(db, 'Device')),
+      get().fetchUsers(),
+    ])
+
+    const sortedDocs = [...snapshot.docs].sort((a, b) => {
+      const tA = (a.data() as { timestamp?: Timestamp }).timestamp?.toMillis() ?? 0
+      const tB = (b.data() as { timestamp?: Timestamp }).timestamp?.toMillis() ?? 0
+      return tB - tA
+    })
 
     const deviceMap = new Map<string, Timestamp[]>()
-    for (const dev of devices) {
-      if (!dev.email) continue
-      const normEmail = dev.email.trim().toLowerCase()
+    for (const d of sortedDocs) {
+      const email = d.ref.parent.parent?.id
+      if (!email) continue
+      const normEmail = email.trim().toLowerCase()
+      const data = d.data() as { timestamp: Timestamp }
       const list = deviceMap.get(normEmail)
       if (list) {
-        list.push(dev.timestamp)
+        list.push(data.timestamp)
       } else {
-        deviceMap.set(normEmail, [dev.timestamp])
+        deviceMap.set(normEmail, [data.timestamp])
       }
     }
 

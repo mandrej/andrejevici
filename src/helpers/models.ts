@@ -63,11 +63,6 @@ export interface MyUserType {
   allowPush: boolean
   timestamp: Timestamp
 }
-export interface DeviceType {
-  key: string
-  timestamp: Timestamp
-  email?: string
-}
 export interface UsersAndDevices extends MyUserType {
   timestamps: Timestamp[]
 }

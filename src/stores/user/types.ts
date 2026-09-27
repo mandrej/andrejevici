@@ -1,5 +1,5 @@
 import type { User } from 'firebase/auth'
-import type { DeviceType, MyUserType, UsersAndDevices } from '@/helpers/models'
+import type { MyUserType, UsersAndDevices } from '@/helpers/models'
 
 export interface AuthSliceState {
   user: MyUserType | null
@@ -31,7 +31,6 @@ export interface NotificationsSliceActions {
 export interface UsersAdminSliceActions {
   fetchUsers: () => Promise<MyUserType[]>
   getNickByEmail: (email: string) => Promise<string>
-  fetchDevices: () => Promise<DeviceType[]>
   fetchUsersAndDevices: () => Promise<UsersAndDevices[]>
   deleteUser: (id: string) => Promise<void>
   updateUser: (user: UsersAndDevices, field: keyof UsersAndDevices) => Promise<void>
