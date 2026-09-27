@@ -21,10 +21,9 @@ import notify from '@/helpers/notify'
 import type { MyUserType, PhotoType } from '@/helpers/models'
 
 /**
- * Scans values.email for contributors, checks if they do not exist in the User collection.
- * If found using functionUser, creates new user with id = email, displayName for name,
- * allowPush: false, email, isAdmin: false, isAuthorized: true, and timestamp earlier than loginDays.
- * If user cannot be found in Auth, skips creation.
+ * Scans values.email for contributors not in the User collection,
+ * and creates them with allowPush: false, isAdmin: false, isAuthorized: true,
+ * and an expired timestamp.
  *
  * @return {Promise<void>} A promise that resolves when the contributors are synced.
  */
@@ -46,59 +45,25 @@ export const fix = async () => {
 
     const userSnapshot = await getDocs(query(userCollection))
 
-    // Recreate/migrate any legacy documents keyed by UID or containing id/uid fields
-    for (const docSnap of userSnapshot.docs) {
-      const data = docSnap.data() as MyUserType & { uid?: string; id?: string }
-      const email = data.email?.trim().toLowerCase()
-      if (!email) continue
-
-      const targetRef = doc(userCollection, email)
-      const targetSnap = await getDoc(targetRef)
-      const { uid: _oldUid, id: _oldId, ...rest } = data
-      const userPayload = {
-        ...rest,
-        email: data.email,
-      }
-      if (!targetSnap.exists()) {
-        await setDoc(targetRef, userPayload)
-      } else if (data.id !== undefined || data.uid !== undefined) {
-        await setDoc(
-          targetRef,
-          {
-            ...userPayload,
-            id: deleteField(),
-            uid: deleteField(),
-          },
-          { merge: true },
-        )
-      }
-      if (docSnap.id !== email) {
-        await deleteDoc(docSnap.ref)
-      }
+    const existingEmails = new Set<string>()
+    for (const d of userSnapshot.docs) {
+      const docEmail = (d.data().email as string | undefined)?.trim().toLowerCase()
+      if (docEmail) existingEmails.add(docEmail)
+      if (d.id && d.id.includes('@')) existingEmails.add(d.id.trim().toLowerCase())
     }
 
-    const existingEmails = new Set(
-      userSnapshot.docs
-        .map((d) => (d.data().email as string | undefined)?.trim().toLowerCase())
-        .filter(Boolean),
-    )
-
-    const contributorEmails = new Map<string, string>()
+    const toAdd = new Map<string, string>() // normalized -> raw
     for (const rawEmail of Object.keys(values.email || {})) {
       if (typeof rawEmail === 'string' && rawEmail.trim()) {
-        const email = rawEmail.trim()
-        const normalized = email.toLowerCase()
-        if (!contributorEmails.has(normalized)) {
-          contributorEmails.set(normalized, email)
+        const trimmed = rawEmail.trim()
+        const normalized = trimmed.toLowerCase()
+        if (!existingEmails.has(normalized) && !toAdd.has(normalized)) {
+          toAdd.set(normalized, trimmed)
         }
       }
     }
 
-    const toAdd = Array.from(contributorEmails.values()).filter(
-      (email) => !existingEmails.has(email.toLowerCase()),
-    )
-
-    if (toAdd.length === 0) {
+    if (toAdd.size === 0) {
       notify({
         type: 'positive',
         message: 'All contributors already exist in the user collection.',
@@ -110,7 +75,7 @@ export const fix = async () => {
     }
 
     notify({
-      message: `Found ${toAdd.length} contributor(s) not in users. Syncing...`,
+      message: `Found ${toAdd.size} contributor(s) not in users. Creating...`,
       timeout: 0,
       spinner: true,
       group: 'fix-contributors-users',
@@ -121,111 +86,44 @@ export const fix = async () => {
     const expiredTimestamp = Timestamp.fromDate(expiredDate)
 
     let addedCount = 0
-    let skippedCount = 0
     const errors: string[] = []
 
-    const fetchUserRecord = httpsCallable<
-      { email: string },
-      { uid: string; displayName?: string; email?: string } | null
-    >(functions, 'functionUser')
-
-    for (const email of toAdd) {
+    for (const [normalizedEmail, rawEmail] of toAdd.entries()) {
       try {
-        let authUser: { uid: string; displayName?: string; email?: string } | null = null
-
-        try {
-          const res = await fetchUserRecord({ email })
-          if (res.data?.uid) {
-            authUser = res.data
-          }
-        } catch (callErr: unknown) {
-          const errCode = (callErr as { code?: string })?.code
-          if (errCode === 'functions/not-found' || errCode === 'not-found') {
-            authUser = null
-          } else {
-            console.warn(`Error calling functionUser for ${email}:`, callErr)
-            authUser = null
-          }
-        }
-
-        if (!authUser?.uid) {
-          skippedCount++
-          continue
-        }
-
-        const id = email
-        const name = authUser.displayName || ''
-        const userDocRef = doc(userCollection, id)
-        let userDocSnap = await getDoc(userDocRef)
-
-        if (!userDocSnap.exists() && authUser.uid) {
-          const legacyRef = doc(userCollection, authUser.uid)
-          const legacySnap = await getDoc(legacyRef)
-          if (legacySnap.exists()) {
-            const legacyData = legacySnap.data() as MyUserType & { uid?: string }
-            const { uid: _oldUid, ...rest } = legacyData
-            const migrated: MyUserType = {
-              ...rest,
-              id,
-              name: legacyData.name || name,
-              email: legacyData.email || email,
-            }
-            await setDoc(userDocRef, migrated)
-            await deleteDoc(legacyRef)
-            userDocSnap = await getDoc(userDocRef)
-          }
-        }
-
-        if (userDocSnap.exists()) {
-          const existingUser = userDocSnap.data() as MyUserType
-          if (!existingUser.name && name) {
-            await updateDoc(userDocRef, { name })
-          }
-          continue
-        }
-
-        const newUser: MyUserType = {
-          name,
-          email,
-          nick: dummy(email),
+        const userDocRef = doc(userCollection, normalizedEmail)
+        const newUser: Omit<MyUserType, 'id'> = {
+          name: '',
+          email: rawEmail,
+          nick: dummy(rawEmail),
           isAuthorized: true,
           isAdmin: false,
           allowPush: false,
           timestamp: expiredTimestamp,
         }
 
-        const { id: _id, ...saveData } = newUser
-        await setDoc(userDocRef, saveData)
+        await setDoc(userDocRef, newUser)
         addedCount++
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
-        console.warn(`Could not add contributor ${email}:`, err)
-        errors.push(`${email}: ${msg}`)
+        console.warn(`Could not add contributor ${rawEmail}:`, err)
+        errors.push(`${rawEmail}: ${msg}`)
       }
     }
 
     if (errors.length > 0) {
       notify({
         type: addedCount > 0 ? 'warning' : 'negative',
-        message: `Added ${addedCount} contributor(s). ${errors.length} failed:<br/>${errors.join('<br/>')}${skippedCount > 0 ? `<br/>${skippedCount} skipped (not found in Auth)` : ''}`,
+        message: `Added ${addedCount} contributor(s). ${errors.length} failed:<br/>${errors.join('<br/>')}`,
         timeout: 0,
         html: true,
         multiLine: true,
         group: 'fix-contributors-users',
       })
-    } else if (addedCount > 0) {
-      notify({
-        type: 'positive',
-        message: `Successfully added ${addedCount} contributor(s) to users collection.${skippedCount > 0 ? ` (${skippedCount} skipped - not found in Auth)` : ''}`,
-        icon: 'sym_r_check',
-        timeout: 5000,
-        group: 'fix-contributors-users',
-      })
     } else {
       notify({
-        type: 'warning',
-        message: `No contributors added. ${skippedCount} contributor(s) not found in Firebase Auth.`,
-        icon: 'sym_r_warning',
+        type: 'positive',
+        message: `Successfully added ${addedCount} contributor(s) to the user collection.`,
+        icon: 'sym_r_check',
         timeout: 5000,
         group: 'fix-contributors-users',
       })
