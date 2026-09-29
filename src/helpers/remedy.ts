@@ -41,7 +41,7 @@ const getStorageData = async (filename: string) => {
 /**
  * Cloud Function to generate a thumbnail for a given file path.
  */
-const generateThumbnail = httpsCallable<{ filePath: string }, { filePath: string }>(
+export const generateThumbnail = httpsCallable<{ filePath: string }, { filePath: string }>(
   functions,
   'generateThumbnail',
 )

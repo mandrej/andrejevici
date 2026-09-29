@@ -282,6 +282,58 @@ export const thumbUrl = (filename: string) => {
 }
 
 /**
+ * Creates a resized, cropped square thumbnail Blob from an image File using HTML Canvas.
+ *
+ * @param file - The source image File.
+ * @param size - The target square dimension in pixels (defaults to CONFIG.thumbSize or 400).
+ * @returns A Promise resolving to a JPEG Blob.
+ */
+export const createThumbnailBlob = (
+  file: File,
+  size: number = CONFIG.thumbSize || 400,
+): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      return reject(new Error('Canvas is only available in browser environments'))
+    }
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return reject(new Error('Canvas 2D context not available'))
+      }
+      const scale = Math.max(size / img.width, size / img.height)
+      const w = img.width * scale
+      const h = img.height * scale
+      const x = (size - w) / 2
+      const y = (size - h) / 2
+      ctx.drawImage(img, x, y, w, h)
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error('Failed to create thumbnail blob from canvas'))
+          }
+        },
+        'image/jpeg',
+        0.85,
+      )
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Failed to load image for thumbnail creation'))
+    }
+    img.src = url
+  })
+}
+
+/**
  * Generates a Firestore-safe counter document ID from a field name and its value.
  * Forward slashes are percent-encoded because Firestore IDs cannot contain `/`.
  *

@@ -11,7 +11,9 @@ import {
   limit,
   onSnapshot,
 } from 'firebase/firestore'
-import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
+import { ref as storageRef, getDownloadURL, deleteObject, uploadBytes } from 'firebase/storage'
+import { v4 as uuidv4 } from 'uuid'
+import CONFIG from '@/config'
 import {
   thumbName,
   thumbUrl,
@@ -22,14 +24,16 @@ import {
   formatDatum,
   getDateFields,
   dummy,
+  createThumbnailBlob,
 } from '@/helpers'
 import notify from '@/helpers/notify'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
 import { useUserStore } from '@/stores/userStore'
-import type { PhotoType } from '@/helpers/models'
+import type { PhotoType, ExifType } from '@/helpers/models'
 import { photoCollection, lastRecordCollection } from '@/helpers/collections'
 import readExif from '@/helpers/exif'
+import { generateThumbnail } from '@/helpers/remedy'
 import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
 
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
@@ -231,6 +235,175 @@ export const createPhotoOpsSlice: StateCreator<
       message: `${obj.id} deleted`,
       icon: 'sym_r_check',
     })
+  },
+
+  swapRecord: async (oldRec, newFile) => {
+    set({ busy: true })
+    const valuesStore = useValuesStore.getState()
+    const bucketStore = useBucketStore.getState()
+    const userStore = useUserStore.getState()
+
+    try {
+      // 1. Generate unique filename for the new image
+      const id = uuidv4().substring(0, 8)
+      const newFilename = `${id}_${newFile.name}`
+
+      // 2. Upload new image to Storage
+      const fileRef = storageRef(storage, newFilename)
+      await uploadBytes(fileRef, newFile, {
+        contentType: newFile.type,
+        cacheControl: CONFIG.cache_control,
+      })
+      const newDownloadUrl = await getDownloadURL(fileRef)
+
+      // 3. Make and upload thumbnail
+      let newThumbUrl = ''
+      try {
+        const thumbBlob = await createThumbnailBlob(newFile, CONFIG.thumbSize)
+        const thumbPath = thumbName(newFilename)
+        const thumbStoRef = storageRef(storage, thumbPath)
+        await uploadBytes(thumbStoRef, thumbBlob, {
+          contentType: 'image/jpeg',
+          cacheControl: CONFIG.cache_control,
+        })
+        newThumbUrl = await getDownloadURL(thumbStoRef)
+      } catch (thumbErr) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            'Client thumbnail creation failed, trying Cloud Function fallback:',
+            thumbErr,
+          )
+        }
+        try {
+          const res = await generateThumbnail({ filePath: newFilename })
+          const thumbRef = storageRef(storage, res.data.filePath)
+          newThumbUrl = await getDownloadURL(thumbRef)
+        } catch (cfErr) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Cloud Function thumbnail failed, falling back to predictive URL:', cfErr)
+          }
+          newThumbUrl = thumbUrl(newFilename)
+        }
+      }
+
+      // 4. Read EXIF from new image
+      let exif: ExifType | null = null
+      try {
+        exif = await readExif(newDownloadUrl)
+      } catch (e) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to read EXIF from new image:', e)
+        }
+      }
+
+      // 5. Build new record: headline and tags remain, update EXIF
+      const dateFields = getDateFields(new Date())
+      const headline = oldRec.headline || ''
+      const updatedTags = new Set(oldRec.tags || [])
+      if (exif?.flash) {
+        updatedTags.add('flash')
+      } else if (exif && exif.flash === false) {
+        updatedTags.delete('flash')
+      }
+
+      const newRecord: PhotoType = {
+        id: newFilename,
+        url: newDownloadUrl,
+        thumb: newThumbUrl,
+        size: newFile.size,
+        kind: 'photo',
+        email: oldRec.email || userStore.user?.email || '',
+        nick: oldRec.nick || userStore.user?.nick || '',
+        headline,
+        text: headline ? sliceSlug(headline) : [],
+        tags: [...updatedTags],
+        ...dateFields,
+        ...(exif || {}),
+        ...(oldRec.loc && !exif?.loc ? { loc: oldRec.loc } : {}),
+      }
+
+      // 6. Save new record to Firestore
+      const newDocRef = doc(photoCollection, newRecord.id)
+      await setDoc(newDocRef, newRecord)
+
+      // 7. Delete old record from Firestore
+      const oldDocRef = doc(photoCollection, oldRec.id)
+      await deleteDoc(oldDocRef)
+
+      // 8. Delete old image and thumbnail from Cloud Storage
+      const oldStoragePromises: Promise<unknown>[] = []
+      if (oldRec.kind !== 'video') {
+        const oldFileRef = storageRef(storage, oldRec.id)
+        oldStoragePromises.push(
+          deleteObject(oldFileRef).catch((e) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Could not delete old image from storage:', e)
+            }
+          }),
+        )
+        const oldThumbPath = thumbName(oldRec.id)
+        if (oldThumbPath) {
+          oldStoragePromises.push(
+            deleteObject(storageRef(storage, oldThumbPath)).catch((e) => {
+              if (process.env.NODE_ENV === 'development') {
+                console.warn('Could not delete old thumbnail from storage:', e)
+              }
+            }),
+          )
+        }
+      }
+      await Promise.allSettled(oldStoragePromises)
+
+      // 9. Update local state
+      set((state) => {
+        const list = [...state.objects]
+        const idx = list.findIndex((x) => x.id === oldRec.id)
+        if (idx !== -1) {
+          list[idx] = newRecord
+        } else {
+          list.unshift(newRecord)
+        }
+        return {
+          objects: list,
+          selected: state.selected.filter((x) => x.id !== oldRec.id),
+          currentEdit: state.currentEdit?.id === oldRec.id ? newRecord : state.currentEdit,
+          lastRecord: state.lastRecord?.id === oldRec.id ? newRecord : state.lastRecord,
+        }
+      })
+
+      // 10. Update counters and bucket size
+      valuesStore.updateCounters(oldRec, newRecord)
+      bucketStore.bucketDiff(newRecord.size - oldRec.size)
+
+      // 11. Log analytics events
+      logAnalyticsEvent('image_delete', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
+        filename: oldRec.id,
+        headline: oldRec.headline || '',
+        kind: oldRec.kind,
+      })
+      logAnalyticsEvent('published', {
+        when: formatDatum(new Date(), 'DD.MM.YYYY HH:mm'),
+        who: userStore.user?.email ? dummy(userStore.user?.email) : 'anonymous',
+        filename: newRecord.id,
+        headline: newRecord.headline,
+        kind: newRecord.kind,
+      })
+
+      notify({
+        group: 'swap',
+        type: 'positive',
+        message: `${oldRec.id} swapped with ${newRecord.id}`,
+        icon: 'sym_r_check',
+        timeout: 3000,
+        spinner: false,
+      })
+
+      return newRecord
+    } finally {
+      set({ busy: false })
+    }
   },
 
   subscribeLastRec: () => {

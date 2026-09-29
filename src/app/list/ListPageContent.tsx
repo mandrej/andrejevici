@@ -18,6 +18,7 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import notify from '@/helpers/notify'
 import { logAnalyticsEvent } from '@/firebase'
 import type { PhotoType } from '@/helpers/models'
+import CONFIG from '@/config'
 
 export default function ListPage() {
   // App Store selectors
@@ -39,14 +40,17 @@ export default function ListPage() {
   const fetchRecords = useAppStore((state) => state.fetchRecords)
   const fetchPhoto = useAppStore((state) => state.fetchPhoto)
   const deleteRecord = useAppStore((state) => state.deleteRecord)
+  const swapRecordAction = useAppStore((state) => state.swapRecord)
 
   // User Store selectors
   const user = useUserStore((state) => state.user)
 
-  // Local state
+  // Local state & refs
   const [index, setIndex] = useState(-1)
   const [select2delete, _setSelect2delete] = useState<PhotoType | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const swapTargetRef = useRef<PhotoType | null>(null)
+  const swapFileInputRef = useRef<HTMLInputElement>(null)
 
   const skipNextFindFetchRef = useRef(false)
 
@@ -169,6 +173,59 @@ export default function ListPage() {
     setShowEdit(true)
   }
 
+  const swapRecord = (rec: PhotoType) => {
+    if (rec.kind === 'video') return
+    swapTargetRef.current = rec
+    if (swapFileInputRef.current) {
+      swapFileInputRef.current.value = ''
+      swapFileInputRef.current.click()
+    }
+  }
+
+  const onSwapFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const target = swapTargetRef.current
+    if (!file || !target) return
+
+    if (!file.type.startsWith('image/')) {
+      notify({ type: 'warning', message: 'Please select an image file.' })
+      e.target.value = ''
+      return
+    }
+
+    if (CONFIG.fileSize && file.size > CONFIG.fileSize) {
+      notify({
+        type: 'warning',
+        message: `${file.name}: max file size (${formatBytes(CONFIG.fileSize)}) exceeded`,
+      })
+      e.target.value = ''
+      return
+    }
+
+    try {
+      notify({
+        group: 'swap',
+        message: `Swapping ${target.id} with ${file.name}...`,
+        spinner: true,
+        timeout: 0,
+      })
+      const newRec = await swapRecordAction(target, file)
+      editOk(newRec.id)
+    } catch (err) {
+      console.error('Swap record failed:', err)
+      notify({
+        group: 'swap',
+        type: 'negative',
+        message: `Swap failed: ${err instanceof Error ? err.message : String(err)}`,
+        timeout: 5000,
+        spinner: false,
+      })
+    } finally {
+      e.target.value = ''
+      swapTargetRef.current = null
+    }
+  }
+
   const editOk = (id: string) => {
     const el = document.getElementById(id)
     if (!el) return
@@ -229,6 +286,15 @@ export default function ListPage() {
         ) : (
           <EditPhotoRecord rec={currentEdit} onEditOk={editOk} />
         ))}
+
+      {/* Hidden file input for swapRecord */}
+      <input
+        type="file"
+        ref={swapFileInputRef}
+        accept="image/*"
+        onChange={onSwapFileChange}
+        className="hidden"
+      />
 
       {/* Confirm Delete Dialog */}
       <AppDialog modelValue={showConfirm} maxWidth="max-w-sm" onChange={setShowConfirm}>
@@ -291,6 +357,15 @@ export default function ListPage() {
                       >
                         <AppIcon name="edit" className="w-6 h-6 leading-none" />
                       </button>
+                      {user?.isAdmin && item.kind !== 'video' && (
+                        <button
+                          className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
+                          onClick={() => swapRecord(item)}
+                          title="Swap record"
+                        >
+                          <AppIcon name="arrow-path" className="w-6 h-6 leading-none" />
+                        </button>
+                      )}
                     </div>
                   )
                 }
