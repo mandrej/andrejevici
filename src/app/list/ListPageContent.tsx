@@ -174,7 +174,7 @@ export default function ListPage() {
   }
 
   const swapRecord = (rec: PhotoType) => {
-    if (rec.kind === 'video') return
+    if (rec.kind === 'video' || !isAuthorOrAdmin(user, rec)) return
     swapTargetRef.current = rec
     if (swapFileInputRef.current) {
       swapFileInputRef.current.value = ''
@@ -185,7 +185,7 @@ export default function ListPage() {
   const onSwapFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     const target = swapTargetRef.current
-    if (!file || !target) return
+    if (!file || !target || target.kind === 'video' || !isAuthorOrAdmin(user, target)) return
 
     if (!file.type.startsWith('image/')) {
       notify({ type: 'warning', message: 'Please select an image file.' })
@@ -357,7 +357,7 @@ export default function ListPage() {
                       >
                         <AppIcon name="edit" className="w-6 h-6 leading-none" />
                       </button>
-                      {user?.isAdmin && item.kind !== 'video' && (
+                      {item.kind !== 'video' && (
                         <button
                           className="text-white drop-shadow-md hover:scale-110 transition-transform p-1"
                           onClick={() => swapRecord(item)}

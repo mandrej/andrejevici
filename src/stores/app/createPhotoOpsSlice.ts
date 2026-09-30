@@ -25,6 +25,7 @@ import {
   getDateFields,
   dummy,
   createThumbnailBlob,
+  isAuthorOrAdmin,
 } from '@/helpers'
 import notify from '@/helpers/notify'
 import { useValuesStore } from '@/stores/valuesStore'
@@ -238,10 +239,17 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   swapRecord: async (oldRec, newFile) => {
+    if (oldRec.kind === 'video') {
+      throw new Error('Cannot swap video files')
+    }
+    const userStore = useUserStore.getState()
+    if (!isAuthorOrAdmin(userStore.user, oldRec)) {
+      throw new Error('Not authorized to swap this image')
+    }
+
     set({ busy: true })
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
-    const userStore = useUserStore.getState()
 
     try {
       // 1. Generate unique filename for the new image
@@ -332,25 +340,23 @@ export const createPhotoOpsSlice: StateCreator<
 
       // 8. Delete old image and thumbnail from Cloud Storage
       const oldStoragePromises: Promise<unknown>[] = []
-      if (oldRec.kind !== 'video') {
-        const oldFileRef = storageRef(storage, oldRec.id)
+      const oldFileRef = storageRef(storage, oldRec.id)
+      oldStoragePromises.push(
+        deleteObject(oldFileRef).catch((e) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Could not delete old image from storage:', e)
+          }
+        }),
+      )
+      const oldThumbPath = thumbName(oldRec.id)
+      if (oldThumbPath) {
         oldStoragePromises.push(
-          deleteObject(oldFileRef).catch((e) => {
+          deleteObject(storageRef(storage, oldThumbPath)).catch((e) => {
             if (process.env.NODE_ENV === 'development') {
-              console.warn('Could not delete old image from storage:', e)
+              console.warn('Could not delete old thumbnail from storage:', e)
             }
           }),
         )
-        const oldThumbPath = thumbName(oldRec.id)
-        if (oldThumbPath) {
-          oldStoragePromises.push(
-            deleteObject(storageRef(storage, oldThumbPath)).catch((e) => {
-              if (process.env.NODE_ENV === 'development') {
-                console.warn('Could not delete old thumbnail from storage:', e)
-              }
-            }),
-          )
-        }
       }
       await Promise.allSettled(oldStoragePromises)
 
