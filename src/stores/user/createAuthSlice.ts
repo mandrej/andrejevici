@@ -56,7 +56,8 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         await setDoc(userRef, saveData, { merge: true })
       }
 
-      const askPush = !data.allowPush && isExpired
+      // Only prompt for push consent when returning after a long absence and not yet subscribed
+      const askPush = !isFresh && !data.allowPush && isExpired
       set({
         user: { ...data, id: email },
         allowPush: data.allowPush,
@@ -78,7 +79,8 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
       const newUser: MyUserType = {
         name: user.displayName || '',
         email,
-        nick: isFirstUser ? 'admin' : dummy(email),
+        // First user bootstraps as admin; subsequent users get no nick until admin assigns one
+        nick: isFirstUser ? 'admin' : '',
         id: email,
         isAuthorized: isFirstUser,
         isAdmin: isFirstUser,
