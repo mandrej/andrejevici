@@ -412,7 +412,7 @@ export const fixQuery = (query: FindType): FindType => {
  * @param loc - A coordinate string in `"latitude, longitude"` format.
  */
 export const openMaps = (loc: string) => {
-  const url = `https://www.google.com/maps/search/?api=1&query=${loc}`
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`
   window.open(url, '_blank')
 }
 
