@@ -1,71 +1,88 @@
 # CLAUDE.md
 
-This file provides quick guidance and technical context for Claude Code (`claude.ai/code`) and AI development assistants working with the **Andrejevici** codebase.
+Quick reference for AI assistants and developers working on Andrejevici.
 
----
+## Commands
 
-## 🛠️ CLI & Development Commands
+### npm scripts
 
-### Core Development Workflow
+- `npm install` — install frontend dependencies.
+- `npm run dev` — start the Next.js development server on port 3000.
+- `npm run dev:pwa` — build the service worker, then start development with `NEXT_PUBLIC_PWA_DEV=true`.
+- `npm run build` — run `next build --webpack`, then generate the PWA files.
+- `npm run start` — run the existing `next start` script. The deployed production path is Firebase Hosting serving the static `dist/` export, not this command.
+- `npm run lint` — run ESLint.
+- `npm run format` — format tracked source, styles, Markdown, and JSON with Prettier.
+- `npm run icons` — generate icons and screenshots from `public/logo.svg`.
+- `npm test` — run the TypeScript tests through `tsx --test`.
 
-- **Dev server**: `npm run dev` (Starts Next.js 16 dev server on `http://localhost:3000`)
-- **Dev server with PWA**: `npm run dev:pwa` (Builds PWA service worker and starts dev server with PWA flags)
-- **Lint**: `npm run lint` (Executes ESLint flat configuration across TypeScript and React code)
-- **Format**: `npm run format` (Formats code, markdown, and styles with Prettier)
-- **Run Tests**: `npm test` (Executes TypeScript unit tests via `tsx`) or `./ands test` (Runs test suite)
+### `./ands`
 
-### Firebase & Operations CLI (`./ands`)
+- `./ands run` — start Firebase emulators and import/export local state in `./data`.
+- `./ands build` — update `NEXT_PUBLIC_BUILD` in `.env`, then run the production build.
+- `./ands deploy` — deploy Firebase Hosting only.
+- `./ands indexes` — deploy Firestore indexes only.
+- `./ands functions` — build `functionNotify`, `functionCron`, and `functionThumb`, then deploy functions.
+- `./ands icons` — run the icon generator.
+- `./ands test` — run the targeted command `npm test test/slug.ts`.
 
-| Command            | Action  | Description                                                                                                                    |
-| :----------------- | :------ | :----------------------------------------------------------------------------------------------------------------------------- |
-| `./ands run`       | Backend | Starts Firebase emulators (Auth: 9099, Firestore: 8080, Storage: 9199, Functions: 5001, UI: 4000) with `./data` import/export. |
-| `./ands build`     | Build   | Injects `NEXT_PUBLIC_BUILD` timestamp into `.env` and compiles Next.js & PWA production package.                               |
-| `./ands deploy`    | Deploy  | Deploys client application to Firebase Hosting.                                                                                |
-| `./ands indexes`   | Deploy  | Deploys Firestore index definitions (`firestore.indexes.json`) to Cloud Firestore.                                             |
-| `./ands functions` | Backend | Builds TypeScript source for `functionNotify`, `functionCron`, `functionThumb` and deploys Cloud Functions.                    |
-| `./ands icons`     | Assets  | Re-generates application icons from `logo.svg` via `node scripts/build-icons.js`.                                              |
-| `./ands test`      | Quality | Runs TypeScript unit tests (`npm test test/slug.ts`).                                                                          |
+The root package supports Node 18, 20, 22, or 24. Each Cloud Function package requires Node 24.
 
----
+## Build and hosting model
 
-## 🏛️ Architecture & Core Components
+`next.config.ts` is configured with `output: 'export'`, `distDir: 'dist'`, and unoptimized images. The build produces a static site in `dist/`. `scripts/build-pwa.js` copies the manifest, bundles `src-pwa/custom-service-worker.ts`, injects the Workbox precache manifest, writes `dist/sw.js`, and copies the worker to `public/sw.js`. `firebase.json` serves `dist/` through Firebase Hosting and rewrites unknown paths to `/index.html`.
 
-### Tech Stack & Core Libraries
+The local `src/config.ts` file is ignored by Git and is required by the Firebase client and application helpers. Make sure the project-provided config file exists before running the app or tests; do not commit local config files.
 
-- **Frontend**: Next.js 16 (App Router) + React 19 + TypeScript 5.9 (Strict) + Tailwind CSS 4
-- **UI Components**: `@headlessui/react` + `@heroicons/react` + `yet-another-react-lightbox`
-- **Backend**: Firebase 11 (Firestore, Cloud Storage, Authentication, Cloud Functions, Cloud Messaging)
-- **State Management**: Zustand 5 (Modular Slices)
-- **Media & EXIF**: `exifreader` (client-side EXIF metadata parser) + `transliteration` (Serbian Cyrillic/Latin slugifier)
-- **PWA Integration**: Workbox Build 7 + Custom Service Worker (`src-pwa/custom-service-worker.ts` → `public/sw.js` via `scripts/build-pwa.js`)
+## Application map
 
-### Project Layout
+### Routes
 
-```
-src/
-├── app/                             # Next.js App Router views (/list, /add, /admin, /401)
-├── components/                      # UI atoms, sidebars, toolbars, tabs, dialogs, cards
-├── stores/                          # Zustand state stores (appStore, userStore, valuesStore, bucketStore, toastStore)
-├── helpers/                         # Business logic & Firebase helpers (exif.ts, collections.ts, index.ts, remedy.ts)
-├── firebase.ts                      # Firebase SDK initialization & emulator detection
-├── config.ts                        # Central project credentials, limits, & EXIF tag definitions
-└── styles/                          # Tailwind CSS 4 global styles (app.css)
+The App Router contains:
 
-src-pwa/                             # PWA source (custom-service-worker.ts, manifest.json)
-functionCron/                        # Cloud Function: Scheduled background maintenance
-functionNotify/                      # Cloud Function: Push notification delivery
-functionThumb/                       # Cloud Function: Image thumbnail creation (_400x400.jpeg)
-test/                                # Unit test suite executed via tsx
-data/                                # Local Firebase emulator state export
-ands                                 # Master project utility CLI script
-```
+- `/` — gallery/home page.
+- `/list` — gallery, search, filtering, infinite scroll, and full-screen media view.
+- `/add` — photo and video upload flow; contribution-gated.
+- `/admin` — metadata repair and user administration; admin-gated.
+- `/401` — unauthorized page.
+- `not-found` — not-found handling.
 
----
+`src/app/AppInitializer.tsx` resets client state, loads counters and bucket totals, observes Firebase authentication and the signed-in `User` document, handles foreground FCM messages, subscribes to the latest record, and registers `/sw.js` in production or when PWA development is enabled.
 
-## 📐 Coding Standards & Guidelines
+### Stores
 
-1. **Language & Types**: Write strict TypeScript. Prefer explicit type definitions over `any`. Use type-only imports (`import type { ... }`).
-2. **State Management**: Access Zustand 5 stores using granular selectors (e.g. `useUserStore((state) => state.user)`).
-3. **Firestore Queries**: Always use pre-configured collection references from `src/helpers/collections.ts` rather than raw collection strings.
-4. **Command Execution**: Execute package management commands (e.g. `npm install`, `npm uninstall`) synchronously in the foreground so dependencies resolve before downstream tasks.
-5. **Formatting & Linting**: Always verify code changes with `npm run format` and `npm run lint`.
+- `appStore`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
+- `userStore`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
+- `valuesStore`: `createCountersSlice`, `createValuesSlice`.
+- `bucketStore`: `createBucketSlice`.
+- `toastStore`: `createToastSlice`.
+
+Use selector hooks for React components, for example `useUserStore((state) => state.user)`.
+
+### Helpers and Firebase paths
+
+Business logic lives in `src/helpers/`: `collections.ts`, `exif.ts`, `index.ts`, `models.ts`, `notify.ts`, `remedy.ts`, and `uploadTracker.ts`. Use the collection references from `src/helpers/collections.ts` instead of duplicating raw collection names in client code.
+
+The case-sensitive Firestore paths currently used by the app are `User`, `Photo`, `Counter`, `Bucket`, `Rename`, and `LastRecord`. FCM device tokens are stored in `User/{trimmed-lowercase-email}/Device`. Counter values are documents in `Counter`; they are not separate lowercase `tags`, `photographers`, `lenses`, or `models` collections.
+
+## Authentication and permissions
+
+Anonymous visitors can read and browse. Firebase sign-in creates or loads a `User` document. The client-side `canContribute()` gate requires a signed-in user with a non-empty nickname other than `???` and either `isAuthorized` or `isAdmin`. `/admin` additionally requires `isAdmin`; record edits/deletes check admin status or uploader email.
+
+User timestamps are checked against the 60-day session limit. `AppInitializer` listens to the signed-in user document with `onSnapshot`, so permission changes and invalidation can be reflected without a reload. FCM token refresh is conditional on `allowPush`. The first newly created user is bootstrapped with elevated flags; subsequent users initially have an empty nickname and require administrator action before they can contribute.
+
+These gates are application behavior. The current Firestore and Storage rules allow public reads and writes by any authenticated client, so do not document the rules as enforcing the client-side admin/editor roles.
+
+## Cloud Functions
+
+- `functionThumb`: callable `generateThumbnail` and Storage-triggered `generateThumbnailOnUpload`; creates a 400px square cover crop as a progressive JPEG under `thumbnails/` with an `_400x400.jpeg` suffix and uses `thumbnailLocks` to avoid duplicate work.
+- `functionCron`: scheduled `cronCounters` rebuilds `Counter` from `Photo`; scheduled `cronBucket` writes aggregate count and size to `Bucket/total`. Both run every three days in the configured Los Angeles timezone.
+- `functionNotify`: HTTP `notify` endpoint; reads the `Device` collection group, sends multicast FCM messages, and removes failed device-token documents.
+
+## Coding conventions
+
+1. Use strict TypeScript and type-only imports where appropriate.
+2. Consume Zustand through granular selectors in React components.
+3. Reuse typed Firebase collection references from `src/helpers/collections.ts`.
+4. Run `npm run lint` after changes. Use Prettier for documentation and code formatting, but inspect the diff because the format script writes all matching files.
+5. Test PWA changes with `npm run dev:pwa`; production deployment is the generated static `dist/` directory.

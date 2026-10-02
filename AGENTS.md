@@ -1,276 +1,196 @@
 # AGENTS.md
 
-This file provides comprehensive guidance for AI agents and developers working with the **Andrejevici** codebase.
+Comprehensive guidance for contributors and AI agents working on Andrejevici.
 
----
+## Project overview
 
-## 🎯 Project Overview
+Andrejevici is a Next.js photo and video album PWA. The client supports gallery browsing, search and filtering, EXIF metadata extraction, media uploads, metadata editing, thumbnail generation, Firebase Authentication, FCM notifications, and an admin interface.
 
-**Andrejevici** is a modern Progressive Web App (PWA) photo and video album application designed for browsing, uploading, tagging, searching, and managing media assets with automated EXIF metadata extraction, bi-lingual search transliteration, and administrative permissions control.
+## Technology and prerequisites
 
-### Core Tech Stack
+- Next.js 16 App Router with static export, React 19, and strict TypeScript 5.9.
+- Tailwind CSS 4, Headless UI, Heroicons, and `next-themes`.
+- Firebase 11 client SDK, Firestore, Storage, Authentication, Functions, Messaging, and Analytics.
+- Zustand 5 with modular slices.
+- Workbox Build 7 and a custom service worker.
+- Root package Node engine: 18, 20, 22, or 24. The three Cloud Function packages specify Node 24.
+- npm and Firebase CLI (`firebase` can be installed globally or run through `npx`).
 
-| Layer                      | Technology                                                                                      |
-| :------------------------- | :---------------------------------------------------------------------------------------------- |
-| **Frontend Framework**     | **Next.js 16** (App Router) + **React 19**                                                      |
-| **Language**               | **TypeScript 5.9** (Strict Mode)                                                                |
-| **Styling & UI**           | **Tailwind CSS 4** + **Headless UI** (`@headlessui/react`) + **Heroicons** (`@heroicons/react`) |
-| **State Management**       | **Zustand 5** (Modular slice architecture)                                                      |
-| **Backend Infrastructure** | **Firebase 11** (Firestore, Cloud Storage, Authentication, Cloud Functions, Cloud Messaging)    |
-| **Media & EXIF**           | **ExifReader** (client-side metadata extraction) + `yet-another-react-lightbox`                 |
-| **Build & PWA**            | Webpack + Workbox Build 7 + Custom Service Worker (`public/sw.js`)                              |
-| **Package Manager**        | **npm** (**node** engine: `^24 \|\| ^22 \|\| ^20 \|\| ^18`)                                     |
+`src/config.ts` contains the project Firebase configuration and application limits. It is intentionally ignored by the repository's `config.ts` rule; use the project-provided local file and never add local configuration changes to a commit.
 
----
+## Development workflow
 
-## 🚀 Quick Start & CLI Reference
-
-### Environment Setup
+Install dependencies and start the local backend and frontend in separate terminals:
 
 ```bash
-npm install                    # Install dependencies
-./ands run                     # Start Firebase emulators with persistent state in ./data
-npm run dev                    # Start Next.js dev server on http://localhost:3000 (Terminal 2)
+npm install
+./ands run
+npm run dev
 ```
 
-### Master Helper Script (`./ands`)
+The development Firebase client connects to emulators at `127.0.0.1` for Auth, Firestore, Storage, and Functions. `./ands run` imports and exports emulator state through the ignored `./data` directory; the directory is local state, not repository seed data.
 
-The [`./ands`](./ands) helper script centralizes project operations:
+For PWA behavior during development:
 
-| Command            | Category    | Action / Description                                                                                                           |
-| :----------------- | :---------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| `./ands run`       | **Backend** | Starts Firebase emulators (Auth: 9099, Firestore: 8080, Storage: 9199, Functions: 5001, UI: 4000) with `./data` import/export. |
-| `./ands build`     | **Build**   | Injects timestamp (`NEXT_PUBLIC_BUILD`) into `.env` and compiles Next.js frontend & PWA bundle.                                |
-| `./ands deploy`    | **Deploy**  | Deploys client application to Firebase Hosting.                                                                                |
-| `./ands indexes`   | **Deploy**  | Deploys Firestore index configurations (`firestore.indexes.json`) to Cloud Firestore.                                          |
-| `./ands functions` | **Backend** | Compiles TypeScript source for `functionNotify`, `functionCron`, `functionThumb` and deploys Cloud Functions.                  |
-| `./ands icons`     | **Assets**  | Re-generates application icons from `logo.svg` via `node scripts/build-icons.js`.                                              |
-| `./ands test`      | **Quality** | Executes TypeScript unit tests (`npm test test/slug.ts`).                                                                      |
-
-### NPM Scripts Reference
-
-- `npm run dev` — Launch Next.js dev server with HMR.
-- `npm run dev:pwa` — Build PWA service worker script and start dev server with `NEXT_PUBLIC_PWA_DEV=true`.
-- `npm run build` — Compile Next.js bundle and generate PWA service worker via `scripts/build-pwa.js`.
-- `npm run start` — Launch Next.js production server.
-- `npm run lint` — Execute ESLint across codebase.
-- `npm run format` — Format all code, markdown, and styles with Prettier.
-- `npm test` — Run Node.js native test runner via `tsx`.
-
----
-
-## 📂 Codebase Layout
-
-```
-src/
-├── app/                             # Next.js App Router routes, views, & layouts
-│   ├── layout.tsx                   # Root layout with ClientProviders & theme initialization
-│   ├── page.tsx                     # Root page entry
-│   ├── HomePageContent.tsx          # Main gallery homepage view
-│   ├── AppInitializer.tsx           # Global auth state listener & notification handler
-│   ├── ClientProviders.tsx          # Client-side context providers (Theme, Toast, etc.)
-│   ├── not-found.tsx                # 404 Error page
-│   ├── 401/                         # 401 Unauthorized page
-│   ├── add/                         # Media upload routes (/add)
-│   │   ├── page.tsx
-│   │   ├── AddPageContent.tsx       # Upload page shell
-│   │   ├── AddPhotoPageContent.tsx  # Photo uploader with EXIF parsing
-│   │   ├── AddVideoPageContent.tsx  # Video uploader
-│   │   ├── AddToolbar.tsx           # Upload toolbar
-│   │   ├── PhotoTab.tsx             # Photo metadata tab
-│   │   └── VideoTab.tsx             # Video metadata tab
-│   ├── admin/                       # Admin management portal (/admin)
-│   │   ├── page.tsx
-│   │   ├── AdminPageContent.tsx     # Photo curation, tag merging, & user management
-│   │   ├── AdminCard.tsx            # Admin action card
-│   │   ├── AdminToolbar.tsx         # Admin toolbar
-│   │   ├── MetaTab.tsx              # Metadata management tab
-│   │   └── UsersTab.tsx             # User management tab
-│   └── list/                        # Media browse gallery & search (/list)
-│       ├── page.tsx
-│       ├── ListPageContent.tsx      # Main gallery listing with infinite scroll & filtering
-│       ├── ListToolbar.tsx          # Gallery toolbar
-│       ├── SwiperView.tsx           # Fullscreen media lightbox carousel
-│       └── PhotoInfo.tsx            # Photo detail info panel
-├── firebase.ts                      # Firebase SDK setup, emulator detection, & analytics logger
-├── config.ts                        # Central project credentials, limits, & EXIF tag definitions
-├── env.d.ts                         # TypeScript environment declaration definitions
-├── components/
-│   ├── atoms/                       # Atomic UI controls (AppButton, AppInput, AppSelect, etc.)
-│   ├── layouts/                     # Page wrapper layouts (DefaultLayout, PlainLayout, Sidebar)
-│   ├── AutoComplete.tsx             # Auto-suggest tag input
-│   ├── EditPhotoRecord.tsx          # Photo metadata edit modal
-│   ├── EditVideoRecord.tsx          # Video metadata edit modal
-│   ├── ErrorBanner.tsx              # Error display alert
-│   ├── FileBroken.tsx               # Broken media fallback
-│   ├── GlobalSearch.tsx             # Global search bar
-│   ├── LocalSearch.tsx              # Filter control inputs
-│   ├── ManageSelection.tsx          # Batch photo selection management
-│   ├── Menu.tsx                     # App route menu links
-│   ├── MenuLink.tsx                 # Link component for menu items
-│   ├── PictureCard.tsx              # Media grid item card
-│   ├── SendMessage.tsx              # Push messaging modal interface
-│   └── TagsMerge.tsx                # Admin tag merging tool
-├── stores/                          # Modular Zustand Store Slices
-│   ├── appStore.ts                  # UI state, active filters, search criteria
-│   ├── userStore.ts                 # User profile, role permissions, FCM token
-│   ├── valuesStore.ts               # Global lookup lists (tags, photographers, lenses, models)
-│   ├── bucketStore.ts               # Cloud Storage state
-│   ├── toastStore.ts                # Toast notification system
-│   ├── app/                         # App store modular slices (ui, records, photoOps)
-│   ├── user/                        # User store modular slices (auth, notifications, admin)
-│   ├── values/                      # Values store modular slices (counters, values)
-│   ├── bucket/                      # Bucket store slice
-│   └── toast/                       # Toast store slice
-├── composables/                     # Custom hooks (useInfiniteScroll, useScreen)
-├── hooks/                           # Custom React hooks (useEditRecord)
-├── helpers/                         # Business Logic & Infrastructure Utilities
-│   ├── index.ts                     # Utility helpers (date formatting, slug transliteration)
-│   ├── exif.ts                      # Client EXIF parsing engine (exifreader)
-│   ├── models.ts                    # Core TypeScript models & document interfaces
-│   ├── collections.ts               # Typed Firestore collection references & queries
-│   ├── notify.ts                    # Cloud Messaging notification client handler
-│   ├── remedy.ts                    # Data consistency cleanup utilities
-│   └── uploadTracker.ts             # Media upload progress tracker
-└── styles/                          # Tailwind CSS 4 global stylesheet (`app.css`)
-
-functionCron/                        # Cloud Function: Scheduled background maintenance
-functionNotify/                      # Cloud Function: Push notification delivery
-functionThumb/                       # Cloud Function: Image resizing & thumbnail creation
-scripts/                             # Build tools (`build-pwa.js`, `build-icons.js`)
-test/                                # Unit test suite run with `tsx`
-public/                              # Static public assets, PWA manifest, service worker (`sw.js`)
+```bash
+npm run dev:pwa
 ```
 
----
+### npm scripts
 
-## 🏛 Core Architecture & State Management
+| Command           | Actual operation                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| `npm run dev`     | Start Next.js development server.                                                          |
+| `npm run dev:pwa` | Run `scripts/build-pwa.js`, then start Next.js with `NEXT_PUBLIC_PWA_DEV=true`.            |
+| `npm run build`   | Run `next build --webpack`, then `scripts/build-pwa.js`.                                   |
+| `npm run start`   | Run the existing `next start` script; not the configured Firebase Hosting deployment path. |
+| `npm run lint`    | Run ESLint.                                                                                |
+| `npm run format`  | Run Prettier over matching source, style, Markdown, and JSON files.                        |
+| `npm run icons`   | Run `scripts/build-icons.js`.                                                              |
+| `npm test`        | Run tests with `tsx --test`.                                                               |
 
-### Zustand State Store Architecture
+### `./ands` operations
 
-The application uses **Zustand 5** split into 5 core stores using modular slice patterns:
+| Command            | Actual operation                                                           |
+| ------------------ | -------------------------------------------------------------------------- |
+| `./ands run`       | `firebase emulators:start --import ./data --export-on-exit ./data`.        |
+| `./ands build`     | Replace `NEXT_PUBLIC_BUILD` in `.env`, then run `npm run build`.           |
+| `./ands deploy`    | `firebase deploy --only hosting`; deploys the generated `dist/` site only. |
+| `./ands indexes`   | Deploy `firestore.indexes.json`.                                           |
+| `./ands functions` | Build all three function packages, then deploy all functions.              |
+| `./ands icons`     | Run `npm run icons`.                                                       |
+| `./ands test`      | Run the targeted command `npm test test/slug.ts`.                          |
 
-1. **`stores/appStore.ts`**
-   - Manages UI states (`busy`, `modals`, `theme`), active search filters (`photo_filter`), active selected photos, and pagination parameters.
-   - Slices: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
+`firebase.json` configures these emulator ports: Auth `9099`, Firestore `8080`, Realtime Database `9000`, Hosting `5000`, Storage `9199`, Functions `5001`, Emulator UI `4000`, Hub `4400`, and Logging `4500`.
 
-2. **`stores/userStore.ts`**
-   - Handles Firebase Authentication state (`user`, `profile`), admin permissions (`isAdmin`), push token consent (`fcmToken`), and push message sending.
-   - Slices: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
+## Build and PWA behavior
 
-3. **`stores/valuesStore.ts`**
-   - Caches Firestore lookup lists: `tags`, `photographers`, `lenses`, `models`, and total record counters.
-   - Slices: `createCountersSlice`, `createValuesSlice`.
+`next.config.ts` sets:
 
-4. **`stores/bucketStore.ts`**
-   - Tracks Firebase Storage upload operations and bucket metadata state.
-
-5. **`stores/toastStore.ts`**
-   - Controls transient user notification toasts (success, error, info alerts).
-
----
-
-## 🔄 Media Data Pipeline & EXIF Parsing
-
-```mermaid
-flowchart TD
-    A["File Selection (/add)"] --> B["Client EXIF Extraction (helpers/exif.ts)"]
-    B --> C["Slug Generation & Transliteration (helpers/index.ts)"]
-    C --> D["Cloud Storage Upload"]
-    D --> E["Firestore Photo Document Creation"]
-    E --> F["functionThumb Storage Trigger"]
-    F --> G["Thumbnail Generation (_400x400.jpeg)"]
+```ts
+{
+  output: 'export',
+  distDir: 'dist',
+  images: { unoptimized: true }
+}
 ```
 
-### Step Breakdown
+The production result is a static site in `dist/`. Firebase Hosting serves that directory and rewrites requests to `/index.html`. Use `./ands build` followed by `./ands deploy` for the configured deployment workflow. `next start` exists as an npm script but is not the normal production serving path for this static export.
 
-1. **Upload Initiation**: Uploader selects files on `/add` route.
-2. **Client-Side Metadata Parsing**: `extractExif()` in `src/helpers/exif.ts` extracts camera model, lens, focal length, ISO, aperture, exposure time, date taken, and flash settings using `exifreader`.
-3. **Search Slug Creation**: `completePhoto()` in `src/helpers/index.ts` slugifies text and headlines using `transliteration` (converting Serbian Cyrillic/Latin characters) to enable bi-lingual search.
-4. **Cloud Storage & Firestore Storage**: File is stored in Firebase Cloud Storage, and a matching document is written to the `photos` collection.
-5. **Thumbnail Generation**: The `functionThumb` Cloud Function's `onObjectFinalized` Storage trigger pipes the uploaded file through `sharp` to create cached thumbnails with the `_400x400.jpeg` suffix under `thumbnails/`.
+`scripts/build-pwa.js` copies `src-pwa/manifest.json` to `public/` and `dist/`, bundles `src-pwa/custom-service-worker.ts` with esbuild, injects a Workbox precache manifest for generated static assets, writes `dist/sw.js`, removes its temporary bundle, and copies the generated worker to `public/sw.js`.
 
----
+`src/app/AppInitializer.tsx` registers `/sw.js` in production or when `NEXT_PUBLIC_PWA_DEV=true`. The worker precaches generated assets, caches Google Fonts with Cache First for one year, and caches images with Stale While Revalidate for 30 days. The generated worker also references `public/firebase-messaging-sw.js` for Firebase Messaging.
 
-## 📊 Analytics Event Tracking
+## Application structure
 
-Analytics events are logged using `logAnalyticsEvent()` (defined in `src/firebase.ts`). The following key events are tracked across the codebase:
+### Routes and app lifecycle
 
-| Analytics Event    | Trigger Source                          | Description                                                                 |
-| :----------------- | :-------------------------------------- | :-------------------------------------------------------------------------- |
-| `'detailed_view'`  | `src/app/list/ListPageContent.tsx`      | Fired when a photo is opened in full-screen carousel mode (`carouselShow`). |
-| `'share'`          | `src/app/list/SwiperView.tsx`           | Fired when a user copies a share link for a photo.                          |
-| `'image_download'` | `src/app/list/SwiperView.tsx`           | Fired when a user downloads an image asset.                                 |
-| `'push_message'`   | `src/components/SendMessage.tsx`        | Fired when an admin dispatches a push notification.                         |
-| `'sign_in'`        | `src/stores/user/createAuthSlice.ts`    | Fired upon successful user login.                                           |
-| `'published'`      | `src/stores/app/createPhotoOpsSlice.ts` | Fired when a photo record is created or updated.                            |
-| `'image_delete'`   | `src/stores/app/createPhotoOpsSlice.ts` | Fired when a photo record is deleted.                                       |
+- `/` — home/gallery entry point.
+- `/list` — gallery listing, search/filter controls, infinite scrolling, media carousel, and photo information.
+- `/add` — photo/video upload tabs and metadata flow.
+- `/admin` — repair, metadata, and user administration tabs.
+- `/401` — unauthorized page.
+- `not-found` — not-found handling.
 
----
+`src/app/layout.tsx` defines metadata, PWA links, icons, and the root client providers. `AppInitializer` resets UI state, fetches bucket and counter values, observes Firebase Auth, listens to the signed-in user document, handles foreground FCM messages, and subscribes to the latest record.
 
-## 🔒 Firestore Data Model & Security
+### Components
 
-### Document Schemas
+- `src/components/atoms/` — buttons, inputs, selects, dialogs, tabs, progress, toasts, icons, and theme controls.
+- `src/components/layouts/` — `DefaultLayout`, `PlainLayout`, and `Sidebar`.
+- Other components cover search, media cards, metadata editing, selection management, tag merging, navigation, errors, and push-message sending.
 
-- **`photos` Collection**:
+### Zustand stores
 
-  ```ts
-  interface PhotoType extends ExifType {
-    id: string // filename for photos, video id for videos
-    url: string
-    size: number
-    email: string // Uploader email
-    nick: string // Display nickname
-    headline?: string
-    tags?: string[]
-    text?: string[] // Transliterated slugs for full-text search
-    thumb?: string // Thumbnail path
-    kind?: AssetKind // 'photo' | 'video'
-  }
+- `src/stores/appStore.ts`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
+- `src/stores/userStore.ts`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
+- `src/stores/valuesStore.ts`: `createCountersSlice`, `createValuesSlice`.
+- `src/stores/bucketStore.ts`: `createBucketSlice`.
+- `src/stores/toastStore.ts`: `createToastSlice`.
 
-  interface ExifType {
-    date?: Timestamp // Upload / Taken date
-    day?: number
-    month?: number
-    year?: number
-    model?: string // Camera body
-    lens?: string // Lens model
-    focal_length?: number
-    aperture?: number
-    shutter?: string
-    iso?: number
-    flash?: boolean
-    dim?: [number, number]
-    loc?: string
-  }
-  ```
+Use selector hooks in components rather than subscribing to an entire store:
 
-- **`users` Collection**: User profiles, roles (`admin`), and FCM push tokens.
-- **`tags` / `photographers` / `lenses` / `models` Collections**: Lookup values and usage counters.
+```tsx
+const user = useUserStore((state) => state.user)
+```
 
-### Firebase Security Rules
+### Helpers
 
-- **`firestore.rules`**: Controls read/write access based on authentication status and admin roles.
-- **`storage.rules`**: Restricts raw asset upload and deletion to authenticated users with valid permissions.
+`src/helpers/` contains:
 
----
+- `collections.ts` — Firebase collection references.
+- `exif.ts` — client-side EXIF extraction.
+- `index.ts` — dates, slugs/transliteration, permissions, thumbnails, YouTube helpers, and shared utilities.
+- `models.ts` — TypeScript models such as `PhotoType`, `MyUserType`, and values state.
+- `notify.ts` — client notification/toast helper.
+- `remedy.ts` — storage/Firestore consistency and thumbnail repair actions.
+- `uploadTracker.ts` — upload progress tracking.
 
-## 💡 Developer Guidelines & Rules
+## Firebase data model
 
-1. **Package Management Rule**: Always execute package commands (e.g. `npm install`, `npm uninstall`) in the foreground (synchronously, with high `WaitMsBeforeAsync` or standard execution) so dependencies resolve before sub-tasks execute.
-2. **Store Usage**: Consume Zustand stores via selector hooks (e.g. `useUserStore((state) => state.user)`). Avoid importing full store state objects unnecessarily.
-3. **Firestore Operations**: Use typed helper references defined in `src/helpers/collections.ts` rather than raw string collection names.
-4. **Formatting & Linting**: Run `npm run format` and `npm run lint` before committing any code changes.
-5. **PWA Development**: Test service worker behavior using `npm run dev:pwa`.
+Use the typed collection references from `src/helpers/collections.ts`. The current case-sensitive collection names are:
 
----
+- `User` — user documents are keyed by the trimmed, lowercased email.
+- `Photo` — photo and video metadata documents.
+- `Counter` — metadata counter documents consumed by `valuesStore`.
+- `Bucket` — aggregate storage information, including `Bucket/total`.
+- `Rename` — rename mappings used by metadata management.
+- `LastRecord` — latest-record subscription state.
+- `Device` — a subcollection at `User/{normalized-email}/Device` containing FCM device tokens.
 
-## 🛠 Troubleshooting Matrix
+Do not introduce documentation or code that assumes separate lowercase `users`, `photos`, `tags`, `photographers`, `lenses`, or `models` collections without first changing and verifying the implementation.
 
-| Issue                           | Root Cause                              | Solution                                                                                              |
-| :------------------------------ | :-------------------------------------- | :---------------------------------------------------------------------------------------------------- |
-| Emulator port conflict          | Lingering background `firebase` process | Kill processes on ports `9099`, `8080`, `9199`, `5001`, `4000`: `lsof -i :8080` then `kill -9 <PID>`. |
-| Dev server connection error     | Firebase emulators not running          | Run `./ands run` in a separate terminal before running `npm run dev`.                                 |
-| PWA Service Worker not updating | Browser caching `sw.js`                 | Clear site data in browser DevTools -> Application -> Service Workers -> Unregister.                  |
-| Test execution failure          | Missing `tsx` binary                    | Run `npm install` to ensure `devDependencies` are installed.                                          |
-| Data missing after restart      | `./data` directory missing or corrupt   | Re-run `./ands run` or delete `./data` to start with clean emulator state.                            |
+A photo document follows `PhotoType` in `src/helpers/models.ts`: it includes an id, Storage URL, byte size, uploader email/nickname, optional headline/tags/search text, optional thumbnail URL/path, asset kind, and EXIF fields such as date, camera model, lens, focal length, aperture, shutter, ISO, flash, dimensions, and location.
+
+## Authentication and permissions
+
+Anonymous visitors can browse and read. Firebase Authentication uses Google sign-in. On sign-in, the app creates or loads a `User` document.
+
+The client-side `canContribute()` helper in `src/helpers/index.ts` returns true only when the user has:
+
+1. A signed-in user object.
+2. A non-empty nickname that is not `???`.
+3. `isAuthorized` or `isAdmin` set to true.
+
+`/add`, upload controls, selection tools, and edit/delete actions use this gate. Record-level edit/delete additionally permits only the original uploader or an admin. `/admin` requires `isAdmin`.
+
+The first newly created user is initialized as `admin`, authorized, and allowed push notifications. Later new users initially have an empty nickname and false authorization/admin flags until an administrator updates them. User timestamps are checked against `CONFIG.loginDays` (60 days). `AppInitializer` attaches a Firestore `onSnapshot` listener to the active user document, so permission changes and invalidation can take effect without a page reload. FCM token refresh and device writes are conditional on `allowPush`.
+
+These are application-level gates. The current `firestore.rules` and `storage.rules` allow public reads and writes from authenticated clients; they do not enforce the client-side admin/editor roles. Treat any rules change as a security-sensitive change and inspect the deployed rules before relying on it.
+
+## Cloud Functions
+
+Each function directory has its own package, lockfile, TypeScript configuration, and Node 24 engine.
+
+### `functionThumb`
+
+- Exports callable `generateThumbnail`, which requires authentication.
+- Exports Storage-triggered `generateThumbnailOnUpload`.
+- Processes supported image extensions and skips existing `thumbnails/` objects.
+- Uses `sharp` for a 400px by 400px `fit: cover` crop, progressive JPEG quality 85.
+- Writes `thumbnails/<original-directory>/<name>_400x400.jpeg` using the event/request bucket.
+- Uses the `thumbnailLocks` Firestore collection to avoid duplicate processing.
+
+### `functionCron`
+
+- `cronCounters` scans `Photo` and rebuilds metadata counters in `Counter`.
+- `cronBucket` totals `Photo` count and size and writes `Bucket/total`.
+- Both schedules run every three days in the configured `America/Los_Angeles` timezone.
+
+### `functionNotify`
+
+- Exposes the HTTP `notify` endpoint.
+- Reads token documents through the `Device` collection group.
+- Sends multicast FCM notifications.
+- Deletes failed device-token documents after delivery attempts.
+
+## Coding and verification rules
+
+1. Use strict TypeScript and explicit types; use type-only imports when appropriate.
+2. Reuse typed Firebase collection references instead of raw collection strings in client code.
+3. Use Zustand selectors in React components.
+4. Keep client permission checks and Firebase security rules conceptually separate.
+5. Run `npm run lint` after changes. Use `npm run format` deliberately because it writes every matching file.
+6. For PWA changes, run `npm run dev:pwa` and verify service-worker registration/caching in a browser.
+7. For build/deploy changes, verify `dist/index.html`, `dist/sw.js`, and `dist/manifest.json`; use Firebase Hosting rather than assuming `next start` serves the exported site.
+8. Before changing Firestore paths, check `src/helpers/collections.ts`, both function implementations, indexes, and deployed rules for case-sensitive names.
