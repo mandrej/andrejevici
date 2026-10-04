@@ -48,15 +48,33 @@ export const UsersTab: React.FC = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [userToLogout, setUserToLogout] = useState<UsersAndDevices | null>(null)
 
+  const contribution = useCallback(
+    (u: UsersAndDevices | null | undefined) => {
+      if (!u) return 0
+      let count = 0
+      if (u.email && values.email?.[u.email]) {
+        count = Math.max(count, values.email[u.email])
+      }
+      if (u.nick && nickWithCount[u.nick]) {
+        count = Math.max(count, nickWithCount[u.nick])
+      }
+      return count
+    },
+    [values.email, nickWithCount],
+  )
+
   const filteredResult = useMemo(() => {
-    if (!search) return result
-    const query = search.toLowerCase()
-    return result.filter(
-      (item) =>
-        (item.nick || '').toLowerCase().includes(query) ||
-        (item.email || '').toLowerCase().includes(query),
-    )
-  }, [result, search])
+    const searched = search
+      ? result.filter((item) => {
+          const query = search.toLowerCase()
+          return (
+            (item.nick || '').toLowerCase().includes(query) ||
+            (item.email || '').toLowerCase().includes(query)
+          )
+        })
+      : result
+    return [...searched].sort((a, b) => contribution(b) - contribution(a))
+  }, [result, search, contribution])
 
   const adminCount = useMemo(() => {
     return result.filter((u) => u.isAdmin).length
@@ -212,21 +230,6 @@ export const UsersTab: React.FC = () => {
   }
 
   const ageDays = (timestamp: unknown) => getAgeDays(timestamp as DateInput)
-
-  const contribution = useCallback(
-    (u: UsersAndDevices | null | undefined) => {
-      if (!u) return 0
-      let count = 0
-      if (u.email && values.email?.[u.email]) {
-        count = Math.max(count, values.email[u.email])
-      }
-      if (u.nick && nickWithCount[u.nick]) {
-        count = Math.max(count, nickWithCount[u.nick])
-      }
-      return count
-    },
-    [values.email, nickWithCount],
-  )
 
   const maxContribution = useMemo(() => {
     return result.reduce((max, u) => Math.max(max, contribution(u)), 0)
