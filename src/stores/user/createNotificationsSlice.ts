@@ -1,18 +1,10 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '@/config'
-import { db } from '@/firebase'
 import { getMessagingInstance } from '@/messaging'
-import {
-  doc,
-  setDoc,
-  getDocs,
-  updateDoc,
-  collection,
-  writeBatch,
-  Timestamp,
-} from 'firebase/firestore'
+import { doc, setDoc, updateDoc, Timestamp } from 'firebase/firestore'
 import notify from '@/helpers/notify'
-import { userCollection } from '@/helpers/collections'
+import { getUserDeviceCollection, userCollection } from '@/helpers/collections'
+import { deleteUserDevices } from '@/helpers/devices'
 import type {
   UserStore,
   NotificationsSliceState,
@@ -108,7 +100,7 @@ export const createNotificationsSlice: StateCreator<
     const email = currentUser?.email?.trim().toLowerCase()
     if (!email) return
     await setDoc(
-      doc(db(), 'User', email, 'Device', token),
+      doc(getUserDeviceCollection(email), token),
       {
         timestamp: Timestamp.fromDate(new Date()),
       },
@@ -120,15 +112,8 @@ export const createNotificationsSlice: StateCreator<
     const currentUser = get().user
     const email = currentUser?.email?.trim().toLowerCase()
     if (!email) return
-    const deviceSubcollection = collection(db(), 'User', email, 'Device')
-    let snapshot = await getDocs(deviceSubcollection)
-
-    while (!snapshot.empty) {
-      const batch = writeBatch(db())
-      snapshot.forEach((d) => batch.delete(d.ref))
-      await batch.commit()
-      if (snapshot.size < 500) break
-      snapshot = await getDocs(deviceSubcollection)
-    }
+    // Every token in this subcollection belongs to the current user, and the browser cannot tell
+    // which stored token maps to this device, so unsubscribing clears the whole subcollection.
+    await deleteUserDevices(email)
   },
 })

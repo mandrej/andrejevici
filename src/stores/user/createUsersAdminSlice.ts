@@ -1,23 +1,21 @@
 import type { StateCreator } from 'zustand'
-import { auth, db } from '@/firebase'
+import { auth } from '@/firebase'
 import {
   doc,
   getDoc,
   getDocs,
   updateDoc,
   deleteDoc,
-  collection,
-  collectionGroup,
   query,
   where,
   orderBy,
   limit,
   Timestamp,
-  writeBatch,
 } from 'firebase/firestore'
 import type { MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
-import { photoCollection, userCollection } from '@/helpers/collections'
+import { photoCollection, getUserDeviceCollection, userCollection } from '@/helpers/collections'
+import { deleteUserDevices } from '@/helpers/devices'
 import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
 
 export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSliceActions> = (
@@ -49,48 +47,43 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   fetchUsersAndDevices: async () => {
-    const [snapshot, users] = await Promise.all([
-      getDocs(collectionGroup(db(), 'Device')),
-      get().fetchUsers(),
-    ])
+    const users = await get().fetchUsers()
 
-    const sortedDocs = [...snapshot.docs].sort((a, b) => {
-      const tA = (a.data() as { timestamp?: Timestamp }).timestamp?.toMillis() ?? 0
-      const tB = (b.data() as { timestamp?: Timestamp }).timestamp?.toMillis() ?? 0
-      return tB - tA
-    })
+    // Device tokens are documents in each user's own `Device` subcollection, so they are read
+    // per user document rather than through a collection group query.
+    const deviceLists = await Promise.all(
+      users.map(async (user) => {
+        const userDocId = user.id || user.email?.trim().toLowerCase()
+        if (!userDocId) return [] as Timestamp[]
+        try {
+          const snapshot = await getDocs(getUserDeviceCollection(userDocId))
+          return snapshot.docs.map(
+            (d) => (d.data() as { timestamp?: Timestamp }).timestamp ?? Timestamp.fromMillis(0),
+          )
+        } catch (err) {
+          // A user without any device simply has no `Device` subcollection.
+          console.warn(`Failed to read devices for ${userDocId}:`, err)
+          return [] as Timestamp[]
+        }
+      }),
+    )
 
-    const deviceMap = new Map<string, Timestamp[]>()
-    for (const d of sortedDocs) {
-      const email = d.ref.parent.parent?.id
-      if (!email) continue
-      const normEmail = email.trim().toLowerCase()
-      const data = d.data() as { timestamp: Timestamp }
-      const list = deviceMap.get(normEmail)
-      if (list) {
-        list.push(data.timestamp)
-      } else {
-        deviceMap.set(normEmail, [data.timestamp])
-      }
-    }
-
-    return users.map((user) => {
-      const normEmail = user.email?.trim().toLowerCase()
-      return {
-        ...user,
-        timestamps: (normEmail ? deviceMap.get(normEmail) : undefined) ?? [],
-      }
-    })
+    return users.map((user, index) => ({
+      ...user,
+      timestamps: [...(deviceLists[index] ?? [])].sort((a, b) => b.toMillis() - a.toMillis()),
+    }))
   },
 
   deleteUser: async (id: string) => {
     try {
       const userRef = doc(userCollection(), id)
       const userSnap = await getDoc(userRef)
+      let userEmail = id.trim().toLowerCase()
       if (userSnap.exists()) {
         const u = userSnap.data() as MyUserType
         const email = u.email?.trim().toLowerCase()
         const nick = u.nick?.trim().toLowerCase()
+        if (email) userEmail = email
         if (email || nick) {
           let hasContribution = false
           if (email) {
@@ -110,6 +103,8 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
           }
         }
       }
+      // Remove the device tokens first: an orphaned token would keep receiving notifications.
+      await deleteUserDevices(userEmail)
       await deleteDoc(userRef)
       notify({ message: 'User deleted', icon: 'sym_r_delete' })
     } catch (err) {
@@ -173,16 +168,8 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
       })
 
       if (targetUser.email) {
-        const email = targetUser.email.trim().toLowerCase()
-        const deviceSubcollection = collection(db(), 'User', email, 'Device')
-        let snapshot = await getDocs(deviceSubcollection)
-        while (!snapshot.empty) {
-          const batch = writeBatch(db())
-          snapshot.forEach((d) => batch.delete(d.ref))
-          await batch.commit()
-          if (snapshot.size < 500) break
-          snapshot = await getDocs(deviceSubcollection)
-        }
+        // Logging a user out must also drop their device tokens, or they keep getting pushes.
+        await deleteUserDevices(targetUser.email)
       }
 
       const currentUser = get().user
