@@ -65,7 +65,12 @@ exports.notify = (0, https_1.onRequest)(
         }
         // Fetch only the fields we need from Device docs across all users
         const querySnapshot = await db().collectionGroup('Device').select('timestamp').get();
+        logger.info('Device tokens resolved', {
+            collectionGroup: 'Device',
+            tokenCount: querySnapshot.size,
+        });
         if (querySnapshot.empty) {
+            logger.warn('No Device sub-documents found under User/{email}/Device for this project');
             res.status(200).json([]);
             return;
         }
