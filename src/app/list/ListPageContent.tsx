@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import DefaultLayout from '@/components/layouts/DefaultLayout'
 import PictureCard from '@/components/PictureCard'
-import SwiperView from '@/app/list/SwiperView'
 import ErrorBanner from '@/components/ErrorBanner'
 import AppDialog from '@/components/atoms/AppDialog'
 import AppButton from '@/components/atoms/AppButton'
@@ -17,9 +17,16 @@ import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '@
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import type { InfiniteScrollResult } from '@/composables/useInfiniteScroll'
 import notify from '@/helpers/notify'
-import { logAnalyticsEvent } from '@/firebase'
 import type { PhotoType } from '@/helpers/models'
 import CONFIG from '@/config'
+
+/** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
+const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unknown>) => {
+  void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
+}
+
+// The lightbox is a sizeable dependency and only needed once a photo is opened.
+const SwiperView = dynamic(() => import('@/app/list/SwiperView'))
 
 export default function ListPage() {
   // App Store selectors

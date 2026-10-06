@@ -17,7 +17,7 @@ import type { PhotoType } from '@/helpers/models'
  */
 const getStorageData = async (filename: string) => {
   try {
-    const _ref = storageRef(storage, filename)
+    const _ref = storageRef(storage(), filename)
     // Parallelize the two independent storage calls
     const [downloadURL, metadata] = await Promise.all([getDownloadURL(_ref), getMetadata(_ref)])
     if (downloadURL) {
@@ -40,11 +40,19 @@ const getStorageData = async (filename: string) => {
 
 /**
  * Cloud Function to generate a thumbnail for a given file path.
+ * Built on first call so the Functions SDK is not pulled into the initial bundle.
  */
-export const generateThumbnail = httpsCallable<{ filePath: string }, { filePath: string }>(
-  functions,
-  'generateThumbnail',
-)
+let generateThumbnailCallable:
+  | ReturnType<typeof httpsCallable<{ filePath: string }, { filePath: string }>>
+  | undefined
+
+export const generateThumbnail = (filePath: string) => {
+  generateThumbnailCallable ??= httpsCallable<{ filePath: string }, { filePath: string }>(
+    functions(),
+    'generateThumbnail',
+  )
+  return generateThumbnailCallable({ filePath })
+}
 
 /**
  * Finds photos with missing thumbnails, generates them in Cloud Functions,
@@ -66,8 +74,8 @@ export const missingThumbnails = async () => {
 
     // Parallelize the two independent listAll calls
     const [photoRefs, thumbRefs] = await Promise.all([
-      listAll(storageRef(storage, '')),
-      listAll(storageRef(storage, CONFIG.thumbnails)),
+      listAll(storageRef(storage(), '')),
+      listAll(storageRef(storage(), CONFIG.thumbnails)),
     ])
 
     for (const r of photoRefs.items) {
@@ -122,7 +130,7 @@ export const missingThumbnails = async () => {
 
       try {
         // Skip videos – they use YouTube thumbnails
-        const snap = await getDoc(doc(photoCollection, filename))
+        const snap = await getDoc(doc(photoCollection(), filename))
         if (snap.exists()) {
           const data = snap.data() as PhotoType
           if (data.kind === 'video') {
@@ -132,15 +140,15 @@ export const missingThumbnails = async () => {
         }
 
         // Generate the thumbnail with sharp in the Cloud Function
-        const result = await generateThumbnail({ filePath: filename })
-        const thumbRef = storageRef(storage, result.data.filePath)
+        const result = await generateThumbnail(filename)
+        const thumbRef = storageRef(storage(), result.data.filePath)
 
         // Get the download URL for the newly uploaded thumbnail
         const thumbDownloadUrl = await getDownloadURL(thumbRef)
 
         // Update all Firestore records that share the same base name
         for (const fn of filenames) {
-          const docSnap = await getDoc(doc(photoCollection, fn))
+          const docSnap = await getDoc(doc(photoCollection(), fn))
           if (docSnap.exists()) {
             await updateDoc(docSnap.ref, { thumb: thumbDownloadUrl })
           }
@@ -210,8 +218,8 @@ export const mismatch = async () => {
 
   try {
     const [storageResult, firestoreResult] = await Promise.all([
-      listAll(storageRef(storage, '')),
-      getDocs(query(photoCollection)),
+      listAll(storageRef(storage(), '')),
+      getDocs(query(photoCollection())),
     ])
 
     const bucketNames = new Set(storageResult.items.map((r) => r.name))
@@ -230,7 +238,7 @@ export const mismatch = async () => {
     const missingFiles = Array.from(storageNames).filter((name) => !bucketNames.has(name))
 
     if (missingFiles.length > 0) {
-      await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection, name))))
+      await Promise.all(missingFiles.map((name) => deleteDoc(doc(photoCollection(), name))))
       notify({
         group: 'mismatch',
         message: `${missingFiles.length} records deleted from firestore that doesn't have image reference`,

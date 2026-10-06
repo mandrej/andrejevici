@@ -1,6 +1,6 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '@/config'
-import { auth, logAnalyticsEvent } from '@/firebase'
+import { auth } from '@/firebase'
 import { doc, setDoc, getDoc, getDocs, query, Timestamp, limit } from 'firebase/firestore'
 import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth'
 import type { MyUserType } from '@/helpers/models'
@@ -8,6 +8,11 @@ import notify from '@/helpers/notify'
 import { userCollection } from '@/helpers/collections'
 import { dummy, formatDatum } from '@/helpers'
 import type { UserStore, AuthSliceState, AuthSliceActions } from '@/stores/user/types'
+
+/** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
+const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unknown>) => {
+  void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
+}
 
 const provider = new GoogleAuthProvider()
 provider.addScope('profile')
@@ -28,7 +33,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
 
   storeUser: async (user: User) => {
     const email = (user.email || '').trim().toLowerCase()
-    const userRef = doc(userCollection, email)
+    const userRef = doc(userCollection(), email)
     const userSnap = await getDoc(userRef)
     const now = Timestamp.fromDate(new Date())
     const isFresh = get().isFreshLogin
@@ -39,7 +44,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
       const isExpired = !lastLogin || Date.now() - lastLogin > CONFIG.loginDays * 86400000
 
       if (isExpired && !isFresh) {
-        await auth.signOut()
+        await auth().signOut()
         get().clearAuth()
         resolveAuthReady()
         return
@@ -66,7 +71,7 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
         initialized: true,
       })
     } else {
-      const isFirstUser = (await getDocs(query(userCollection, limit(1)))).empty
+      const isFirstUser = (await getDocs(query(userCollection(), limit(1)))).empty
       const allowPush = isFirstUser
       const askPush = isFirstUser
 
@@ -110,12 +115,12 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
   signIn: async () => {
     const currentUser = get().user
     if (currentUser?.id) {
-      await auth.signOut()
+      await auth().signOut()
       get().clearAuth()
     } else {
       try {
         set({ isFreshLogin: true })
-        const result = await signInWithPopup(auth, provider)
+        const result = await signInWithPopup(auth(), provider)
         if (process.env.NODE_ENV === 'development') {
           console.log(`Auth user: ${result.user.email}`)
         }

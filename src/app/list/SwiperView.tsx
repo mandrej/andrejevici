@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { dummy, formatDatum, getYouTubeId } from '@/helpers'
-import { logAnalyticsEvent } from '@/firebase'
 import notify from '@/helpers/notify'
 import type { PhotoType } from '@/helpers/models'
 import Lightbox, { IconButton } from 'yet-another-react-lightbox'
@@ -12,6 +11,11 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 import 'yet-another-react-lightbox/styles.css'
 import AppIcon from '@/components/atoms/AppIcon'
 import PhotoInfo from '@/app/list/PhotoInfo'
+
+/** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
+const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unknown>) => {
+  void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
+}
 
 interface SwiperViewProps {
   index: number

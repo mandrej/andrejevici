@@ -11,14 +11,14 @@ const commitInBatches = async <T>(
   items: T[],
   applyFn: (batch: ReturnType<typeof writeBatch>, item: T) => void,
 ): Promise<void> => {
-  let batch = writeBatch(db)
+  let batch = writeBatch(db())
   let count = 0
   for (const item of items) {
     applyFn(batch, item)
     count++
     if (count === 498) {
       await batch.commit()
-      batch = writeBatch(db)
+      batch = writeBatch(db())
       count = 0
     }
   }
@@ -37,7 +37,7 @@ export const createValuesSlice: StateCreator<
 
   fetchValues: async () => {
     try {
-      const querySnapshot = await getDocs(query(counterCollection))
+      const querySnapshot = await getDocs(query(counterCollection()))
       const newValues: ValuesState['values'] = {
         kind: {},
         year: {},
@@ -72,7 +72,7 @@ export const createValuesSlice: StateCreator<
 
   addValue: async (field, value) => {
     const id = counterId(field, value)
-    const counterRef = doc(counterCollection, id)
+    const counterRef = doc(counterCollection(), id)
     await setDoc(counterRef, { count: 0, field, value })
 
     set((state) => {
@@ -91,7 +91,7 @@ export const createValuesSlice: StateCreator<
   deleteValue: async (field, value) => {
     const filter =
       field === 'tags' ? where(field, 'array-contains', value) : where(field, '==', value)
-    const querySnapshot = await getDocs(query(photoCollection, filter))
+    const querySnapshot = await getDocs(query(photoCollection(), filter))
 
     const updates: Array<{ id: string; data: Record<string, unknown> }> = []
     querySnapshot.forEach((d) => {
@@ -104,7 +104,7 @@ export const createValuesSlice: StateCreator<
     })
 
     await commitInBatches(updates, (batch, { id, data }) => {
-      batch.update(doc(photoCollection, id), data)
+      batch.update(doc(photoCollection(), id), data)
     })
   },
 
@@ -113,7 +113,7 @@ export const createValuesSlice: StateCreator<
       field === 'tags'
         ? where(field, 'array-contains-any', [oldValue])
         : where(field, '==', oldValue)
-    const querySnapshot = await getDocs(query(photoCollection, filter))
+    const querySnapshot = await getDocs(query(photoCollection(), filter))
 
     type BatchOp =
       | { type: 'set'; id: string; data: Record<string, unknown>; merge?: boolean }
@@ -152,9 +152,9 @@ export const createValuesSlice: StateCreator<
 
     await commitInBatches(ops, (batch, op) => {
       if (op.type === 'set') {
-        batch.set(doc(renameCollection, op.id), op.data, { merge: op.merge ?? false })
+        batch.set(doc(renameCollection(), op.id), op.data, { merge: op.merge ?? false })
       } else {
-        batch.update(doc(photoCollection, op.id), op.data)
+        batch.update(doc(photoCollection(), op.id), op.data)
       }
     })
   },

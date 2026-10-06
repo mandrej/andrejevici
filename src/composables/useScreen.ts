@@ -5,6 +5,11 @@ let breakpointSm = 768
 let breakpointMd = 1024
 let initialized = false
 
+// Must match the server snapshot. During hydration `window` already exists, so reading
+// `window.innerWidth` in the state initializer would render different markup than the HTML the
+// server sent (React then refuses to patch it up). The real width is applied right after mount.
+const SERVER_WIDTH = 1024
+
 function initBreakpoints() {
   if (initialized || typeof window === 'undefined') return
   const style = window.getComputedStyle(document.documentElement)
@@ -21,10 +26,11 @@ function initBreakpoints() {
 }
 
 export function useScreen() {
-  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
+  const [width, setWidth] = useState(SERVER_WIDTH)
 
   useEffect(() => {
     initBreakpoints()
+    setWidth(window.innerWidth)
 
     const onResize = () => {
       setWidth(window.innerWidth)

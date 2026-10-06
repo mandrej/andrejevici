@@ -1,14 +1,13 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
-import { onMessage } from 'firebase/messaging'
+import { onAuthStateChanged } from 'firebase/auth'
 import { onSnapshot, doc, Timestamp } from 'firebase/firestore'
 import { resolveAuthReady, useUserStore } from '@/stores/userStore'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
-import { auth, messaging } from '@/firebase'
+import { auth } from '@/firebase'
 import { userCollection } from '@/helpers/collections'
 import type { MyUserType } from '@/helpers/models'
 import CONFIG from '@/config'
@@ -16,6 +15,18 @@ import notify from '@/helpers/notify'
 
 interface AppInitializerProps {
   children: React.ReactNode
+}
+
+/**
+ * Runs background work at a moment when it cannot compete with the first paint.
+ */
+const whenIdle = (task: () => void, timeout = 3000) => {
+  if (typeof window === 'undefined') return
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(task, { timeout })
+  } else {
+    window.setTimeout(task, 1000)
+  }
 }
 
 export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
@@ -38,7 +49,7 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
 
     // Auth state listener
     let unsubscribeUserSnapshot: (() => void) | undefined
-    const unsubscribeAuth = onAuthStateChanged(getAuth(), (usr) => {
+    const unsubscribeAuth = onAuthStateChanged(auth(), (usr) => {
       if (unsubscribeUserSnapshot) {
         unsubscribeUserSnapshot()
         unsubscribeUserSnapshot = undefined
@@ -48,10 +59,10 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         storeUser(usr)
           .then(() => {
             const email = (usr.email || '').trim().toLowerCase()
-            const userRef = doc(userCollection, email)
+            const userRef = doc(userCollection(), email)
             unsubscribeUserSnapshot = onSnapshot(userRef, async (snap) => {
               if (!snap.exists()) {
-                await auth.signOut()
+                await auth().signOut()
                 clearAuth()
                 return
               }
@@ -60,7 +71,7 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
               const isExpired = !lastLogin || Date.now() - lastLogin > CONFIG.loginDays * 86400000
 
               if (isExpired && !useUserStore.getState().isFreshLogin) {
-                await auth.signOut()
+                await auth().signOut()
                 clearAuth()
                 notify({
                   type: 'warning',
@@ -88,29 +99,38 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       }
     })
 
-    // FCM messaging handler
+    // FCM foreground handler. The Messaging and Installations SDKs are only useful to a
+    // signed-in user who allows push, and are fetched once the page is idle so they never
+    // compete with the first paint.
     let unsubscribeMessaging: (() => void) | undefined
-    if (messaging) {
-      unsubscribeMessaging = onMessage(messaging, (payload) => {
-        console.log('FCM message received:', payload)
-        const body = payload.data?.body || payload.notification?.body
-        if (body) {
-          notify({
-            type: 'external',
-            message: body,
-            icon: 'sym_r_notifications',
-            caption: payload.data?.title || payload.notification?.title || payload.messageId,
+
+    const setupForegroundMessages = () => {
+      whenIdle(() => {
+        void import('@/messaging')
+          .then((mod) => mod.subscribeForegroundMessages())
+          .then((unsubscribe) => {
+            unsubscribeMessaging = unsubscribe
           })
-        }
+          .catch((err) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('FCM foreground handler unavailable:', err)
+            }
+          })
       })
     }
+
+    const unsubscribeAllowPush = useUserStore.subscribe((state, previous) => {
+      if (state.allowPush && !previous.allowPush) setupForegroundMessages()
+    })
+
+    if (useUserStore.getState().allowPush) setupForegroundMessages()
 
     // Register PWA service worker in production or if explicitly enabled in dev
     const isPwaEnabled =
       process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_PWA_DEV === 'true'
 
     if (isPwaEnabled && 'serviceWorker' in navigator) {
-      const registerSW = () => {
+      whenIdle(() => {
         navigator.serviceWorker
           .register('/sw.js')
           .then((reg) => {
@@ -119,19 +139,14 @@ export const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
           .catch((err) => {
             console.error('Service worker registration failed:', err)
           })
-      }
-
-      if (document.readyState === 'complete') {
-        registerSW()
-      } else {
-        window.addEventListener('load', registerSW)
-      }
+      })
     }
 
     const unsubscribeLastRec = appStore.subscribeLastRec()
 
     return () => {
       unsubscribeAuth()
+      unsubscribeAllowPush()
       if (unsubscribeUserSnapshot) unsubscribeUserSnapshot()
       if (unsubscribeMessaging) unsubscribeMessaging()
       if (unsubscribeLastRec) unsubscribeLastRec()

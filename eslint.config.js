@@ -15,6 +15,7 @@ export default [
       'node_modules/**',
       'tmp/**',
       'data/**',
+      '.perf/**',
       '.gemini/**',
       '.quasar/**',
       'function*/**',

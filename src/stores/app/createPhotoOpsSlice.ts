@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import { auth, storage, logAnalyticsEvent } from '@/firebase'
+import { auth, storage } from '@/firebase'
 import {
   doc,
   setDoc,
@@ -36,6 +36,11 @@ import { photoCollection, lastRecordCollection } from '@/helpers/collections'
 import readExif from '@/helpers/exif'
 import { generateThumbnail } from '@/helpers/remedy'
 import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
+
+/** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
+const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unknown>) => {
+  void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
+}
 
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
   if (!snapshot.docs.length) return null
@@ -87,7 +92,7 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   saveRecord: async (obj) => {
-    const docRef = doc(photoCollection, obj.id)
+    const docRef = doc(photoCollection(), obj.id)
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
     const userStore = useUserStore.getState()
@@ -109,7 +114,7 @@ export const createPhotoOpsSlice: StateCreator<
     } else {
       if (process.env.NODE_ENV === 'development') {
         try {
-          const thumbRef = storageRef(storage, thumbName(obj.id))
+          const thumbRef = storageRef(storage(), thumbName(obj.id))
           obj.thumb = await getDownloadURL(thumbRef)
         } catch (e) {
           console.warn('DEV: Thumbnail not yet ready, using predictive URL', e)
@@ -154,7 +159,7 @@ export const createPhotoOpsSlice: StateCreator<
       obj.thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
     }
 
-    const docRef = doc(photoCollection, obj.id)
+    const docRef = doc(photoCollection(), obj.id)
     const valuesStore = useValuesStore.getState()
     const userStore = useUserStore.getState()
 
@@ -181,7 +186,7 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   deleteRecord: async (obj) => {
-    const docRef = doc(photoCollection, obj.id)
+    const docRef = doc(photoCollection(), obj.id)
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
     const userStore = useUserStore.getState()
@@ -197,8 +202,8 @@ export const createPhotoOpsSlice: StateCreator<
     try {
       const promises: Promise<void>[] = [deleteDoc(docRef)]
       if (obj.kind !== 'video') {
-        const stoRef = storageRef(storage, obj.id)
-        const thumbRef = storageRef(storage, thumbName(obj.id))
+        const stoRef = storageRef(storage(), obj.id)
+        const thumbRef = storageRef(storage(), thumbName(obj.id))
         promises.push(deleteObject(stoRef))
         promises.push(deleteObject(thumbRef))
       }
@@ -257,7 +262,7 @@ export const createPhotoOpsSlice: StateCreator<
       const newFilename = `${id}_${newFile.name}`
 
       // 2. Upload new image to Storage
-      const fileRef = storageRef(storage, newFilename)
+      const fileRef = storageRef(storage(), newFilename)
       await uploadBytes(fileRef, newFile, {
         contentType: newFile.type,
         cacheControl: CONFIG.cache_control,
@@ -269,7 +274,7 @@ export const createPhotoOpsSlice: StateCreator<
       try {
         const thumbBlob = await createThumbnailBlob(newFile, CONFIG.thumbSize)
         const thumbPath = thumbName(newFilename)
-        const thumbStoRef = storageRef(storage, thumbPath)
+        const thumbStoRef = storageRef(storage(), thumbPath)
         await uploadBytes(thumbStoRef, thumbBlob, {
           contentType: 'image/jpeg',
           cacheControl: CONFIG.cache_control,
@@ -283,8 +288,8 @@ export const createPhotoOpsSlice: StateCreator<
           )
         }
         try {
-          const res = await generateThumbnail({ filePath: newFilename })
-          const thumbRef = storageRef(storage, res.data.filePath)
+          const res = await generateThumbnail(newFilename)
+          const thumbRef = storageRef(storage(), res.data.filePath)
           newThumbUrl = await getDownloadURL(thumbRef)
         } catch (cfErr) {
           if (process.env.NODE_ENV === 'development') {
@@ -331,16 +336,16 @@ export const createPhotoOpsSlice: StateCreator<
       }
 
       // 6. Save new record to Firestore
-      const newDocRef = doc(photoCollection, newRecord.id)
+      const newDocRef = doc(photoCollection(), newRecord.id)
       await setDoc(newDocRef, newRecord)
 
       // 7. Delete old record from Firestore
-      const oldDocRef = doc(photoCollection, oldRec.id)
+      const oldDocRef = doc(photoCollection(), oldRec.id)
       await deleteDoc(oldDocRef)
 
       // 8. Delete old image and thumbnail from Cloud Storage
       const oldStoragePromises: Promise<unknown>[] = []
-      const oldFileRef = storageRef(storage, oldRec.id)
+      const oldFileRef = storageRef(storage(), oldRec.id)
       oldStoragePromises.push(
         deleteObject(oldFileRef).catch((e) => {
           if (process.env.NODE_ENV === 'development') {
@@ -351,7 +356,7 @@ export const createPhotoOpsSlice: StateCreator<
       const oldThumbPath = thumbName(oldRec.id)
       if (oldThumbPath) {
         oldStoragePromises.push(
-          deleteObject(storageRef(storage, oldThumbPath)).catch((e) => {
+          deleteObject(storageRef(storage(), oldThumbPath)).catch((e) => {
             if (process.env.NODE_ENV === 'development') {
               console.warn('Could not delete old thumbnail from storage:', e)
             }
@@ -413,10 +418,10 @@ export const createPhotoOpsSlice: StateCreator<
   },
 
   subscribeLastRec: () => {
-    const lastDocRef = doc(lastRecordCollection, 'latest')
+    const lastDocRef = doc(lastRecordCollection(), 'latest')
 
     const saveLastRecordToTable = async (rec: PhotoType | null) => {
-      if (!auth.currentUser) return
+      if (!auth().currentUser) return
       try {
         if (rec) {
           await setDoc(lastDocRef, rec, { merge: true })
@@ -437,11 +442,11 @@ export const createPhotoOpsSlice: StateCreator<
           const rec = { id: snap.id, ...(snap.data() as object) } as PhotoType
           set({ lastRecord: rec })
         } else {
-          const q = query(photoCollection, orderBy('date', 'desc'), limit(1))
+          const q = query(photoCollection(), orderBy('date', 'desc'), limit(1))
           const querySnap = await getDocs(q)
           const rec = getRec(querySnap) as PhotoType | null
           set({ lastRecord: rec })
-          if (rec && auth.currentUser) {
+          if (rec && auth().currentUser) {
             void saveLastRecordToTable(rec)
           }
         }
@@ -450,14 +455,14 @@ export const createPhotoOpsSlice: StateCreator<
         console.error('Error checking LastRecord table on start:', error)
       })
 
-    // Listen to changes on photoCollection and update appStore and LastRecord table on every change
-    const q = query(photoCollection, orderBy('date', 'desc'), limit(1))
+    // Listen to changes on photoCollection() and update appStore and LastRecord table on every change
+    const q = query(photoCollection(), orderBy('date', 'desc'), limit(1))
     return onSnapshot(
       q,
       (snapshot) => {
         const rec = getRec(snapshot) as PhotoType | null
         set({ lastRecord: rec })
-        if (auth.currentUser) {
+        if (auth().currentUser) {
           void saveLastRecordToTable(rec)
         }
         if (process.env.NODE_ENV === 'development') {

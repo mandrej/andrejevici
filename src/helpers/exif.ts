@@ -16,7 +16,7 @@ const rexDate = /(\d{4}):(\d{2}):(\d{2})/i
 const resolveRename = async (value: string): Promise<string> => {
   const safeId = value.replace(/\//g, '%2F')
   try {
-    const snap = await getDoc(doc(renameCollection, safeId))
+    const snap = await getDoc(doc(renameCollection(), safeId))
     return snap.exists() ? snap.data().newValue : value
   } catch (e) {
     if (process.env.NODE_ENV === 'development') console.warn('Failed to query Rename collection', e)

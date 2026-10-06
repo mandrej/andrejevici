@@ -7,7 +7,11 @@ import notify from '@/helpers/notify'
 import AppButton from '@/components/atoms/AppButton'
 import AppInput from '@/components/atoms/AppInput'
 import { formatDatum, dummy } from '@/helpers'
-import { logAnalyticsEvent } from '@/firebase'
+
+/** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
+const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unknown>) => {
+  void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
+}
 
 export const SendMessage: React.FC = () => {
   const user = useUserStore((state) => state.user)

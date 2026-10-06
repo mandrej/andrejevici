@@ -25,7 +25,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   get,
 ) => ({
   fetchUsers: async () => {
-    const snapshot = await getDocs(query(userCollection, orderBy('email', 'asc')))
+    const snapshot = await getDocs(query(userCollection(), orderBy('email', 'asc')))
     return snapshot.docs.map((d) => {
       const data = d.data() as MyUserType
       return {
@@ -36,7 +36,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   getNickByEmail: async (email: string) => {
-    const q = query(userCollection, where('email', '==', email), limit(1))
+    const q = query(userCollection(), where('email', '==', email), limit(1))
     const snapshot = await getDocs(q)
     if (snapshot.empty || !snapshot.docs[0]) {
       throw new Error(`User with email ${email} not found`)
@@ -50,7 +50,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
   fetchUsersAndDevices: async () => {
     const [snapshot, users] = await Promise.all([
-      getDocs(collectionGroup(db, 'Device')),
+      getDocs(collectionGroup(db(), 'Device')),
       get().fetchUsers(),
     ])
 
@@ -85,7 +85,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
   deleteUser: async (id: string) => {
     try {
-      const userRef = doc(userCollection, id)
+      const userRef = doc(userCollection(), id)
       const userSnap = await getDoc(userRef)
       if (userSnap.exists()) {
         const u = userSnap.data() as MyUserType
@@ -95,13 +95,13 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
           let hasContribution = false
           if (email) {
             const emailSnap = await getDocs(
-              query(photoCollection, where('email', '==', u.email!.trim()), limit(1)),
+              query(photoCollection(), where('email', '==', u.email!.trim()), limit(1)),
             )
             if (!emailSnap.empty) hasContribution = true
           }
           if (!hasContribution && nick) {
             const nickSnap = await getDocs(
-              query(photoCollection, where('nick', '==', u.nick!.trim()), limit(1)),
+              query(photoCollection(), where('nick', '==', u.nick!.trim()), limit(1)),
             )
             if (!nickSnap.empty) hasContribution = true
           }
@@ -122,7 +122,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   updateUser: async (user: UsersAndDevices, field: keyof UsersAndDevices) => {
-    const docRef = doc(userCollection, user.id)
+    const docRef = doc(userCollection(), user.id)
     try {
       if (field === 'nick') {
         const email = user.email?.trim().toLowerCase()
@@ -134,7 +134,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
           let hasContribution = false
           if (email) {
             const emailSnap = await getDocs(
-              query(photoCollection, where('email', '==', user.email!.trim()), limit(1)),
+              query(photoCollection(), where('email', '==', user.email!.trim()), limit(1)),
             )
             if (!emailSnap.empty) hasContribution = true
           }
@@ -143,7 +143,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
             const originalNick = currentData?.nick?.trim()
             if (originalNick) {
               const nickSnap = await getDocs(
-                query(photoCollection, where('nick', '==', originalNick), limit(1)),
+                query(photoCollection(), where('nick', '==', originalNick), limit(1)),
               )
               if (!nickSnap.empty) hasContribution = true
             }
@@ -167,17 +167,17 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
   logoutUser: async (targetUser: UsersAndDevices) => {
     try {
-      const userRef = doc(userCollection, targetUser.id)
+      const userRef = doc(userCollection(), targetUser.id)
       await updateDoc(userRef, {
         timestamp: Timestamp.fromMillis(0),
       })
 
       if (targetUser.email) {
         const email = targetUser.email.trim().toLowerCase()
-        const deviceSubcollection = collection(db, 'User', email, 'Device')
+        const deviceSubcollection = collection(db(), 'User', email, 'Device')
         let snapshot = await getDocs(deviceSubcollection)
         while (!snapshot.empty) {
-          const batch = writeBatch(db)
+          const batch = writeBatch(db())
           snapshot.forEach((d) => batch.delete(d.ref))
           await batch.commit()
           if (snapshot.size < 500) break
@@ -187,7 +187,7 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
 
       const currentUser = get().user
       if (currentUser?.id === targetUser.id) {
-        await auth.signOut()
+        await auth().signOut()
         get().clearAuth()
       }
 

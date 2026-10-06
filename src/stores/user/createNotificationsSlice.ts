@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand'
 import CONFIG from '@/config'
-import { messaging, db } from '@/firebase'
+import { db } from '@/firebase'
+import { getMessagingInstance } from '@/messaging'
 import {
   doc,
   setDoc,
@@ -10,7 +11,6 @@ import {
   writeBatch,
   Timestamp,
 } from 'firebase/firestore'
-import { getToken } from 'firebase/messaging'
 import notify from '@/helpers/notify'
 import { userCollection } from '@/helpers/collections'
 import type {
@@ -31,8 +31,10 @@ export const createNotificationsSlice: StateCreator<
 
   refreshToken: async () => {
     try {
+      const messaging = await getMessagingInstance()
       if (!messaging) return
-      const token = await getToken(messaging, {
+      const { getToken } = await import('firebase/messaging')
+      const token = await getToken(messaging as Parameters<typeof getToken>[0], {
         vapidKey: CONFIG.firebase.vapidKey,
       })
       if (token) {
@@ -53,8 +55,10 @@ export const createNotificationsSlice: StateCreator<
       const permission = await Notification.requestPermission()
 
       if (permission === 'granted') {
+        const messaging = await getMessagingInstance()
         if (!messaging) return
-        const token = await getToken(messaging, {
+        const { getToken } = await import('firebase/messaging')
+        const token = await getToken(messaging as Parameters<typeof getToken>[0], {
           vapidKey: CONFIG.firebase.vapidKey,
         })
 
@@ -93,7 +97,7 @@ export const createNotificationsSlice: StateCreator<
   updateSubscriber: async () => {
     const currentUser = get().user
     if (!currentUser?.id) return
-    await updateDoc(doc(userCollection, currentUser.id), {
+    await updateDoc(doc(userCollection(), currentUser.id), {
       allowPush: get().allowPush,
       timestamp: Timestamp.fromDate(new Date()),
     })
@@ -104,7 +108,7 @@ export const createNotificationsSlice: StateCreator<
     const email = currentUser?.email?.trim().toLowerCase()
     if (!email) return
     await setDoc(
-      doc(db, 'User', email, 'Device', token),
+      doc(db(), 'User', email, 'Device', token),
       {
         timestamp: Timestamp.fromDate(new Date()),
       },
@@ -116,11 +120,11 @@ export const createNotificationsSlice: StateCreator<
     const currentUser = get().user
     const email = currentUser?.email?.trim().toLowerCase()
     if (!email) return
-    const deviceSubcollection = collection(db, 'User', email, 'Device')
+    const deviceSubcollection = collection(db(), 'User', email, 'Device')
     let snapshot = await getDocs(deviceSubcollection)
 
     while (!snapshot.empty) {
-      const batch = writeBatch(db)
+      const batch = writeBatch(db())
       snapshot.forEach((d) => batch.delete(d.ref))
       await batch.commit()
       if (snapshot.size < 500) break

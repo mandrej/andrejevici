@@ -97,7 +97,7 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
           const { photoCollection } = await import('@/helpers/collections')
           const { doc, deleteDoc } = await import('firebase/firestore')
           const oldId = rec.id
-          await deleteDoc(doc(photoCollection, oldId))
+          await deleteDoc(doc(photoCollection(), oldId))
           useAppStore.setState((state) => ({
             objects: state.objects.filter((x) => x.id !== oldId),
           }))

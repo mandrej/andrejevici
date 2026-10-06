@@ -11,7 +11,7 @@ import type { ValuesStore, CountersSliceActions } from '@/stores/values/types'
 const buildCounterMap = async (
   field: keyof ValuesState['values'],
 ): Promise<Record<string, number>> => {
-  const photoSnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+  const photoSnapshot = await getDocs(query(photoCollection(), orderBy('date', 'desc')))
   const counterMap: Record<string, number> = {}
 
   photoSnapshot.forEach((doc) => {
@@ -45,14 +45,14 @@ const commitInBatches = async <T>(
   items: T[],
   applyFn: (batch: ReturnType<typeof writeBatch>, item: T) => void,
 ): Promise<void> => {
-  let batch = writeBatch(db)
+  let batch = writeBatch(db())
   let count = 0
   for (const item of items) {
     applyFn(batch, item)
     count++
     if (count === 498) {
       await batch.commit()
-      batch = writeBatch(db)
+      batch = writeBatch(db())
       count = 0
     }
   }
@@ -79,7 +79,7 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
 
       // Delete old counters for this field
       const countersToDelete = await getDocs(
-        query(counterCollection, where('field', '==', fieldKey)),
+        query(counterCollection(), where('field', '==', fieldKey)),
       )
       await commitInBatches(countersToDelete.docs, (batch, d) => batch.delete(d.ref))
 
@@ -87,7 +87,7 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
       const entries = Object.entries(newCounterMap)
       await commitInBatches(entries, (batch, [id, val]) => {
         const { value } = parseCounterKey(id)
-        const counterRef = doc(counterCollection, id)
+        const counterRef = doc(counterCollection(), id)
         batch.set(counterRef, { count: val, field: fieldKey, value })
       })
 
@@ -150,7 +150,7 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
   },
 
   batchUpdateCounters: async (toAdd: string[], toRemove: string[]) => {
-    const batch = writeBatch(db)
+    const batch = writeBatch(db())
     const currentValues = { ...get().values }
 
     for (const key of toAdd) {
@@ -160,7 +160,7 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
 
       currentValues[field][value] = currentCount + 1
 
-      const counterRef = doc(counterCollection, key)
+      const counterRef = doc(counterCollection(), key)
       if (currentCount === 0) {
         batch.set(counterRef, { count: 1, field, value })
       } else {
@@ -177,7 +177,7 @@ export const createCountersSlice: StateCreator<ValuesStore, [], [], CountersSlic
       const currentCount = currentValues[field][value] || 0
       const newCount = currentCount - 1
 
-      const counterRef = doc(counterCollection, key)
+      const counterRef = doc(counterCollection(), key)
       if (newCount <= 0) {
         delete currentValues[field][value]
         batch.delete(counterRef)

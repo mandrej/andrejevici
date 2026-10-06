@@ -125,7 +125,7 @@ export const PhotoTab: React.FC = () => {
     return new Promise<string>((resolve, reject) => {
       const id = uuidv4().substring(0, 8)
       const filename = `${id}_${file.name}`
-      const _ref = storageRef(storage, filename)
+      const _ref = storageRef(storage(), filename)
       const tracker = new UploadTracker(filename)
       trackersRef.current.set(filename, tracker)
       setActiveTrackerNames(Array.from(trackersRef.current.keys()))

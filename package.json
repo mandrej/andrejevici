@@ -59,5 +59,14 @@
     "node": "^24 || ^22 || ^20 || ^18",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
-  }
+  },
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16.4",
+    "ios_saf >= 16.4",
+    "samsung >= 22",
+    "and_chr >= 111"
+  ]
 }

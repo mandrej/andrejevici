@@ -5,7 +5,7 @@ import notify from '@/helpers/notify'
 import type { BucketType } from '@/helpers/models'
 import type { BucketStore, BucketSliceState, BucketSliceActions } from '@/stores/bucket/types'
 
-const bucketRef = doc(bucketCollection, 'total')
+const totalBucketRef = () => doc(bucketCollection(), 'total')
 
 export const createBucketSlice: StateCreator<
   BucketStore,
@@ -16,7 +16,7 @@ export const createBucketSlice: StateCreator<
   bucket: { size: 0, count: 0 },
 
   fetchBucket: async () => {
-    const docSnap = await getDoc(bucketRef)
+    const docSnap = await getDoc(totalBucketRef())
     if (docSnap.exists()) {
       set({ bucket: docSnap.data() as BucketType })
     }
@@ -33,7 +33,7 @@ export const createBucketSlice: StateCreator<
         count: count <= 0 ? 0 : count,
       }
 
-      setDoc(bucketRef, updated, { merge: true })
+      setDoc(totalBucketRef(), updated, { merge: true })
 
       if (process.env.NODE_ENV === 'development') {
         console.log('BUCKET: ' + JSON.stringify(updated, null, 2))
@@ -52,7 +52,7 @@ export const createBucketSlice: StateCreator<
     })
 
     try {
-      const querySnapshot = await getDocs(query(photoCollection, orderBy('date', 'desc')))
+      const querySnapshot = await getDocs(query(photoCollection(), orderBy('date', 'desc')))
       let count = 0
       let size = 0
       querySnapshot.forEach((d) => {
@@ -62,7 +62,7 @@ export const createBucketSlice: StateCreator<
 
       const updated = { count, size }
       set({ bucket: updated })
-      await setDoc(bucketRef, updated, { merge: true })
+      await setDoc(totalBucketRef(), updated, { merge: true })
       notify({
         group: 'bucket',
         type: 'positive',

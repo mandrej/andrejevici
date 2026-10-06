@@ -67,12 +67,12 @@ export const createRecordsSlice: StateCreator<
       const constraints: Array<QueryConstraint> = [...filters, orderBy('date', 'desc')]
 
       if (currentNext !== '') {
-        const cursor: DocumentSnapshot = await getDoc(doc(photoCollection, currentNext))
+        const cursor: DocumentSnapshot = await getDoc(doc(photoCollection(), currentNext))
         constraints.push(startAfter(cursor))
       }
       constraints.push(limit(max))
 
-      const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection, ...constraints))
+      const querySnapshot: QuerySnapshot = await getDocs(query(photoCollection(), ...constraints))
       const currentObjects = reset ? [] : [...get().objects]
       const existingIds = new Set(currentObjects.map((x) => x.id))
 
@@ -149,7 +149,7 @@ export const createRecordsSlice: StateCreator<
       if (existing) return existing
 
       try {
-        const docRef = doc(photoCollection, id)
+        const docRef = doc(photoCollection(), id)
         const docSnap = await getDoc(docRef)
         if (!docSnap.exists()) return null
         const raw = docSnap.data() as PhotoType

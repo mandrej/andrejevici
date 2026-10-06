@@ -8,7 +8,8 @@ import { useScreen } from '@/composables/useScreen'
 import { useUserStore } from '@/stores/userStore'
 import Sidebar from '@/components/layouts/Sidebar'
 
-// Dynamic Toolbar imports based on route
+// Toolbars stay statically imported: rendering them through `next/dynamic` makes the server
+// output the loading fallback while the client renders the toolbar, which breaks hydration.
 import ListToolbar from '@/app/list/ListToolbar'
 import AddToolbar from '@/app/add/AddToolbar'
 import AdminToolbar from '@/app/admin/AdminToolbar'

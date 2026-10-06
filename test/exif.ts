@@ -8,7 +8,7 @@ import { terminate } from 'firebase/firestore'
 import { db } from '@/firebase'
 
 after(async () => {
-  await terminate(db)
+  await terminate(db())
 })
 
 const __filename = fileURLToPath(import.meta.url)
