@@ -30,7 +30,7 @@ The root package supports Node 18, 20, 22, or 24. Each Cloud Function package re
 
 ## Build and hosting model
 
-`next.config.ts` is configured with `output: 'export'`, `distDir: 'dist'`, and unoptimized images. The build produces a static site in `dist/`. `scripts/build-pwa.js` copies the manifest, bundles `src-pwa/custom-service-worker.ts`, injects the Workbox precache manifest, writes `dist/sw.js`, and copies the worker to `public/sw.js`. `firebase.json` serves `dist/` through Firebase Hosting and rewrites unknown paths to `/index.html`.
+`next.config.ts` is configured with `output: 'export'`, `distDir: 'dist'`, unoptimized images, `reactStrictMode: true`, `devIndicators: false`, and a `generateBuildId` that reads `GIT_HASH` from the environment. The build produces a static site in `dist/`. `scripts/build-pwa.js` copies the manifest, bundles `src-pwa/custom-service-worker.ts`, injects the Workbox precache manifest, writes `dist/sw.js`, and copies the worker to `public/sw.js`. `firebase.json` serves `dist/` through Firebase Hosting and rewrites unknown paths to `/index.html`.
 
 The local `src/config.ts` file is ignored by Git and is required by the Firebase client and application helpers. Make sure the project-provided config file exists before running the app or tests; do not commit local config files.
 
@@ -47,21 +47,25 @@ The App Router contains:
 - `/401` — unauthorized page.
 - `not-found` — not-found handling.
 
-`src/app/AppInitializer.tsx` resets client state, loads counters and bucket totals, observes Firebase authentication and the signed-in `User` document, handles foreground FCM messages, subscribes to the latest record, and registers `/sw.js` in production or when PWA development is enabled.
+`src/app/ClientProviders.tsx` wraps the app in `ThemeProvider` and dynamically imports `AppInitializer` and `AppToast` so their client bundles never block the initial shell. `AppInitializer` resets client state, loads counters and bucket totals, observes Firebase authentication and the signed-in `User` document, defers FCM foreground message setup until the page is idle (via `requestIdleCallback` and a dynamic `import('@/messaging')`), subscribes to the latest record, and registers `/sw.js` in production or when PWA development is enabled.
 
 ### Stores
 
-- `appStore`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
-- `userStore`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
-- `valuesStore`: `createCountersSlice`, `createValuesSlice`.
-- `bucketStore`: `createBucketSlice`.
-- `toastStore`: `createToastSlice`.
+Each store has a barrel file and a subdirectory with slice creators, `types.ts`, and optional selectors:
 
-Use selector hooks for React components, for example `useUserStore((state) => state.user)`.
+- `appStore` → `app/`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
+- `userStore` → `user/`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
+- `valuesStore` → `values/`: `createCountersSlice`, `createValuesSlice`, `selectors.ts`.
+- `bucketStore` → `bucket/`: `createBucketSlice`.
+- `toastStore` → `toast/`: `createToastSlice`.
+
+Use selector hooks for React components, for example `useUserStore((state) => state.user)`. For derived values data, use the memoized selectors from `values/selectors.ts`.
 
 ### Helpers and Firebase paths
 
-Business logic lives in `src/helpers/`: `collections.ts`, `exif.ts`, `index.ts`, `models.ts`, `notify.ts`, `remedy.ts`, and `uploadTracker.ts`. Use the collection references from `src/helpers/collections.ts` instead of duplicating raw collection names in client code.
+Business logic lives in `src/helpers/`: `collections.ts`, `devices.ts`, `exif.ts`, `index.ts`, `models.ts`, `notify.ts`, `remedy.ts`, and `uploadTracker.ts`. Use the lazy collection references from `src/helpers/collections.ts` instead of duplicating raw collection names in client code.
+
+`src/firebase.ts` exposes lazy singleton accessors (`auth()`, `db()`, `storage()`, `functions()`) that create each service on first call and connect to emulators in development. `src/messaging.ts` and `src/analytics.ts` are separate lazy modules loaded via dynamic `import()` to keep the Messaging, Analytics, and Installations SDKs out of the initial bundle.
 
 The case-sensitive Firestore paths currently used by the app are `User`, `Photo`, `Counter`, `Bucket`, `Rename`, and `LastRecord`. FCM device tokens are stored in `User/{trimmed-lowercase-email}/Device`. Counter values are documents in `Counter`; they are not separate lowercase `tags`, `photographers`, `lenses`, or `models` collections.
 
@@ -74,6 +78,8 @@ User timestamps are checked against the 60-day session limit. `AppInitializer` l
 These gates are application behavior. The current Firestore and Storage rules allow public reads and writes by any authenticated client, so do not document the rules as enforcing the client-side admin/editor roles.
 
 ## Cloud Functions
+
+All functions use the `firebase-functions/v2` API. Source files live at the directory root (`index.ts`), not in a `src/` subdirectory.
 
 - `functionThumb`: callable `generateThumbnail` and Storage-triggered `generateThumbnailOnUpload`; creates a 400px square cover crop as a progressive JPEG under `thumbnails/` with an `_400x400.jpeg` suffix and uses `thumbnailLocks` to avoid duplicate work.
 - `functionCron`: scheduled `cronCounters` rebuilds `Counter` from `Photo`; scheduled `cronBucket` writes aggregate count and size to `Bucket/total`. Both run every three days in the configured Los Angeles timezone.

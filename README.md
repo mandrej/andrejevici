@@ -10,7 +10,8 @@ Andrejevici is a photo and video album Progressive Web App for browsing, searchi
 - Metadata editing, tag management, and administrator repair tools.
 - Firebase Authentication with application-level contributor and administrator permissions.
 - Cloud thumbnail generation and Firebase Cloud Messaging notifications.
-- Light/dark themes and a Workbox-powered service worker for generated static assets, fonts, and images.
+- Full-screen media carousel powered by `yet-another-react-lightbox`.
+- Light/dark themes via `next-themes` and a Workbox-powered service worker for generated static assets, fonts, and images.
 
 ## Prerequisites
 
@@ -100,9 +101,12 @@ These ports are configured in `firebase.json`:
 
 ```ts
 {
+  generateBuildId: async () => process.env.GIT_HASH ?? null,
   output: 'export',
   distDir: 'dist',
-  images: { unoptimized: true }
+  images: { unoptimized: true },
+  reactStrictMode: true,
+  devIndicators: false,
 }
 ```
 
@@ -169,27 +173,29 @@ Use the collection references in `src/helpers/collections.ts` when working in cl
 
 ```text
 src/
-├── app/                 # App Router routes, root layout, and lifecycle
+├── app/                 # App Router routes, root layout, ClientProviders, and lifecycle
 ├── components/          # UI components, atoms, layouts, search, and admin tools
-├── stores/              # Zustand stores and modular slices
-├── helpers/             # Firebase references, EXIF, models, permissions, and utilities
-├── composables/         # Reusable UI hooks
-├── hooks/               # Feature hooks such as record editing
-├── firebase.ts          # Firebase client initialization and emulator wiring
+├── stores/              # Zustand stores with subdirectories for slices, types, and selectors
+├── helpers/             # Firebase references, devices, EXIF, models, permissions, and utilities
+├── composables/         # Reusable UI hooks (infinite scroll, screen size)
+├── hooks/               # Feature hooks (record editing)
+├── firebase.ts          # Lazy Firebase client initialization and emulator wiring
+├── messaging.ts         # Lazy Firebase Messaging (dynamically imported)
+├── analytics.ts         # Lazy Firebase Analytics (dynamically imported)
 └── styles/              # Global Tailwind stylesheet
 src-pwa/                 # Custom Workbox service worker and manifest
-functionCron/            # Scheduled counter and bucket maintenance
-functionNotify/          # HTTP FCM notification function
-functionThumb/           # Callable and Storage-triggered thumbnail functions
+functionCron/            # Scheduled counter and bucket maintenance (v2 API)
+functionNotify/          # HTTP FCM notification function (v2 API)
+functionThumb/           # Callable and Storage-triggered thumbnail functions (v2 API)
 scripts/                 # PWA and icon build scripts
 test/                    # TypeScript tests and fixture data
 public/                  # Static assets, manifest, and messaging worker
-ands                    # Project helper CLI
+ands                     # Project helper CLI
 ```
 
 ## PWA behavior
 
-Production registers `/sw.js`. `npm run dev:pwa` enables the same registration path in development by setting `NEXT_PUBLIC_PWA_DEV=true`. Workbox precaches generated static assets, caches Google Fonts with Cache First, and caches images with Stale While Revalidate. Firebase Messaging uses the separate `public/firebase-messaging-sw.js` worker referenced by the generated service worker.
+Production registers `/sw.js`. `npm run dev:pwa` enables the same registration path in development by setting `NEXT_PUBLIC_PWA_DEV=true`. Service-worker registration is deferred until the page is idle via `requestIdleCallback`. Workbox precaches generated static assets, caches Google Fonts with Cache First, and caches images with Stale While Revalidate. Firebase Messaging uses the separate `public/firebase-messaging-sw.js` worker referenced by the generated service worker.
 
 ## Documentation
 

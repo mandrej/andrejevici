@@ -8,10 +8,10 @@ Andrejevici is a Next.js photo and video album PWA. The client supports gallery 
 
 ## Technology and prerequisites
 
-- Next.js 16 App Router with static export, React 19, and strict TypeScript 5.9.
-- Tailwind CSS 4, Headless UI, Heroicons, and `next-themes`.
+- Next.js 16 App Router with static export, React 19, strict TypeScript 5.9, and `reactStrictMode`.
+- Tailwind CSS 4, Headless UI, Heroicons, `next-themes`, and `yet-another-react-lightbox`.
 - Firebase 11 client SDK, Firestore, Storage, Authentication, Functions, Messaging, and Analytics.
-- Zustand 5 with modular slices.
+- Zustand 5 with modular slices and memoized selectors.
 - Workbox Build 7 and a custom service worker.
 - Root package Node engine: 18, 20, 22, or 24. The three Cloud Function packages specify Node 24.
 - npm and Firebase CLI (`firebase` can be installed globally or run through `npx`).
@@ -69,9 +69,12 @@ npm run dev:pwa
 
 ```ts
 {
+  generateBuildId: async () => process.env.GIT_HASH ?? null,
   output: 'export',
   distDir: 'dist',
-  images: { unoptimized: true }
+  images: { unoptimized: true },
+  reactStrictMode: true,
+  devIndicators: false,
 }
 ```
 
@@ -92,21 +95,27 @@ The production result is a static site in `dist/`. Firebase Hosting serves that 
 - `/401` — unauthorized page.
 - `not-found` — not-found handling.
 
-`src/app/layout.tsx` defines metadata, PWA links, icons, and the root client providers. `AppInitializer` resets UI state, fetches bucket and counter values, observes Firebase Auth, listens to the signed-in user document, handles foreground FCM messages, and subscribes to the latest record.
+`src/app/layout.tsx` defines metadata, PWA links, icons, and the root `ClientProviders`. `ClientProviders` wraps the app in `ThemeProvider` from `next-themes` and dynamically imports `AppInitializer` and `AppToast` so their client bundles never block the shell from rendering. `AppInitializer` resets UI state, fetches bucket and counter values, observes Firebase Auth, listens to the signed-in user document, defers FCM foreground message setup until the page is idle (via `requestIdleCallback`), and subscribes to the latest record.
 
 ### Components
 
-- `src/components/atoms/` — buttons, inputs, selects, dialogs, tabs, progress, toasts, icons, and theme controls.
+- `src/components/atoms/` — `AppBadge`, `AppBanner`, `AppButton`, `AppCheckbox`, `AppCombobox`, `AppDialog`, `AppIcon`, `AppInput`, `AppProgress`, `AppSelect`, `AppTabs`, `AppToast`, and `ThemeToggle`.
 - `src/components/layouts/` — `DefaultLayout`, `PlainLayout`, and `Sidebar`.
-- Other components cover search, media cards, metadata editing, selection management, tag merging, navigation, errors, and push-message sending.
+- Other components cover autocomplete, search (global and local), media cards, photo/video record editing, selection management, tag merging, navigation, errors, and push-message sending.
+- `src/composables/` — `useInfiniteScroll` and `useScreen` reusable UI hooks.
+- `src/hooks/` — `useEditRecord` feature hook for record editing.
 
 ### Zustand stores
 
-- `src/stores/appStore.ts`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`.
-- `src/stores/userStore.ts`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`.
-- `src/stores/valuesStore.ts`: `createCountersSlice`, `createValuesSlice`.
-- `src/stores/bucketStore.ts`: `createBucketSlice`.
-- `src/stores/toastStore.ts`: `createToastSlice`.
+Each store has a top-level barrel file and a subdirectory containing slice creators and a `types.ts` file:
+
+- `src/stores/appStore.ts` → `app/`: `createUiSlice`, `createRecordsSlice`, `createPhotoOpsSlice`, `types.ts`.
+- `src/stores/userStore.ts` → `user/`: `createAuthSlice`, `createNotificationsSlice`, `createUsersAdminSlice`, `types.ts`.
+- `src/stores/valuesStore.ts` → `values/`: `createCountersSlice`, `createValuesSlice`, `selectors.ts`, `types.ts`.
+- `src/stores/bucketStore.ts` → `bucket/`: `createBucketSlice`, `types.ts`.
+- `src/stores/toastStore.ts` → `toast/`: `createToastSlice`, `types.ts`.
+
+`values/selectors.ts` exports memoized selectors (`selectTagsValues`, `selectModelValues`, `selectAllSuggestions`, etc.) that cache derived data and rebuild only when the underlying values reference changes.
 
 Use selector hooks in components rather than subscribing to an entire store:
 
@@ -118,13 +127,20 @@ const user = useUserStore((state) => state.user)
 
 `src/helpers/` contains:
 
-- `collections.ts` — Firebase collection references.
+- `collections.ts` — lazy Firebase collection references (created on first use to avoid pulling Firestore into every route).
+- `devices.ts` — batch deletion of FCM device-token documents under `User/{email}/Device`.
 - `exif.ts` — client-side EXIF extraction.
 - `index.ts` — dates, slugs/transliteration, permissions, thumbnails, YouTube helpers, and shared utilities.
-- `models.ts` — TypeScript models such as `PhotoType`, `MyUserType`, and values state.
+- `models.ts` — TypeScript models such as `PhotoType`, `MyUserType`, `ValuesState`, and `AppStoreState`.
 - `notify.ts` — client notification/toast helper.
 - `remedy.ts` — storage/Firestore consistency and thumbnail repair actions.
 - `uploadTracker.ts` — upload progress tracking.
+
+### Firebase initialization
+
+`src/firebase.ts` exposes lazy singleton accessors — `auth()`, `db()`, `storage()`, `functions()` — that create each Firebase service on first call and connect to emulators in development. This keeps SDK modules a route never touches out of its initial bundle. It also re-exports `logAnalyticsEvent`, which dynamically imports `src/analytics.ts`.
+
+`src/messaging.ts` is a separate lazy module for Firebase Messaging. It is only reached through a dynamic `import()` in `AppInitializer` so the Messaging and Installations SDKs stay out of the initial bundle. `src/analytics.ts` follows the same pattern for Firebase Analytics.
 
 ## Firebase data model
 
@@ -160,7 +176,7 @@ These are application-level gates. The current `firestore.rules` and `storage.ru
 
 ## Cloud Functions
 
-Each function directory has its own package, lockfile, TypeScript configuration, and Node 24 engine.
+Each function directory has its own `package.json`, lockfile, TypeScript configuration, and Node 24 engine. Source files live at the directory root (`index.ts`), not in a `src/` subdirectory. All functions use the `firebase-functions/v2` API.
 
 ### `functionThumb`
 
