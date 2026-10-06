@@ -41,12 +41,18 @@ export interface RecordsSliceState {
   selected: PhotoType[]
 }
 
+export interface FetchRecordsResult {
+  objects: PhotoType[]
+  /** `null` on success; a message when the query failed. */
+  error: string | null
+  /** Cursor of the last fetched document; empty when the list is exhausted. */
+  next: string
+}
+
 export interface RecordsSliceActions {
   searchBy: (criteria: FindType, onNavigate?: () => void) => void
   fetchPhoto: (id: string) => Promise<PhotoType | null>
-  fetchRecords: (
-    reset?: boolean,
-  ) => Promise<{ objects: PhotoType[]; error: string | null; next: string | null } | void>
+  fetchRecords: (reset?: boolean) => Promise<FetchRecordsResult>
   setSelected: (selected: PhotoType[] | ((prev: PhotoType[]) => PhotoType[])) => void
 }
 

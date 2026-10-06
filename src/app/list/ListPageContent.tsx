@@ -15,6 +15,7 @@ import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '@/helpers'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import type { InfiniteScrollResult } from '@/composables/useInfiniteScroll'
 import notify from '@/helpers/notify'
 import { logAnalyticsEvent } from '@/firebase'
 import type { PhotoType } from '@/helpers/models'
@@ -97,19 +98,22 @@ export default function ListPage() {
   }
 
   // Load implementation
-  const onLoad = async (done: (stop?: boolean) => void) => {
-    if (error === 'empty' || (objects.length > 0 && !next)) {
-      done(true)
-      return
+  const onLoad = async (): Promise<InfiniteScrollResult> => {
+    const state = useAppStore.getState()
+    // `objects.length > 0 && !next` means the last fetch exhausted the query. The
+    // `busy` guard keeps a stale `empty` error from stopping a fetch already running.
+    if (!state.busy && (state.error === 'empty' || (state.objects.length > 0 && !state.next))) {
+      return 'end'
     }
+
     try {
-      const isInitial = objects.length === 0
-      await fetchRecords(isInitial)
-      // Read `next` from the store after the fetch — the closure value is stale.
-      done(!useAppStore.getState().next)
+      const result = await fetchRecords(state.objects.length === 0)
+      if (result.error) return 'error'
+      // Read `next` after the fetch — the closure value is stale.
+      return useAppStore.getState().next ? 'more' : 'end'
     } catch (err) {
       console.error('Infinite scroll error:', err)
-      done(true)
+      return 'error'
     }
   }
 
@@ -160,7 +164,8 @@ export default function ListPage() {
 
   const confirmOk = (rec: PhotoType) => {
     setShowConfirm(false)
-    deleteRecord(rec)
+    // Deleting can leave the observer stopped at "end of list"; re-arm it.
+    void deleteRecord(rec).then(() => reset())
     if (useAppStore.getState().objects.length === 0 && showCarousel) {
       setShowCarousel(false)
       useAppStore.setState({ error: 'empty' })
