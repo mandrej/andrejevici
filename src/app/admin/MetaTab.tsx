@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import LocalSearch from '@/components/LocalSearch'
@@ -23,6 +25,7 @@ const metaOptions: MetaOption[] = [
 ]
 
 export const MetaTab: React.FC = () => {
+  const router = useRouter()
   const metaTab = useAppStore((state) => state.metaTab)
   const setMetaTab = useAppStore((state) => state.setMetaTab)
   const searchBy = useAppStore((state) => state.searchBy)
@@ -56,6 +59,12 @@ export const MetaTab: React.FC = () => {
   const currentValueList = useMemo(() => {
     return Object.keys(currentCounts).sort()
   }, [currentCounts])
+
+  const filterByValue = (value: string) => {
+    searchBy({ [metaTab]: metaTab === 'tags' ? [value] : value }, () => {
+      router.push('/list')
+    })
+  }
 
   const toggleSort = (field: 'name' | 'count') => {
     if (sortField === field) {
@@ -277,13 +286,18 @@ export const MetaTab: React.FC = () => {
                 key={row.name}
                 className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
-                <td
-                  className="px-3 py-2 cursor-pointer text-primary hover:underline"
-                  onClick={() =>
-                    searchBy({ [metaTab]: metaTab === 'tags' ? [row.name] : row.name })
-                  }
-                >
-                  {row.name}
+                <td className="px-3 py-2">
+                  <Link
+                    href="/list"
+                    className="text-primary hover:underline cursor-pointer"
+                    title={`Filter photos by ${activeTabShort.toLowerCase()} "${row.name}"`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      filterByValue(row.name)
+                    }}
+                  >
+                    {row.name}
+                  </Link>
                 </td>
                 <td className="px-3 py-2 text-right">
                   <AppBadge color="secondary" textColor="black" className="text-xs">
