@@ -6,6 +6,7 @@ import AppButton from '@/components/atoms/AppButton'
 import AppIcon from '@/components/atoms/AppIcon'
 import AppDialog from '@/components/atoms/AppDialog'
 import PlainLayout from '@/components/layouts/PlainLayout'
+import { useScreen } from '@/composables/useScreen'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { useValuesStore, selectNickWithCount, selectYearValues } from '@/stores/valuesStore'
@@ -23,12 +24,16 @@ export default function HomePage() {
 
   const bucket = useBucketStore((state) => state.bucket)
 
+  const screen = useScreen()
+
   const nickWithCount = useValuesStore(selectNickWithCount)
   const yearValues = useValuesStore(selectYearValues)
 
-  const topNicks = useMemo(() => {
-    return Object.keys(nickWithCount).slice(0, 5)
+  const allNicks = useMemo(() => {
+    return Object.keys(nickWithCount)
   }, [nickWithCount])
+
+  const nicks = screen.xs ? allNicks.slice(0, 5) : allNicks
 
   const sinceYear = useMemo(() => {
     return yearValues[yearValues.length - 1] || ''
@@ -70,9 +75,9 @@ export default function HomePage() {
         )}
 
         {/* Top photographers */}
-        {topNicks.length > 0 && (
+        {nicks.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mt-2 mx-8">
-            {topNicks.map((nick) => (
+            {nicks.map((nick) => (
               <AppButton
                 key={nick}
                 label={nick}
