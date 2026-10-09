@@ -7,11 +7,18 @@ import AppIcon from '@/components/atoms/AppIcon'
 
 interface PictureCardProps {
   rec: PhotoType
+  /** Local object-URL preview for a queued upload, so the card need not load the original. */
+  previewUrl?: string
   onCarouselShow?: (id: string) => void
   action?: React.ReactNode
 }
 
-export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, action }) => {
+export const PictureCard: React.FC<PictureCardProps> = ({
+  rec,
+  previewUrl,
+  onCarouselShow,
+  action,
+}) => {
   const searchBy = useAppStore((state) => state.searchBy)
   const [imgError, setImgError] = useState(false)
 
@@ -100,7 +107,7 @@ export const PictureCard: React.FC<PictureCardProps> = ({ rec, onCarouselShow, a
       <div className="relative w-full overflow-hidden" style={{ paddingTop: '80%' }}>
         <img
           loading="lazy"
-          src={rec.url}
+          src={previewUrl || rec.url}
           alt={rec.id}
           className="absolute inset-0 w-full h-full object-cover"
           onError={() => setImgError(true)}

@@ -66,9 +66,11 @@ export const createPhotoOpsSlice: StateCreator<
       uploaded: typeof uploaded === 'function' ? uploaded(state.uploaded) : uploaded,
     })),
 
-  completePhoto: async (rec, tags, headline) => {
+  completePhoto: async (rec, tags, headline, source) => {
     const dateFields = getDateFields(new Date())
-    const exif = await readExif(rec.url)
+    // Prefer the local File: reading EXIF from it avoids re-downloading the whole
+    // original just to parse tags that live in the first few kilobytes.
+    const exif = await readExif(source ?? rec.url)
 
     const tmp: PhotoType = {
       ...rec,
@@ -299,10 +301,10 @@ export const createPhotoOpsSlice: StateCreator<
         }
       }
 
-      // 4. Read EXIF from new image
+      // 4. Read EXIF from the local file (no re-download of the just-uploaded image)
       let exif: ExifType | null = null
       try {
-        exif = await readExif(newDownloadUrl)
+        exif = await readExif(newFile)
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
           console.warn('Failed to read EXIF from new image:', e)

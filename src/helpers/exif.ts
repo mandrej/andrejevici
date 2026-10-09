@@ -27,12 +27,16 @@ const resolveRename = async (value: string): Promise<string> => {
 /**
  * Reads the EXIF data from a file.
  *
- * @param {string} url - The URL of the file to read.
+ * Accepts a `File` (preferred — parsed locally, no network) or a URL/path string.
+ * Passing the local `File` avoids re-downloading the whole image just to read the
+ * EXIF tags, which live in the first few kilobytes.
+ *
+ * @param {string | File} source - The file or the URL/path of the file to read.
  * @return {Promise<ExifType | null>} A promise that resolves to an object containing the EXIF data, or null if the file does not contain EXIF data.
  */
-const readExif = async (url: string): Promise<ExifType | null> => {
+const readExif = async (source: string | File): Promise<ExifType | null> => {
   const result: ExifType = { model: CONFIG.unknownModel, date: Timestamp.fromDate(new Date()) }
-  const tags = await exifReader.load(url, { expanded: true })
+  const tags = await exifReader.load(source, { expanded: true })
 
   // Strip bulky/unused tag groups
   if (tags.exif) delete tags.exif.MakerNote
@@ -90,25 +94,37 @@ const readExif = async (url: string): Promise<ExifType | null> => {
     result.dim = [tags.file['Image Width']!.value, tags.file['Image Height']!.value]
   }
 
-  // Fallback: load image to get dimensions
+  // Fallback: load image to get dimensions. A local File/Blob is decoded directly,
+  // avoiding a network round-trip for data we already hold.
   if (!result.dim || result.dim[0] === 0 || result.dim[1] === 0) {
     try {
       if (typeof createImageBitmap !== 'undefined') {
-        const resp = await fetch(url)
-        const blob = await resp.blob()
-        const bmp = await createImageBitmap(blob)
+        const bmp =
+          typeof source === 'string'
+            ? await createImageBitmap(await (await fetch(source)).blob())
+            : await createImageBitmap(source)
         result.dim = [bmp.width, bmp.height]
         bmp.close()
       } else {
         const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.src = url
-        await new Promise((resolve, reject) => {
-          img.onload = resolve
-          img.onerror = reject
-        })
-        if (img.naturalWidth && img.naturalHeight) {
-          result.dim = [img.naturalWidth, img.naturalHeight]
+        let objectUrl = ''
+        if (typeof source === 'string') {
+          img.crossOrigin = 'anonymous'
+          img.src = source
+        } else {
+          objectUrl = URL.createObjectURL(source)
+          img.src = objectUrl
+        }
+        try {
+          await new Promise((resolve, reject) => {
+            img.onload = resolve
+            img.onerror = reject
+          })
+          if (img.naturalWidth && img.naturalHeight) {
+            result.dim = [img.naturalWidth, img.naturalHeight]
+          }
+        } finally {
+          if (objectUrl) URL.revokeObjectURL(objectUrl)
         }
       }
     } catch (e) {

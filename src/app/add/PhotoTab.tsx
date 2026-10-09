@@ -49,13 +49,45 @@ export const PhotoTab: React.FC = () => {
   const [selection, setSelection] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [activeTrackerNames, setActiveTrackerNames] = useState<string[]>([])
+  // Local object-URL previews for the upload queue. Kept in component state (never in
+  // the persisted store) so a `blob:` URL can't leak into localStorage.
+  const [previews, setPreviews] = useState<Record<string, string>>({})
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const trackersRef = useRef<Map<string, UploadTracker>>(new Map())
+  // Uploaded Files, kept so EXIF can be read locally at publish time.
+  const filesRef = useRef<Map<string, File>>(new Map())
+  const previewsRef = useRef<Record<string, string>>(previews)
+  previewsRef.current = previews
 
   useEffect(() => {
     setProgressInfo({})
   }, [setProgressInfo])
+
+  // Revoke previews for records that have left the queue (published/deleted), whatever
+  // the path that removed them.
+  useEffect(() => {
+    const currentIds = new Set(uploaded.map((item) => item.id))
+    setPreviews((prev) => {
+      const stale = Object.keys(prev).filter((id) => !currentIds.has(id))
+      if (stale.length === 0) return prev
+      const next = { ...prev }
+      for (const id of stale) {
+        URL.revokeObjectURL(prev[id])
+        delete next[id]
+        filesRef.current.delete(id)
+      }
+      return next
+    })
+  }, [uploaded])
+
+  // Release any remaining object URLs when leaving the page.
+  useEffect(
+    () => () => {
+      Object.values(previewsRef.current).forEach((url) => URL.revokeObjectURL(url))
+    },
+    [],
+  )
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return
@@ -163,6 +195,9 @@ export const PhotoTab: React.FC = () => {
               trackersRef.current.delete(filename)
               setActiveTrackerNames(Array.from(trackersRef.current.keys()))
 
+              filesRef.current.set(filename, file)
+              setPreviews((prev) => ({ ...prev, [filename]: URL.createObjectURL(file) }))
+
               const data: PhotoType = {
                 id: filename,
                 url: downloadURL,
@@ -233,6 +268,7 @@ export const PhotoTab: React.FC = () => {
       rec,
       tagsToApply,
       headlineToApply ? headlineToApply.trim() : CONFIG.noTitle,
+      filesRef.current.get(rec.id),
     )
     fakeHistory()
     setCurrentEdit(newRec)
@@ -258,6 +294,7 @@ export const PhotoTab: React.FC = () => {
         rec,
         tagsToApply,
         headlineToApply ? headlineToApply.trim() : CONFIG.noTitle,
+        filesRef.current.get(rec.id),
       )
       promises.push(saveRecord(newRec))
     }
@@ -380,6 +417,7 @@ export const PhotoTab: React.FC = () => {
           >
             <PictureCard
               rec={rec}
+              previewUrl={previews[rec.id]}
               action={
                 <div className="absolute top-2 right-2 flex items-center gap-2">
                   <button

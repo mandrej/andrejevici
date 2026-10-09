@@ -63,7 +63,13 @@ export interface PhotoOpsSliceState {
 }
 
 export interface PhotoOpsSliceActions {
-  completePhoto: (rec: PhotoType, tags: string[], headline: string) => Promise<PhotoType>
+  /** `source` is the local File when available, so EXIF is read without re-downloading. */
+  completePhoto: (
+    rec: PhotoType,
+    tags: string[],
+    headline: string,
+    source?: File,
+  ) => Promise<PhotoType>
   saveRecord: (obj: PhotoType) => Promise<PhotoType>
   saveVideo: (obj: VideoType) => Promise<VideoType>
   deleteRecord: (obj: PhotoType) => Promise<void>
