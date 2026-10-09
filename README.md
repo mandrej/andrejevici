@@ -163,6 +163,61 @@ The implementation uses these case-sensitive Firestore paths:
 
 Use the collection references in `src/helpers/collections.ts` when working in client code. Counter values are represented by `Counter` documents and the values store, not by separate lowercase collections.
 
+## Image upload and publish
+
+Uploading and publishing are two separate phases. Bytes go to Cloud Storage first; only later does a Firestore `Photo` document make the image public. An uploaded but unpublished file is invisible to the gallery and leaves an orphaned Storage object.
+
+### Gate
+
+`/add` redirects to `/401` unless `canContribute(user)` passes (`src/helpers/index.ts`): signed in, a non-empty nickname other than `???`, and either `isAuthorized` or `isAdmin`. The tab switch selects `PhotoTab` or `VideoTab`.
+
+### Upload (bytes to Storage)
+
+`PhotoTab` turns each selected file into an `uploadTask`:
+
+1. The object name is `uuidv4().substring(0, 8)` plus `_` plus the original filename. This name becomes the record `id`, so the original filename is preserved inside it.
+2. `uploadBytesResumable` transfers the original unchanged with `contentType: file.type` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded.
+3. An `UploadTracker` (`src/helpers/uploadTracker.ts`) wraps the task with atomic state transitions (`pending → uploading → completed/error/cancelled`), feeding `progressInfo` and the "Cancel all" action.
+4. On completion the download URL is resolved and a partial `PhotoType` (`id`, `url`, `size`, `email`, `nick`, `kind`) is appended to `store.uploaded` — no EXIF, headline, or `thumb` yet. The presence or absence of `thumb` is what distinguishes an unpublished queue item from a live object throughout the code.
+5. The local `File` is kept in `filesRef` and a `blob:` object URL is held in component state (never in the persisted store). Stale previews are revoked as records leave the queue.
+
+Size (`CONFIG.fileSize`) and count (`CONFIG.fileMax`) are validated in `onFileChange` and `onDrop`. Failed uploads are returned to the pending `files` list so they can be retried.
+
+### Thumbnails
+
+On the normal photo path thumbnails come from the Storage trigger, not the client: `generateThumbnailOnUpload` in `functionThumb` fires on `onObjectFinalized`, uses a `thumbnailLocks` Firestore transaction for idempotency, and streams the source through sharp to write `thumbnails/<name>_400x400.jpeg` as a 400px square cover crop (progressive JPEG, quality 85). Because the trigger is asynchronous, `saveRecord` does not wait for it — production sets a predictive URL built from the bucket and path, while development tries the real `getDownloadURL` first and falls back to the predictive URL. Only the swap path attempts a client-side canvas thumbnail first and falls back to the callable.
+
+### Publish (record to Firestore)
+
+Publishing is triggered by "Publish all" / "Publish selected" or by the per-card edit action. Both converge on `completePhoto` and then `saveRecord`.
+
+`completePhoto` enriches a queue entry. `readExif(source ?? rec.url)` prefers the local `File` so EXIF is parsed from the first few kilobytes instead of re-downloading the whole original. It extracts model and lens (resolving renames against the `Rename` collection), date components, aperture, shutter, ISO, focal length, flash, dimensions, and GPS. Date fields default to the upload time (`getDateFields(new Date())`); the EXIF `DateTimeOriginal` may overwrite them because `...exif` is spread after the date fields. The headline defaults to `CONFIG.noTitle`, `text` is `sliceSlug(headline)` for search prefixes, and a fired flash is folded into `tags`.
+
+`saveRecord` branches on `obj.thumb`:
+
+- **Has `thumb` — update path.** `setDoc(..., { merge: true })`, replace the record in `objects`, run `updateCounters(oldDoc, obj)`, and show an "updated" notification.
+- **No `thumb` — publish path.** Assign `obj.thumb`, write `Photo/{id}` with `setDoc(..., { merge: true })`, apply `bucketDiff(obj.size)`, run `updateCounters(null, obj)`, remove the record from `uploaded`, log the `published` analytics event, move the gallery to the record's date via `set({ find })`, and call `fetchRecords(true)`. The `LastRecord` snapshot listener picks up the new record automatically.
+
+The Firestore `Photo` document is what publishes the image.
+
+### Publish side effects
+
+- **Counters.** `updateCounters` diffs the counter keys derived from the `CONFIG.photo_filter` fields between the old and new record, then `batchUpdateCounters` writes `increment(±1)` to `Counter/<field>||<value>`, creating or deleting the document at zero and mirroring the change into the values store.
+- **Bucket.** `bucketDiff(size)` adjusts the aggregate `{ size, count }` and writes `Bucket/total`.
+- **Analytics.** A `published` event carries `when`, `who` (the local part of the email), `filename`, `headline`, and `kind`, loaded through a dynamic import of the analytics module.
+
+### Video
+
+`VideoTab` is a single-phase flow that uploads no bytes. It resolves a YouTube id, fetches the title through the oEmbed endpoint, and builds a record with `size: 0`. `saveVideo` sets `kind: 'video'`, derives the thumbnail from `img.youtube.com/vi/<id>/hqdefault.jpg`, writes the document, and updates counters. It does not call `bucketDiff`, because zero-byte videos do not affect bucket size.
+
+### Swap
+
+`swapRecord` replaces a file and is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`. It generates a new id, uploads the new bytes, produces and uploads a thumbnail (canvas, then callable, then predictive URL), reads EXIF from the new local `File`, and builds a new record that keeps the old headline, tags, and author. It then writes the new document, deletes the old document, and removes the old Storage object and thumbnail. Local state, counters, and the bucket are reconciled at the end. Because the new record is written before the old is deleted and Storage cleanup is best-effort, a failure mid-way can leave the new document plus the old orphaned object rather than a hole.
+
+### Delete
+
+`deleteRecord` removes the Firestore document together with the original and thumbnail Storage objects in a single `Promise.all` (Storage is skipped for videos), then reverses the counters and the bucket. It branches on `obj.thumb` the same way, so deleting an unpublished queue item never touches Storage — an uploaded but never-published file's bytes stay in Storage with no record pointing at them.
+
 ## Cloud Functions
 
 - **`functionThumb`** exports the authenticated callable `generateThumbnail` and the Storage trigger `generateThumbnailOnUpload`. It creates a 400px square `fit: cover` progressive JPEG at quality 85 under `thumbnails/`, with an `_400x400.jpeg` suffix, and uses `thumbnailLocks` to prevent duplicate processing.

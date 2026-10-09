@@ -158,6 +158,44 @@ Do not introduce documentation or code that assumes separate lowercase `users`, 
 
 A photo document follows `PhotoType` in `src/helpers/models.ts`: it includes an id, Storage URL, byte size, uploader email/nickname, optional headline/tags/search text, optional thumbnail URL/path, asset kind, and EXIF fields such as date, camera model, lens, focal length, aperture, shutter, ISO, flash, dimensions, and location.
 
+## Upload and publish flow
+
+Uploading and publishing are separate phases. Bytes are written to Cloud Storage by the upload phase; a Firestore `Photo` document written by the publish phase is what makes the image visible in the gallery. A file that is uploaded but never published is not shown anywhere and leaves an orphaned Storage object.
+
+### Upload phase
+
+`src/app/add/PhotoTab.tsx` owns the photo upload queue:
+
+- A selected file is stored under the object name `uuidv4().substring(0, 8) + '_' + file.name`. That name becomes the record `id`, so the original filename is preserved inside it.
+- `uploadBytesResumable` sends the original bytes unchanged, with the file's `contentType` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded or resized.
+- `src/helpers/uploadTracker.ts` wraps the task with atomic state transitions (`pending`, `uploading`, `completed`, `error`, `cancelled`) and drives the progress display and the cancel action.
+- On completion the download URL is resolved and a partial `PhotoType` — `id`, `url`, `size`, `email`, `nick`, and `kind` only — is appended to `store.uploaded`. It has no `thumb`, `headline`, EXIF, or search text yet.
+- Local `File` objects are retained in a ref for later EXIF reads, and a `blob:` preview URL is held in component state rather than the persisted store. Previews are revoked as records leave the queue.
+- `CONFIG.fileSize` and `CONFIG.fileMax` are enforced when files are selected or dropped, and failed uploads return to the pending file list for retry.
+
+### Thumbnails
+
+Thumbnails come from `functionThumb`, not the client, on the normal photo path. The Storage trigger `generateThumbnailOnUpload` fires on `onObjectFinalized`, guards itself with the `thumbnailLocks` collection, and writes `thumbnails/<name>_400x400.jpeg`. Because the trigger is asynchronous, `saveRecord` does not wait for it: production writes a predictive URL derived from the bucket and object path, while development tries the real download URL first. Only `swapRecord` attempts a client-side canvas thumbnail before falling back to the callable.
+
+### Publish phase
+
+Publishing is started by the "Publish all" / "Publish selected" controls or by the per-card edit action; both call `completePhoto` and then `saveRecord` in `src/stores/app/createPhotoOpsSlice.ts`.
+
+`completePhoto` reads EXIF with `readExif(source ?? rec.url)`, preferring the local `File` so the original is not re-downloaded just to parse the first few kilobytes. It extracts camera model and lens (resolving renames through the `Rename` collection), date fields, aperture, shutter, ISO, focal length, flash, dimensions, and GPS. Date fields default to the upload time and can be overwritten by the EXIF `DateTimeOriginal`. The headline defaults to `CONFIG.noTitle`, `text` is `sliceSlug(headline)`, and a fired flash is added to `tags`.
+
+`saveRecord` branches on whether `obj.thumb` is set:
+
+- **Set — update path.** `setDoc` with merge, replace the record in `objects`, diff the counters, and notify that the record was updated.
+- **Unset — publish path.** Assign the thumbnail URL, write the `Photo` document, adjust `Bucket/total`, increment the counters, drop the record from `uploaded`, log the `published` analytics event, move the gallery to the record's date, and refetch records.
+
+Publishing also updates `Counter` documents (`increment(±1)` per metadata value in `CONFIG.photo_filter`) and the `Bucket/total` aggregate.
+
+### Video, swap, and delete
+
+- `VideoTab` and `saveVideo` publish a YouTube record in a single phase: no bytes are uploaded, `size` is `0`, and the thumbnail is derived from the video id. `saveVideo` does not touch `Bucket/total`.
+- `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, uploads new bytes and a thumbnail under a new id, preserves the old headline, tags, and author, writes the new document, deletes the old document, and removes the old Storage objects. A failure part-way can leave the new document plus an orphaned old object.
+- `deleteRecord` deletes the document together with the original and thumbnail Storage objects, then reverses the counters and bucket. It branches on `thumb`, so deleting an unpublished queue item never touches Storage.
+
 ## Authentication and permissions
 
 Anonymous visitors can browse and read. Firebase Authentication uses Google sign-in. On sign-in, the app creates or loads a `User` document.

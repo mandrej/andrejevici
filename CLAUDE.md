@@ -69,6 +69,10 @@ Business logic lives in `src/helpers/`: `collections.ts`, `devices.ts`, `exif.ts
 
 The case-sensitive Firestore paths currently used by the app are `User`, `Photo`, `Counter`, `Bucket`, `Rename`, and `LastRecord`. FCM device tokens are stored in `User/{trimmed-lowercase-email}/Device`. Counter values are documents in `Counter`; they are not separate lowercase `tags`, `photographers`, `lenses`, or `models` collections.
 
+## Upload and publish
+
+Upload and publish are separate phases. `PhotoTab` uploads originals unchanged to Storage under a `uuid(8)_<original-name>` key via `uploadBytesResumable`, tracks progress with `UploadTracker`, and appends a partial record (no `thumb`) to `store.uploaded`. Publishing runs `completePhoto` (EXIF from the local `File`, headline default, search text) then `saveRecord`, which writes the `Photo` document, sets a predictive thumbnail URL (the real one is written asynchronously by `functionThumb`), updates `Counter` and `Bucket/total`, and logs analytics. The presence of `thumb` distinguishes a live record (update path) from an unpublished queue item (publish path). `saveVideo` publishes a YouTube record with `size: 0` and no Storage object; `swapRecord` uploads and republishes in one flow; `deleteRecord` removes the document plus the original and thumbnail objects.
+
 ## Authentication and permissions
 
 Anonymous visitors can read and browse. Firebase sign-in creates or loads a `User` document. The client-side `canContribute()` gate requires a signed-in user with a non-empty nickname other than `???` and either `isAuthorized` or `isAdmin`. `/admin` additionally requires `isAdmin`; record edits/deletes check admin status or uploader email.
