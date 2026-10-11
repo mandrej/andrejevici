@@ -24,7 +24,6 @@ import {
   formatDatum,
   getDateFields,
   dummy,
-  createThumbnailBlob,
   isAuthorOrAdmin,
 } from '@/helpers'
 import notify from '@/helpers/notify'
@@ -34,7 +33,6 @@ import { useUserStore } from '@/stores/userStore'
 import type { PhotoType, ExifType } from '@/helpers/models'
 import { photoCollection, lastRecordCollection } from '@/helpers/collections'
 import readExif from '@/helpers/exif'
-import { generateThumbnail } from '@/helpers/remedy'
 import type { AppStore, PhotoOpsSliceState, PhotoOpsSliceActions } from '@/stores/app/types'
 
 /** Fire-and-forget analytics; the SDK is loaded on demand so it stays off the first paint. */
@@ -53,6 +51,38 @@ const ignoreMissing = (promise: Promise<void>): Promise<void> =>
   promise.catch((err: unknown) => {
     if (!isObjectNotFound(err)) throw err
   })
+
+/** How long to wait for the thumbnail trigger in development (12 × 500ms). */
+const THUMB_WAIT_ATTEMPTS = 12
+const THUMB_WAIT_INTERVAL = 500
+
+/**
+ * Resolves the thumbnail URL to store on a record.
+ *
+ * The `generateThumbnailOnUpload` trigger owns the bytes and lands the object shortly after
+ * the original — reliably, but not instantly, so asking for it immediately after an upload
+ * always loses that race. Production stores the predictive public URL (Storage serves reads
+ * without a token), which needs no waiting. Development cannot use that URL: the emulator
+ * serves objects from its own host behind a download token, so the predictive URL points at
+ * the real bucket and 404s — a card whose thumbnail 404s shows the broken-image overlay,
+ * which also sits over the image and swallows clicks. Wait for the trigger there instead.
+ */
+const resolveThumbUrl = async (filename: string): Promise<string> => {
+  const path = thumbName(filename)
+  if (!path || process.env.NODE_ENV !== 'development') return thumbUrl(filename)
+
+  for (let attempt = 0; attempt < THUMB_WAIT_ATTEMPTS; attempt++) {
+    try {
+      return await getDownloadURL(storageRef(storage(), path))
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, THUMB_WAIT_INTERVAL))
+    }
+  }
+
+  // Last resort only: generation is best-effort and must never fail an upload or a swap.
+  console.warn(`DEV: thumbnail not ready for ${path}, using predictive URL`)
+  return thumbUrl(filename)
+}
 
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
   if (!snapshot.docs.length) return null
@@ -126,17 +156,7 @@ export const createPhotoOpsSlice: StateCreator<
       valuesStore.updateCounters(oldDoc || obj, obj)
       notify({ type: 'positive', message: `${obj.id} updated`, icon: 'sym_r_check' })
     } else {
-      if (process.env.NODE_ENV === 'development') {
-        try {
-          const thumbRef = storageRef(storage(), thumbName(obj.id))
-          obj.thumb = await getDownloadURL(thumbRef)
-        } catch (e) {
-          console.warn('DEV: Thumbnail not yet ready, using predictive URL', e)
-          obj.thumb = thumbUrl(obj.id)
-        }
-      } else {
-        obj.thumb = thumbUrl(obj.id)
-      }
+      obj.thumb = await resolveThumbUrl(obj.id)
 
       await setDoc(docRef, obj, { merge: true })
       bucketStore.bucketDiff(obj.size)
@@ -288,35 +308,10 @@ export const createPhotoOpsSlice: StateCreator<
       })
       const newDownloadUrl = await getDownloadURL(fileRef)
 
-      // 3. Make and upload thumbnail
-      let newThumbUrl = ''
-      try {
-        const thumbBlob = await createThumbnailBlob(newFile, CONFIG.thumbSize)
-        const thumbPath = thumbName(newFilename)
-        const thumbStoRef = storageRef(storage(), thumbPath)
-        await uploadBytes(thumbStoRef, thumbBlob, {
-          contentType: 'image/jpeg',
-          cacheControl: CONFIG.cache_control,
-        })
-        newThumbUrl = await getDownloadURL(thumbStoRef)
-      } catch (thumbErr) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(
-            'Client thumbnail creation failed, trying Cloud Function fallback:',
-            thumbErr,
-          )
-        }
-        try {
-          const res = await generateThumbnail(newFilename)
-          const thumbRef = storageRef(storage(), res.data.filePath)
-          newThumbUrl = await getDownloadURL(thumbRef)
-        } catch (cfErr) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('Cloud Function thumbnail failed, falling back to predictive URL:', cfErr)
-          }
-          newThumbUrl = thumbUrl(newFilename)
-        }
-      }
+      // 3. Thumbnail link. The `generateThumbnailOnUpload` Storage trigger owns the bytes and
+      // fires as soon as the new original lands — after this line, typically — so wait for it
+      // rather than storing a URL that cannot resolve.
+      const newThumbUrl = await resolveThumbUrl(newFilename)
 
       // 4. Read EXIF from the local file (no re-download of the just-uploaded image)
       let exif: ExifType | null = null

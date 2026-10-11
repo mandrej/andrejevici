@@ -4,7 +4,7 @@ Comprehensive guidance for contributors and AI agents working on Andrejevici.
 
 ## Project overview
 
-Andrejevici is a Next.js photo and video album PWA. The client supports gallery browsing, search and filtering, EXIF metadata extraction, media uploads, metadata editing, thumbnail generation, Firebase Authentication, FCM notifications, and an admin interface.
+Andrejevici is a Next.js photo and video album PWA. The client supports gallery browsing, search and filtering, EXIF metadata extraction, media uploads, metadata editing, Firebase Authentication, FCM notifications, and an admin interface.
 
 ## Technology and prerequisites
 
@@ -170,17 +170,17 @@ Uploading and publishing are separate phases. Bytes are written to Cloud Storage
 - `uploadBytesResumable` sends the original bytes unchanged, with the file's `contentType` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded or resized.
 - `src/helpers/uploadTracker.ts` wraps the task with atomic state transitions (`pending`, `uploading`, `completed`, `error`, `cancelled`) and drives the progress display and the cancel action.
 - On completion the download URL is resolved and a partial `PhotoType` — `id`, `url`, `size`, `email`, `nick`, and `kind` only — is appended to `store.uploaded`. It has no `thumb`, `headline`, EXIF, or search text yet.
-- Thumbnail generation is started for the finished file at the same moment, without being awaited, so the queue card appears immediately.
+- The Storage trigger `generateThumbnailOnUpload` starts generating the thumbnail for the finished file at the same moment, without the client waiting for it, so the queue card appears immediately.
 - Local `File` objects are retained in a ref for later EXIF reads, and a `blob:` preview URL is held in component state rather than the persisted store. Previews are revoked as records leave the queue.
 - `CONFIG.fileSize` and `CONFIG.fileMax` are enforced when files are selected or dropped, and failed uploads return to the pending file list for retry.
 
 ### Thumbnails
 
-The client builds the thumbnail as soon as an upload finishes. `PhotoTab` crops the local `File` to a `CONFIG.thumbSize` square on a canvas, uploads it to the canonical `thumbnails/<name>_400x400.jpeg` object, and falls back to the `generateThumbnail` callable if the canvas crop or the upload fails; `swapRecord` does the same for a replaced image. The object path comes from `thumbName()`, so it is exactly where publishing looks for it.
+The server owns thumbnail generation for uploads. `functionThumb`'s Storage trigger `generateThumbnailOnUpload` fires on `onObjectFinalized` as soon as an original lands, guards itself with the `thumbnailLocks` collection, streams the source through sharp, and writes the canonical `thumbnails/<name>_400x400.jpeg` object — the path `thumbName()` derives and publishing looks for.
 
-Generation is best-effort and never blocks the queue or fails an upload. `saveRecord` still does not wait for a thumbnail: production writes a predictive URL derived from the bucket and object path (Storage allows public reads), while development resolves the real download URL first.
+`PhotoTab` deliberately does not build or upload a thumbnail. A canvas crop there would race the trigger for the same object and always lose it, so the browser-side work would be discarded. `swapRecord` follows the same rule: it waits for the trigger's object and lets the server write the bytes.
 
-`functionThumb` remains the server-side backstop. The Storage trigger `generateThumbnailOnUpload` fires on `onObjectFinalized` for any uploaded original, guards itself with the `thumbnailLocks` collection, and writes the same path, so originals uploaded outside the client are still covered.
+Generation is best-effort and never blocks the queue or fails an upload. `saveRecord` and `swapRecord` both resolve the thumbnail URL through `resolveThumbUrl` in `createPhotoOpsSlice.ts`. Production stores the predictive URL derived from the bucket and object path, which Storage serves without a token. Development polls the real `getDownloadURL` for up to about six seconds instead: the emulator serves objects from its own host behind a download token, so the predictive URL would 404 against the real bucket, and a thumbnail that 404s shows the broken-image overlay, which also sits over the image and swallows the card's click. An original uploaded outside the client is covered by the same trigger.
 
 ### Publish phase
 
@@ -198,7 +198,7 @@ Publishing also updates `Counter` documents (`increment(±1)` per metadata value
 ### Video, swap, and delete
 
 - `VideoTab` and `saveVideo` publish a YouTube record in a single phase: no bytes are uploaded, `size` is `0`, and the thumbnail is derived from the video id. `saveVideo` does not touch `Bucket/total`.
-- `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, uploads new bytes and a thumbnail under a new id, preserves the old headline, tags, and author, writes the new document, deletes the old document, and removes the old Storage objects. A failure part-way can leave the new document plus an orphaned old object.
+- `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, uploads new bytes under a new id, preserves the old headline, tags, and author, writes the new document, deletes the old document, and removes the old Storage objects. It resolves the thumbnail URL through `resolveThumbUrl` rather than uploading one, leaving the bytes to `generateThumbnailOnUpload`. A failure part-way can leave the new document plus an orphaned old object.
 - `deleteRecord` deletes the document together with the original and thumbnail Storage objects, then reverses the counters and bucket. A Storage object that is already missing is tolerated, so deleting a queued item or a record whose thumbnail never materialized does not error. It branches on `thumb` only for local state: published records leave `objects`, queued ones leave `uploaded`.
 
 ## Authentication and permissions
