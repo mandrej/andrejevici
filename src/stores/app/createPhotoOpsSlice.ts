@@ -42,6 +42,18 @@ const logAnalyticsEvent = (eventName: string, eventParams?: Record<string, unkno
   void import('@/analytics').then(({ trackEvent }) => trackEvent(eventName, eventParams))
 }
 
+/** True when a Storage delete failed because the object was already gone. */
+const isObjectNotFound = (err: unknown): boolean =>
+  typeof err === 'object' &&
+  err !== null &&
+  (err as { code?: unknown }).code === 'storage/object-not-found'
+
+/** Deleting an object that is already gone is a no-op; anything else still fails. */
+const ignoreMissing = (promise: Promise<void>): Promise<void> =>
+  promise.catch((err: unknown) => {
+    if (!isObjectNotFound(err)) throw err
+  })
+
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
   if (!snapshot.docs.length) return null
   const docSnap = snapshot.docs[0]
@@ -205,9 +217,14 @@ export const createPhotoOpsSlice: StateCreator<
       const promises: Promise<void>[] = [deleteDoc(docRef)]
       if (obj.kind !== 'video') {
         const stoRef = storageRef(storage(), obj.id)
-        const thumbRef = storageRef(storage(), thumbName(obj.id))
-        promises.push(deleteObject(stoRef))
-        promises.push(deleteObject(thumbRef))
+        // Tolerate a missing object: a legacy record, or an image whose thumbnail
+        // generation failed, should still be deletable without a spurious error.
+        promises.push(ignoreMissing(deleteObject(stoRef)))
+
+        const thumbPath = thumbName(obj.id)
+        if (thumbPath) {
+          promises.push(ignoreMissing(deleteObject(storageRef(storage(), thumbPath))))
+        }
       }
       await Promise.all(promises)
     } catch (err) {

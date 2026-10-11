@@ -9,7 +9,7 @@ Andrejevici is a photo and video album Progressive Web App for browsing, searchi
 - Transliteration and normalized search text for Cyrillic and Latin input.
 - Metadata editing, tag management, and administrator repair tools.
 - Firebase Authentication with application-level contributor and administrator permissions.
-- Cloud thumbnail generation and Firebase Cloud Messaging notifications.
+- Client-side thumbnail generation on upload, backed by Cloud Function thumbnail generation, and Firebase Cloud Messaging notifications.
 - Full-screen media carousel powered by `yet-another-react-lightbox`.
 - Light/dark themes via `next-themes` and a Workbox-powered service worker for generated static assets, fonts, and images.
 
@@ -180,12 +180,17 @@ Uploading and publishing are two separate phases. Bytes go to Cloud Storage firs
 3. An `UploadTracker` (`src/helpers/uploadTracker.ts`) wraps the task with atomic state transitions (`pending → uploading → completed/error/cancelled`), feeding `progressInfo` and the "Cancel all" action.
 4. On completion the download URL is resolved and a partial `PhotoType` (`id`, `url`, `size`, `email`, `nick`, `kind`) is appended to `store.uploaded` — no EXIF, headline, or `thumb` yet. The presence or absence of `thumb` is what distinguishes an unpublished queue item from a live object throughout the code.
 5. The local `File` is kept in `filesRef` and a `blob:` object URL is held in component state (never in the persisted store). Stale previews are revoked as records leave the queue.
+6. Thumbnail generation starts for the finished file straight away, without being awaited, so a slow or failing thumbnail never holds up the queue.
 
 Size (`CONFIG.fileSize`) and count (`CONFIG.fileMax`) are validated in `onFileChange` and `onDrop`. Failed uploads are returned to the pending `files` list so they can be retried.
 
 ### Thumbnails
 
-On the normal photo path thumbnails come from the Storage trigger, not the client: `generateThumbnailOnUpload` in `functionThumb` fires on `onObjectFinalized`, uses a `thumbnailLocks` Firestore transaction for idempotency, and streams the source through sharp to write `thumbnails/<name>_400x400.jpeg` as a 400px square cover crop (progressive JPEG, quality 85). Because the trigger is asynchronous, `saveRecord` does not wait for it — production sets a predictive URL built from the bucket and path, while development tries the real `getDownloadURL` first and falls back to the predictive URL. Only the swap path attempts a client-side canvas thumbnail first and falls back to the callable.
+The client builds the thumbnail as soon as an upload finishes. `PhotoTab` crops the local `File` to a `CONFIG.thumbSize` square on a canvas, uploads it to the canonical `thumbnails/<name>_400x400.jpeg` object (the path `thumbName()` derives and publishing expects), and falls back to the `generateThumbnail` callable when the canvas crop or the upload fails; `swapRecord` follows the same order for a replaced image. Generation is best-effort — it never blocks the queue and never fails an upload.
+
+`saveRecord` still does not wait for a thumbnail. Production sets a predictive URL built from the bucket and path (Storage allows public reads), while development tries the real `getDownloadURL` first and falls back to the predictive URL.
+
+`functionThumb` remains the server-side backstop. `generateThumbnailOnUpload` fires on `onObjectFinalized` for any uploaded original, uses a `thumbnailLocks` Firestore transaction for idempotency, and streams the source through sharp to write the same path as a 400px square cover crop (progressive JPEG, quality 85), so originals uploaded outside the client are covered too.
 
 ### Publish (record to Firestore)
 
@@ -216,7 +221,7 @@ The Firestore `Photo` document is what publishes the image.
 
 ### Delete
 
-`deleteRecord` removes the Firestore document together with the original and thumbnail Storage objects in a single `Promise.all` (Storage is skipped for videos), then reverses the counters and the bucket. It branches on `obj.thumb` the same way, so deleting an unpublished queue item never touches Storage — an uploaded but never-published file's bytes stay in Storage with no record pointing at them.
+`deleteRecord` removes the Firestore document together with the original and thumbnail Storage objects in a single `Promise.all` (Storage is skipped for videos), then reverses the counters and the bucket. A Storage object that is already missing is tolerated, so deleting a queued item or a legacy record whose thumbnail never materialized does not error. It branches on `obj.thumb` only for local state: a published record leaves `objects`, a queued one leaves `uploaded`. Either way the original's bytes are removed, so deleting from the queue does not leave an orphaned object behind.
 
 ## Cloud Functions
 

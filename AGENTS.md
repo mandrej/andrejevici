@@ -170,12 +170,17 @@ Uploading and publishing are separate phases. Bytes are written to Cloud Storage
 - `uploadBytesResumable` sends the original bytes unchanged, with the file's `contentType` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded or resized.
 - `src/helpers/uploadTracker.ts` wraps the task with atomic state transitions (`pending`, `uploading`, `completed`, `error`, `cancelled`) and drives the progress display and the cancel action.
 - On completion the download URL is resolved and a partial `PhotoType` — `id`, `url`, `size`, `email`, `nick`, and `kind` only — is appended to `store.uploaded`. It has no `thumb`, `headline`, EXIF, or search text yet.
+- Thumbnail generation is started for the finished file at the same moment, without being awaited, so the queue card appears immediately.
 - Local `File` objects are retained in a ref for later EXIF reads, and a `blob:` preview URL is held in component state rather than the persisted store. Previews are revoked as records leave the queue.
 - `CONFIG.fileSize` and `CONFIG.fileMax` are enforced when files are selected or dropped, and failed uploads return to the pending file list for retry.
 
 ### Thumbnails
 
-Thumbnails come from `functionThumb`, not the client, on the normal photo path. The Storage trigger `generateThumbnailOnUpload` fires on `onObjectFinalized`, guards itself with the `thumbnailLocks` collection, and writes `thumbnails/<name>_400x400.jpeg`. Because the trigger is asynchronous, `saveRecord` does not wait for it: production writes a predictive URL derived from the bucket and object path, while development tries the real download URL first. Only `swapRecord` attempts a client-side canvas thumbnail before falling back to the callable.
+The client builds the thumbnail as soon as an upload finishes. `PhotoTab` crops the local `File` to a `CONFIG.thumbSize` square on a canvas, uploads it to the canonical `thumbnails/<name>_400x400.jpeg` object, and falls back to the `generateThumbnail` callable if the canvas crop or the upload fails; `swapRecord` does the same for a replaced image. The object path comes from `thumbName()`, so it is exactly where publishing looks for it.
+
+Generation is best-effort and never blocks the queue or fails an upload. `saveRecord` still does not wait for a thumbnail: production writes a predictive URL derived from the bucket and object path (Storage allows public reads), while development resolves the real download URL first.
+
+`functionThumb` remains the server-side backstop. The Storage trigger `generateThumbnailOnUpload` fires on `onObjectFinalized` for any uploaded original, guards itself with the `thumbnailLocks` collection, and writes the same path, so originals uploaded outside the client are still covered.
 
 ### Publish phase
 
@@ -194,7 +199,7 @@ Publishing also updates `Counter` documents (`increment(±1)` per metadata value
 
 - `VideoTab` and `saveVideo` publish a YouTube record in a single phase: no bytes are uploaded, `size` is `0`, and the thumbnail is derived from the video id. `saveVideo` does not touch `Bucket/total`.
 - `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, uploads new bytes and a thumbnail under a new id, preserves the old headline, tags, and author, writes the new document, deletes the old document, and removes the old Storage objects. A failure part-way can leave the new document plus an orphaned old object.
-- `deleteRecord` deletes the document together with the original and thumbnail Storage objects, then reverses the counters and bucket. It branches on `thumb`, so deleting an unpublished queue item never touches Storage.
+- `deleteRecord` deletes the document together with the original and thumbnail Storage objects, then reverses the counters and bucket. A Storage object that is already missing is tolerated, so deleting a queued item or a record whose thumbnail never materialized does not error. It branches on `thumb` only for local state: published records leave `objects`, queued ones leave `uploaded`.
 
 ## Authentication and permissions
 

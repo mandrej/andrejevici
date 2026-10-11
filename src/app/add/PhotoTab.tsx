@@ -6,15 +6,17 @@ import { storage } from '@/firebase'
 import {
   ref as storageRef,
   uploadBytesResumable,
+  uploadBytes,
   getDownloadURL,
   type UploadTaskSnapshot,
 } from 'firebase/storage'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useUserStore } from '@/stores/userStore'
-import { fakeHistory, formatBytes } from '@/helpers'
+import { createThumbnailBlob, fakeHistory, formatBytes, thumbName } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
+import { generateThumbnail } from '@/helpers/remedy'
 import PictureCard from '@/components/PictureCard'
 import { UploadTracker } from '@/helpers/uploadTracker'
 import AppButton from '@/components/atoms/AppButton'
@@ -27,6 +29,38 @@ import type { PhotoType } from '@/helpers/models'
 interface ValidationErrors {
   file: File
   failedPropValidation: string
+}
+
+/**
+ * Builds the square thumbnail for a file that has just finished uploading and writes it to
+ * the canonical `thumbnails/<name>_400x400.jpeg` object, where publishing expects to find it.
+ *
+ * The local `File` is the cheapest source: a canvas crop matches what `functionThumb`
+ * produces without a Cloud Function round-trip. Failures are non-fatal — the callable is
+ * tried next and `saveRecord` still falls back to the predictive URL, so thumbnail trouble
+ * never blocks or rejects an upload.
+ */
+const makeThumbnail = async (file: File, filename: string): Promise<void> => {
+  try {
+    const blob = await createThumbnailBlob(file, CONFIG.thumbSize)
+    await uploadBytes(storageRef(storage(), thumbName(filename)), blob, {
+      contentType: 'image/jpeg',
+      cacheControl: CONFIG.cache_control,
+    })
+    return
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Client thumbnail creation failed, trying Cloud Function fallback:', err)
+    }
+  }
+
+  try {
+    await generateThumbnail(filename)
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Cloud Function thumbnail failed; leaving it to the Storage trigger:', err)
+    }
+  }
 }
 
 export const PhotoTab: React.FC = () => {
@@ -207,6 +241,12 @@ export const PhotoTab: React.FC = () => {
                 kind: 'photo',
               }
               setUploaded([...useAppStore.getState().uploaded, data])
+
+              // Kick off thumbnail generation now that the original is in Storage. It is
+              // deliberately not awaited: the queued card appears at once and a slow or
+              // failing thumbnail must not hold up the upload.
+              void makeThumbnail(file, filename)
+
               resolve(filename)
             })
             .catch((err) => {
