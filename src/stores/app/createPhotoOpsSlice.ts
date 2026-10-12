@@ -17,6 +17,7 @@ import CONFIG from '@/config'
 import {
   thumbName,
   thumbUrl,
+  createThumbnailBlob,
   removeFromList,
   replaceInList,
   sliceSlug,
@@ -66,6 +67,9 @@ const THUMB_WAIT_INTERVAL = 500
  * serves objects from its own host behind a download token, so the predictive URL points at
  * the real bucket and 404s — a card whose thumbnail 404s shows the broken-image overlay,
  * which also sits over the image and swallows clicks. Wait for the trigger there instead.
+ *
+ * Only `saveRecord` uses this. `swapRecord` writes the predictive URL at once and relies on
+ * its client-side preview, so it never waits on the trigger.
  */
 const resolveThumbUrl = async (filename: string): Promise<string> => {
   const path = thumbName(filename)
@@ -82,6 +86,37 @@ const resolveThumbUrl = async (filename: string): Promise<string> => {
   // Last resort only: generation is best-effort and must never fail an upload or a swap.
   console.warn(`DEV: thumbnail not ready for ${path}, using predictive URL`)
   return thumbUrl(filename)
+}
+
+/** True for a browser-local preview URL (`blob:`/`data:`), which must never reach Firestore. */
+const isDisplayThumb = (url: string | undefined): boolean =>
+  typeof url === 'string' && (url.startsWith('blob:') || url.startsWith('data:'))
+
+/**
+ * Builds a display-only thumbnail URL from a local File.
+ *
+ * After a swap the card must paint the new image immediately, but the canonical thumbnail is
+ * written by the `generateThumbnailOnUpload` trigger and is not addressable (or not yet
+ * addressable) at that moment. A canvas crop of the local File gives the card something to show
+ * right away, while the server still generates the real object. The blob URL is browser-local,
+ * so it is used for local state only — `saveRecord` resolves the canonical URL if it ever sees
+ * one, so a preview can never be persisted.
+ */
+const makeDisplayThumb = async (file: File): Promise<string> => {
+  try {
+    const blob = await createThumbnailBlob(file, CONFIG.thumbSize)
+    return URL.createObjectURL(blob)
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Client preview thumbnail failed; showing the local file instead:', err)
+    }
+    // The untouched local File is still a valid object URL for a display-only preview.
+    try {
+      return URL.createObjectURL(file)
+    } catch {
+      return ''
+    }
+  }
 }
 
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
@@ -142,6 +177,12 @@ export const createPhotoOpsSlice: StateCreator<
     const userStore = useUserStore.getState()
 
     if (!obj.kind) obj.kind = 'photo'
+
+    // A swap shows a client-side preview (`blob:`) for display only. Resolve the server-owned
+    // URL before writing, so an edit of a just-swapped record never persists a local URL.
+    if (isDisplayThumb(obj.thumb)) {
+      obj.thumb = await resolveThumbUrl(obj.id)
+    }
 
     if (obj.thumb) {
       const oldDoc = get().objects.find((x) => x.id === obj.id)
@@ -308,10 +349,17 @@ export const createPhotoOpsSlice: StateCreator<
       })
       const newDownloadUrl = await getDownloadURL(fileRef)
 
-      // 3. Thumbnail link. The `generateThumbnailOnUpload` Storage trigger owns the bytes and
-      // fires as soon as the new original lands — after this line, typically — so wait for it
-      // rather than storing a URL that cannot resolve.
-      const newThumbUrl = await resolveThumbUrl(newFilename)
+      // 3. Persisted thumbnail URL. The `generateThumbnailOnUpload` Storage trigger owns the
+      // canonical bytes and writes them shortly after the new original lands. The swap does not
+      // wait for the trigger: it stores the predictive public URL, and the client-side preview
+      // below is what the card paints until the next record fetch. Production Storage serves the
+      // predictive URL without a token.
+      const newThumbUrl = thumbUrl(newFilename)
+
+      // 3b. Display-only preview. The card must show the new image as soon as the swap returns,
+      // so paint it from the local File while the server generates the real thumbnail. This blob
+      // URL stays in local state and is never written to Firestore.
+      const displayThumbUrl = await makeDisplayThumb(newFile)
 
       // 4. Read EXIF from the local file (no re-download of the just-uploaded image)
       let exif: ExifType | null = null
@@ -349,9 +397,16 @@ export const createPhotoOpsSlice: StateCreator<
         ...(oldRec.loc && !exif?.loc ? { loc: oldRec.loc } : {}),
       }
 
-      // 6. Save new record to Firestore
+      // 6. Save new record to Firestore. It keeps the server thumbnail URL; the client preview
+      // below only ever exists in local state.
       const newDocRef = doc(photoCollection(), newRecord.id)
       await setDoc(newDocRef, newRecord)
+
+      // Local copy the gallery paints from: identical to the persisted record except that it
+      // carries the client-side preview so the swapped image shows immediately.
+      const localRecord: PhotoType = displayThumbUrl
+        ? { ...newRecord, thumb: displayThumbUrl }
+        : newRecord
 
       // 7. Delete old record from Firestore
       const oldDocRef = doc(photoCollection(), oldRec.id)
@@ -379,20 +434,20 @@ export const createPhotoOpsSlice: StateCreator<
       }
       await Promise.allSettled(oldStoragePromises)
 
-      // 9. Update local state
+      // 9. Update local state with the preview-bearing copy
       set((state) => {
         const list = [...state.objects]
         const idx = list.findIndex((x) => x.id === oldRec.id)
         if (idx !== -1) {
-          list[idx] = newRecord
+          list[idx] = localRecord
         } else {
-          list.unshift(newRecord)
+          list.unshift(localRecord)
         }
         return {
           objects: list,
           selected: state.selected.filter((x) => x.id !== oldRec.id),
-          currentEdit: state.currentEdit?.id === oldRec.id ? newRecord : state.currentEdit,
-          lastRecord: state.lastRecord?.id === oldRec.id ? newRecord : state.lastRecord,
+          currentEdit: state.currentEdit?.id === oldRec.id ? localRecord : state.currentEdit,
+          lastRecord: state.lastRecord?.id === oldRec.id ? localRecord : state.lastRecord,
         }
       })
 
@@ -425,7 +480,8 @@ export const createPhotoOpsSlice: StateCreator<
         spinner: false,
       })
 
-      return newRecord
+      // 12. Return the local copy: it carries the preview so the caller's card paints at once.
+      return localRecord
     } finally {
       set({ busy: false })
     }
