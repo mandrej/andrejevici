@@ -17,7 +17,7 @@ import CONFIG from '@/config'
 import {
   thumbName,
   thumbUrl,
-  createThumbnailBlob,
+  createThumbnailUrl,
   removeFromList,
   replaceInList,
   sliceSlug,
@@ -91,33 +91,6 @@ const resolveThumbUrl = async (filename: string): Promise<string> => {
 /** True for a browser-local preview URL (`blob:`/`data:`), which must never reach Firestore. */
 const isDisplayThumb = (url: string | undefined): boolean =>
   typeof url === 'string' && (url.startsWith('blob:') || url.startsWith('data:'))
-
-/**
- * Builds a display-only thumbnail URL from a local File.
- *
- * After a swap the card must paint the new image immediately, but the canonical thumbnail is
- * written by the `generateThumbnailOnUpload` trigger and is not addressable (or not yet
- * addressable) at that moment. A canvas crop of the local File gives the card something to show
- * right away, while the server still generates the real object. The blob URL is browser-local,
- * so it is used for local state only — `saveRecord` resolves the canonical URL if it ever sees
- * one, so a preview can never be persisted.
- */
-const makeDisplayThumb = async (file: File): Promise<string> => {
-  try {
-    const blob = await createThumbnailBlob(file, CONFIG.thumbSize)
-    return URL.createObjectURL(blob)
-  } catch (err) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Client preview thumbnail failed; showing the local file instead:', err)
-    }
-    // The untouched local File is still a valid object URL for a display-only preview.
-    try {
-      return URL.createObjectURL(file)
-    } catch {
-      return ''
-    }
-  }
-}
 
 const getRec = (snapshot: { docs: Array<{ id: string; data: () => unknown }> }) => {
   if (!snapshot.docs.length) return null
@@ -359,7 +332,7 @@ export const createPhotoOpsSlice: StateCreator<
       // 3b. Display-only preview. The card must show the new image as soon as the swap returns,
       // so paint it from the local File while the server generates the real thumbnail. This blob
       // URL stays in local state and is never written to Firestore.
-      const displayThumbUrl = await makeDisplayThumb(newFile)
+      const displayThumbUrl = await createThumbnailUrl(newFile)
 
       // 4. Read EXIF from the local file (no re-download of the just-uploaded image)
       let exif: ExifType | null = null

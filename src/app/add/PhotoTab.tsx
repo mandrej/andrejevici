@@ -12,7 +12,7 @@ import {
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useUserStore } from '@/stores/userStore'
-import { fakeHistory, formatBytes } from '@/helpers'
+import { createThumbnailUrl, fakeHistory, formatBytes } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import PictureCard from '@/components/PictureCard'
@@ -31,8 +31,11 @@ interface ValidationErrors {
 
 // Thumbnails are owned by the server: `functionThumb`'s `generateThumbnailOnUpload` Storage
 // trigger fires as soon as an original lands and writes `thumbnails/<name>_400x400.jpeg`.
-// The client deliberately does not build or upload one — a canvas crop here would race the
-// trigger for the same object and always lose it, so the work would be thrown away.
+// The client therefore never uploads a thumbnail — a canvas crop sent to that same object would
+// race the trigger and lose. It does crop each finished upload into a display-only
+// `CONFIG.thumbSize` thumbnail, which is what the queue card and the edit dialog paint from:
+// neither should decode a full-resolution original. That preview lives in component state, is
+// never persisted, and is superseded by the server thumbnail once the record is published.
 
 export const PhotoTab: React.FC = () => {
   const uploaded = useAppStore((state) => state.uploaded)
@@ -191,8 +194,14 @@ export const PhotoTab: React.FC = () => {
           reject(new Error(filename))
         },
         () => {
+          // Crop the finished upload into a display thumbnail now, alongside the download-URL
+          // lookup: the canvas work is local, so it overlaps that round trip. It is never
+          // uploaded and never on the upload's critical path — the card is appended once it has
+          // a small preview to paint, and `createThumbnailUrl` falls back to the local file.
+          const thumbnailPromise = createThumbnailUrl(file, CONFIG.thumbSize)
+
           getDownloadURL(uploadTaskObj.snapshot.ref)
-            .then((downloadURL) => {
+            .then(async (downloadURL) => {
               tracker.complete(downloadURL)
               const nextProgress = { ...useAppStore.getState().progressInfo }
               delete nextProgress[filename]
@@ -201,7 +210,8 @@ export const PhotoTab: React.FC = () => {
               setActiveTrackerNames(Array.from(trackersRef.current.keys()))
 
               filesRef.current.set(filename, file)
-              setPreviews((prev) => ({ ...prev, [filename]: URL.createObjectURL(file) }))
+              const preview = await thumbnailPromise
+              if (preview) setPreviews((prev) => ({ ...prev, [filename]: preview }))
 
               const data: PhotoType = {
                 id: filename,
@@ -341,7 +351,10 @@ export const PhotoTab: React.FC = () => {
         (currentEdit.kind === 'video' ? (
           <EditVideoRecord rec={currentEdit} />
         ) : (
-          <EditPhotoRecord rec={currentEdit} />
+          // Paint the dialog from the client-side thumbnail of the just-uploaded File: a queued
+          // record has no `thumb` yet, so without this the edit view would download and decode
+          // the full-resolution original.
+          <EditPhotoRecord rec={currentEdit} previewUrl={previews[currentEdit.id]} />
         ))}
 
       {/* File upload form */}

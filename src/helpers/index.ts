@@ -284,8 +284,9 @@ export const thumbUrl = (filename: string) => {
 /**
  * Creates a resized, cropped square thumbnail Blob from an image File using HTML Canvas.
  *
- * This exists only for local display: `swapRecord` paints the just-swapped card from the local
- * `File` while the server-owned `generateThumbnailOnUpload` trigger produces the canonical
+ * This exists only for local display: `PhotoTab` paints the upload queue and the edit dialog
+ * from the local `File`, and `swapRecord` paints the just-swapped card, while the server-owned
+ * `generateThumbnailOnUpload` trigger produces the canonical
  * `thumbnails/<name>_400x400.jpeg` object. The returned Blob is never uploaded and its object
  * URL must never be persisted — `saveRecord` resolves the server URL for such previews.
  *
@@ -336,6 +337,42 @@ export const createThumbnailBlob = (
     }
     img.src = url
   })
+}
+
+/**
+ * Builds a display-only object URL for the square thumbnail of a local `File`.
+ *
+ * The crop is local work: it gives the upload queue and the edit dialog a `CONFIG.thumbSize`
+ * image to paint instead of a full-resolution original, which is what keeps rendering fast
+ * while a record is still queued. The URL is browser-local and must never be persisted — the
+ * server-owned `generateThumbnailOnUpload` trigger still produces the canonical object, and a
+ * record only ever stores that server URL.
+ *
+ * Falls back to the untouched `File` when the crop fails, and to an empty string when even an
+ * object URL cannot be created, so a caller can treat the result as best-effort.
+ *
+ * @param file - The source image File.
+ * @param size - The target square dimension in pixels (defaults to CONFIG.thumbSize or 400).
+ * @returns A Promise resolving to an object URL, or an empty string on total failure.
+ */
+export const createThumbnailUrl = async (
+  file: File,
+  size: number = CONFIG.thumbSize || 400,
+): Promise<string> => {
+  try {
+    const blob = await createThumbnailBlob(file, size)
+    return URL.createObjectURL(blob)
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Client thumbnail failed; showing the local file instead:', err)
+    }
+    // The untouched local File is still a valid object URL for a display-only preview.
+    try {
+      return URL.createObjectURL(file)
+    } catch {
+      return ''
+    }
+  }
 }
 
 /**

@@ -18,10 +18,17 @@ import { useEditRecord } from '@/hooks/useEditRecord'
 
 interface EditPhotoRecordProps {
   rec: PhotoType
+  /**
+   * Browser-local object URL to paint instead of the record's own image, used while a record has
+   * no server `thumb` yet — the upload queue hands over its client-side thumbnail here so the
+   * dialog opens on a small image rather than the full-resolution original. Display only: it is
+   * never saved, and `saveRecord` resolves the canonical URL for any record that carries one.
+   */
+  previewUrl?: string
   onEditOk?: (id: string) => void
 }
 
-export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk }) => {
+export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, previewUrl, onEditOk }) => {
   const {
     showEdit,
     setShowEdit,
@@ -41,7 +48,9 @@ export const EditPhotoRecord: React.FC<EditPhotoRecordProps> = ({ rec, onEditOk 
   } = useEditRecord({ rec })
 
   const [imgError, setImgError] = useState(false)
-  const thumbUrl = tmp.thumb || tmp.url
+  // The server thumbnail wins when the record has one; a client-side preview is only a stand-in
+  // for a record that is still unpublished, whose fallback would be the full-size original.
+  const thumbUrl = tmp.thumb || previewUrl || tmp.url
 
   const getExif = async () => {
     const exif = await readExif(tmp.url)
