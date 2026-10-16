@@ -1,6 +1,10 @@
 import type { ValuesState, PhotoType } from '@/helpers/models'
 
-export interface ValuesSliceState extends ValuesState {}
+export interface ValuesSliceState extends ValuesState {
+  /** True once the first `fetchValues` has settled, so empty `values` means "no photos",
+   * not "still loading". Kept out of `partialize` so a stale `true` is never rehydrated. */
+  valuesLoaded: boolean
+}
 
 export interface ValuesSliceActions {
   fetchValues: () => Promise<void>

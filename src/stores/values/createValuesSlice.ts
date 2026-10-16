@@ -34,6 +34,7 @@ export const createValuesSlice: StateCreator<
   headlineToApply: CONFIG.noTitle,
   tagsToApply: [],
   values: { kind: {}, year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} },
+  valuesLoaded: false,
 
   fetchValues: async () => {
     try {
@@ -55,9 +56,11 @@ export const createValuesSlice: StateCreator<
           newValues[field][obj.value] = current + obj.count
         }
       })
-      set({ values: newValues })
+      set({ values: newValues, valuesLoaded: true })
     } catch (err) {
       console.error('Failed to read values:', err)
+      // Settle anyway: a failed read must not leave the app waiting on the flag forever.
+      set({ valuesLoaded: true })
     }
   },
 

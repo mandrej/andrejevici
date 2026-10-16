@@ -15,6 +15,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
   const subscribeLastRec = useAppStore((state) => state.subscribeLastRec)
   const user = useUserStore((state) => state.user)
   const nickValues = useValuesStore(selectNickValues)
+  const valuesLoaded = useValuesStore((state) => state.valuesLoaded)
 
   useEffect(() => {
     const unsubscribe = subscribeLastRec()
@@ -23,35 +24,42 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
     }
   }, [subscribeLastRec])
 
-  const hasNoPhotos = isEmpty(nickValues)
+  // `values` starts empty, so `isEmpty(nickValues)` is also true mid-fetch. Only treat it as
+  // "no photos" once `fetchValues` has settled, otherwise the empty state flashes on every load.
+  const hasNoPhotos = valuesLoaded && isEmpty(nickValues)
 
   const bgFullUrl = useMemo(() => {
     if (!lastRecord) return ''
     return lastRecord.kind === 'video' ? getYouTubeMaxResUrl(lastRecord.url) : lastRecord.url
   }, [lastRecord])
 
-  const bgStyle = useMemo(() => {
+  // The square crop the server trigger writes (videos carry their YouTube still): a few KB, so
+  // it paints long before the full-size original, which is layered on top of it.
+  const bgThumbUrl = useMemo(() => lastRecord?.thumb || '', [lastRecord])
+
+  const bgStyle = useMemo<React.CSSProperties>(() => {
     if (!bgFullUrl || hasNoPhotos) {
       return {
-        backgroundImage: `url(/logo30.svg)`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         backgroundSize: 'contain',
       }
     }
+    // Layer order is top-first: the full-size image covers the thumbnail once it decodes.
+    const layers = bgThumbUrl ? [bgFullUrl, bgThumbUrl] : [bgFullUrl]
     return {
-      backgroundImage: `url(${bgFullUrl}), url(/logo30.svg)`,
+      backgroundImage: layers.map((url) => `url(${url})`).join(', '),
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
-      backgroundSize: 'cover, contain',
+      backgroundSize: layers.map(() => 'cover').join(', '),
     }
-  }, [bgFullUrl, hasNoPhotos])
+  }, [bgFullUrl, bgThumbUrl, hasNoPhotos])
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-light-page dark:bg-dark-page">
       {/* Left half: hero image or empty state */}
       {hasNoPhotos ? (
-        <div className="relative flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden">
+        <div className="relative flex flex-col justify-center items-center md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden bg-gray-50 dark:bg-gray-800">
           <div
             className="absolute inset-0 bg-contain bg-center bg-no-repeat pointer-events-none"
             style={bgStyle}
@@ -72,7 +80,7 @@ export const PlainLayout: React.FC<PlainLayoutProps> = ({ children }) => {
         <div className="relative md:w-1/2 min-h-[50vh] md:min-h-screen overflow-hidden">
           <Link href="/list" className="block absolute inset-0">
             <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
+              className="absolute inset-0 bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
               style={bgStyle}
             />
           </Link>
