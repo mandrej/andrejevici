@@ -60,6 +60,13 @@ export const MetaTab: React.FC = () => {
     return Object.keys(currentCounts).sort()
   }, [currentCounts])
 
+  const metaSelectOptions = useMemo(() => {
+    return metaOptions.map((o) => {
+      const count = Object.keys(values[o.value as keyof typeof values] || {}).length
+      return { label: `${o.label} [${count}]`, value: o.value }
+    })
+  }, [values])
+
   const filterByValue = (value: string) => {
     searchBy({ [metaTab]: metaTab === 'tags' ? [value] : value }, () => {
       router.push('/list')
@@ -210,7 +217,7 @@ export const MetaTab: React.FC = () => {
       <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <AppSelect
           modelValue={metaTab}
-          options={metaOptions.map((o) => ({ label: o.label, value: o.value }))}
+          options={metaSelectOptions}
           className="flex-1 max-w-xs"
           flat
           onChange={(val) => setMetaTab(val)}
