@@ -1,22 +1,19 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-import { storage } from '@/firebase'
-import {
-  ref as storageRef,
-  uploadBytesResumable,
-  getDownloadURL,
-  type UploadTaskSnapshot,
-} from 'firebase/storage'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useUserStore } from '@/stores/userStore'
+import {
+  useTransferStore,
+  selectHasActiveKind,
+  isCancelled,
+  type TransferHandle,
+} from '@/stores/transferStore'
 import { createThumbnailUrl, fakeHistory, formatBytes } from '@/helpers'
 import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import PictureCard from '@/components/PictureCard'
-import { UploadTracker } from '@/helpers/uploadTracker'
 import AppButton from '@/components/atoms/AppButton'
 import AppCheckbox from '@/components/atoms/AppCheckbox'
 import AppIcon from '@/components/atoms/AppIcon'
@@ -40,7 +37,6 @@ interface ValidationErrors {
 export const PhotoTab: React.FC = () => {
   const uploaded = useAppStore((state) => state.uploaded)
   const setUploaded = useAppStore((state) => state.setUploaded)
-  const setProgressInfo = useAppStore((state) => state.setProgressInfo)
   const showEdit = useAppStore((state) => state.showEdit)
   const setShowEdit = useAppStore((state) => state.setShowEdit)
   const currentEdit = useAppStore((state) => state.currentEdit)
@@ -53,24 +49,24 @@ export const PhotoTab: React.FC = () => {
   const tagsToApply = useValuesStore((state) => state.tagsToApply)
   const user = useUserStore((state) => state.user)
 
+  const startTransfer = useTransferStore((state) => state.startTransfer)
+  const cancelAll = useTransferStore((state) => state.cancelAll)
+  // Scoped to this page's own uploads: a swap started on `/list` stays in the strip when the user
+  // navigates here, and this page's "Cancel all" must not reach across and kill it.
+  const uploading = useTransferStore(selectHasActiveKind('upload'))
+
   const [files, setFiles] = useState<File[]>([])
   const [selection, setSelection] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
-  const [activeTrackerNames, setActiveTrackerNames] = useState<string[]>([])
   // Local object-URL previews for the upload queue. Kept in component state (never in
   // the persisted store) so a `blob:` URL can't leak into localStorage.
   const [previews, setPreviews] = useState<Record<string, string>>({})
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const trackersRef = useRef<Map<string, UploadTracker>>(new Map())
   // Uploaded Files, kept so EXIF can be read locally at publish time.
   const filesRef = useRef<Map<string, File>>(new Map())
   const previewsRef = useRef<Record<string, string>>(previews)
   previewsRef.current = previews
-
-  useEffect(() => {
-    setProgressInfo({})
-  }, [setProgressInfo])
 
   // Revoke previews for records that have left the queue (published/deleted), whatever
   // the path that removed them.
@@ -152,86 +148,41 @@ export const PhotoTab: React.FC = () => {
     }
   }
 
-  const cancelAll = () => {
-    trackersRef.current.forEach((tracker) => {
-      if (!tracker.isTerminal()) tracker.cancel()
-    })
-    trackersRef.current.clear()
-    setActiveTrackerNames([])
-    setProgressInfo({})
-  }
+  /**
+   * Queues one file. The store owns the bytes and the progress reporting; all this does is turn a
+   * finished transfer into a queue card.
+   *
+   * Resolves with the Storage object name (`uuid8_name`), which is also the record id.
+   */
+  const uploadTask = async (file: File): Promise<string> => {
+    const handle: TransferHandle = startTransfer(file, 'upload')
+    const { id } = handle
 
-  const uploadTask = (file: File): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
-      const id = uuidv4().substring(0, 8)
-      const filename = `${id}_${file.name}`
-      const _ref = storageRef(storage(), filename)
-      const tracker = new UploadTracker(filename)
-      trackersRef.current.set(filename, tracker)
-      setActiveTrackerNames(Array.from(trackersRef.current.keys()))
+    // Crop the finished upload into a display thumbnail now, alongside the download-URL lookup:
+    // the canvas work is local, so it overlaps that round trip. It is never uploaded and never on
+    // the upload's critical path — the card is appended once it has a small preview to paint, and
+    // `createThumbnailUrl` falls back to the local file.
+    const thumbnailPromise = createThumbnailUrl(file, CONFIG.thumbSize)
 
-      setProgressInfo({ ...useAppStore.getState().progressInfo, [filename]: 0 })
+    const downloadURL = await handle.promise
 
-      const uploadTaskObj = uploadBytesResumable(_ref, file, {
-        contentType: file.type,
-        cacheControl: 'public, max-age=604800',
-      })
-      tracker.setTask(uploadTaskObj)
+    filesRef.current.set(id, file)
+    const preview = await thumbnailPromise
+    if (preview) setPreviews((prev) => ({ ...prev, [id]: preview }))
 
-      uploadTaskObj.on(
-        'state_changed',
-        (snapshot: UploadTaskSnapshot) => {
-          tracker.updateProgress(snapshot)
-          setProgressInfo({ ...useAppStore.getState().progressInfo, [filename]: tracker.progress })
-        },
-        (error: Error) => {
-          tracker.markError(error)
-          const nextProgress = { ...useAppStore.getState().progressInfo }
-          delete nextProgress[filename]
-          setProgressInfo(nextProgress)
-          trackersRef.current.delete(filename)
-          setActiveTrackerNames(Array.from(trackersRef.current.keys()))
-          reject(new Error(filename))
-        },
-        () => {
-          // Crop the finished upload into a display thumbnail now, alongside the download-URL
-          // lookup: the canvas work is local, so it overlaps that round trip. It is never
-          // uploaded and never on the upload's critical path — the card is appended once it has
-          // a small preview to paint, and `createThumbnailUrl` falls back to the local file.
-          const thumbnailPromise = createThumbnailUrl(file, CONFIG.thumbSize)
+    const data: PhotoType = {
+      id,
+      url: downloadURL,
+      size: file.size,
+      email: user?.email || '',
+      nick: user?.nick || '',
+      kind: 'photo',
+    }
+    // Functional updater, not `getState().uploaded`: a queue of uploads finishes independently
+    // and out of order, and reading the snapshot at each resolution would drop the others.
+    setUploaded((prev) => [...prev, data])
 
-          getDownloadURL(uploadTaskObj.snapshot.ref)
-            .then(async (downloadURL) => {
-              tracker.complete(downloadURL)
-              const nextProgress = { ...useAppStore.getState().progressInfo }
-              delete nextProgress[filename]
-              setProgressInfo(nextProgress)
-              trackersRef.current.delete(filename)
-              setActiveTrackerNames(Array.from(trackersRef.current.keys()))
-
-              filesRef.current.set(filename, file)
-              const preview = await thumbnailPromise
-              if (preview) setPreviews((prev) => ({ ...prev, [filename]: preview }))
-
-              const data: PhotoType = {
-                id: filename,
-                url: downloadURL,
-                size: file.size,
-                email: user?.email || '',
-                nick: user?.nick || '',
-                kind: 'photo',
-              }
-              setUploaded([...useAppStore.getState().uploaded, data])
-
-              resolve(filename)
-            })
-            .catch((err) => {
-              tracker.markError(err)
-              reject(new Error(`Failed to get download URL: ${filename}`))
-            })
-        },
-      )
-    })
+    return id
   }
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -246,18 +197,15 @@ export const PhotoTab: React.FC = () => {
           notify({ type: 'positive', message: `Uploaded ${val}.`, icon: 'sym_r_check' })
           return val
         })
-        .catch((err: Error) => {
-          notify({
-            type: 'warning',
-            message: `Rejected ${file.name}.`,
-            caption: 'Please upload them again.',
-          })
-          const reason = err.message
-          if (typeof reason === 'string') {
-            const tracker = trackersRef.current.get(reason)
-            if (tracker && !tracker.isTerminal()) tracker.cancel()
-            trackersRef.current.delete(reason)
-            setActiveTrackerNames(Array.from(trackersRef.current.keys()))
+        .catch((err: unknown) => {
+          // A cancellation is something the user asked for, so requeue the file without telling
+          // them it was "rejected" — the file is back in the list, ready to send again.
+          if (!isCancelled(err)) {
+            notify({
+              type: 'warning',
+              message: `Rejected ${file.name}.`,
+              caption: 'Please upload them again.',
+            })
           }
           setFiles((prev) => [...prev, file])
           throw err
@@ -266,7 +214,6 @@ export const PhotoTab: React.FC = () => {
     })
 
     await Promise.allSettled(promises)
-    setProgressInfo({})
   }
 
   const onValidationError = (rejectedEntries: ValidationErrors[]) => {
@@ -332,7 +279,9 @@ export const PhotoTab: React.FC = () => {
       }
     })
 
-    setUploaded(uploaded.filter((item) => !successfulIds.includes(item.id)))
+    // Filtered against the current queue rather than this render's `uploaded`: a photo that
+    // finished uploading while the publishes were in flight is in neither, and must be kept.
+    setUploaded((prev) => prev.filter((item) => !successfulIds.includes(item.id)))
     setSelection([])
   }
 
@@ -411,8 +360,13 @@ export const PhotoTab: React.FC = () => {
 
           {/* Action buttons */}
           <div className="flex flex-col gap-2 min-w-30 w-full sm:w-auto">
-            {activeTrackerNames.length > 0 && (
-              <AppButton label="Cancel all" type="button" color="negative" onClick={cancelAll} />
+            {uploading && (
+              <AppButton
+                label="Cancel all"
+                type="button"
+                color="negative"
+                onClick={() => cancelAll('upload')}
+              />
             )}
             {files.length > 0 && <AppButton label="Upload" type="submit" color="primary" />}
             <AppButton

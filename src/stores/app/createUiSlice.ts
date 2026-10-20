@@ -13,7 +13,6 @@ export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSlic
   addTab: 'photo',
   metaTab: 'tags',
   theme: 'auto',
-  progressInfo: {},
 
   setBusy: (busy) => set({ busy }),
   setError: (error) => set({ error }),
@@ -23,7 +22,6 @@ export const createUiSlice: StateCreator<AppStore, [], [], UiSliceState & UiSlic
   setAdminTab: (adminTab) => set({ adminTab }),
   setAddTab: (addTab) => set({ addTab }),
   setMetaTab: (metaTab) => set({ metaTab }),
-  setProgressInfo: (progressInfo) => set({ progressInfo }),
 
   setTheme: (theme) => set({ theme }),
   initTheme: () => {},

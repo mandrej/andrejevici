@@ -17,6 +17,7 @@ import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '@
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import type { InfiniteScrollResult } from '@/composables/useInfiniteScroll'
 import notify from '@/helpers/notify'
+import { isCancelled } from '@/stores/transferStore'
 import type { PhotoType } from '@/helpers/models'
 import CONFIG from '@/config'
 
@@ -215,23 +216,23 @@ export default function ListPage() {
     }
 
     try {
-      notify({
-        group: 'swap',
-        message: `Swapping ${target.id} with ${file.name}...`,
-        spinner: true,
-        timeout: 0,
-      })
+      // No spinner toast: the header strip carries this swap's progress, including the record
+      // rewrite that follows the bytes. The slice announces success.
       const newRec = await swapRecordAction(target, file)
       editOk(newRec.id)
     } catch (err) {
-      console.error('Swap record failed:', err)
-      notify({
-        group: 'swap',
-        type: 'negative',
-        message: `Swap failed: ${err instanceof Error ? err.message : String(err)}`,
-        timeout: 5000,
-        spinner: false,
-      })
+      // A cancellation is the user's own doing, and the strip already reflects it — reporting it
+      // as a failure would contradict what they just did.
+      if (!isCancelled(err)) {
+        console.error('Swap record failed:', err)
+        notify({
+          group: 'swap',
+          type: 'negative',
+          message: `Swap failed: ${err instanceof Error ? err.message : String(err)}`,
+          timeout: 5000,
+          spinner: false,
+        })
+      }
     } finally {
       e.target.value = ''
       swapTargetRef.current = null

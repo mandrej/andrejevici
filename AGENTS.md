@@ -114,6 +114,7 @@ Each store has a top-level barrel file and a subdirectory containing slice creat
 - `src/stores/valuesStore.ts` → `values/`: `createCountersSlice`, `createValuesSlice`, `selectors.ts`, `types.ts`.
 - `src/stores/bucketStore.ts` → `bucket/`: `createBucketSlice`, `types.ts`.
 - `src/stores/toastStore.ts` → `toast/`: `createToastSlice`, `types.ts`.
+- `src/stores/transferStore.ts` → `transfer/`: `createTransferSlice`, `selectors.ts`, `types.ts`, and `upload.ts` (the real byte transfer, kept separate so the store can be exercised with an injected fake). Ephemeral — no `persist` middleware, unlike `appStore`.
 
 `values/selectors.ts` exports memoized selectors (`selectTagsValues`, `selectModelValues`, `selectAllSuggestions`, etc.) that cache derived data and rebuild only when the underlying values reference changes.
 
@@ -131,10 +132,10 @@ const user = useUserStore((state) => state.user)
 - `devices.ts` — batch deletion of FCM device-token documents under `User/{email}/Device`.
 - `exif.ts` — client-side EXIF extraction.
 - `index.ts` — dates, slugs/transliteration, permissions, thumbnails, YouTube helpers, and shared utilities.
-- `models.ts` — TypeScript models such as `PhotoType`, `MyUserType`, `ValuesState`, and `AppStoreState`.
+- `models.ts` — TypeScript models such as `PhotoType`, `MyUserType`, and `ValuesState`.
 - `notify.ts` — client notification/toast helper.
 - `remedy.ts` — storage/Firestore consistency and thumbnail repair actions.
-- `uploadTracker.ts` — upload progress tracking.
+- `uploadTracker.ts` — the per-transfer state machine (`UploadTracker`) and the shared `ProgressThrottle`. Both are free of the Firebase SDK and the DOM, so they are unit-testable with plain objects.
 
 ### Firebase initialization
 
@@ -167,8 +168,10 @@ Uploading and publishing are separate phases. Bytes are written to Cloud Storage
 `src/app/add/PhotoTab.tsx` owns the photo upload queue:
 
 - A selected file is stored under the object name `uuidv4().substring(0, 8) + '_' + file.name`. That name becomes the record `id`, so the original filename is preserved inside it.
-- `uploadBytesResumable` sends the original bytes unchanged, with the file's `contentType` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded or resized.
-- `src/helpers/uploadTracker.ts` wraps the task with atomic state transitions (`pending`, `uploading`, `completed`, `error`, `cancelled`) and drives the progress display and the cancel action.
+- `useTransferStore.getState().startTransfer(file, 'upload')` runs the transfer. `src/stores/transfer/upload.ts` issues the `uploadBytesResumable` call, sending the original bytes unchanged with the file's `contentType` and `cacheControl: 'public, max-age=604800'`. Originals are never re-encoded or resized.
+- `src/helpers/uploadTracker.ts` holds the atomic state transitions (`pending`, `uploading`, `completed`, `error`, `cancelled`) and is free of the Firebase SDK, so it is unit-testable with a plain `{ cancel }` object. A `storage/canceled` error raised _because_ we cancelled never overwrites the cancellation, and a failure keeps the last known progress rather than resetting the bar.
+- The store's single shared `ProgressThrottle` collapses the SDK's per-chunk `state_changed` events into at most one `patchTransfers` write per 100ms across the whole queue, and is bypassed for terminal transitions. The store is ephemeral — had this state lived in the persisted `appStore`, every progress event would have triggered a synchronous `localStorage.setItem`.
+- `src/components/TransferStrip.tsx`, rendered once inside the header in `src/components/layouts/DefaultLayout.tsx`, is the only progress surface: one equal-width segment per active transfer, falling back to an indeterminate bar while `appStore.busy` covers work with no measurable progress.
 - On completion the download URL is resolved and a partial `PhotoType` — `id`, `url`, `size`, `email`, `nick`, and `kind` only — is appended to `store.uploaded`. It has no `thumb`, `headline`, EXIF, or search text yet.
 - The Storage trigger `generateThumbnailOnUpload` starts generating the thumbnail for the finished file at the same moment, without the client waiting for it, so the queue card appears immediately.
 - Local `File` objects are retained in a ref for later EXIF reads. Each finished upload is also cropped on a canvas into a client-side `CONFIG.thumbSize` thumbnail, held as a `blob:` URL in component state rather than the persisted store; that preview is what the queue card and the `EditPhotoRecord` dialog paint, so neither decodes a full-resolution original. Previews are revoked as records leave the queue.
@@ -198,7 +201,7 @@ Publishing also updates `Counter` documents (`increment(±1)` per metadata value
 ### Video, swap, and delete
 
 - `VideoTab` and `saveVideo` publish a YouTube record in a single phase: no bytes are uploaded, `size` is `0`, and the thumbnail is derived from the video id. `saveVideo` does not touch `Bucket/total`.
-- `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, uploads new bytes under a new id, preserves the old headline, tags, and author, writes the new document, deletes the old document, and removes the old Storage objects. It stores the predictive `thumbUrl(newFilename)` rather than uploading a thumbnail, leaving the canonical bytes to `generateThumbnailOnUpload`, and crops the new local `File` into a display-only `blob:` thumbnail so the swapped card paints without waiting for that object. A failure part-way can leave the new document plus an orphaned old object.
+- `swapRecord` is the only flow that uploads and publishes together. It is gated by `isAuthorOrAdmin`, and runs its bytes through `useTransferStore.getState().startTransfer(newFile, 'swap')` — so a multi-megabyte replacement reports real progress instead of an indeterminate spinner — preserving the old headline, tags, and author, writing the new document, deleting the old document, and removing the old Storage objects. The transfer's id _is_ the new object name, and its segment stays on the header through the record rewrite, settled by `handle.succeed()` once the swap is fully done. It stores the predictive `thumbUrl(newFilename)` rather than uploading a thumbnail, leaving the canonical bytes to `generateThumbnailOnUpload`, and crops the new local `File` into a display-only `blob:` thumbnail so the swapped card paints without waiting for that object. A failure part-way can leave the new document plus an orphaned old object.
 - `deleteRecord` deletes the document together with the original and thumbnail Storage objects, then reverses the counters and bucket. A Storage object that is already missing is tolerated, so deleting a queued item or a record whose thumbnail never materialized does not error. It branches on `thumb` only for local state: published records leave `objects`, queued ones leave `uploaded`.
 
 ## Authentication and permissions

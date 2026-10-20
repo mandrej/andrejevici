@@ -5,6 +5,12 @@ interface AppProgressProps {
   indeterminate?: boolean
   color?: 'primary' | 'secondary' | 'warning' | 'negative' | 'positive' | 'info' | 'accent' | string
   height?: number
+  /**
+   * Transition length for the determinate bar, in ms. Match it to how often the value changes:
+   * the default 300 is deliberately slower than a progress tick, so bars driven by a fast source
+   * (the upload throttle, ~10 values/s) should pass ~100 to interpolate instead of trail.
+   */
+  durationMs?: number
   className?: string
 }
 
@@ -23,6 +29,7 @@ export const AppProgress: React.FC<AppProgressProps> = ({
   indeterminate = false,
   color = 'primary',
   height = 3,
+  durationMs = 300,
   className = '',
 }) => {
   const colorClass = colorMap[color] ?? 'bg-primary'
@@ -42,8 +49,11 @@ export const AppProgress: React.FC<AppProgressProps> = ({
         />
       ) : (
         <div
-          className={`h-full rounded-full transition-all duration-300 ${colorClass}`}
-          style={{ width: `${Math.min(Math.max(value * 100, 0), 100)}%` }}
+          className={`h-full rounded-full transition-all ease-linear ${colorClass}`}
+          style={{
+            width: `${Math.min(Math.max(value * 100, 0), 100)}%`,
+            transitionDuration: `${durationMs}ms`,
+          }}
         />
       )}
 

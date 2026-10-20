@@ -3,10 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { useAppStore } from '@/stores/appStore'
-import AppProgress from '@/components/atoms/AppProgress'
 
 export const AdminToolbar: React.FC = () => {
-  const busy = useAppStore((state) => state.busy)
   const adminTab = useAppStore((state) => state.adminTab)
   const setAdminTab = useAppStore((state) => state.setAdminTab)
 
@@ -30,13 +28,6 @@ export const AdminToolbar: React.FC = () => {
           {headline}
         </Link>
       </div>
-
-      {/* Progress bar below the header */}
-      {busy && (
-        <div className="fixed top-14 left-0 right-0 z-30 h-0.5 overflow-hidden">
-          <AppProgress indeterminate color="warning" height={2} />
-        </div>
-      )}
 
       {/* Admin tab switcher without icons */}
       <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 ml-2">

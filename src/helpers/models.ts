@@ -79,34 +79,9 @@ export interface ValuesState {
     kind: { [key: string]: number }
   }
 }
-export interface FileProgress {
-  // {file.name: progress 0..1, ...}
-  [key: string]: number
-}
-
 export interface MetaOption {
   label: string
   value: keyof ValuesState['values']
   icon: string
   short: string
-}
-
-export interface AppStoreState {
-  find: FindType | null
-  uploaded: PhotoType[]
-  objects: PhotoType[]
-  next: string
-  currentEdit: PhotoType
-  lastRecord: PhotoType | null
-  busy: boolean
-  progressInfo: FileProgress
-  error: string
-  showEdit: boolean
-  showConfirm: boolean
-  showCarousel: boolean
-  adminTab: string
-  addTab: AssetKind
-  metaTab: keyof ValuesState['values']
-  selected: PhotoType[]
-  theme: 'light' | 'dark' | 'auto'
 }

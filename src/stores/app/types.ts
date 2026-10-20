@@ -1,11 +1,4 @@
-import type {
-  FindType,
-  PhotoType,
-  VideoType,
-  AssetKind,
-  ValuesState,
-  FileProgress,
-} from '@/helpers/models'
+import type { FindType, PhotoType, VideoType, AssetKind, ValuesState } from '@/helpers/models'
 
 export interface UiSliceState {
   busy: boolean
@@ -17,7 +10,6 @@ export interface UiSliceState {
   addTab: AssetKind
   metaTab: keyof ValuesState['values']
   theme: 'light' | 'dark' | 'auto'
-  progressInfo: FileProgress
 }
 
 export interface UiSliceActions {
@@ -29,7 +21,6 @@ export interface UiSliceActions {
   setAdminTab: (tab: string) => void
   setAddTab: (tab: AssetKind) => void
   setMetaTab: (tab: keyof ValuesState['values']) => void
-  setProgressInfo: (info: FileProgress) => void
   setTheme: (theme: 'light' | 'dark' | 'auto') => void
   initTheme: () => void
 }

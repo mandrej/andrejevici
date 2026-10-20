@@ -4,6 +4,7 @@ import AppIcon from '@/components/atoms/AppIcon'
 import AppDialog from '@/components/atoms/AppDialog'
 import AppButton from '@/components/atoms/AppButton'
 import AppProgress from '@/components/atoms/AppProgress'
+import TransferStrip from '@/components/TransferStrip'
 import { useScreen } from '@/composables/useScreen'
 import { useUserStore } from '@/stores/userStore'
 import Sidebar from '@/components/layouts/Sidebar'
@@ -99,6 +100,9 @@ export const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
 
           {/* Page-specific toolbar */}
           {renderToolbar()}
+
+          {/* Progress for every in-flight upload and swap, pinned to the header's real bottom edge */}
+          <TransferStrip />
         </header>
 
         {/* Page content */}

@@ -11,9 +11,8 @@ import {
   limit,
   onSnapshot,
 } from 'firebase/firestore'
-import { ref as storageRef, getDownloadURL, deleteObject, uploadBytes } from 'firebase/storage'
-import { v4 as uuidv4 } from 'uuid'
-import CONFIG from '@/config'
+import { ref as storageRef, getDownloadURL, deleteObject } from 'firebase/storage'
+import { useTransferStore } from '@/stores/transferStore'
 import {
   thumbName,
   thumbUrl,
@@ -309,18 +308,20 @@ export const createPhotoOpsSlice: StateCreator<
     const valuesStore = useValuesStore.getState()
     const bucketStore = useBucketStore.getState()
 
-    try {
-      // 1. Generate unique filename for the new image
-      const id = uuidv4().substring(0, 8)
-      const newFilename = `${id}_${newFile.name}`
+    // 1. The transfer owns the object name. It must: the bytes go to `handle.id`, so the record
+    // has to be written under that same name rather than a second id minted here.
+    //
+    // The transfer covers the whole swap, not just the bytes — the segment stays on the header
+    // until the record rewrite finishes, so the user is never left looking at a full bar and a
+    // card that has not repainted. Registered before the try so a rejected transfer still has a
+    // row to settle; the store owns that row's terminal state.
+    const handle = useTransferStore.getState().startTransfer(newFile, 'swap')
+    const newFilename = handle.id
 
-      // 2. Upload new image to Storage
-      const fileRef = storageRef(storage(), newFilename)
-      await uploadBytes(fileRef, newFile, {
-        contentType: newFile.type,
-        cacheControl: CONFIG.cache_control,
-      })
-      const newDownloadUrl = await getDownloadURL(fileRef)
+    try {
+      // 2. Upload new image to Storage. The transfer store runs `uploadBytesResumable`, so this
+      // reports progress where `uploadBytes` could not; the original goes up byte-exact.
+      const newDownloadUrl = await handle.promise
 
       // 3. Persisted thumbnail URL. The `generateThumbnailOnUpload` Storage trigger owns the
       // canonical bytes and writes them shortly after the new original lands. The swap does not
@@ -454,7 +455,15 @@ export const createPhotoOpsSlice: StateCreator<
       })
 
       // 12. Return the local copy: it carries the preview so the caller's card paints at once.
+      // The transfer's row is only now marked complete, which is what keeps the segment up for
+      // the whole swap rather than just the byte transfer.
+      handle.succeed()
       return localRecord
+    } catch (err) {
+      // Nothing has been written or deleted yet at the point a transfer rejects, so the old
+      // record survives intact and the user can simply retry.
+      handle.fail(err)
+      throw err
     } finally {
       set({ busy: false })
     }
