@@ -13,7 +13,14 @@ import EditPhotoRecord from '@/components/EditPhotoRecord'
 import EditVideoRecord from '@/components/EditVideoRecord'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
-import { fakeHistory, isAuthorOrAdmin, formatBytes, dummy, formatDatum } from '@/helpers'
+import {
+  fakeHistory,
+  isAuthorOrAdmin,
+  isAllowedFileType,
+  formatBytes,
+  dummy,
+  formatDatum,
+} from '@/helpers'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import type { InfiniteScrollResult } from '@/composables/useInfiniteScroll'
 import notify from '@/helpers/notify'
@@ -200,8 +207,11 @@ export default function ListPage() {
     const target = swapTargetRef.current
     if (!file || !target || target.kind === 'video' || !isAuthorOrAdmin(user, target)) return
 
-    if (!file.type.startsWith('image/')) {
-      notify({ type: 'warning', message: 'Please select an image file.' })
+    if (!isAllowedFileType(file)) {
+      notify({
+        type: 'warning',
+        message: `${file.name}: allowed types are ${CONFIG.fileType}`,
+      })
       e.target.value = ''
       return
     }
@@ -304,7 +314,7 @@ export default function ListPage() {
       <input
         type="file"
         ref={swapFileInputRef}
-        accept="image/*"
+        accept={CONFIG.fileType}
         onChange={onSwapFileChange}
         className="hidden"
       />

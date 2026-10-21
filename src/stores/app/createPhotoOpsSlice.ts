@@ -25,7 +25,9 @@ import {
   getDateFields,
   dummy,
   isAuthorOrAdmin,
+  isAllowedFileType,
 } from '@/helpers'
+import CONFIG from '@/config'
 import notify from '@/helpers/notify'
 import { useValuesStore } from '@/stores/valuesStore'
 import { useBucketStore } from '@/stores/bucketStore'
@@ -302,6 +304,12 @@ export const createPhotoOpsSlice: StateCreator<
     const userStore = useUserStore.getState()
     if (!isAuthorOrAdmin(userStore.user, oldRec)) {
       throw new Error('Not authorized to swap this image')
+    }
+    // Reject a replacement that is not one of CONFIG.fileType before anything is uploaded or
+    // written: the picker's `accept` is only a hint, so the slice enforces the rule for every
+    // caller. A rejected swap leaves the old record and its objects untouched.
+    if (!isAllowedFileType(newFile)) {
+      throw new Error(`Cannot swap to ${newFile.name}: allowed types are ${CONFIG.fileType}`)
     }
 
     set({ busy: true })

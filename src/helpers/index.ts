@@ -376,6 +376,45 @@ export const createThumbnailUrl = async (
 }
 
 /**
+ * Extensions allowed for an upload, parsed from the comma-separated `CONFIG.fileType`
+ * (`'.jpg, .jpeg, .png, .gif'`) into lowercase dotted strings (`['.jpg', '.jpeg', ...]`).
+ *
+ * @returns The allowed extension list, stripped of spaces and empty entries.
+ */
+export const allowedFileExtensions = (): string[] =>
+  CONFIG.fileType
+    .split(',')
+    .map((ext) => ext.trim().toLowerCase())
+    .filter((ext) => ext.startsWith('.'))
+
+/**
+ * Returns the lowercase extension of a filename, including the dot, or an empty string.
+ *
+ * @param filename - The file's name, e.g. `'IMG_1234.JPG'`.
+ * @returns The extension (`'.jpg'`), or `''` when the name has none.
+ */
+const fileExtension = (filename: string): string => {
+  const name = filename.toLowerCase()
+  const dot = name.lastIndexOf('.')
+  return dot > 0 ? name.slice(dot) : ''
+}
+
+/**
+ * True when a picked file is one of the types `CONFIG.fileType` allows.
+ *
+ * The `accept` attribute is only a picker hint: a picker that lets the user override the filter,
+ * a drag-and-drop, or a programmatic `files` assignment can still hand the swap flow anything, so
+ * it re-checks the file itself. The extension is checked rather than
+ * `file.type`, because browsers report an empty MIME type for some of these extensions and
+ * `accept` is expressed as extensions too.
+ *
+ * @param file - The picked file, or anything exposing its `name`.
+ * @returns True when the file's extension is in `CONFIG.fileType`.
+ */
+export const isAllowedFileType = (file: { name: string }): boolean =>
+  allowedFileExtensions().includes(fileExtension(file.name))
+
+/**
  * Generates a Firestore-safe counter document ID from a field name and its value.
  * Forward slashes are percent-encoded because Firestore IDs cannot contain `/`.
  *

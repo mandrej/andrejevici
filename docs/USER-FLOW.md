@@ -195,8 +195,8 @@ never reach Firestore.
 
 ```mermaid
 flowchart TD
-    A["/list · author or admin only<br/>Swap icon on a photo card"] --> B["Pick a replacement image<br/>type must be image/*, size ≤ CONFIG.fileSize"]
-    B --> C["swapRecord(oldRec, newFile)<br/>isAuthorOrAdmin re-checked; the client rule is not enforced by the Firestore rules"]
+    A["/list · author or admin only<br/>Swap icon on a photo card"] --> B["Pick a replacement image<br/>extension must be in CONFIG.fileType, size ≤ CONFIG.fileSize"]
+    B --> C["swapRecord(oldRec, newFile)<br/>isAuthorOrAdmin and isAllowedFileType re-checked; the client rules are not enforced by the Firestore rules"]
     C --> D["busy = true"]
     D --> E["startTransfer(newFile, 'swap')<br/>uploadBytesResumable under a fresh id<br/>segment stays up through the record rewrite"]
     E --> F["thumb = thumbUrl(newFilename) — the predictive public URL;<br/>generateThumbnailOnUpload still owns the real bytes"]
