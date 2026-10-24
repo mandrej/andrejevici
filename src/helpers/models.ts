@@ -69,6 +69,7 @@ export interface UsersAndDevices extends MyUserType {
 export interface ValuesState {
   headlineToApply: string
   tagsToApply: string[]
+  dateToApply: string
   values: {
     year: { [key: string]: number }
     tags: { [key: string]: number }

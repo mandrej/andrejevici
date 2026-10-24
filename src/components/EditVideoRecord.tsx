@@ -34,6 +34,8 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
     setTmp,
     copyTags,
     mergeTags,
+    copyDate,
+    pasteDate,
     prepareRecord,
   } = useEditRecord({ rec })
 
@@ -188,15 +190,35 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
               />
             </div>
 
-            <div className="col-span-2 sm:col-span-1">
-              <AppInput
-                modelValue={toDateTimeLocalString(tmp.date)}
-                onChangeValue={(val) =>
-                  setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))
-                }
-                label="Date taken"
-                type="datetime-local"
-              />
+            <div className="col-span-2 sm:col-span-1 flex items-start gap-2">
+              <div className="flex-1">
+                <AppInput
+                  modelValue={toDateTimeLocalString(tmp.date)}
+                  onChangeValue={(val) =>
+                    setTmp((prev) => ({ ...prev, date: val as unknown as Timestamp }))
+                  }
+                  label="Date taken"
+                  type="datetime-local"
+                />
+              </div>
+              <div className="flex flex-col gap-1 mt-1">
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-primary transition-colors p-1"
+                  title="Copy date"
+                  onClick={() => copyDate(tmp.date)}
+                >
+                  <AppIcon name="content_copy" className="w-5 h-5" />
+                </button>
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-primary transition-colors p-1"
+                  title="Paste date"
+                  onClick={pasteDate}
+                >
+                  <AppIcon name="content_paste" className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="col-span-2 flex items-start gap-2">

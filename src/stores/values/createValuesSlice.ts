@@ -33,6 +33,7 @@ export const createValuesSlice: StateCreator<
 > = (set) => ({
   headlineToApply: CONFIG.noTitle,
   tagsToApply: [],
+  dateToApply: '',
   values: { kind: {}, year: {}, tags: {}, model: {}, lens: {}, email: {}, nick: {} },
   valuesLoaded: false,
 

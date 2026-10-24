@@ -17,6 +17,7 @@ import {
   toDateTimeLocalString,
   canContribute,
 } from '@/helpers'
+import type { DateInput } from '@/helpers'
 import CONFIG from '@/config'
 import type { PhotoType } from '@/helpers/models'
 import type { Timestamp } from 'firebase/firestore'
@@ -59,6 +60,16 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     const arr = Array.isArray(source) ? source : []
     const merged = Array.from(new Set([...tagsToApply, ...arr])).sort()
     setTmp((prev) => ({ ...prev, tags: merged }))
+  }
+
+  const copyDate = (source: DateInput) => {
+    useValuesStore.setState({ dateToApply: toDateTimeLocalString(source) })
+  }
+
+  const pasteDate = () => {
+    const dateToApply = useValuesStore.getState().dateToApply
+    if (!dateToApply) return
+    setTmp((prev) => ({ ...prev, date: dateToApply as unknown as Timestamp }))
   }
 
   const prepareRecord = async (record: PhotoType) => {
@@ -109,6 +120,8 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     isValidEmail,
     copyTags,
     mergeTags,
+    copyDate,
+    pasteDate,
     prepareRecord,
   }
 }

@@ -17,6 +17,7 @@ export const useValuesStore = create<ValuesStore>()(
       partialize: (state) => ({
         headlineToApply: state.headlineToApply,
         tagsToApply: state.tagsToApply,
+        dateToApply: state.dateToApply,
         values: state.values,
       }),
     },
