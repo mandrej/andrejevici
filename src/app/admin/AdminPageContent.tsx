@@ -14,6 +14,8 @@ import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
 import { mismatch, missingThumbnails } from '@/helpers/remedy'
+import { repairUsers } from '@/helpers/users'
+import notify from '@/helpers/notify'
 import CONFIG from '@/config'
 
 export default function AdminPage() {
@@ -39,6 +41,25 @@ export default function AdminPage() {
   const handleCountersBuild = async () => {
     for (const field of CONFIG.photo_filter) {
       await countersBuildAll(field)
+    }
+  }
+
+  const handleRepairUsers = async () => {
+    notify({ group: 'users', message: 'Repairing user documents…', spinner: true, timeout: 0 })
+    try {
+      const { migrated, stripped, skipped } = await repairUsers()
+      notify({
+        group: 'users',
+        type: migrated || stripped ? 'positive' : 'info',
+        message: `${migrated} migrated, ${stripped} cleaned, ${skipped} skipped`,
+        icon: 'sym_r_check',
+      })
+    } catch (err) {
+      notify({
+        group: 'users',
+        type: 'negative',
+        message: 'Failed to repair users: ' + (err instanceof Error ? err.message : String(err)),
+      })
     }
   }
 
@@ -94,6 +115,15 @@ export default function AdminPage() {
               title="Missing Thumbnails"
               description="Scan storage for photos missing thumbnails and generate them."
               action={<AppButton label="Create" color="warning" onClick={missingThumbnails} />}
+            />
+
+            {/* Users Repair Card */}
+            <AdminCard
+              icon="group"
+              color="negative"
+              title="User Documents"
+              description="Move uid-keyed users onto their email key and drop legacy uid/id fields."
+              action={<AppButton color="negative" label="Repair" onClick={handleRepairUsers} />}
             />
 
             {/* Mismatch Card */}

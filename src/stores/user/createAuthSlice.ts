@@ -6,6 +6,7 @@ import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth'
 import type { MyUserType } from '@/helpers/models'
 import notify from '@/helpers/notify'
 import { userCollection } from '@/helpers/collections'
+import { migrateUserDoc } from '@/helpers/users'
 import { dummy, formatDatum } from '@/helpers'
 import type { UserStore, AuthSliceState, AuthSliceActions } from '@/stores/user/types'
 
@@ -34,9 +35,18 @@ export const createAuthSlice: StateCreator<UserStore, [], [], AuthSliceState & A
   storeUser: async (user: User) => {
     const email = (user.email || '').trim().toLowerCase()
     const userRef = doc(userCollection(), email)
-    const userSnap = await getDoc(userRef)
+    let userSnap = await getDoc(userRef)
     const now = Timestamp.fromDate(new Date())
     const isFresh = get().isFreshLogin
+
+    // Builds before 27 Sep 2026 keyed `User` documents by uid, so a returning user may still only
+    // have one under that key. Move it onto the email before reading, or this sign-in would create
+    // a duplicate profile that loses the permissions an administrator had already granted.
+    if (!userSnap.exists() && user.uid && email) {
+      if (await migrateUserDoc(user.uid, email)) {
+        userSnap = await getDoc(userRef)
+      }
+    }
 
     if (userSnap.exists()) {
       const data = userSnap.data() as MyUserType

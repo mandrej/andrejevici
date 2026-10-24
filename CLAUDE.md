@@ -64,7 +64,7 @@ Use selector hooks for React components, for example `useUserStore((state) => st
 
 ### Helpers and Firebase paths
 
-Business logic lives in `src/helpers/`: `collections.ts`, `devices.ts`, `exif.ts`, `index.ts`, `models.ts`, `notify.ts`, `remedy.ts`, and `uploadTracker.ts` (the SDK-free transfer state machine and the progress throttle). Use the lazy collection references from `src/helpers/collections.ts` instead of duplicating raw collection names in client code.
+Business logic lives in `src/helpers/`: `collections.ts`, `devices.ts`, `exif.ts`, `index.ts`, `models.ts`, `notify.ts`, `remedy.ts`, `uploadTracker.ts` (the SDK-free transfer state machine and the progress throttle), and `userDoc.ts`/`users.ts` (the `User` document key rules and the repair that moves uid-keyed documents onto their email key). Use the lazy collection references from `src/helpers/collections.ts` instead of duplicating raw collection names in client code.
 
 `src/firebase.ts` exposes lazy singleton accessors (`auth()`, `db()`, `storage()`, `functions()`) that create each service on first call and connect to emulators in development. `src/messaging.ts` and `src/analytics.ts` are separate lazy modules loaded via dynamic `import()` to keep the Messaging, Analytics, and Installations SDKs out of the initial bundle.
 
