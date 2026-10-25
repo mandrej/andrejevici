@@ -17,6 +17,8 @@ interface AppComboboxProps {
   placeholder?: string
   multiple?: boolean
   clearable?: boolean
+  required?: boolean
+  error?: string
   canadd?: boolean
   placement?: 'top' | 'bottom'
   onChange?: (val: string | string[] | null) => void
@@ -31,6 +33,8 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
   placeholder,
   multiple = false,
   clearable = true,
+  required = false,
+  error,
   canadd = false,
   placement = 'bottom',
   onChange,
@@ -115,7 +119,13 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
       <Combobox value={modelValue} onChange={onUpdate} multiple={multiple as any}>
         <div className="relative">
           {/* Multi-value chips + input row */}
-          <div className="flex flex-wrap gap-1 min-h-9.5 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
+          <div
+            className={`flex flex-wrap gap-1 min-h-9.5 w-full rounded-lg border bg-white dark:bg-gray-800 px-2 py-1.5 transition-colors ${
+              error
+                ? 'border-negative focus-within:ring-2 focus-within:ring-negative focus-within:border-transparent'
+                : 'border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent'
+            }`}
+          >
             {/* Selected chips (multiple mode) */}
             {multiple && Array.isArray(modelValue) && (
               <>
@@ -150,6 +160,7 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
               displayValue={(val: any) => (multiple ? query : (val ?? ''))}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
+              required={required}
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
@@ -239,7 +250,10 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
         </div>
       </Combobox>
 
-      {hint && <span className="text-[10px] text-gray-400 dark:text-gray-500">{hint}</span>}
+      {hint && !error && (
+        <span className="text-[10px] text-gray-400 dark:text-gray-500">{hint}</span>
+      )}
+      {error && <span className="text-[10px] text-negative">{error}</span>}
     </div>
   )
 }

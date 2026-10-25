@@ -25,13 +25,14 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
     showEdit,
     setShowEdit,
     saveRecord,
-    user: _user,
+    user,
     tagsValues,
     emailValues,
     tagsToApply,
     addNewValue,
     tmp,
     setTmp,
+    emailError,
     copyTags,
     mergeTags,
     copyDate,
@@ -85,6 +86,13 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
 
   const onSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
+
+    // Refuse before touching the store, so a cleared author surfaces the field error rather than
+    // a half-applied save; the notify is the same message the field shows.
+    if (emailError) {
+      notify({ type: 'negative', message: emailError })
+      return
+    }
 
     try {
       let recordToSave = await prepareRecord(tmp)
@@ -181,13 +189,22 @@ export const EditVideoRecord: React.FC<EditVideoRecordProps> = ({ rec, onEditOk 
             </div>
 
             <div className="col-span-2 sm:col-span-1">
-              <AutoComplete
-                label="Author"
-                modelValue={tmp.email}
-                onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
-                options={emailValues}
-                hint="Admin can add friend's photo and email"
-              />
+              {/* Only an admin may move a record to another owner, so the picker over every
+                  contributed email is theirs; everyone else sees an immutable author. */}
+              {user?.isAdmin ? (
+                <AutoComplete
+                  label="Author"
+                  modelValue={tmp.email}
+                  onChange={(val) => setTmp((prev) => ({ ...prev, email: val as string }))}
+                  options={emailValues}
+                  hint="Admin can add friend's photo and email"
+                  required
+                  clearable={false}
+                  error={emailError}
+                />
+              ) : (
+                <AppInput modelValue={tmp.email} label="Author" readonly />
+              )}
             </div>
 
             <div className="col-span-2 sm:col-span-1 flex items-start gap-2">

@@ -6,6 +6,9 @@ interface AutoCompleteProps {
   options: string[]
   multiple?: boolean
   canadd?: boolean
+  clearable?: boolean
+  required?: boolean
+  error?: string
   label: string
   hint?: string
   placement?: 'top' | 'bottom'
@@ -18,6 +21,9 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
   options,
   multiple = false,
   canadd = false,
+  clearable = true,
+  required = false,
+  error,
   label,
   hint = '',
   placement = 'bottom',
@@ -38,7 +44,9 @@ export const AutoComplete: React.FC<AutoCompleteProps> = ({
       label={label}
       hint={hint}
       multiple={multiple}
-      clearable
+      clearable={clearable}
+      required={required}
+      error={error}
       canadd={canadd}
       placement={placement}
       onNewValue={onNewValue}

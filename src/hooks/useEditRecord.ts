@@ -26,6 +26,8 @@ interface UseEditRecordProps {
   rec: PhotoType
 }
 
+const EMAIL_REQUIRED = 'Author is required.'
+
 export const useEditRecord = ({ rec }: UseEditRecordProps) => {
   const showEdit = useAppStore((state) => state.showEdit)
   const setShowEdit = useAppStore((state) => state.setShowEdit)
@@ -72,6 +74,11 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     setTmp((prev) => ({ ...prev, date: dateToApply as unknown as Timestamp }))
   }
 
+  // The author is required: a record with no owner cannot be attributed, so clearing the field
+  // reports immediately instead of waiting for the save. Only the admin picker can be emptied —
+  // everyone else's author is a read-only input bound to their own account.
+  const emailError = !tmp.email?.trim() ? EMAIL_REQUIRED : ''
+
   const prepareRecord = async (record: PhotoType) => {
     if (!canContribute(user)) {
       throw new Error(
@@ -82,9 +89,19 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     recordToSave.headline = recordToSave.headline?.trim() || CONFIG.noTitle
     recordToSave.text = sliceSlug(recordToSave.headline)
 
-    if (recordToSave.email !== user?.email && user?.isAdmin) {
+    // Ownership is admin-only. An administrator may hand a record to any email, and the nickname
+    // follows that email; everyone else always saves under their own identity, whatever the form
+    // held — the author field is read-only for them, and this is the enforcement behind it.
+    if (user?.isAdmin) {
+      recordToSave.email = recordToSave.email?.trim() || ''
+      if (!recordToSave.email) {
+        throw new Error(EMAIL_REQUIRED)
+      }
       try {
-        recordToSave.nick = await getNickByEmail(recordToSave.email)
+        recordToSave.nick =
+          recordToSave.email === user.email
+            ? user.nick || ''
+            : await getNickByEmail(recordToSave.email)
       } catch (err) {
         throw new Error(String(err))
       }
@@ -117,6 +134,7 @@ export const useEditRecord = ({ rec }: UseEditRecordProps) => {
     addNewValue,
     tmp,
     setTmp,
+    emailError,
     isValidEmail,
     copyTags,
     mergeTags,
