@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useUserStore } from '@/stores/userStore'
 import { dummy, formatDatum, getYouTubeId } from '@/helpers'
@@ -43,6 +43,13 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
   const zoomRef = useRef<any>(null)
+  // Read by `handleClose`, which also runs from a `popstate` listener that outlives the render
+  // that subscribed it.
+  const currentIndexRef = useRef(index)
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex
+  }, [currentIndex])
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -136,25 +143,25 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
     }
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {})
     }
     zoomRef.current?.changeZoom(1)
-    const curr = objects[currentIndex]
+    const curr = objects[currentIndexRef.current]
     const hash = curr ? curr.id : null
     onCarouselCancel(hash)
     setShowCarousel(false)
-  }
+  }, [objects, onCarouselCancel, setShowCarousel])
 
   useEffect(() => {
     const preventDefault = (e: Event) => e.preventDefault()
     document.body.classList.add('swiper-view-active')
     window.addEventListener('contextmenu', preventDefault)
 
-    const handlePopState = () => {
-      onCarouselCancel(null)
-    }
+    // Going back does exactly what the close button does: the list scrolls to the record that
+    // was on screen, instead of dismissing the view without settling anywhere in the list.
+    const handlePopState = () => handleClose()
     window.addEventListener('popstate', handlePopState)
 
     const handleFullscreenChange = () => {
@@ -168,7 +175,7 @@ export const SwiperView: React.FC<SwiperViewProps> = ({ index, onCarouselCancel 
       window.removeEventListener('popstate', handlePopState)
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
-  }, [onCarouselCancel])
+  }, [handleClose])
 
   const currentSlide = slides[currentIndex]
   const isImage = currentSlide?.type === 'image'
