@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppButton from '@/components/atoms/AppButton'
+import AppChip from '@/components/atoms/AppChip'
 import AppIcon from '@/components/atoms/AppIcon'
 import AppDialog from '@/components/atoms/AppDialog'
 import PlainLayout from '@/components/layouts/PlainLayout'
@@ -35,6 +36,10 @@ export default function HomePage() {
 
   const nicks = screen.xs ? allNicks.slice(0, 5) : allNicks
 
+  // `selectYearValues` is newest-first, so `slice(0, 5)` keeps the five latest years.
+  const allYears = useMemo<string[]>(() => yearValues.filter(Boolean), [yearValues])
+  const years = screen.xs ? allYears.slice(0, 5) : allYears
+
   const sinceYear = useMemo(() => {
     return yearValues[yearValues.length - 1] || ''
   }, [yearValues])
@@ -43,6 +48,12 @@ export default function HomePage() {
 
   const handlePhotographerClick = (nick: string) => {
     searchBy({ nick }, () => {
+      router.push('/list')
+    })
+  }
+
+  const handleYearClick = (year: string) => {
+    searchBy({ year: parseInt(year, 10) }, () => {
       router.push('/list')
     })
   }
@@ -74,16 +85,33 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Top photographers */}
+        {/* Year filter — same chip style as the active year filter in GlobalSearch */}
+        {years.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1.5 mt-2 mx-8">
+            {years.map((year) => (
+              <AppChip
+                key={year}
+                variant="date"
+                size="md"
+                label={year}
+                onClick={() => handleYearClick(year)}
+                title={`Show photos from ${year}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Top photographers — same chip style as the nick filter in GlobalSearch */}
         {nicks.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mt-2 mx-8">
             {nicks.map((nick) => (
-              <AppButton
+              <AppChip
                 key={nick}
+                variant="nick"
+                size="md"
                 label={nick}
-                color="secondary"
-                className="bg-secondary/15 hover:bg-secondary/30 text-teal-850 dark:text-secondary shadow-lg border border-gray-300 dark:border-gray-600 px-3! py-1!"
                 onClick={() => handlePhotographerClick(nick)}
+                title={`Show photos by ${nick}`}
               />
             ))}
           </div>

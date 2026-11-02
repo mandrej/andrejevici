@@ -6,6 +6,7 @@ import { useValuesStore, selectAllSuggestions } from '@/stores/valuesStore'
 import { months } from '@/helpers'
 import type { FindType, Suggestion } from '@/helpers/models'
 import AppIcon from '@/components/atoms/AppIcon'
+import AppChip from '@/components/atoms/AppChip'
 
 export const GlobalSearch: React.FC = () => {
   const find = useAppStore((state) => state.find)
@@ -197,81 +198,81 @@ export const GlobalSearch: React.FC = () => {
       <div className="search-container flex flex-1 items-center gap-1 min-h-9 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-transparent focus-within:border-primary focus-within:bg-white dark:focus-within:bg-gray-900 transition-all overflow-x-auto scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Active filter chips */}
         {tmp.text && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-            onClick={() => removeFilter('text')}
-          >
-            {tmp.text}&nbsp;✕
-          </span>
+          <AppChip
+            variant="neutral"
+            label={tmp.text}
+            title={`Remove "${tmp.text}" filter`}
+            onRemove={() => removeFilter('text')}
+          />
         )}
         {tmp.kind && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
-            onClick={() => removeFilter('kind')}
-          >
-            {tmp.kind}&nbsp;✕
-          </span>
+          <AppChip
+            variant="kind"
+            label={tmp.kind}
+            title={`Remove ${tmp.kind} filter`}
+            onRemove={() => removeFilter('kind')}
+          />
         )}
         {tmp.tags && Array.isArray(tmp.tags) && (
           <>
             {tmp.tags.map((tag) => (
-              <span
+              <AppChip
                 key={tag}
-                className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                onClick={() => removeTag(tag)}
-              >
-                {tag}&nbsp;✕
-              </span>
+                variant="tag"
+                label={tag}
+                title={`Remove ${tag} tag`}
+                onRemove={() => removeTag(tag)}
+              />
             ))}
           </>
         )}
         {tmp.year && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
-            onClick={() => removeFilter('year')}
-          >
-            {tmp.year}&nbsp;✕
-          </span>
+          <AppChip
+            variant="date"
+            label={tmp.year}
+            title={`Remove ${tmp.year} filter`}
+            onRemove={() => removeFilter('year')}
+          />
         )}
         {tmp.month && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
-            onClick={() => removeFilter('month')}
-          >
-            {getMonthName(tmp.month)}&nbsp;✕
-          </span>
+          <AppChip
+            variant="date"
+            label={getMonthName(tmp.month)}
+            title={`Remove ${getMonthName(tmp.month)} filter`}
+            onRemove={() => removeFilter('month')}
+          />
         )}
         {tmp.day && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
-            onClick={() => removeFilter('day')}
-          >
-            {tmp.day}&nbsp;✕
-          </span>
+          <AppChip
+            variant="date"
+            label={tmp.day}
+            title={`Remove ${tmp.day} filter`}
+            onRemove={() => removeFilter('day')}
+          />
         )}
         {tmp.model && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300"
-            onClick={() => removeFilter('model')}
-          >
-            {tmp.model}&nbsp;✕
-          </span>
+          <AppChip
+            variant="model"
+            label={tmp.model}
+            title={`Remove ${tmp.model} filter`}
+            onRemove={() => removeFilter('model')}
+          />
         )}
         {tmp.lens && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
-            onClick={() => removeFilter('lens')}
-          >
-            {tmp.lens}&nbsp;✕
-          </span>
+          <AppChip
+            variant="lens"
+            label={tmp.lens}
+            title={`Remove ${tmp.lens} filter`}
+            onRemove={() => removeFilter('lens')}
+          />
         )}
         {tmp.nick && (
-          <span
-            className="chip inline-flex items-center px-2 py-1 text-xs font-medium rounded-full cursor-pointer hover:opacity-90 transition-opacity select-none whitespace-nowrap shrink-0 bg-secondary/20 text-teal-850 dark:bg-secondary/30 dark:text-secondary"
-            onClick={() => removeFilter('nick')}
-          >
-            {tmp.nick}&nbsp;✕
-          </span>
+          <AppChip
+            variant="nick"
+            label={tmp.nick}
+            title={`Remove ${tmp.nick} filter`}
+            onRemove={() => removeFilter('nick')}
+          />
         )}
 
         {/* Text input */}

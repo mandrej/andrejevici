@@ -94,7 +94,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   const content = (
     <>
       {iconElement}
-      {label && <span>{label}</span>}
+      {label && React.createElement('span', null, label)}
       {children}
     </>
   )

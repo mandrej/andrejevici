@@ -8,6 +8,7 @@ import {
   Transition,
 } from '@headlessui/react'
 import AppIcon from '@/components/atoms/AppIcon'
+import AppChip from '@/components/atoms/AppChip'
 
 interface AppComboboxProps {
   modelValue?: string | string[] | null
@@ -130,26 +131,13 @@ export const AppCombobox: React.FC<AppComboboxProps> = ({
             {multiple && Array.isArray(modelValue) && (
               <>
                 {modelValue.map((item) => (
-                  <span
+                  <AppChip
                     key={String(item)}
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${
-                      isTagsInput
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
-                        : 'bg-primary/10 text-primary'
-                    }`}
-                  >
-                    {item}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeItem(item)
-                      }}
-                      className="hover:text-red-500 transition-colors"
-                    >
-                      <AppIcon name="close" className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
+                    variant={isTagsInput ? 'tag' : 'primary'}
+                    label={item}
+                    title={`Remove ${item}`}
+                    onRemove={() => removeItem(item)}
+                  />
                 ))}
               </>
             )}

@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/userStore'
 import { formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
 import AppButton from '@/components/atoms/AppButton'
+import AppChip, { APP_CHIP_VARIANTS } from '@/components/atoms/AppChip'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
@@ -134,6 +135,21 @@ export default function AdminPage() {
               description="Resolve inconsistencies between Cloud Storage and Firestore."
               action={<AppButton color="negative" label="Resolve" onClick={mismatch} />}
             />
+
+            {/* Chips Card */}
+            {/* <AdminCard
+              icon="sym_r_label"
+              color="primary"
+              title="Chips"
+              description="Every chip variant, labelled with its variant name."
+              details={
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {APP_CHIP_VARIANTS.map((variant) => (
+                    <AppChip key={variant} variant={variant} label={variant} />
+                  ))}
+                </div>
+              }
+            /> */}
           </div>
         )}
 

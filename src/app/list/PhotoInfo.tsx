@@ -4,6 +4,7 @@ import React from 'react'
 import type { PhotoType } from '@/helpers/models'
 import { formatBytes, formatDatum } from '@/helpers'
 import AppIcon from '@/components/atoms/AppIcon'
+import AppChip from '@/components/atoms/AppChip'
 
 interface PhotoInfoProps {
   photo: PhotoType
@@ -116,12 +117,7 @@ export const PhotoInfo: React.FC<PhotoInfoProps> = ({ photo, onClose }) => {
           <span className="text-white/50 block text-[10px] uppercase tracking-wider">Tags</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {photo.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] text-white/80"
-              >
-                #{tag}
-              </span>
+              <AppChip key={tag} variant="tag" label={`#${tag}`} />
             ))}
           </div>
         </div>
