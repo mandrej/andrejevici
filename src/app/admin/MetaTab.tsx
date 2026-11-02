@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/stores/appStore'
 import { useValuesStore } from '@/stores/valuesStore'
@@ -9,7 +8,7 @@ import LocalSearch from '@/components/LocalSearch'
 import CONFIG from '@/config'
 import AppInput from '@/components/atoms/AppInput'
 import AppButton from '@/components/atoms/AppButton'
-import AppBadge from '@/components/atoms/AppBadge'
+import AppChip, { type AppChipVariant } from '@/components/atoms/AppChip'
 import AppSelect from '@/components/atoms/AppSelect'
 import AppDialog from '@/components/atoms/AppDialog'
 import AppIcon from '@/components/atoms/AppIcon'
@@ -211,6 +210,16 @@ export const MetaTab: React.FC = () => {
     }
   }
 
+  const chipVariant: AppChipVariant = useMemo(() => {
+    const map: Record<string, AppChipVariant> = {
+      kind: 'kind',
+      tags: 'tag',
+      model: 'model',
+      lens: 'lens',
+    }
+    return map[metaTab] ?? 'neutral'
+  }, [metaTab])
+
   return (
     <>
       {/* Header: tab selector */}
@@ -225,7 +234,7 @@ export const MetaTab: React.FC = () => {
       </div>
 
       {/* Add new value + rebuild */}
-      <div className="flex gap-2 px-4 pt-3 items-start">
+      <div className="flex gap-2 px-4 pt-3 items-end">
         <div className="flex-1">
           <AppInput
             modelValue={newValue}
@@ -237,14 +246,14 @@ export const MetaTab: React.FC = () => {
             <p className="text-xs text-negative mt-1">Already exists</p>
           )}
         </div>
-        <AppButton label="Add" onClick={addValue} color="primary" className="mt-1" />
+        <AppButton label="Add" onClick={addValue} color="primary" className="mb-1" />
         <AppButton
           flat
           icon="build"
           label="Rebuild"
           onClick={rebuildCounts}
           color="primary"
-          className="mt-1 whitespace-nowrap"
+          className="whitespace-nowrap mb-1"
           title={`Rebuild ${metaTab.toLowerCase()} counts`}
         />
       </div>
@@ -294,22 +303,15 @@ export const MetaTab: React.FC = () => {
                 className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
                 <td className="px-3 py-2">
-                  <Link
-                    href="/list"
-                    className="text-primary hover:underline cursor-pointer"
+                  <AppChip
+                    variant={chipVariant}
+                    label={row.name}
                     title={`Filter photos by ${activeTabShort.toLowerCase()} "${row.name}"`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      filterByValue(row.name)
-                    }}
-                  >
-                    {row.name}
-                  </Link>
+                    onClick={() => filterByValue(row.name)}
+                  />
                 </td>
-                <td className="px-3 py-2 text-right">
-                  <AppBadge color="secondary" textColor="black" className="text-xs">
-                    {row.count}
-                  </AppBadge>
+                <td className="px-3 py-2 text-right text-gray-500 dark:text-gray-400 tabular-nums">
+                  {row.count}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {metaTab === 'tags' && (
