@@ -38,7 +38,7 @@ export default function HomePage() {
 
   // `selectYearValues` is newest-first, so `slice(0, 5)` keeps the five latest years.
   const allYears = useMemo<string[]>(() => yearValues.filter(Boolean), [yearValues])
-  const years = screen.xs ? allYears.slice(0, 5) : allYears
+  const years = screen.xs ? allYears.slice(0, 4) : allYears
 
   const sinceYear = useMemo(() => {
     return yearValues[yearValues.length - 1] || ''
