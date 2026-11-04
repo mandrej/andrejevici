@@ -10,7 +10,7 @@ import { useUserStore } from '@/stores/userStore'
 import { formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
 import AppButton from '@/components/atoms/AppButton'
-import AppChip, { APP_CHIP_VARIANTS } from '@/components/atoms/AppChip'
+import AppChip, { type AppChipVariant } from '@/components/atoms/AppChip'
 import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
@@ -18,6 +18,15 @@ import { mismatch, missingThumbnails } from '@/helpers/remedy'
 import { repairUsers } from '@/helpers/users'
 import notify from '@/helpers/notify'
 import CONFIG from '@/config'
+
+const COUNTER_CHIP_VARIANTS: Record<string, AppChipVariant> = {
+  kind: 'kind',
+  year: 'date',
+  tags: 'tag',
+  model: 'model',
+  lens: 'lens',
+  nick: 'nick',
+}
 
 export default function AdminPage() {
   const router = useRouter()
@@ -100,10 +109,15 @@ export default function AdminPage() {
               title="Metadata Counters"
               description="Rebuild index counters for all metadata fields. Updated via cron job every 3 days."
               details={
-                <div className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                  {Object.entries(values)
-                    .map(([key, val]) => `${key}: ${Object.keys(val || {}).length}`)
-                    .join(' · ')}
+                <div className="flex flex-wrap gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  {Object.entries(values).map(([key, val]) => (
+                    <AppChip
+                      key={key}
+                      label={`${key}: ${Object.keys(val || {}).length}`}
+                      variant={COUNTER_CHIP_VARIANTS[key] ?? 'neutral'}
+                      size="sm"
+                    />
+                  ))}
                 </div>
               }
               action={<AppButton label="Build" onClick={handleCountersBuild} color="secondary" />}
