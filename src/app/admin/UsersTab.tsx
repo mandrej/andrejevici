@@ -231,6 +231,10 @@ export const UsersTab: React.FC = () => {
 
   const ageDays = (timestamp: unknown) => getAgeDays(timestamp as DateInput)
 
+  // Mirrors the session check in `storeUser`: past `loginDays` the user is already signed out,
+  // so there is nothing left for the Logout action to do.
+  const isExpired = (u: UsersAndDevices) => ageDays(u.timestamp) > CONFIG.loginDays
+
   const maxContribution = useMemo(() => {
     return result.reduce((max, u) => Math.max(max, contribution(u)), 0)
   }, [result, contribution])
@@ -300,7 +304,6 @@ export const UsersTab: React.FC = () => {
                       >
                         <AppBadge
                           color="warning"
-                          textColor="black"
                           className="text-sm px-2 py-1 justify-center cursor-pointer"
                         >
                           <span className="grid grid-cols-1 place-items-center tabular-nums">
@@ -316,8 +319,7 @@ export const UsersTab: React.FC = () => {
                       </Link>
                     ) : (
                       <AppBadge
-                        color="warning"
-                        textColor="black"
+                        color="grey"
                         className="text-sm px-2 py-1 justify-center"
                       >
                         <span className="grid grid-cols-1 place-items-center tabular-nums">
@@ -376,7 +378,7 @@ export const UsersTab: React.FC = () => {
                           </AppButton>
                         </>
                       )}
-                      {user?.isAdmin && (
+                      {user?.isAdmin && !isExpired(item) && (
                         <AppButton
                           flat
                           onClick={() => confirmLogoutUser(item)}
@@ -391,7 +393,7 @@ export const UsersTab: React.FC = () => {
                     </div>
                     <div className="text-xs text-gray-500">{item.email}</div>
                     <div className="text-xs text-gray-400">
-                      {ageDays(item.timestamp) > CONFIG.loginDays ? (
+                      {isExpired(item) ? (
                         <span>Logged out / Expired</span>
                       ) : (
                         `subscribed ${ageDays(item.timestamp)} days ago`
