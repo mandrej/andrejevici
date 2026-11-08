@@ -21,24 +21,22 @@ import CONFIG from '@/config'
 
 /**
  * Contribution count written vertically, reading bottom-up. `writing-mode` (rather than a
- * rotation) keeps the layout box vertical, so the pill's height grows and shrinks with the
- * number of digits while its thickness stays put: `w-8` fixes that cross axis and `py-2` is
- * the padding before and after the digits. A user without contributions renders the same pill
- * invisible, reserving its space but showing no "0".
+ * rotation) keeps the layout box vertical, so the text grows and shrinks with the number of
+ * digits while its thickness stays put: `w-8` fixes that cross axis. A user without
+ * contributions renders the same text invisible, reserving its space but showing no "0".
  */
-const ContributionBadge: React.FC<{ count: number; className?: string; hidden?: boolean }> = ({
+const ContributionText: React.FC<{ count: number; className?: string; hidden?: boolean }> = ({
   count,
   className = '',
   hidden = false,
 }) => (
-  <AppBadge
-    color="warning"
-    className={`text-sm w-8 px-1.5 py-2 justify-center rotate-180 [writing-mode:vertical-rl] ${
+  <span
+    className={`inline-flex items-center justify-center text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums w-8 py-2 rotate-180 [writing-mode:vertical-rl] whitespace-nowrap ${
       hidden ? 'invisible' : ''
     } ${className}`}
   >
-    <span className="tabular-nums">{count}</span>
-  </AppBadge>
+    {count}
+  </span>
 )
 
 export const UsersTab: React.FC = () => {
@@ -309,9 +307,9 @@ export const UsersTab: React.FC = () => {
                   key={item.id || item.email}
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  {/* Contribution count written vertically (bottom-up) so the chip sizes to
+                  {/* Contribution count written vertically (bottom-up) so the text sizes to
                       its digits. The slot always renders, and a user without contributions
-                      gets the same chip made invisible, so rows keep a common left edge. */}
+                      gets the same text made invisible, so rows keep a common left edge. */}
                   <div className="shrink-0 mr-3 flex items-center">
                     {item.nick && contribution(item) > 0 ? (
                       <Link
@@ -323,10 +321,10 @@ export const UsersTab: React.FC = () => {
                         title={`Filter photos by ${item.nick}`}
                         className="inline-flex hover:opacity-80 transition-opacity"
                       >
-                        <ContributionBadge count={contribution(item)} className="cursor-pointer" />
+                        <ContributionText count={contribution(item)} className="cursor-pointer" />
                       </Link>
                     ) : (
-                      <ContributionBadge
+                      <ContributionText
                         count={contribution(item)}
                         hidden={contribution(item) === 0}
                       />
