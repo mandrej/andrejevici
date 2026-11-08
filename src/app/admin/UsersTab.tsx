@@ -19,6 +19,28 @@ import { getAgeDays, type DateInput } from '@/helpers'
 import type { UsersAndDevices } from '@/helpers/models'
 import CONFIG from '@/config'
 
+/**
+ * Contribution count written vertically, reading bottom-up. `writing-mode` (rather than a
+ * rotation) keeps the layout box vertical, so the pill's height grows and shrinks with the
+ * number of digits while its thickness stays put: `w-8` fixes that cross axis and `py-2` is
+ * the padding before and after the digits. A user without contributions renders the same pill
+ * invisible, reserving its space but showing no "0".
+ */
+const ContributionBadge: React.FC<{ count: number; className?: string; hidden?: boolean }> = ({
+  count,
+  className = '',
+  hidden = false,
+}) => (
+  <AppBadge
+    color="warning"
+    className={`text-sm w-8 px-1.5 py-2 justify-center rotate-180 [writing-mode:vertical-rl] ${
+      hidden ? 'invisible' : ''
+    } ${className}`}
+  >
+    <span className="tabular-nums">{count}</span>
+  </AppBadge>
+)
+
 export const UsersTab: React.FC = () => {
   const router = useRouter()
   const searchBy = useAppStore((state) => state.searchBy)
@@ -235,10 +257,6 @@ export const UsersTab: React.FC = () => {
   // so there is nothing left for the Logout action to do.
   const isExpired = (u: UsersAndDevices) => ageDays(u.timestamp) > CONFIG.loginDays
 
-  const maxContribution = useMemo(() => {
-    return result.reduce((max, u) => Math.max(max, contribution(u)), 0)
-  }, [result, contribution])
-
   const handleNickFilter = (nick?: string) => {
     if (!nick) return
     searchBy({ nick }, () => {
@@ -251,7 +269,7 @@ export const UsersTab: React.FC = () => {
       <ErrorBanner inquiry={!busy && error !== ''} title={error} />
 
       {/* Search */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="shrink-0 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <LocalSearch
           modelValue={search}
           onChangeValue={setSearch}
@@ -260,7 +278,7 @@ export const UsersTab: React.FC = () => {
         />
       </div>
 
-      <div className="p-4 overflow-y-auto" style={{ height: '65vh' }}>
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto">
         <div className={`flex flex-col gap-2 ${screen.xs ? 'gap-1' : ''}`}>
           {busy
             ? Array.from({ length: 5 }).map((_, n) => (
@@ -291,7 +309,10 @@ export const UsersTab: React.FC = () => {
                   key={item.id || item.email}
                   className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <div className="shrink-0 mr-3">
+                  {/* Contribution count written vertically (bottom-up) so the chip sizes to
+                      its digits. The slot always renders, and a user without contributions
+                      gets the same chip made invisible, so rows keep a common left edge. */}
+                  <div className="shrink-0 mr-3 flex items-center">
                     {item.nick && contribution(item) > 0 ? (
                       <Link
                         href="/list"
@@ -302,36 +323,13 @@ export const UsersTab: React.FC = () => {
                         title={`Filter photos by ${item.nick}`}
                         className="inline-flex hover:opacity-80 transition-opacity"
                       >
-                        <AppBadge
-                          color="warning"
-                          className="text-sm px-2 py-1 justify-center cursor-pointer"
-                        >
-                          <span className="grid grid-cols-1 place-items-center tabular-nums">
-                            <span
-                              className="col-start-1 row-start-1 invisible select-none"
-                              aria-hidden="true"
-                            >
-                              {maxContribution}
-                            </span>
-                            <span className="col-start-1 row-start-1">{contribution(item)}</span>
-                          </span>
-                        </AppBadge>
+                        <ContributionBadge count={contribution(item)} className="cursor-pointer" />
                       </Link>
                     ) : (
-                      <AppBadge
-                        color="grey"
-                        className="text-sm px-2 py-1 justify-center"
-                      >
-                        <span className="grid grid-cols-1 place-items-center tabular-nums">
-                          <span
-                            className="col-start-1 row-start-1 invisible select-none"
-                            aria-hidden="true"
-                          >
-                            {maxContribution}
-                          </span>
-                          <span className="col-start-1 row-start-1">{contribution(item)}</span>
-                        </span>
-                      </AppBadge>
+                      <ContributionBadge
+                        count={contribution(item)}
+                        hidden={contribution(item) === 0}
+                      />
                     )}
                   </div>
 

@@ -223,7 +223,7 @@ export const MetaTab: React.FC = () => {
   return (
     <>
       {/* Header: tab selector */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="shrink-0 flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <AppSelect
           modelValue={metaTab}
           options={metaSelectOptions}
@@ -234,7 +234,7 @@ export const MetaTab: React.FC = () => {
       </div>
 
       {/* Add new value + rebuild */}
-      <div className="flex gap-2 px-4 pt-3 items-end">
+      <div className="shrink-0 flex gap-2 px-4 pt-3 items-end">
         <div className="flex-1">
           <AppInput
             modelValue={newValue}
@@ -259,7 +259,7 @@ export const MetaTab: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="px-4 py-2">
+      <div className="shrink-0 px-4 py-2">
         <LocalSearch
           modelValue={search}
           onChangeValue={setSearch}
@@ -269,10 +269,7 @@ export const MetaTab: React.FC = () => {
       </div>
 
       {/* Data table */}
-      <div
-        className="overflow-auto mx-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-        style={{ height: '58vh' }}
-      >
+      <div className="flex-1 min-h-0 overflow-auto mx-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg">
         <table className="w-full text-sm border-collapse">
           <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
             <tr>

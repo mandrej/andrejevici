@@ -75,10 +75,10 @@ export default function AdminPage() {
 
   return (
     <DefaultLayout>
-      <div className="min-h-full">
+      <div className="flex h-full min-h-0 flex-col">
         {/* Repair panel */}
         {adminTab === 'repair' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 overflow-y-auto">
             {/* Theme Settings Card */}
             <AdminCard
               icon="dark_mode"
