@@ -303,7 +303,7 @@ client without a reload — and a user document that disappears or goes stale (`
 
 ```mermaid
 flowchart TD
-    A["/admin → Users tab · admin only"] --> B["fetchUsersAndDevices()<br/>User docs plus Device subcollection timestamps,<br/>sorted by contribution count"]
+    A["/admin → Users tab · admin only"] --> B["fetchUsersAndDevices()<br/>User docs plus Device timestamps from one<br/>collection-group query, sorted by contribution count"]
     B --> C["Nick edit → updateUser"]
     B --> D["Toggle isAuthorized / isAdmin / allowPush"]
     B --> E["Delete user"]

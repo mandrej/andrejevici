@@ -1,5 +1,5 @@
 import { db } from '@/firebase'
-import { collection } from 'firebase/firestore'
+import { collection, collectionGroup } from 'firebase/firestore'
 
 /**
  * Collection references are created on first use. Building them at module scope would drag the
@@ -13,3 +13,5 @@ export const renameCollection = () => collection(db(), 'Rename')
 export const lastRecordCollection = () => collection(db(), 'LastRecord')
 export const getUserDeviceCollection = (email: string) =>
   collection(db(), 'User', email.trim().toLowerCase(), 'Device')
+/** Every `Device` token document across all users, read in a single collection group query. */
+export const deviceCollectionGroup = () => collectionGroup(db(), 'Device')

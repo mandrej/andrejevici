@@ -137,7 +137,7 @@ const user = useUserStore((state) => state.user)
 - `remedy.ts` — storage/Firestore consistency and thumbnail repair actions.
 - `uploadTracker.ts` — the per-transfer state machine (`UploadTracker`) and the shared `ProgressThrottle`. Both are free of the Firebase SDK and the DOM, so they are unit-testable with plain objects.
 - `userDoc.ts` — the pure rules for a `User` document: the email key, the legacy `uid`/`id` fields to strip, and how a legacy document merges into an email-keyed one.
-- `users.ts` — Firestore-side user repair: moves a uid-keyed document and its `Device` subcollection onto the email key, and exposes `repairUsers()` for the admin repair panel.
+- `users.ts` — Firestore-side user migration: moves a uid-keyed document and its `Device` subcollection onto the email key. `migrateUserDoc()` is called during sign-in when only a legacy document exists.
 
 ### Firebase initialization
 

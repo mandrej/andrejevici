@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore'
 import type { MyUserType, UsersAndDevices } from '@/helpers/models'
 import notify from '@/helpers/notify'
-import { photoCollection, getUserDeviceCollection, userCollection } from '@/helpers/collections'
+import { photoCollection, deviceCollectionGroup, userCollection } from '@/helpers/collections'
 import { deleteUserDevices } from '@/helpers/devices'
 import type { UserStore, UsersAdminSliceActions } from '@/stores/user/types'
 
@@ -47,31 +47,40 @@ export const createUsersAdminSlice: StateCreator<UserStore, [], [], UsersAdminSl
   },
 
   fetchUsersAndDevices: async () => {
-    const users = await get().fetchUsers()
-
-    // Device tokens are documents in each user's own `Device` subcollection, so they are read
-    // per user document rather than through a collection group query.
-    const deviceLists = await Promise.all(
-      users.map(async (user) => {
-        const userDocId = user.id || user.email?.trim().toLowerCase()
-        if (!userDocId) return [] as Timestamp[]
-        try {
-          const snapshot = await getDocs(getUserDeviceCollection(userDocId))
-          return snapshot.docs.map(
-            (d) => (d.data() as { timestamp?: Timestamp }).timestamp ?? Timestamp.fromMillis(0),
-          )
-        } catch (err) {
-          // A user without any device simply has no `Device` subcollection.
-          console.warn(`Failed to read devices for ${userDocId}:`, err)
-          return [] as Timestamp[]
-        }
+    // Device tokens live in each user's own `Device` subcollection, so a collection group query
+    // reads every user's devices at once instead of issuing one query per user document.
+    const [users, deviceSnapshot] = await Promise.all([
+      get().fetchUsers(),
+      getDocs(deviceCollectionGroup()).catch((err) => {
+        // A failed device read must not hide the user list from the admin panel.
+        console.warn('Failed to read devices:', err)
+        return null
       }),
-    )
+    ])
 
-    return users.map((user, index) => ({
-      ...user,
-      timestamps: [...(deviceLists[index] ?? [])].sort((a, b) => b.toMillis() - a.toMillis()),
-    }))
+    const timestampsByUser = new Map<string, Timestamp[]>()
+    deviceSnapshot?.docs.forEach((d) => {
+      // `Device` is a subcollection of `User`, so the parent's parent is the user document. The
+      // path check keeps a decoy `Device` collection outside the `User` tree out of the results.
+      const userRef = d.ref.parent.parent
+      if (userRef?.parent?.id !== 'User') return
+      const owner = userRef.id.trim().toLowerCase()
+      if (!owner) return
+      const timestamp = (d.data() as { timestamp?: Timestamp }).timestamp ?? Timestamp.fromMillis(0)
+      const timestamps = timestampsByUser.get(owner)
+      if (timestamps) timestamps.push(timestamp)
+      else timestampsByUser.set(owner, [timestamp])
+    })
+
+    return users.map((user) => {
+      const owner = (user.id || user.email)?.trim().toLowerCase() ?? ''
+      return {
+        ...user,
+        timestamps: [...(timestampsByUser.get(owner) ?? [])].sort(
+          (a, b) => b.toMillis() - a.toMillis(),
+        ),
+      }
+    })
   },
 
   deleteUser: async (id: string) => {
