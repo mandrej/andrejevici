@@ -92,8 +92,6 @@ export const ManageSelection: React.FC = () => {
 
       {selected.length > 0 && (
         <div className={`flex flex-col gap-2 ${screen.gtSm ? 'gap-3' : ''}`}>
-          <div className="text-xs text-center text-gray-500">{selected.length} items selected</div>
-
           {tagsToApply && tagsToApply.length > 0 && (
             <AppButton
               flat
@@ -127,7 +125,7 @@ export const ManageSelection: React.FC = () => {
 
           <AppButton
             flat
-            label="Clear Selection"
+            label={`Clear ${selected.length} selected`}
             icon="sym_r_clear_all"
             onClick={clearSelected}
             className="justify-end"
