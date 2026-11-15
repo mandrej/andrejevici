@@ -14,8 +14,7 @@ export const AdminToolbar: React.FC = () => {
     { name: 'users', label: 'Users' },
   ] as const
 
-  const headline =
-    adminTab === 'repair' ? 'Build / repair' : adminTab === 'meta' ? 'Metadata' : 'Users'
+  const headline = adminTab === 'repair' ? 'Repair' : adminTab === 'meta' ? 'Metadata' : 'Users'
 
   return (
     <>

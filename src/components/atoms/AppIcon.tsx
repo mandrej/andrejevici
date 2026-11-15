@@ -42,6 +42,7 @@ import {
   ShareIcon,
   Squares2X2Icon,
   SunIcon,
+  SwatchIcon,
   TableCellsIcon,
   TagIcon,
   TrashIcon,
@@ -148,6 +149,7 @@ const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>
   light_mode: SunIcon,
   dark_mode: MoonIcon,
   brightness_6: ComputerDesktopIcon,
+  sym_r_palette: SwatchIcon,
 
   // People / social
   group: UsersIcon,

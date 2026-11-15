@@ -11,7 +11,6 @@ import { formatBytes } from '@/helpers'
 import AdminCard from '@/app/admin/AdminCard'
 import AppButton from '@/components/atoms/AppButton'
 import AppChip, { type AppChipVariant } from '@/components/atoms/AppChip'
-import ThemeToggle from '@/components/atoms/ThemeToggle'
 import MetaTab from '@/app/admin/MetaTab'
 import UsersTab from '@/app/admin/UsersTab'
 import { mismatch, missingThumbnails } from '@/helpers/remedy'
@@ -58,15 +57,6 @@ export default function AdminPage() {
         {/* Repair panel */}
         {adminTab === 'repair' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 overflow-y-auto">
-            {/* Theme Settings Card */}
-            <AdminCard
-              icon="dark_mode"
-              color="primary"
-              title="Theme Settings"
-              description="Customize application appearance (Light, Dark, or System mode)."
-              action={<ThemeToggle flat />}
-            />
-
             {/* Bucket Card */}
             <AdminCard
               icon="storage"
