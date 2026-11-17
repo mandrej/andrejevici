@@ -143,6 +143,11 @@
     @apply text-sm;
   }
 
+  /* `lg` — HomePage quick filters: larger text, roomier padding, softer corners */
+  .chip-lg {
+    @apply rounded-md px-3 py-1.5 text-base;
+  }
+
   /* Variants — one per GlobalSearch filter field */
   .chip-neutral {
     @apply bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300;

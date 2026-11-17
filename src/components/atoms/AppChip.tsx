@@ -17,7 +17,7 @@ export type AppChipVariant = (typeof APP_CHIP_VARIANTS)[number]
 interface AppChipProps {
   label: React.ReactNode
   variant?: AppChipVariant
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
   onClick?: () => void
   onRemove?: () => void
   title?: string
@@ -42,13 +42,10 @@ export const AppChip: React.FC<AppChipProps> = ({
   const actionable = Boolean(onClick || onRemove)
   const labelText = typeof label === 'string' || typeof label === 'number' ? String(label) : ''
 
-  const classes = [
-    'chip',
-    `chip-${variant}`,
-    size === 'md' ? 'chip-md' : '',
-    actionable ? 'chip-action' : '',
-    className,
-  ]
+  // `lg` is the HomePage quick-filter size: larger text and a square-ish pill.
+  const sizeClass = size === 'lg' ? 'chip-lg' : size === 'md' ? 'chip-md' : ''
+
+  const classes = ['chip', `chip-${variant}`, sizeClass, actionable ? 'chip-action' : '', className]
     .filter(Boolean)
     .join(' ')
 

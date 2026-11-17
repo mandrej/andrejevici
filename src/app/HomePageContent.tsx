@@ -87,12 +87,12 @@ export default function HomePage() {
 
         {/* Year filter — same chip style as the active year filter in GlobalSearch */}
         {years.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-1.5 mt-2 mx-8">
+          <div className="flex flex-wrap justify-center gap-2 mt-2 mx-8">
             {years.map((year) => (
               <AppChip
                 key={year}
                 variant="date"
-                size="md"
+                size="lg"
                 label={year}
                 onClick={() => handleYearClick(year)}
                 title={`Show photos from ${year}`}
@@ -108,7 +108,7 @@ export default function HomePage() {
               <AppChip
                 key={nick}
                 variant="nick"
-                size="md"
+                size="lg"
                 label={nick}
                 onClick={() => handlePhotographerClick(nick)}
                 title={`Show photos by ${nick}`}
