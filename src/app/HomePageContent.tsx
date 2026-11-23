@@ -85,8 +85,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Year filter — same chip style as the active year filter in GlobalSearch */}
-        {years.length > 0 && (
+        {/* Year filter — same chip style as the active year filter in GlobalSearch.
+            Signed-out visitors do not get the quick filters. */}
+        {user && years.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mt-2 mx-8">
             {years.map((year) => (
               <AppChip
@@ -102,7 +103,7 @@ export default function HomePage() {
         )}
 
         {/* Top photographers — same chip style as the nick filter in GlobalSearch */}
-        {nicks.length > 0 && (
+        {user && nicks.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2 mt-2 mx-8">
             {nicks.map((nick) => (
               <AppChip

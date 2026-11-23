@@ -3,10 +3,12 @@
 import React from 'react'
 import Link from 'next/link'
 import { useScreen } from '@/composables/useScreen'
+import { useUserStore } from '@/stores/userStore'
 import GlobalSearch from '@/components/GlobalSearch'
 
 export const ListToolbar: React.FC = () => {
   const screen = useScreen()
+  const user = useUserStore((state) => state.user)
 
   return (
     <>
@@ -19,7 +21,8 @@ export const ListToolbar: React.FC = () => {
             Browse
           </Link>
         )}
-        <GlobalSearch />
+        {/* Search is signed-in only */}
+        {user && <GlobalSearch />}
       </div>
     </>
   )
