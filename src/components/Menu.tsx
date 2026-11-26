@@ -3,7 +3,6 @@
 import { useUserStore } from '@/stores/userStore'
 import { canContribute } from '@/helpers'
 import MenuLink from '@/components/MenuLink'
-import ThemeToggle from '@/components/atoms/ThemeToggle'
 
 interface MenuProps {
   onLinkClick?: () => void
@@ -43,12 +42,6 @@ export const Menu: React.FC<MenuProps> = ({ onLinkClick }) => {
           onClick={onLinkClick}
         />
       )}
-
-      <div className="flex items-center py-1">
-        {/* Empty icon slot: keeps the theme buttons aligned with the MenuLink titles */}
-        <div className="shrink-0 w-10 h-10 mx-1" aria-hidden="true" />
-        <ThemeToggle showLabels={true} />
-      </div>
     </nav>
   )
 }
